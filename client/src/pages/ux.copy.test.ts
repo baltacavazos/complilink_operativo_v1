@@ -129,6 +129,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
     expect(source).toContain("Directo desde tu app");
     expect(source).not.toContain("Sube y revisa en segundos");
+    expect(source).toContain("Sube y revisa");
     expect(source).toContain("Ruta corta dentro de la app");
     expect(source).toContain("La lectura puede tardar un momento");
     expect(source).toContain("Sube foto o archivo. Ves la señal y decides si lo guardas.");

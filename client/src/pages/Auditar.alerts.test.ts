@@ -27,8 +27,10 @@ import {
   getUploadStepAriaLabel,
   sanitizePersistedAuditarViewState,
   sanitizePersistedHeliosCopilotMessages,
+  formatHumanStatusWord,
   sanitizePreviewText,
   sanitizeStructuredExtractionView,
+  toHumanResultTitle,
   shouldAutoAnalyzeSelectedFile,
   shouldHideUploadContextSelectors,
   validateDocumentUploadFile,
@@ -43,7 +45,9 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain(
       '"bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700"',
     );
-    expect(auditarSource).toContain('"bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950"');
+    expect(auditarSource).toContain("uploadPrimaryActionLabel");
+    expect(auditarSource).toContain("Prefiero tomar una foto u otro archivo");
+    expect(auditarSource).toContain("openPreferredPicker");
     expect(auditarSource).toContain('"Abrir cámara para subirlo"');
     expect(auditarSource).toContain('"Elegir archivo ahora"');
   });
@@ -168,6 +172,22 @@ describe("señal factual del recibo", () => {
     expect(signal.attention).toContain("faltan datos para confirmar");
     expect(signal.facts).not.toContain("confirmedData");
     expect(signal.attention).not.toMatch(/["“”]{2,}/);
+  });
+
+  it("no usa true/false ni claves técnicas como si fueran empresa o título", () => {
+    const signal = buildPayrollFactSignal({
+      documentType: "payroll_receipt",
+      confirmedData: {
+        employerName: true,
+        normalizedDocType: "payroll_receipt",
+        neto: "$3,200.00",
+      },
+    });
+
+    expect(signal.headline).not.toMatch(/\btrue\b|\bfalse\b/i);
+    expect(signal.headline).not.toContain("emitido por Sí");
+    expect(signal.facts).toContain("Pago que se alcanza a leer: $3,200.00");
+    expect(signal.facts).not.toContain("Empresa que aparece: Sí");
   });
 
   it("aprovecha el periodo y RFC de un CFDI parcial sin inventar razón social o deducciones", () => {
@@ -888,7 +908,7 @@ describe("buildInlineLegalConsentState", () => {
     ).toEqual({
       shouldShowInlineLegalConsent: true,
       confirmPrimaryActionLabel: "Aceptar y guardar con ajustes",
-      uploadPrimaryActionLabel: "Tomar foto para continuar",
+      uploadPrimaryActionLabel: "Sube tu recibo",
     });
   });
 
@@ -908,7 +928,7 @@ describe("buildInlineLegalConsentState", () => {
     });
   });
 
-  it("sugiere elegir archivo para continuar cuando el flujo mobile-first abre directo el picker preferido sin documento previo", () => {
+  it("usa un solo CTA de subida cuando el flujo mobile-first abre el picker sin documento previo", () => {
     expect(
       buildInlineLegalConsentState({
         legalGateRequired: false,
@@ -920,7 +940,7 @@ describe("buildInlineLegalConsentState", () => {
     ).toEqual({
       shouldShowInlineLegalConsent: false,
       confirmPrimaryActionLabel: "Confirmar y guardar documento",
-      uploadPrimaryActionLabel: "Elegir archivo para continuar",
+      uploadPrimaryActionLabel: "Sube tu recibo",
     });
   });
 });
@@ -935,6 +955,25 @@ describe("preview sanitization", () => {
         technicalFallback: "Contenido técnico omitido para mantener la lectura clara.",
       }),
     ).toBe("Contenido técnico omitido para mantener la lectura clara.");
+  });
+
+  it("traduce booleanos crudos a palabras humanas y no deja true/false a la vista", () => {
+    expect(sanitizePreviewText(true)).toBe("Sí");
+    expect(sanitizePreviewText(false)).toBe("No");
+    expect(sanitizePreviewText("true")).toBe("Sí");
+    expect(sanitizePreviewText("FALSE")).toBe("No");
+    expect(toHumanResultTitle("true", "Revisa el periodo, el pago neto y las deducciones")).toBe(
+      "Revisa el periodo, el pago neto y las deducciones",
+    );
+    expect(toHumanResultTitle("payroll_receipt", "Revisa el periodo, el pago neto y las deducciones")).toBe(
+      "Revisa el periodo, el pago neto y las deducciones",
+    );
+    expect(toHumanResultTitle("REVISA EL PAGO DEL PERIODO", "Revisa el periodo, el pago neto y las deducciones")).toBe(
+      "Revisa el pago del periodo",
+    );
+    expect(formatHumanStatusWord("true")).toBe("Listo");
+    expect(formatHumanStatusWord("false")).toBe("Pendiente");
+    expect(formatHumanStatusWord("intake")).toBe("Inicio del caso");
   });
 
   it("nunca muestra boolean true/false en el resultado visible", () => {

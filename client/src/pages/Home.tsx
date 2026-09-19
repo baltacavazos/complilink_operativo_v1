@@ -865,7 +865,7 @@ function SiteHeader() {
 
             <div className="overflow-hidden rounded-[1.55rem] border border-slate-200 bg-white shadow-[0_18px_34px_-28px_rgba(15,23,42,0.18)]">
               <div className="border-b border-slate-200 px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                <p className="text-[11px] font-semibold tracking-tight text-slate-400">
                   Explora
                 </p>
               </div>
@@ -1264,7 +1264,7 @@ function HeroSection() {
             >
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-700">
                     Empieza por el documento que ya tengas
                   </p>
                   <p className="mt-1 text-sm leading-5 text-slate-700">
@@ -1278,7 +1278,7 @@ function HeroSection() {
 
               <div className="mt-2.5 rounded-[1rem] border border-slate-200 bg-slate-50/90 px-3.5 py-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-800">
                     Documento recomendado
                   </p>
                   <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
@@ -1341,7 +1341,7 @@ function HeroSection() {
             <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] max-[359px]:px-3.5 max-[359px]:py-3.5 sm:px-5 sm:py-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                  <p className="text-[11px] font-semibold tracking-tight text-slate-500">
                     Así se ve tu resultado
                   </p>
                   <p className="mt-2 max-w-[16ch] text-[1.82rem] font-bold leading-[0.95] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[14ch] max-[359px]:text-[1.62rem] sm:text-[2.2rem]">
@@ -1393,12 +1393,12 @@ function HeroSection() {
                 <p className="mt-2 text-sm leading-5 text-slate-700">{activeReportDemoCopy.description}</p>
 
                 <div className={`mt-3 rounded-[1rem] border px-3.5 py-2.5 ${activeReportDemoCopy.focusClass}`}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">{activeReportDemoCopy.focusLabel}</p>
+                  <p className="text-[11px] font-semibold tracking-tight">{activeReportDemoCopy.focusLabel}</p>
                   <p className="mt-1 text-sm font-semibold leading-6">{activeReportDemoCopy.focusValue}</p>
                 </div>
 
                 <div className={`mt-3 rounded-[1rem] border px-3.5 py-2.5 ${activeReportDemoCopy.secondaryClass}`}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em]">{activeReportDemoCopy.secondaryLabel}</p>
+                  <p className="text-[11px] font-semibold tracking-tight">{activeReportDemoCopy.secondaryLabel}</p>
                   <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>
 
@@ -1424,7 +1424,7 @@ function HeroSection() {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-700">
                     Sube tu documento gratis
                   </p>
                   <p className="mt-1 text-sm font-semibold leading-5 text-teal-950">
@@ -1670,7 +1670,7 @@ function HeliosFirstEntrySection() {
             <input ref={fileInputRef} type="file" className="hidden" accept=".pdf,.xml,.jpg,.jpeg,.png,.webp" onChange={handleFileSelection} />
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
+                <p className="text-[11px] font-semibold tracking-tight text-teal-700">
                   Lectura orientativa desde el primer archivo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
@@ -1707,13 +1707,13 @@ function HeliosFirstEntrySection() {
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700">{sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.summary) ?? "Ya hay una primera lectura útil para revisar este documento con más claridad."}</p>
                   <div className="mt-4 rounded-[1.1rem] border border-amber-200 bg-amber-50 px-4 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal encontrada</p>
+                    <p className="text-[11px] font-semibold tracking-tight text-amber-800">Señal encontrada</p>
                     <p className="mt-2 text-sm leading-6 text-amber-950">
                       {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.legalHighlights?.primaryConcern) ?? "Ya detectamos una señal principal útil para empezar a revisar este documento."}
                     </p>
                   </div>
                   <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Siguiente paso sugerido</p>
+                    <p className="text-[11px] font-semibold tracking-tight text-emerald-800">Siguiente paso sugerido</p>
                     <p className="mt-2 text-sm leading-6 text-emerald-950">
                       {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.resultCard?.nextStepSummary) ?? sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.recommendedNextStep) ?? "Ya tienes el siguiente paso útil para seguir."}
                     </p>
@@ -1721,7 +1721,7 @@ function HeliosFirstEntrySection() {
                 </div>
 
                 <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50/80 p-4 shadow-sm">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Cómo guardarlo si te sirve</p>
+                  <p className="text-[11px] font-semibold tracking-tight text-slate-500">Cómo guardarlo si te sirve</p>
                   <div className="mt-3 space-y-3 text-sm leading-6 text-slate-700">
                     <p>
                       {sanitizeHomeVisibleCopy(guestPreview.preview.scanAssistance?.friendlyHeadline) ?? "Tu archivo ya quedó listo para esta primera lectura privada."}
@@ -1762,10 +1762,10 @@ function HeliosFirstEntrySection() {
                   },
                 ]).slice(0, 3).map((example) => (
                   <article key={example.id} className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">{example.badge}</p>
+                    <p className="text-[11px] font-semibold tracking-tight text-teal-700">{example.badge}</p>
                     <p className="mt-3 text-sm font-semibold leading-6 text-slate-950">{example.title}</p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{example.summary}</p>
-                    <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Siguiente paso</p>
+                    <p className="mt-3 text-xs font-semibold tracking-tight text-slate-500">Siguiente paso</p>
                     <p className="mt-1 text-sm leading-6 text-slate-700">{example.nextStep}</p>
                   </article>
                 ))}
@@ -1781,7 +1781,7 @@ function HeliosFirstEntrySection() {
             baseLabel="la home privada"
           />
           <article className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f9fcfb_0%,_#edf7f5_100%)] p-4 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.22)] sm:p-5">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">Ejemplo de lectura</p>
+            <p className="text-[10px] font-semibold tracking-tight text-slate-500">Ejemplo de lectura</p>
             <h3 className="mt-2 text-[1.28rem] font-semibold leading-7 tracking-[-0.04em] text-slate-950">
               {featuredExample?.title ?? "Así se ve una primera lectura real antes de guardar nada."}
             </h3>
@@ -1791,13 +1791,13 @@ function HeliosFirstEntrySection() {
 
             <div className="mt-3 grid gap-2">
               <div className="rounded-[1rem] border border-amber-200 bg-amber-50 px-3.5 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-800">Señal visible</p>
+                <p className="text-[10px] font-semibold tracking-tight text-amber-800">Señal visible</p>
                 <p className="mt-1.5 text-sm leading-5 text-amber-950">
                   {featuredExample?.primaryConcern ?? "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
                 </p>
               </div>
               <div className="rounded-[1rem] border border-emerald-200 bg-emerald-50 px-3.5 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-800">Qué sigue</p>
+                <p className="text-[10px] font-semibold tracking-tight text-emerald-800">Qué sigue</p>
                 <p className="mt-1.5 text-sm leading-5 text-emerald-950">
                   {featuredExample?.nextStep ?? "La lectura te sugiere el siguiente documento útil para fortalecer tu bóveda laboral."}
                 </p>
@@ -1807,7 +1807,7 @@ function HeliosFirstEntrySection() {
 
           <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</span>
+              <span className="text-[11px] font-semibold tracking-tight text-slate-500">Si ya entraste</span>
               <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">Primero ves valor y luego decides</span>
             </div>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
@@ -1875,7 +1875,7 @@ function QuickTrustSection() {
               No compartimos tu archivo con tu empresa. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Transparencia visible</p>
+              <p className="text-[11px] font-semibold tracking-tight text-slate-500">Transparencia visible</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Tú confirmas si se guarda</p>
@@ -1892,7 +1892,7 @@ function QuickTrustSection() {
               </div>
             </div>
             <div className="mt-3 rounded-[1.2rem] border border-teal-100 bg-teal-50/70 p-4 text-sm text-slate-700 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">Qué verás en tu primer uso</p>
+              <p className="text-[11px] font-semibold tracking-tight text-teal-800">Qué verás en tu primer uso</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Subes y revisas</p>
@@ -1909,7 +1909,7 @@ function QuickTrustSection() {
               </div>
               <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/95 px-4 py-4 text-sm text-slate-700 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Registro visible de tu control</p>
+                  <p className="text-[11px] font-semibold tracking-tight text-slate-500">Registro visible de tu control</p>
                   <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800">
                     3 señales claras
                   </span>
@@ -1945,7 +1945,7 @@ function QuickTrustSection() {
                 <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-950/[0.03] px-4 py-4 text-sm text-slate-700 shadow-sm">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Prueba tu control aquí</p>
+                      <p className="text-[11px] font-semibold tracking-tight text-slate-500">Prueba tu control aquí</p>
                       <p className="mt-1 text-base font-semibold text-slate-950">{selectedControlMoment.title}</p>
                     </div>
                     <span className="rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-900">
@@ -1954,19 +1954,19 @@ function QuickTrustSection() {
                   </div>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Qué queda visible para ti</p>
+                      <p className="text-[11px] font-semibold tracking-tight text-slate-500">Qué queda visible para ti</p>
                       <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.visibleForYou}</p>
                     </div>
                     <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Qué no ve tu empresa</p>
+                      <p className="text-[11px] font-semibold tracking-tight text-slate-500">Qué no ve tu empresa</p>
                       <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.hiddenFromCompany}</p>
                     </div>
                     <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Rastro verificable</p>
+                      <p className="text-[11px] font-semibold tracking-tight text-slate-500">Rastro verificable</p>
                       <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.trace}</p>
                     </div>
                     <div className="rounded-[0.9rem] border border-white bg-white px-3 py-3 shadow-sm">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Siguiente estado</p>
+                      <p className="text-[11px] font-semibold tracking-tight text-slate-500">Siguiente estado</p>
                       <p className="mt-1.5 leading-6 text-slate-700">{selectedControlMoment.next}</p>
                     </div>
                   </div>
@@ -2011,7 +2011,7 @@ function QuickTrustSection() {
                 key={item.title}
                 className="rounded-[1.05rem] border border-slate-200 bg-slate-50/90 px-3.5 py-3 text-sm text-slate-700 shadow-sm"
               >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">{item.eyebrow}</p>
+                <p className="text-[10px] font-semibold tracking-tight text-slate-500">{item.eyebrow}</p>
                 <p className="mt-1.5 font-semibold leading-5 text-slate-950">{item.title}</p>
                 <p className="mt-1 text-sm leading-5">{item.body}</p>
               </article>
@@ -2019,7 +2019,7 @@ function QuickTrustSection() {
           </div>
           <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Respuestas rápidas</p>
+              <p className="text-[11px] font-semibold tracking-tight text-slate-500">Respuestas rápidas</p>
               <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
                 Antes de abrir expediente
               </span>
@@ -2048,7 +2048,7 @@ function ConfidenceMagicSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f7f7_100%)] p-6 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.45)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            <p className="text-sm font-semibold tracking-tight text-teal-700">
               Guarda y sigue después
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2125,7 +2125,7 @@ function CopilotPreviewSection() {
     <section id="copiloto" className="bg-[#edf4f5] py-14 sm:bg-[#f5f7f8] sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+          <p className="text-sm font-semibold tracking-tight text-teal-700">
             Asesor laboral de AuditaPatron
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2173,7 +2173,7 @@ function CopilotPreviewSection() {
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-7">
           <div className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-teal-100 bg-teal-50 px-4 py-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-teal-700">
+              <p className="text-xs font-semibold tracking-tight text-teal-700">
                 Vista previa del asistente
               </p>
               <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
@@ -2187,13 +2187,13 @@ function CopilotPreviewSection() {
 
           <div className="mt-5 space-y-3">
             <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Tú preguntas</p>
+              <p className="text-xs font-semibold tracking-tight text-slate-500">Tú preguntas</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
                 “¿Qué riesgo principal ves en mi expediente y qué documento me conviene subir después?”
               </p>
             </div>
             <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">El asistente responde</p>
+              <p className="text-xs font-semibold tracking-tight text-teal-700">El asistente responde</p>
               <p className="mt-2 text-sm leading-6 text-teal-950">
                 “Ya hay señales útiles para revisar pagos y condiciones, pero todavía faltan piezas para confirmarlo con más seguridad. Un contrato o CFDI reciente podría darte más claridad y fortalecer tu expediente.”
               </p>
@@ -2222,7 +2222,7 @@ function HowItWorksSection() {
       <div className="container">
         <div className="mx-auto max-w-3xl rounded-[1.8rem] border border-slate-200 bg-white p-4 shadow-[0_22px_60px_-46px_rgba(15,23,42,0.35)] sm:p-5">
           <div className="flex flex-col gap-2 text-center sm:text-left">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
+            <p className="text-xs font-semibold tracking-tight text-teal-700">
               Cómo funciona
             </p>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -2278,7 +2278,7 @@ function DossierSection() {
     <section id="expediente" className="bg-[#eef6f5] py-14 sm:bg-[#f8fbfb] sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+          <p className="text-sm font-semibold tracking-tight text-teal-700">
             Tu expediente en crecimiento
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2313,7 +2313,7 @@ function DossierSection() {
         <div className="mx-auto w-full max-w-xl rounded-[2rem] border border-slate-200 bg-slate-50 p-5 shadow-[0_40px_100px_-70px_rgba(15,23,42,0.55)] sm:p-7">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-400">
                 Qué ya aporta contexto
               </p>
               <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -2357,7 +2357,7 @@ function PriorityDocumentsSection() {
     <section className="bg-[#e7eff0] py-14 sm:bg-[#eef2f3] sm:py-16">
       <div className="container mx-auto max-w-6xl">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+          <p className="text-sm font-semibold tracking-tight text-teal-700">
             Documentos que más pueden ayudarte
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2379,7 +2379,7 @@ function PriorityDocumentsSection() {
                   <FileSearch className="h-5 w-5" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-teal-700">Alta utilidad para tu expediente</p>
+                  <p className="text-sm font-semibold tracking-tight text-teal-700">Alta utilidad para tu expediente</p>
                   <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
                 </div>
               </div>
@@ -2409,7 +2409,7 @@ function MobileOnboardingSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="rounded-[2rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f1f6f6_100%)] p-6 shadow-[0_32px_100px_-70px_rgba(15,23,42,0.55)] sm:p-8">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+            <p className="text-sm font-semibold tracking-tight text-teal-700">
               En tu celular se entiende con facilidad
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2497,7 +2497,7 @@ function GuidedTourSection() {
     <section id="recorrido" className="bg-slate-950 py-14 text-white sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-300">
+          <p className="text-sm font-semibold tracking-tight text-teal-300">
             Recorrido guiado
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
@@ -2546,7 +2546,7 @@ function GuidedTourSection() {
                 <ActiveIcon className="h-5 w-5" strokeWidth={1.8} />
               </div>
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-sm font-semibold tracking-tight text-slate-400">
                   Paso {activeStepIndex + 1}
                 </p>
                 <h3 className="text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -2577,7 +2577,7 @@ function FindingsExamplesSection() {
     <section id="hallazgos" className="bg-[#f3f8f8] py-14 sm:bg-white sm:py-16">
       <div className="container">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+          <p className="text-sm font-semibold tracking-tight text-teal-700">
             Ejemplos de hallazgos
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2615,7 +2615,7 @@ function PrivacySection() {
     <section id="privacidad" className="bg-[#eaf5f3] py-14 sm:bg-[#f4f9f8] sm:py-16">
       <div className="container grid gap-6 lg:grid-cols-[1fr_0.92fr] lg:items-center">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+          <p className="text-sm font-semibold tracking-tight text-teal-700">
             Tu privacidad es parte del producto
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
@@ -2640,7 +2640,7 @@ function PrivacySection() {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">Centro de privacidad</p>
+            <p className="text-sm font-semibold tracking-tight text-slate-400">Centro de privacidad</p>
             <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-slate-950">{PRIVACY_CENTER_COPY.title}</h3>
             <p className="mt-3 text-sm leading-7 text-slate-600">{PRIVACY_CENTER_COPY.intro}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -2663,7 +2663,7 @@ function PrivacySection() {
 
         <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-7">
           <div className="rounded-[1.5rem] border border-teal-100 bg-teal-50 p-5">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal-700">
+            <p className="text-sm font-semibold tracking-tight text-teal-700">
               Lo que queremos que sientas aquí
             </p>
             <div className="mt-4 space-y-3">
@@ -2762,7 +2762,7 @@ function MobilePriorityPathSection() {
       <div className="container">
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_28px_80px_-60px_rgba(15,23,42,0.3)]">
           <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-teal-700">Ruta móvil priorizada</p>
+            <p className="text-sm font-semibold tracking-tight text-teal-700">Ruta móvil priorizada</p>
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
               Primero decides si quieres empezar; lo demás aparece cuando te sirve.
             </h2>
@@ -2787,7 +2787,7 @@ function MobilePriorityPathSection() {
               >
                 <AccordionTrigger className="py-4 text-left hover:no-underline">
                   <div className="pr-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{item.eyebrow}</p>
+                    <p className="text-[11px] font-semibold tracking-tight text-teal-700">{item.eyebrow}</p>
                     <p className="mt-2 text-base font-semibold text-slate-950">{item.title}</p>
                   </div>
                 </AccordionTrigger>
@@ -2827,7 +2827,7 @@ function FAQSection() {
     <section id="preguntas" className="bg-[#f7fafb] py-12 sm:py-14">
       <div className="container max-w-5xl grid gap-5 lg:grid-cols-[0.88fr_1fr]">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-teal-700">
+          <p className="text-sm font-semibold tracking-tight text-teal-700">
             Guía rápida para empezar
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.7rem] sm:text-4xl">
@@ -2838,7 +2838,7 @@ function FAQSection() {
           </p>
 
           <div className="mt-5 rounded-[1.5rem] border border-slate-200 bg-white p-4 shadow-[0_18px_48px_-42px_rgba(15,23,42,0.3)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <p className="text-xs font-semibold tracking-tight text-slate-500">
               Casos cotidianos para empezar
             </p>
             <div className="mt-3 space-y-2.5">
@@ -2869,7 +2869,7 @@ function FAQSection() {
             </div>
 
             <div className="mt-3 rounded-[1.2rem] border border-teal-100 bg-teal-50/75 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">{activeRecommendation.badge}</p>
+              <p className="text-[11px] font-semibold tracking-tight text-teal-700">{activeRecommendation.badge}</p>
               <p className="mt-2 text-base font-semibold leading-7 text-slate-950 max-[359px]:text-[0.98rem] max-[359px]:leading-6">{activeRecommendation.document}</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">{activeRecommendation.reason}</p>
               <p className="mt-2 text-sm leading-6 text-teal-900">{activeRecommendation.nextStep}</p>
@@ -2878,7 +2878,7 @@ function FAQSection() {
         </div>
 
         <div className="rounded-[1.7rem] border border-slate-200 bg-slate-50 p-4 max-[359px]:p-3.5 sm:p-5">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="mb-3 text-[11px] font-semibold tracking-tight text-slate-500">
             Preguntas frecuentes clave
           </p>
           <Accordion type="single" collapsible value={selectedFaq} onValueChange={setSelectedFaq} className="space-y-2.5">
@@ -2940,7 +2940,7 @@ function AppDownloadSection() {
           </div>
 
           <div className="rounded-[1.7rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] p-5 shadow-[0_22px_50px_-40px_rgba(15,23,42,0.26)] sm:p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+            <p className="text-sm font-semibold tracking-tight text-slate-400">
               App móvil
             </p>
             <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -2999,7 +2999,7 @@ function FinalCtaSection() {
       <div className="container">
         <div className="overflow-hidden rounded-[1.8rem] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.16),_transparent_28%),linear-gradient(135deg,_#ffffff,_#eef6f5)] px-5 py-7 shadow-[0_30px_80px_-64px_rgba(15,23,42,0.38)] max-[359px]:px-4 max-[359px]:py-6 sm:px-8 sm:py-9">
           <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-teal-700">
+            <p className="text-xs font-semibold tracking-tight text-teal-700">
               {pricingExperience.landing.eyebrow}
             </p>
             <h2 className="mt-3 text-2xl font-semibold tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.65rem] sm:text-[2.8rem]">
