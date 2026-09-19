@@ -1,28 +1,34 @@
 /**
  * Helpers de chat para la persona trabajadora.
- * Español plano, respuestas cortas, «qué hacer ahora» y sin jerga interna.
+ * Español plano, «Asesor laboral», secciones fijas y sin jerga interna.
  */
 
 const EMPTY_QUOTES = /["“”‘’`]{2,}/g;
 const EXTRA_SPACE = /\s{2,}/g;
 
+export const WORKER_CHAT_TITLE = "Asesor laboral";
+export const WORKER_CHAT_ASK_CTA = "Preguntar al asesor";
+
 export const WORKER_CHAT_CLEAR_HEADING = "Respuesta clara";
-export const WORKER_CHAT_WHAT_NOW_HEADING = "Qué hacer ahora";
+export const WORKER_CHAT_KNOWN_HEADING = "Lo que sí se sabe";
+export const WORKER_CHAT_MISSING_HEADING = "Lo que falta";
+export const WORKER_CHAT_NEXT_HEADING = "Siguiente paso";
+export const WORKER_CHAT_WHAT_NOW_HEADING = WORKER_CHAT_NEXT_HEADING;
 
 export const WORKER_CHAT_DISCLAIMER =
-  "Esto no es asesoría legal. Solo lee lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.";
+  "Esto no es asesoría legal. No soy abogado. Solo leo lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.";
 
 export const WORKER_CHAT_SHEET_COPY = {
-  eyebrow: "Preguntas sobre tu documento",
-  title: "Pregúntame en palabras simples",
+  eyebrow: WORKER_CHAT_TITLE,
+  title: WORKER_CHAT_TITLE,
   description:
-    "Elige una pregunta o escribe la tuya. Te respondo corto, con lo que ya se ve en tus papeles y qué puedes hacer ahora.",
+    "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
   documentBadge: "Solo lee tus papeles",
   capabilityBadge: "No es un abogado",
   quickHighlights: [
-    "Respuestas cortas",
-    "Qué hacer ahora",
-    "Sin palabras raras",
+    WORKER_CHAT_CLEAR_HEADING,
+    WORKER_CHAT_KNOWN_HEADING,
+    WORKER_CHAT_NEXT_HEADING,
   ],
   promptsHeading: "Empieza por aquí",
   historyHeading: "Lo que ya platicamos",
@@ -34,7 +40,7 @@ export const WORKER_CHAT_SHEET_COPY = {
   toneExplainedHint: "Explica un poco más, todavía en palabras simples.",
   placeholder: "Escribe tu duda. Ejemplo: ¿me descontaron IMSS?",
   emptyStateMessage:
-    "Elige una pregunta de arriba o escribe la tuya. Te digo lo que sí se ve en tus papeles y qué hacer ahora.",
+    "Elige una pregunta de arriba o escribe la tuya. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
   closeLabel: "Cerrar",
 } as const;
 
@@ -55,6 +61,20 @@ export type WorkerChatStarterContext = {
   hasInfonavitSignal?: boolean;
   missingDocumentLabel?: string | null;
   recommendedNextStep?: string | null;
+  resultCardQuestions?: string[] | null;
+};
+
+export type WorkerChatAnswerSections = {
+  clearAnswer: string;
+  known: string | null;
+  missing: string | null;
+  nextStep: string | null;
+};
+
+export type WorkerChatDisplayBlock = {
+  heading: string | null;
+  body: string;
+  kind: "section" | "disclaimer" | "plain";
 };
 
 function collapseCopy(value: string) {
@@ -152,9 +172,10 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   let next = value;
   next = next.replace(/CompliLink Operativo/gi, "AuditaPatrón");
   next = next.replace(/CompliLink/gi, "AuditaPatrón");
-  next = next.replace(/Preguntar a Helios/gi, "Preguntar sobre tu documento");
-  next = next.replace(/copiloto Helios/gi, "esta lectura");
-  next = next.replace(/Copiloto Helios/gi, "Esta lectura");
+  next = next.replace(/Modo Helios/gi, "Asesor laboral");
+  next = next.replace(/Preguntar a Helios/gi, WORKER_CHAT_ASK_CTA);
+  next = next.replace(/copiloto Helios/gi, "asesor laboral");
+  next = next.replace(/Copiloto Helios/gi, "Asesor laboral");
   next = next.replace(/\bHelios ya\b/g, "Ya");
   next = next.replace(/\bHelios\b/g, "esta lectura");
   next = next.replace(/\bhelios\b/gi, "esta lectura");
@@ -169,85 +190,119 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
 }
 
 export function buildWorkerStarterQuestions(context: WorkerChatStarterContext = {}): string[] {
+  const fromCard = (context.resultCardQuestions ?? [])
+    .map((item) => asText(item))
+    .filter((item): item is string => Boolean(item))
+    .map((item) => sanitizeWorkerChatCopy(item) ?? item)
+    .filter((item) => !hasForbiddenWorkerBrand(item));
+
   const documentsCount = context.documentsCount ?? 0;
   const prompts: string[] = [];
 
   if (documentsCount === 0) {
-    return [
+    prompts.push(
       "¿Qué documento me conviene subir primero?",
       "¿Qué hago ahora?",
       "¿Esto sirve para IMSS o impuestos?",
-    ];
+    );
+  } else {
+    switch (context.documentType) {
+      case "payroll_receipt":
+        prompts.push("¿Qué dice mi recibo?");
+        prompts.push(
+          context.hasImssSignal || context.hasFiscalSignal
+            ? "¿Me descontaron IMSS o impuestos?"
+            : "¿Qué descuentos se ven?",
+        );
+        break;
+      case "cfdi":
+        prompts.push("¿Qué dice mi CFDI?");
+        prompts.push("¿Coincide con lo que me pagaron?");
+        break;
+      case "contract":
+        prompts.push("¿Qué dice mi contrato?");
+        prompts.push("¿Qué debo comparar con mi recibo?");
+        break;
+      case "imss":
+        prompts.push("¿Qué dice este papel del IMSS?");
+        prompts.push("¿Esto confirma que estoy dado de alta?");
+        break;
+      default:
+        prompts.push("¿Qué dice mi documento?");
+        if (context.hasImssSignal) prompts.push("¿Me descontaron IMSS?");
+        else if (context.hasFiscalSignal) prompts.push("¿Me descontaron impuestos?");
+        else prompts.push("¿Qué debo revisar aquí?");
+    }
+
+    prompts.push("¿Qué hago ahora?");
+
+    if (context.missingDocumentLabel) {
+      prompts.push(`¿Me sirve subir ${context.missingDocumentLabel.toLowerCase()}?`);
+    } else if (context.hasImssSignal && context.documentType !== "imss") {
+      prompts.push("¿Estoy bien dado de alta?");
+    }
   }
 
-  switch (context.documentType) {
-    case "payroll_receipt":
-      prompts.push("¿Qué dice mi recibo?");
-      prompts.push(
-        context.hasImssSignal || context.hasFiscalSignal
-          ? "¿Me descontaron IMSS o impuestos?"
-          : "¿Qué descuentos se ven?",
-      );
-      break;
-    case "cfdi":
-      prompts.push("¿Qué dice mi CFDI?");
-      prompts.push("¿Coincide con lo que me pagaron?");
-      break;
-    case "contract":
-      prompts.push("¿Qué dice mi contrato?");
-      prompts.push("¿Qué debo comparar con mi recibo?");
-      break;
-    case "imss":
-      prompts.push("¿Qué dice este papel del IMSS?");
-      prompts.push("¿Esto confirma que estoy dado de alta?");
-      break;
-    default:
-      prompts.push("¿Qué dice mi documento?");
-      if (context.hasImssSignal) prompts.push("¿Me descontaron IMSS?");
-      else if (context.hasFiscalSignal) prompts.push("¿Me descontaron impuestos?");
-      else prompts.push("¿Qué debo revisar aquí?");
-  }
-
-  prompts.push("¿Qué hago ahora?");
-
-  if (context.missingDocumentLabel) {
-    prompts.push(`¿Me sirve subir ${context.missingDocumentLabel.toLowerCase()}?`);
-  } else if (context.hasImssSignal && context.documentType !== "imss") {
-    prompts.push("¿Estoy bien dado de alta?");
-  }
-
-  return Array.from(new Set(prompts)).slice(0, 4);
+  return Array.from(new Set([...fromCard, ...prompts])).slice(0, 4);
 }
 
-export function extractWorkerChatSections(content: string): {
-  clearAnswer: string;
-  whatToDoNow: string | null;
-} {
+const CLEAR_HEADING_RE = /(?:^|\n)\s*(?:\d+\)\s*)?Respuesta clara\s*:?\s*/i;
+const KNOWN_HEADING_RE = /(?:^|\n)\s*(?:\d+\)\s*)?Lo que s[ií] se sabe\s*:?\s*/i;
+const MISSING_HEADING_RE = /(?:^|\n)\s*(?:\d+\)\s*)?Lo que falta(?: confirmar)?\s*:?\s*/i;
+const NEXT_HEADING_RE =
+  /(?:^|\n)\s*(?:\d+\)\s*)?(?:Siguiente paso(?: [uú]til)?|Qu[eé] hacer ahora)\s*:?\s*/i;
+const DISCLAIMER_HEADING_RE = /(?:^|\n)\s*(?:Esto no es asesor[ií]a legal|\d+\))/i;
+
+function takeSection(content: string, startRe: RegExp, endRes: RegExp[]): string | null {
+  const start = content.match(startRe);
+  if (!start || start.index == null) return null;
+  const after = content.slice(start.index + start[0].length);
+  let end = after.length;
+  for (const endRe of endRes) {
+    const match = after.match(endRe);
+    if (match && match.index != null && match.index < end) {
+      end = match.index;
+    }
+  }
+  return asText(after.slice(0, end));
+}
+
+export function extractWorkerChatSections(content: string): WorkerChatAnswerSections {
   const normalized = content.replace(/\r/g, "").trim();
   if (!normalized) {
-    return { clearAnswer: "", whatToDoNow: null };
+    return { clearAnswer: "", known: null, missing: null, nextStep: null };
   }
 
-  const whatNowMatch = normalized.match(
-    /(?:^|\n)\s*(?:\d+\)\s*)?(?:Qu[eé] hacer ahora|Siguiente paso [uú]til)\s*:?\s*([\s\S]*?)(?:\n\s*(?:Esto no es asesor[ií]a legal|\d+\))|$)/i,
-  );
-  const clearMatch = normalized.match(
-    /(?:^|\n)\s*(?:\d+\)\s*)?Respuesta clara\s*:?\s*([\s\S]*?)(?:\n\s*(?:\d+\)\s*)?(?:Qu[eé] hacer ahora|Siguiente paso [uú]til|Lo que s[ií] se sabe)|$)/i,
-  );
-
-  const whatToDoNow = asText(whatNowMatch?.[1] ?? null);
-  const clearFromHeading = asText(clearMatch?.[1] ?? null);
+  const known = takeSection(normalized, KNOWN_HEADING_RE, [
+    MISSING_HEADING_RE,
+    NEXT_HEADING_RE,
+    DISCLAIMER_HEADING_RE,
+  ]);
+  const missing = takeSection(normalized, MISSING_HEADING_RE, [
+    NEXT_HEADING_RE,
+    DISCLAIMER_HEADING_RE,
+  ]);
+  const nextStep = takeSection(normalized, NEXT_HEADING_RE, [DISCLAIMER_HEADING_RE]);
+  const clearFromHeading = takeSection(normalized, CLEAR_HEADING_RE, [
+    KNOWN_HEADING_RE,
+    MISSING_HEADING_RE,
+    NEXT_HEADING_RE,
+    DISCLAIMER_HEADING_RE,
+  ]);
 
   if (clearFromHeading) {
-    return { clearAnswer: clearFromHeading, whatToDoNow };
+    return { clearAnswer: clearFromHeading, known, missing, nextStep };
   }
 
-  if (whatToDoNow) {
-    const before = asText(normalized.slice(0, whatNowMatch?.index ?? normalized.length));
-    return { clearAnswer: before ?? normalized, whatToDoNow };
+  if (known || missing || nextStep) {
+    const firstHeading = normalized.search(
+      /(?:^|\n)\s*(?:\d+\)\s*)?(?:Lo que s[ií] se sabe|Lo que falta|Siguiente paso|Qu[eé] hacer ahora)/i,
+    );
+    const before = asText(normalized.slice(0, firstHeading >= 0 ? firstHeading : normalized.length));
+    return { clearAnswer: before ?? normalized, known, missing, nextStep };
   }
 
-  return { clearAnswer: collapseCopy(normalized), whatToDoNow: null };
+  return { clearAnswer: collapseCopy(normalized), known: null, missing: null, nextStep: null };
 }
 
 export function extractWorkerClearAnswer(content: string): string {
@@ -255,11 +310,13 @@ export function extractWorkerClearAnswer(content: string): string {
 }
 
 export function extractWorkerWhatToDoNow(content: string): string | null {
-  return extractWorkerChatSections(content).whatToDoNow;
+  return extractWorkerChatSections(content).nextStep;
 }
 
 export function formatWorkerChatAnswer(params: {
   answer: string;
+  known?: string | null;
+  missing?: string | null;
   nextStep?: string | null;
   disclaimer?: string | null;
 }): string {
@@ -267,26 +324,108 @@ export function formatWorkerChatAnswer(params: {
   const clearAnswer =
     sanitizeWorkerChatCopy(sections.clearAnswer) ??
     "Todavía no hay suficiente para responder con lo que se ve en tus papeles.";
+  const known =
+    sanitizeWorkerChatCopy(sections.known ?? params.known ?? null) ??
+    "En tus papeles se ve lo que ya listamos arriba. Si un dato no aparece, no lo inventamos.";
+  const missing =
+    sanitizeWorkerChatCopy(sections.missing ?? params.missing ?? null) ??
+    "Todavía falta contrastar con más papeles del mismo periodo.";
   const nextStep =
-    sanitizeWorkerChatCopy(sections.whatToDoNow ?? params.nextStep ?? null) ??
+    sanitizeWorkerChatCopy(sections.nextStep ?? params.nextStep ?? null) ??
     "Revisa lo que ya se ve en tus papeles y, si puedes, sube el siguiente documento del mismo periodo.";
   const disclaimer = asText(params.disclaimer) ?? WORKER_CHAT_DISCLAIMER;
 
   return [
-    `${WORKER_CHAT_CLEAR_HEADING}`,
+    WORKER_CHAT_CLEAR_HEADING,
     clearAnswer,
     "",
-    WORKER_CHAT_WHAT_NOW_HEADING,
+    WORKER_CHAT_KNOWN_HEADING,
+    known,
+    "",
+    WORKER_CHAT_MISSING_HEADING,
+    missing,
+    "",
+    WORKER_CHAT_NEXT_HEADING,
     nextStep,
     "",
     disclaimer,
   ].join("\n");
 }
 
-export function ensureWorkerChatDisclaimer(content: string, disclaimer = WORKER_CHAT_DISCLAIMER): string {
+export function ensureWorkerChatDisclaimer(
+  content: string,
+  disclaimer = WORKER_CHAT_DISCLAIMER,
+): string {
   const normalized = content.replace(/\s+/g, " ").trim();
   if (/esto no es asesor[ií]a legal/i.test(normalized)) {
     return content.trim();
   }
   return `${content.trim()}\n\n${disclaimer}`;
+}
+
+export function parseWorkerStructuredAnswer(content: string): WorkerChatDisplayBlock[] {
+  const normalized = content.replace(/\r/g, "").trim();
+  if (!normalized) return [];
+
+  const sections = extractWorkerChatSections(normalized);
+  const hasStructuredHeadings =
+    CLEAR_HEADING_RE.test(normalized) ||
+    KNOWN_HEADING_RE.test(normalized) ||
+    MISSING_HEADING_RE.test(normalized) ||
+    NEXT_HEADING_RE.test(normalized);
+
+  if (!hasStructuredHeadings) {
+    const disclaimerMatch = normalized.match(/\n\s*(Esto no es asesor[ií]a legal[\s\S]*)$/i);
+    if (disclaimerMatch && disclaimerMatch.index != null) {
+      const body = asText(normalized.slice(0, disclaimerMatch.index));
+      return [
+        ...(body ? [{ heading: null, body, kind: "plain" as const }] : []),
+        { heading: null, body: disclaimerMatch[1].trim(), kind: "disclaimer" },
+      ];
+    }
+    return [{ heading: null, body: normalized, kind: "plain" }];
+  }
+
+  const blocks: WorkerChatDisplayBlock[] = [];
+  if (sections.clearAnswer) {
+    blocks.push({
+      heading: WORKER_CHAT_CLEAR_HEADING,
+      body: sections.clearAnswer,
+      kind: "section",
+    });
+  }
+  if (sections.known) {
+    blocks.push({
+      heading: WORKER_CHAT_KNOWN_HEADING,
+      body: sections.known,
+      kind: "section",
+    });
+  }
+  if (sections.missing) {
+    blocks.push({
+      heading: WORKER_CHAT_MISSING_HEADING,
+      body: sections.missing,
+      kind: "section",
+    });
+  }
+  if (sections.nextStep) {
+    blocks.push({
+      heading: WORKER_CHAT_NEXT_HEADING,
+      body: sections.nextStep,
+      kind: "section",
+    });
+  }
+
+  const disclaimerMatch = normalized.match(/(Esto no es asesor[ií]a legal[\s\S]*)$/i);
+  if (disclaimerMatch) {
+    blocks.push({
+      heading: null,
+      body: disclaimerMatch[1].trim(),
+      kind: "disclaimer",
+    });
+  }
+
+  return blocks.length > 0
+    ? blocks
+    : [{ heading: null, body: normalized, kind: "plain" }];
 }

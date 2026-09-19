@@ -26,7 +26,9 @@ import {
   sanitizeClientVisibleCopy,
 } from "@/lib/clientVisibleCopy";
 import {
+  WORKER_CHAT_ASK_CTA,
   WORKER_CHAT_DISCLAIMER,
+  WORKER_CHAT_NEXT_HEADING,
   buildWorkerStarterQuestions,
   extractWorkerClearAnswer,
   extractWorkerWhatToDoNow,
@@ -1817,7 +1819,7 @@ function buildHeliosCopilotConversationHistoryItems(
       `Tú: ${summarizeHeliosCopilotSnippet(pair.question, 90)}`,
       `Respuesta: ${extractHeliosClearSnippet(pair.answer)}`,
       extractHeliosWhatToDoNow(pair.answer)
-        ? `Qué hacer ahora: ${summarizeHeliosCopilotSnippet(extractHeliosWhatToDoNow(pair.answer) ?? "", 90)}`
+        ? `${WORKER_CHAT_NEXT_HEADING}: ${summarizeHeliosCopilotSnippet(extractHeliosWhatToDoNow(pair.answer) ?? "", 90)}`
         : null,
     ]
       .filter((item): item is string => Boolean(item))
@@ -5434,14 +5436,14 @@ export default function Auditar() {
     }
 
     if (visibleHeliosOpinion?.summary?.trim()) {
-      return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nPregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora.`;
+      return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nPregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.`;
     }
 
     if (heliosDocumentsCount === 0) {
-      return "Todavía no hay un documento para leer. Sube tu recibo, contrato o CFDI y te digo qué se ve y qué hacer ahora.";
+      return "Todavía no hay un documento para leer. Sube tu recibo, contrato o CFDI y te digo qué se ve, qué falta y el siguiente paso.";
     }
 
-    return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"}. Pregúntame qué se ve y qué hacer ahora.`;
+    return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"}. Pregúntame qué se ve, qué falta y el siguiente paso.`;
   }, [
     heliosDocumentsCount,
     visibleHeliosOpinion?.resultCard?.assistantIntro,
@@ -5477,14 +5479,15 @@ export default function Auditar() {
         visibleHeliosOpinion?.resultCard?.nextStepSummary ||
         visibleHeliosOpinion?.recommendedNextStep ||
         null,
+      resultCardQuestions: cardPrompts,
     });
 
     return Array.from(
       new Set([
-        ...localPrompts,
-        ...contextualPrompts,
-        ...serverPrompts,
         ...cardPrompts,
+        ...localPrompts,
+        ...serverPrompts,
+        ...contextualPrompts,
       ])
     ).slice(0, 4);
   }, [
@@ -5544,7 +5547,7 @@ export default function Auditar() {
         `Tipo: ${getSimpleDocumentTypeLabel(document.documentType)}.`,
         opinion?.summary ? `Lectura visible: ${opinion.summary}` : null,
         opinion?.recommendedNextStep
-          ? `Qué hacer ahora: ${opinion.recommendedNextStep}`
+          ? `${WORKER_CHAT_NEXT_HEADING}: ${opinion.recommendedNextStep}`
           : null,
         opinion?.uncertainties?.[0]
           ? `Por confirmar: ${opinion.uncertainties[0]}`
@@ -7798,7 +7801,7 @@ export default function Auditar() {
         caseId: selectedCaseId,
         documentType: lastUpload.classification.documentType,
         viewportSegment,
-        ctaLabel: primaryLastUploadShortcut?.label ?? "Abrir asesor laboral",
+        ctaLabel: primaryLastUploadShortcut?.label ?? WORKER_CHAT_ASK_CTA,
         ctaAction: primaryLastUploadShortcut?.action ?? "assistant",
         explanationVariant,
         severityLabel: lastUploadSeverityNarrative.eyebrow,
@@ -8481,7 +8484,7 @@ export default function Auditar() {
             {
               role: "assistant",
               content:
-                "Pregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora.",
+                "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
             },
             { role: "user", content: "¿Me descontaron IMSS?" },
             {
@@ -8490,7 +8493,13 @@ export default function Auditar() {
                 "Respuesta clara",
                 "En tu recibo se ve un descuento de IMSS de $120.50. Eso no confirma que el patrón lo haya pagado al IMSS.",
                 "",
-                "Qué hacer ahora",
+                "Lo que sí se sabe",
+                "El recibo muestra periodo, neto y un descuento de IMSS de $120.50.",
+                "",
+                "Lo que falta",
+                "No se ve una constancia oficial de que el patrón lo haya pagado al IMSS.",
+                "",
+                "Siguiente paso",
                 "Compara ese descuento con tu siguiente recibo.",
                 "",
                 WORKER_CHAT_DISCLAIMER,
@@ -9257,7 +9266,7 @@ export default function Auditar() {
                         ? primaryLastUploadShortcut?.label ?? "Ver qué sigue"
                         : primaryLastUploadShortcut
                           ? primaryLastUploadShortcut.label
-                          : "Abrir asesor laboral"}
+                          : WORKER_CHAT_ASK_CTA}
                     </Button>
                     {shouldCompactPostUploadExperience ? (
                       <p className="max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600">
@@ -12443,7 +12452,7 @@ Reforzar con otro documento
                               <p className="mt-2 text-lg font-semibold text-slate-950">
                                 {primaryLastUploadShortcut
                                   ? primaryLastUploadShortcut.label
-                                  : "Abrir asesor laboral"}
+                                  : WORKER_CHAT_ASK_CTA}
                               </p>
                               <p className="mt-2 text-sm leading-7 text-slate-700">
                                 {primaryLastUploadShortcut
@@ -12461,7 +12470,7 @@ Reforzar con otro documento
                           >
                             {primaryLastUploadShortcut
                               ? primaryLastUploadShortcut.label
-                              : "Abrir asesor laboral"}
+                              : WORKER_CHAT_ASK_CTA}
                             <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                           </Button>
 
@@ -12886,7 +12895,7 @@ Reforzar con otro documento
                                   {warmVisibleNamingCopy(
                                     lastHeliosOpinion.resultCard?.assistantIntro
                                   ) ??
-                                    "Pregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora."}
+                                    "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso."}
                                 </p>
                               </div>
                               <Sparkles
@@ -12923,7 +12932,7 @@ Reforzar con otro documento
                               className="mt-4 w-full justify-between rounded-full bg-sky-900 text-white hover:bg-sky-800"
                               onClick={() => openHeliosCopilot()}
                             >
-                              Abrir asesor laboral
+                              {WORKER_CHAT_ASK_CTA}
                               <ArrowRight className="h-4 w-4" strokeWidth={1.9} />
                             </Button>
                           </div>
@@ -14134,7 +14143,7 @@ Reforzar con otro documento
                         onClick={() => openHeliosCopilot()}
                         disabled={!selectedCaseId || legalGateRequired}
                       >
-                        Abrir tu asesor laboral
+                        {WORKER_CHAT_ASK_CTA}
                       </Button>
                       <Button
                         type="button"
@@ -14146,8 +14155,8 @@ Reforzar con otro documento
                       </Button>
                     </div>
                     <p className="mt-3 text-xs leading-6 text-teal-900">
-                      Pregúntame en palabras simples. Te digo lo que sí se ve
-                      y qué hacer ahora. Esto no es asesoría legal.
+                      Pregúntame en palabras simples. Te digo lo que sí se ve,
+                      lo que falta y el siguiente paso. Esto no es asesoría legal.
                     </p>
                   </div>
                 </div>
@@ -15103,7 +15112,7 @@ Reforzar con otro documento
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
-                  <p className="font-semibold text-slate-950">Modo asesor</p>
+                  <p className="font-semibold text-slate-950">Asesor laboral</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
                       ? "Memoria histórica de expediente"

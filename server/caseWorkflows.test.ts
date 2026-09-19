@@ -886,7 +886,7 @@ describe("appRouter case workflows", () => {
     });
     expect(invokeLLM).toHaveBeenCalledTimes(1);
     expect(result).toMatchObject({
-      disclaimer: "Esto no es asesoría legal. Solo lee lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.",
+      disclaimer: "Esto no es asesoría legal. No soy abogado. Solo leo lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.",
       confidenceScore: 74,
       sourceDocumentCount: 1,
       supportingDocuments: expect.arrayContaining([
@@ -901,7 +901,9 @@ describe("appRouter case workflows", () => {
       ]),
     });
     expect(result.answer).toContain("Respuesta clara");
-    expect(result.answer).toContain("Qué hacer ahora");
+    expect(result.answer).toContain("Lo que sí se sabe");
+    expect(result.answer).toContain("Lo que falta");
+    expect(result.answer).toContain("Siguiente paso");
     expect(result.answer).toMatch(/no es asesoría legal/i);
     expect(result.answer).not.toMatch(/Helios|tesis|validamos ante el IMSS/i);
     expect(invokeLLM).toHaveBeenCalledWith(

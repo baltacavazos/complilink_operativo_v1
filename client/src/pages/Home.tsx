@@ -2202,10 +2202,10 @@ function CopilotPreviewSection() {
           <div className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-teal-100 bg-teal-50 px-4 py-3">
             <div>
               <p className="text-xs font-semibold tracking-tight text-teal-700">
-                Vista previa del asistente
+                Vista previa del asesor laboral
               </p>
               <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                El asistente te explica tu expediente con palabras simples
+                El asesor laboral te explica tu expediente con palabras simples
               </p>
             </div>
             <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-700 shadow-sm">
@@ -2221,16 +2221,31 @@ function CopilotPreviewSection() {
               </p>
             </div>
             <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50 p-4">
-              <p className="text-xs font-semibold tracking-tight text-teal-700">El asistente responde</p>
-              <p className="mt-2 text-sm leading-6 text-teal-950">
-                “Ya hay señales útiles para revisar pagos y condiciones, pero todavía faltan piezas para confirmarlo con más seguridad. Un contrato o CFDI reciente podría darte más claridad y fortalecer tu expediente.”
-              </p>
+              <p className="text-xs font-semibold tracking-tight text-teal-700">El asesor laboral responde</p>
+              <div className="mt-3 space-y-3 text-sm leading-6 text-teal-950">
+                <div>
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-800">Respuesta clara</p>
+                  <p className="mt-1">Ya hay señales útiles para revisar pagos y condiciones.</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-800">Lo que sí se sabe</p>
+                  <p className="mt-1">El expediente ya muestra piezas para contrastar pagos.</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-800">Lo que falta</p>
+                  <p className="mt-1">Todavía faltan papeles para confirmarlo con más seguridad.</p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold tracking-tight text-teal-800">Siguiente paso</p>
+                  <p className="mt-1">Un contrato o CFDI reciente podría darte más claridad.</p>
+                </div>
+              </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {[
                 "Basado en tu expediente",
                 "Lenguaje simple",
-                "Siguiente paso sugerido",
+                "Preguntar al asesor",
               ].map((item) => (
                 <div key={item} className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-center text-sm font-medium text-slate-700">
                   {item}

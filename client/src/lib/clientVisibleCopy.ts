@@ -106,7 +106,7 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replace(/\bForge\b/g, "la plataforma");
   next = next.replace(/\bForensic\b/gi, "revisión documental");
 
-  next = next.replace(/Modo Helios/gi, "Modo asesor");
+  next = next.replace(/Modo Helios/gi, "Asesor laboral");
   next = next.replace(/Helios · modo CEO/gi, "Asesor laboral · modo CEO");
   next = next.replace(/Helios · /g, "Asesor laboral · ");
   next = next.replace(/Helios básico/gi, "asesor laboral básico");
@@ -131,7 +131,7 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replaceAll("Tipo Helios", "tipo sugerido");
   next = next.replaceAll("motor Helios", "inteligencia laboral");
   next = next.replaceAll("Motor Helios", "Inteligencia laboral");
-  next = next.replaceAll("Preguntar a Helios", "Preguntar al asesor laboral");
+  next = next.replaceAll("Preguntar a Helios", "Preguntar al asesor");
   next = next.replace(
     /Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar[^.]*\.?/gi,
     "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",

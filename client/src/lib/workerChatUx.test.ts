@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { sanitizeClientVisibleCopy } from "./clientVisibleCopy";
 import {
+  WORKER_CHAT_ASK_CTA,
   WORKER_CHAT_DISCLAIMER,
+  WORKER_CHAT_KNOWN_HEADING,
+  WORKER_CHAT_MISSING_HEADING,
+  WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_SHEET_COPY,
-  WORKER_CHAT_WHAT_NOW_HEADING,
+  WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
   extractWorkerChatSections,
   extractWorkerWhatToDoNow,
@@ -13,6 +17,7 @@ import {
   hasForbiddenWorkerBrand,
   hasForbiddenWorkerChatClaim,
   hasInventedLegalCitation,
+  parseWorkerStructuredAnswer,
   sanitizeWorkerChatCopy,
 } from "./workerChatUx";
 
@@ -87,10 +92,13 @@ describe("chat UX helpers", () => {
     });
 
     expect(answer).toContain("Respuesta clara");
-    expect(answer).toContain(WORKER_CHAT_WHAT_NOW_HEADING);
+    expect(answer).toContain(WORKER_CHAT_KNOWN_HEADING);
+    expect(answer).toContain(WORKER_CHAT_MISSING_HEADING);
+    expect(answer).toContain(WORKER_CHAT_NEXT_HEADING);
     expect(answer).toContain("Compara ese descuento con tu siguiente recibo.");
     expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
     expect(answer).toMatch(/no es asesoría legal/i);
+    expect(answer).toMatch(/no soy abogado/i);
     expect(extractWorkerWhatToDoNow(answer)).toMatch(/siguiente recibo/i);
   });
 
@@ -104,19 +112,53 @@ describe("chat UX helpers", () => {
     );
 
     expect(sections.clearAnswer).toMatch(/periodo/i);
-    expect(sections.whatToDoNow ?? "").toMatch(/CFDI/i);
+    expect(sections.known ?? "").toMatch(/NSS/i);
+    expect(sections.nextStep ?? "").toMatch(/CFDI/i);
   });
 
-  it("el panel usa copy idiot-proof y el sanitizador central no reintroduce Helios", () => {
-    expect(WORKER_CHAT_SHEET_COPY.title).toBe("Pregúntame en palabras simples");
+  it("el panel usa Asesor laboral, las cuatro secciones y el sanitizador no reintroduce Helios", () => {
+    expect(WORKER_CHAT_SHEET_COPY.title).toBe(WORKER_CHAT_TITLE);
+    expect(WORKER_CHAT_ASK_CTA).toBe("Preguntar al asesor");
     expect(WORKER_CHAT_SHEET_COPY.promptsHeading).toBe("Empieza por aquí");
     expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("No es un abogado");
+    expect(WORKER_CHAT_SHEET_COPY.quickHighlights).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Siguiente paso",
+    ]);
     expect(
       hasForbiddenWorkerBrand(
         sanitizeClientVisibleCopy(WORKER_CHAT_SHEET_COPY.description),
       ),
     ).toBe(false);
     expect(WORKER_CHAT_DISCLAIMER).toMatch(/no es asesoría legal/i);
+    expect(WORKER_CHAT_DISCLAIMER).toMatch(/no soy abogado/i);
     expect(WORKER_CHAT_DISCLAIMER).toMatch(/no consulta IMSS/i);
+  });
+
+  it("prioriza las preguntas del resultCard y pinta las cuatro secciones", () => {
+    const prompts = buildWorkerStarterQuestions({
+      documentType: "payroll_receipt",
+      documentsCount: 1,
+      resultCardQuestions: ["¿Este descuento de IMSS es oficial?"],
+    });
+    expect(prompts[0]).toBe("¿Este descuento de IMSS es oficial?");
+
+    const blocks = parseWorkerStructuredAnswer(
+      formatWorkerChatAnswer({
+        answer: "En tu recibo se ve un descuento de IMSS.",
+        known: "Hay un descuento de IMSS de $120.50.",
+        missing: "No hay constancia oficial de pago al IMSS.",
+        nextStep: "Compara con el siguiente recibo.",
+      }),
+    );
+    expect(blocks.map((item) => item.heading)).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Lo que falta",
+      "Siguiente paso",
+      null,
+    ]);
+    expect(blocks.at(-1)?.kind).toBe("disclaimer");
   });
 });

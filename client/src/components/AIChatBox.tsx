@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { parseWorkerStructuredAnswer } from "@shared/workerChatUx";
 import { Loader2, Send, User, Sparkles } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
@@ -115,6 +116,52 @@ export type AIChatBoxProps = {
  * };
  * ```
  */
+function CalmAssistantAnswer({ content }: { content: string }) {
+  const blocks = parseWorkerStructuredAnswer(content);
+  if (blocks.length === 0) {
+    return null;
+  }
+
+  if (blocks.length === 1 && blocks[0]?.kind === "plain") {
+    return (
+      <p className="whitespace-pre-wrap text-[0.95rem] leading-[1.55] tracking-[-0.018em]">
+        {blocks[0].body}
+      </p>
+    );
+  }
+
+  return (
+    <div className="ap-chat-answer space-y-3">
+      {blocks.map((block, index) => (
+        <div
+          key={`${block.kind}-${block.heading ?? "body"}-${index}`}
+          className={cn(
+            block.kind === "disclaimer"
+              ? "ap-chat-disclaimer"
+              : block.kind === "section"
+                ? "ap-chat-section"
+                : null,
+          )}
+        >
+          {block.heading ? (
+            <p className="ap-chat-section-label">{block.heading}</p>
+          ) : null}
+          <p
+            className={cn(
+              "whitespace-pre-wrap",
+              block.kind === "disclaimer"
+                ? "text-[0.78rem] leading-5 tracking-[-0.01em] text-slate-500"
+                : "text-[0.95rem] leading-[1.55] tracking-[-0.018em]",
+            )}
+          >
+            {block.body}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AIChatBox({
   messages,
   onSendMessage,
@@ -297,6 +344,8 @@ export function AIChatBox({
                         <div className="prose prose-sm dark:prose-invert max-w-none">
                           <Streamdown>{message.content}</Streamdown>
                         </div>
+                      ) : message.role === "assistant" && isCalm ? (
+                        <CalmAssistantAnswer content={message.content} />
                       ) : (
                         <p className={cn("whitespace-pre-wrap", isCalm ? "text-[0.95rem] leading-[1.55] tracking-[-0.018em]" : "text-sm")}>
                           {message.content}

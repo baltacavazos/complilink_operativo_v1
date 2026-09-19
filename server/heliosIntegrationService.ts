@@ -673,7 +673,7 @@ function buildResultCard(params: BuildHeliosOpinionParams, uncertainties: string
     dossierUpdateLabel: "Tu expediente ya se actualizó",
     dossierUpdateSummary: getDossierUpdateSummary(params),
     assistantIntro:
-      "Pregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora.",
+      "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
     suggestedQuestions: getSuggestedQuestions(params),
     signalsChecked,
     simpleExplanation,
@@ -753,7 +753,7 @@ function buildPendingRemoteResultCard(params: BuildHeliosOpinionParams): HeliosR
     nextStepSummary: "Mientras el asesor laboral termina, puedes seguir subiendo documentos del mismo periodo para enriquecer el expediente y mejorar la lectura final.",
     dossierUpdateLabel: "Tu expediente ya se actualizó",
     dossierUpdateSummary: getDossierUpdateSummary(params),
-    assistantIntro: "Tu archivo ya quedó guardado. Mientras termina la lectura, pregúntame lo que sí se ve y qué hacer ahora.",
+    assistantIntro: "Tu archivo ya quedó guardado. Mientras termina la lectura, pregúntame lo que sí se ve, lo que falta y el siguiente paso.",
     suggestedQuestions,
     signalsChecked: [
       "tipo de documento detectado",
@@ -1201,7 +1201,7 @@ export function buildRemoteHeliosOpinionContract(params: {
       nextStepSummary: recommendedNextStep,
       dossierUpdateLabel: "Tu expediente quedó enriquecido",
       dossierUpdateSummary: "La respuesta remota ya quedó ligada a este documento para futuras comparaciones dentro del expediente.",
-      assistantIntro: "Pregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora.",
+      assistantIntro: "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
       suggestedQuestions,
       signalsChecked: [
         "documento completo",

@@ -2168,7 +2168,7 @@ function buildHeliosCopilotSupportingDocuments(params: {
         detail: [
           `Tipo: ${document.documentType}.`,
           summary ? `Lectura visible: ${summary}` : null,
-          nextStep ? `Qué hacer ahora: ${nextStep}` : null,
+          nextStep ? `Siguiente paso: ${nextStep}` : null,
           foundationTitle ? `Base ya usada: ${foundationTitle}` : null,
           uncertainties[0] ? `Por confirmar: ${uncertainties[0]}` : null,
         ]

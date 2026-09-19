@@ -60,7 +60,9 @@ describe("workerChatUx grounding", () => {
     const answer = buildWorkerChatFallbackAnswer(grounding);
     expect(answer).toMatch(/NSS 12345678901|\$120\.50|periodo/i);
     expect(answer).toMatch(/acreditaci[oó]n de pagos/i);
-    expect(answer).toContain("Qué hacer ahora");
+    expect(answer).toContain("Siguiente paso");
+    expect(answer).toContain("Lo que sí se sabe");
+    expect(answer).toContain("Lo que falta");
     expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
     expect(answer).not.toMatch(/consulta en vivo|validaci[oó]n en vivo/i);
     expect(answer).not.toMatch(/tesis|jurisprudencia|Helios|CompliLink/i);
@@ -75,7 +77,7 @@ describe("workerChatUx grounding", () => {
     expect(grounding.liveImssValidation).toBe(false);
     expect(grounding.legalFoundations).toEqual([]);
     expect(answer).toMatch(/todavía no hay un documento/i);
-    expect(answer).toContain("Qué hacer ahora");
+    expect(answer).toContain("Siguiente paso");
     expect(prompts).toContain("¿Qué hago ahora?");
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
@@ -90,7 +92,7 @@ describe("workerChatUx grounding", () => {
 
     const clean = sanitizeWorkerChatAnswer(dirty, grounding);
     expect(clean).not.toMatch(/Helios|tesis|Semanario|validamos ante el IMSS/i);
-    expect(clean).toContain("Qué hacer ahora");
+    expect(clean).toContain("Siguiente paso");
     expect(clean).toContain(WORKER_CHAT_DISCLAIMER);
     expect(hasForbiddenWorkerChatClaim(clean)).toBe(false);
   });
@@ -106,6 +108,11 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/nunca digas que consultaste IMSS/i);
     expect(instructions).toMatch(/Acreditación de pagos y deducciones/);
     expect(instructions).toContain(WORKER_CHAT_DISCLAIMER);
-    expect(instructions).toMatch(/Qu[eé] hacer ahora/);
+    expect(instructions).toMatch(/Internamente puedes razonar como Helios/);
+    expect(instructions).toMatch(/NUNCA escribas Helios/);
+    expect(instructions).toMatch(/Respuesta clara/);
+    expect(instructions).toMatch(/Lo que s[ií] se sabe/);
+    expect(instructions).toMatch(/Lo que falta/);
+    expect(instructions).toMatch(/Siguiente paso/);
   });
 });

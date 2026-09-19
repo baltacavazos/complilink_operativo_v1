@@ -1,6 +1,10 @@
 import {
+  WORKER_CHAT_CLEAR_HEADING,
   WORKER_CHAT_DISCLAIMER,
-  WORKER_CHAT_WHAT_NOW_HEADING,
+  WORKER_CHAT_KNOWN_HEADING,
+  WORKER_CHAT_MISSING_HEADING,
+  WORKER_CHAT_NEXT_HEADING,
+  WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
   formatWorkerChatAnswer,
   sanitizeWorkerChatCopy,
@@ -38,6 +42,7 @@ export type WorkerChatGrounding = {
   hasInfonavitSignal: boolean;
   missingDocumentLabel: string | null;
   missingDocumentReason: string | null;
+  resultCardQuestions: string[];
   disclaimer: string;
 };
 
@@ -95,10 +100,11 @@ export function buildWorkerChatGrounding(params: {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
   const legalFoundations = readLegalFoundations(opinion);
+  const resultCard = asRecord(opinion?.resultCard);
   const summary = asText(opinion?.summary) ?? asText(opinion?.legalOpinion);
   const recommendedNextStep =
     asText(opinion?.recommendedNextStep) ??
-    asText(asRecord(opinion?.resultCard)?.nextStepSummary) ??
+    asText(resultCard?.nextStepSummary) ??
     asText(params.missingDocument?.reason) ??
     null;
 
@@ -120,6 +126,7 @@ export function buildWorkerChatGrounding(params: {
     hasInfonavitSignal: labor.hasInfonavitSignal,
     missingDocumentLabel: asText(params.missingDocument?.label),
     missingDocumentReason: asText(params.missingDocument?.reason),
+    resultCardQuestions: asTextList(resultCard?.suggestedQuestions).slice(0, 4),
     disclaimer: WORKER_CHAT_DISCLAIMER,
   };
 }
@@ -133,6 +140,7 @@ export function buildWorkerChatSuggestedPrompts(grounding: WorkerChatGrounding):
     hasInfonavitSignal: grounding.hasInfonavitSignal,
     missingDocumentLabel: grounding.missingDocumentLabel,
     recommendedNextStep: grounding.recommendedNextStep,
+    resultCardQuestions: grounding.resultCardQuestions,
   };
   return buildWorkerStarterQuestions(context);
 }
@@ -141,6 +149,8 @@ export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): s
   if (grounding.documentsCount === 0) {
     return formatWorkerChatAnswer({
       answer: "Todavía no hay un documento para leer. Sin un recibo, contrato o CFDI no puedo decirte qué se ve ni qué falta.",
+      known: "Aún no hay señales visibles en un papel tuyo.",
+      missing: "Falta el primer documento laboral para empezar la lectura.",
       nextStep: "Sube el papel laboral que tengas más a la mano. Con eso te digo lo que sí se ve y el siguiente paso.",
       disclaimer: grounding.disclaimer,
     });
@@ -152,6 +162,7 @@ export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): s
     ? ` Esta lectura ya usa ${foundation.title.toLowerCase()}: ${foundation.relevance}`
     : "";
   const uncertainty = grounding.uncertainties[0];
+  const knownFacts = grounding.keyFacts.slice(0, 3).join(". ");
   const clearAnswer = [
     factLine ??
       grounding.summary ??
@@ -160,7 +171,6 @@ export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): s
       ? " Si se ve IMSS en el papel, eso no confirma alta, vigencia ni semanas cotizadas."
       : "",
     foundationLine,
-    uncertainty ? ` Todavía falta confirmar: ${uncertainty}` : "",
   ]
     .join("")
     .replace(/\s+/g, " ")
@@ -174,6 +184,16 @@ export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): s
 
   return formatWorkerChatAnswer({
     answer: clearAnswer,
+    known:
+      knownFacts ||
+      factLine ||
+      grounding.summary ||
+      "Ya hay una primera lectura de tus papeles.",
+    missing:
+      uncertainty ??
+      (grounding.missingDocumentLabel
+        ? `Todavía no está ${grounding.missingDocumentLabel.toLowerCase()}.`
+        : "Todavía falta contrastar con más papeles del mismo periodo."),
     nextStep,
     disclaimer: grounding.disclaimer,
   });
@@ -188,6 +208,8 @@ export function buildWorkerChatLlmInstructions(grounding: WorkerChatGrounding): 
       : "- No hay bases legales extra en esta lectura. No inventes artículos, tesis ni jurisprudencia.";
 
   return [
+    `Internamente puedes razonar como Helios, pero NUNCA escribas Helios, Modo Helios ni CompliLink en la respuesta visible.`,
+    `Si necesitas un nombre, preséntate solo como ${WORKER_CHAT_TITLE.toLowerCase()}.`,
     "Eres una lectura laboral de AuditaPatrón para una persona trabajadora en México.",
     "Habla en español simple, frases cortas, sin jerga.",
     "Nunca te presentes como Helios, CompliLink, abogado ni autoridad.",
@@ -199,7 +221,7 @@ export function buildWorkerChatLlmInstructions(grounding: WorkerChatGrounding): 
     `Límite: ${DOCUMENT_SIGNAL_DISCLAIMER}`,
     "Bases legales ya presentes en la lectura (únicas que puedes mencionar, en palabras simples):",
     foundations,
-    `Responde con dos partes y estos títulos exactos: 1) Respuesta clara 2) ${WORKER_CHAT_WHAT_NOW_HEADING}.`,
+    `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
     "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
     `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
   ].join("\n");
@@ -209,6 +231,12 @@ export function sanitizeWorkerChatAnswer(answer: string, grounding: WorkerChatGr
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
   return formatWorkerChatAnswer({
     answer: cleaned,
+    known: grounding.keyFacts.slice(0, 3).join(". ") || grounding.summary,
+    missing:
+      grounding.uncertainties[0] ??
+      (grounding.missingDocumentLabel
+        ? `Todavía no está ${grounding.missingDocumentLabel.toLowerCase()}.`
+        : null),
     nextStep: grounding.recommendedNextStep,
     disclaimer: grounding.disclaimer,
   });
@@ -230,8 +258,9 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
       laborExplanations: grounding.laborExplanations.slice(0, 6),
       missingDocumentLabel: grounding.missingDocumentLabel,
       missingDocumentReason: grounding.missingDocumentReason,
+      resultCardQuestions: grounding.resultCardQuestions,
       guidance:
-        "Responde solo con estas señales y bases. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia.",
+        "Responde solo con estas señales y bases. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia. Nunca uses Helios en la salida visible.",
     },
     null,
     2,

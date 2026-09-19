@@ -25,6 +25,8 @@ describe("worker chat visual polish", () => {
     expect(sheet).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);
     expect(sheet).not.toMatch(/["'`][^"'`]*CompliLink[^"'`]*["'`]/);
 
+    expect(chat).toContain("CalmAssistantAnswer");
+    expect(chat).toContain("parseWorkerStructuredAnswer");
     expect(chat).toContain('variant?: "default" | "calm"');
     expect(chat).toContain("ap-chat-bubble-user");
     expect(chat).toContain("ap-chat-bubble-assistant");
@@ -37,6 +39,7 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-bubble-user");
     expect(css).toContain(".ap-worker-chat .ap-chat-bubble-assistant");
     expect(css).toContain(".ap-worker-chat .ap-chat-chip");
+    expect(css).toContain(".ap-worker-chat .ap-chat-section-label");
     expect(css).toContain("letter-spacing: -0.018em");
     expect(css).toContain("color-scheme: light");
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
