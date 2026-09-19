@@ -2278,8 +2278,8 @@ export async function updateCompliLinkWebhookEvent(params: {
     .update(compliLinkWebhookEvents)
     .set({
       status: params.status,
-      processedAt: params.processedAt ?? undefined,
-      failureReason: params.failureReason ?? null,
+      processedAt: params.processedAt === undefined ? undefined : params.processedAt,
+      failureReason: params.failureReason === undefined ? undefined : params.failureReason,
       compliLinkId: params.compliLinkId ?? undefined,
       correlationId: params.correlationId ?? undefined,
     })

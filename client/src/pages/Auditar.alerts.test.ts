@@ -1162,6 +1162,62 @@ describe("preview sanitization", () => {
     expect(routersSource).toContain(".filter((field) => !isWorkerSystemStructuredField(field))");
   });
 
+  it("deja visibles NSS, IMSS, ISR e Infonavit del recibo y oculta la bandera interna", () => {
+    const view = sanitizeStructuredExtractionView({
+      headline: "Esto es lo más importante que parece decir el comprobante de pago",
+      summary: "Parece un comprobante de pago laboral.",
+      fields: [
+        {
+          key: "hasInfonavitSignal",
+          label: "Has infonavit signal",
+          value: "true",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "payrollNss",
+          label: "NSS visible en el comprobante",
+          value: "12345678901",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "imssWithheld",
+          label: "Retención de IMSS visible",
+          value: "$120.50",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "isrWithheld",
+          label: "Retención de ISR visible",
+          value: "$310.00",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "infonavitWithheld",
+          label: "Descuento Infonavit visible",
+          value: "$530.99",
+          status: "confirmed",
+          confidence: "high",
+        },
+      ],
+      missingFields: [],
+      reviewNotes: [],
+    });
+
+    expect(view?.fields.map(field => field.key)).toEqual([
+      "payrollNss",
+      "imssWithheld",
+      "isrWithheld",
+      "infonavitWithheld",
+    ]);
+    expect(isTechnicalAnalysisKey("hasInfonavitSignal")).toBe(true);
+    expect(isHumanMeaningfulAnalysisKey("payrollNss")).toBe(true);
+    expect(isHumanMeaningfulAnalysisKey("imssWithheld")).toBe(true);
+  });
+
   it("sanea la structuredExtraction para que el preview no imprima dumps visibles", () => {
     expect(
       sanitizeStructuredExtractionView({

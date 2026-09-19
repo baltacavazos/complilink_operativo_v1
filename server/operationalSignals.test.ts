@@ -117,7 +117,7 @@ describe("operationalSignals", () => {
     expect(alerts[0]).toMatchObject({
       severity: "warning",
       category: "upload_pending",
-      title: "Callback de CompliLink pendiente",
+      title: "Seguimos esperando el resultado de la lectura",
     });
   });
 
@@ -151,7 +151,7 @@ describe("operationalSignals", () => {
     expect(alerts).toHaveLength(1);
     expect(alerts[0]).toMatchObject({
       severity: "critical",
-      title: "Callback de CompliLink fuera de ventana",
+      title: "Todavía no llega el resultado de la lectura",
     });
   });
 

@@ -887,6 +887,163 @@ export function buildHeliosOpinionContract(params: BuildHeliosOpinionParams): He
   };
 }
 
+function readRawPayloadString(rawPayload: Record<string, unknown>, key: string) {
+  const value = rawPayload[key];
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+function buildFailedRemoteResultCard(params: BuildHeliosOpinionParams): HeliosResultCard {
+  const documentLabel = getDocumentTypeLabel(params.documentType);
+  return {
+    headline: "No pudimos completar la lectura avanzada",
+    lead: `Tu ${documentLabel} sí quedó guardado, pero la revisión avanzada no se pudo completar. No inventamos un dictamen jurídico.`,
+    keyFindings: [
+      {
+        label: "Qué sí quedó",
+        value: "El documento está en tu expediente y puedes seguir viendo los datos que ya se leyeron del archivo.",
+        source: "derived",
+        tone: "support",
+      },
+      {
+        label: "Qué no hay todavía",
+        value: "No hay una opinión jurídica de esta lectura. La revisión avanzada no se completó.",
+        source: "derived",
+        tone: "attention",
+      },
+    ],
+    nextStepLabel: "Qué puedes hacer",
+    nextStepSummary: "Intenta de nuevo más tarde o continúa con los datos visibles del expediente. Si el problema sigue, sube otra copia nítida del mismo documento.",
+    dossierUpdateLabel: "Tu expediente sí se actualizó",
+    dossierUpdateSummary: "El archivo quedó guardado. Falta solo la lectura avanzada, no los datos que ya se ven.",
+    assistantIntro: "Puedo ayudarte a leer lo que ya se ve en el archivo, pero no hay un dictamen jurídico de esta revisión avanzada.",
+    suggestedQuestions: [
+      "¿Qué datos sí se vieron en este documento?",
+      "¿Qué me conviene subir después?",
+      "¿Puedo intentar de nuevo más tarde?",
+    ],
+    signalsChecked: [
+      "documento guardado en el expediente",
+      "lectura avanzada no completada",
+      "sin dictamen jurídico inventado",
+    ],
+    simpleExplanation: [
+      {
+        label: "Qué ya revisé por ti",
+        summary: "El documento se guardó y se clasificó con lo visible del archivo.",
+        tone: "support",
+      },
+      {
+        label: "Lo que sí pude concluir",
+        summary: "Hay datos preliminares del archivo, pero no una opinión jurídica final.",
+        tone: "neutral",
+      },
+      {
+        label: "Lo que todavía no puedo asegurar",
+        summary: "No completamos la lectura avanzada. No inventamos riesgos, fundamentos ni un dictamen.",
+        tone: "attention",
+      },
+      {
+        label: "Si quieres más claridad, esto sigue",
+        summary: "Intenta de nuevo más tarde o sigue con los datos visibles mientras tanto.",
+        tone: "neutral",
+      },
+    ],
+  };
+}
+
+export function buildRemoteFailedHeliosOpinionContract(params: BuildHeliosOpinionParams): HeliosOpinionContract {
+  const generatedAt = new Date().toISOString();
+  const documentLabel = getDocumentTypeLabel(params.documentType);
+  const summary =
+    `No pudimos completar la lectura avanzada de tu ${documentLabel}. El archivo sí quedó guardado y los datos visibles siguen disponibles.`;
+  const legalOpinion =
+    "Todavía no hay una opinión jurídica de esta lectura. El documento quedó en tu expediente, pero la revisión avanzada no se pudo completar. No inventamos un dictamen. Intenta de nuevo más tarde o continúa con los datos que ya se ven.";
+  const recommendedNextStep =
+    "Intenta de nuevo más tarde o continúa con los datos visibles del expediente.";
+  const uncertainties = [
+    "La lectura avanzada no se completó.",
+    "No hay un dictamen jurídico de este envío.",
+  ];
+  const opinion: HeliosOpinion = {
+    documentId: params.documentId,
+    caseId: params.caseId,
+    status: "error",
+    mode: "remote",
+    summary,
+    legalOpinion,
+    riskLevel: "low",
+    recommendedNextStep,
+    recommendedActions: [
+      "Revisa los datos visibles del documento en tu expediente.",
+      "Intenta de nuevo más tarde si necesitas la lectura avanzada.",
+    ],
+    legalFoundations: [],
+    keyFactsUsed: getKeyFactsUsed(params),
+    uncertainties,
+    confidenceScore: 0,
+    disclaimer: DEFAULT_DISCLAIMER,
+    generatedAt,
+    resultCard: buildFailedRemoteResultCard(params),
+    legalHighlights: buildLegalHighlights(summary, uncertainties, recommendedNextStep),
+    rawPayload: {
+      tenantId: params.tenantId,
+      caseId: params.caseId,
+      traceId: params.traceId,
+      documentId: params.documentId,
+      documentType: params.documentType,
+      jurisdiction: params.jurisdiction ?? "México",
+      caseTitle: params.caseTitle ?? null,
+      preliminaryAnalysis: params.preliminaryAnalysis ?? null,
+      bridgeConfigured: true,
+      dispatchFailed: true,
+    },
+  };
+
+  return {
+    engine: "helios",
+    mode: "remote",
+    traceId: params.traceId,
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    documentId: params.documentId,
+    requestedOpinionType: "labor_preliminary_opinion",
+    status: "error",
+    opinion,
+  };
+}
+
+export function applyEngineDispatchToHeliosOpinionContract(
+  contract: HeliosOpinionContract,
+  dispatch: { status: "sent" | "failed" | "skipped"; reason?: string },
+): HeliosOpinionContract {
+  if (contract.mode !== "remote") {
+    return contract;
+  }
+  if (dispatch.status === "sent") {
+    return contract;
+  }
+
+  const isHardFailure = dispatch.status === "failed" || dispatch.reason === "engine_not_configured";
+  if (!isHardFailure) {
+    return contract;
+  }
+
+  const rawPayload = contract.opinion.rawPayload ?? {};
+  return buildRemoteFailedHeliosOpinionContract({
+    tenantId: contract.tenantId,
+    caseId: contract.caseId,
+    traceId: contract.traceId,
+    documentId: contract.documentId,
+    documentType: readRawPayloadString(rawPayload, "documentType") ?? "other",
+    jurisdiction: readRawPayloadString(rawPayload, "jurisdiction"),
+    caseTitle: readRawPayloadString(rawPayload, "caseTitle"),
+    preliminaryAnalysis:
+      rawPayload.preliminaryAnalysis && typeof rawPayload.preliminaryAnalysis === "object"
+        ? (rawPayload.preliminaryAnalysis as BuildHeliosOpinionParams["preliminaryAnalysis"])
+        : null,
+  });
+}
+
 export function buildRemoteHeliosOpinionContract(params: {
   tenantId: string;
   caseId: string;

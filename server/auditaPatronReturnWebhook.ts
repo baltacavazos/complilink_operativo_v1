@@ -14,11 +14,14 @@ import {
 } from "./db";
 import { type DocumentType, classifyMexicanLaborDocument } from "./caseContracts";
 import {
+  AUDITAPATRON_OUTBOUND_EVENT,
   buildAuditaPatronEngineSignature,
+  classifyAuditaPatronBridgeEvent,
   type CompliLinkReturnEnvelope,
   isSupportedCompliLinkReturnEvent,
   verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
+import { inspectAuditaPatronBridgeInventory } from "./auditaPatronBridgeInventory";
 import { buildRemoteHeliosOpinionContract } from "./heliosIntegrationService";
 
 const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
@@ -347,27 +350,56 @@ function mapIncomingDocumentType(payload: Partial<CompliLinkReturnEnvelope>, exi
   return inferred.documentType ?? existingDocument.documentType;
 }
 
+const STALE_PROCESSING_MS = 2 * 60 * 1000;
+
+export function shouldReplayCompliLinkWebhookEvent(
+  event?: {
+    status?: string | null;
+    createdAt?: Date | string | null;
+    processedAt?: Date | string | null;
+  } | null,
+  now = new Date(),
+) {
+  if (!event) return false;
+  if (event.status === "failed_processing") return true;
+  if (event.status !== "processing") return false;
+
+  const startedAtRaw = event.createdAt ?? event.processedAt;
+  if (!startedAtRaw) return true;
+  const startedAt = startedAtRaw instanceof Date ? startedAtRaw : new Date(startedAtRaw);
+  if (Number.isNaN(startedAt.getTime())) return true;
+  return now.getTime() - startedAt.getTime() >= STALE_PROCESSING_MS;
+}
+
+function logUnknownBridgeEvent(params: { event: string | null; endpoint: string; documentId?: string | null }) {
+  console.warn("[AuditaPatron inbound] unknown_event rejected", {
+    event: params.event,
+    endpoint: params.endpoint,
+    documentId: params.documentId ?? null,
+  });
+}
+
 function buildEventDescriptor(payload: CompliLinkReturnEnvelope) {
   if (payload.event === "document.processed.v1") {
     return {
       eventType: "document_classified" as const,
-      title: "Documento procesado por CompliLink",
-      description: "CompliLink MX devolvió un resultado final de procesamiento documental para este expediente.",
+      title: "Documento revisado",
+      description: "Ya hay un resultado de lectura para este documento en tu expediente.",
     };
   }
 
   if (payload.event === "document.rejected.v1") {
     return {
       eventType: "note_added" as const,
-      title: "Documento rechazado por CompliLink",
-      description: "CompliLink MX rechazó el documento y devolvió observaciones para corrección o reemplazo.",
+      title: "Este documento no se pudo revisar",
+      description: "La lectura no se completó. Revisa el archivo o súbelo de nuevo.",
     };
   }
 
   return {
     eventType: "note_added" as const,
-    title: "Reintento solicitado por CompliLink",
-    description: "CompliLink MX solicitó reenviar o reprocesar el documento asociado al expediente.",
+    title: "Se pidió otra revisión",
+    description: "Vamos a intentar de nuevo la lectura de este documento.",
   };
 }
 
@@ -427,6 +459,7 @@ async function forwardIncomingUploadToRemote(params: { req: RawBodyRequest; rawB
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${ENV.auditapatronEngineHmacSecret}`,
         "X-AuditaPatron-Timestamp": timestamp,
         "X-AuditaPatron-Signature": signature,
         "X-AuditaPatron-Forwarded-By": "auditapatron-intake",
@@ -455,11 +488,30 @@ async function forwardIncomingUploadToRemote(params: { req: RawBodyRequest; rawB
 }
 
 function handleAuditaPatronHealth(_req: Request, res: Response) {
+  const inventory = inspectAuditaPatronBridgeInventory({
+    ...process.env,
+    AUDITAPATRON_ENGINE_WEBHOOK_URL: ENV.auditapatronEngineWebhookUrl,
+    AUDITAPATRON_ENGINE_HMAC_SECRET: ENV.auditapatronEngineHmacSecret,
+  });
   res.status(200).json({
     status: "ok",
     bridge: "auditapatron",
     webhookPath: "/api/auditapatron/webhook",
     responseContract: RESPONSE_CONTRACT,
+    completeness: {
+      phase: inventory.phase,
+      mode: inventory.mode,
+      webhookComplete: inventory.webhookComplete,
+      requiredPresent: {
+        AUDITAPATRON_ENGINE_WEBHOOK_URL: inventory.vars.AUDITAPATRON_ENGINE_WEBHOOK_URL,
+        AUDITAPATRON_ENGINE_HMAC_SECRET: inventory.vars.AUDITAPATRON_ENGINE_HMAC_SECRET,
+      },
+      extractionPresent: {
+        OPENAI_API_KEY: inventory.vars.OPENAI_API_KEY,
+        GEMINI_API_KEY: inventory.vars.GEMINI_API_KEY,
+      },
+      heliosApiKeyRequired: inventory.heliosApiKeyRequired,
+    },
   });
 }
 
@@ -487,8 +539,43 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
 
     const payload = (req.body ?? {}) as AuditaPatronUploadWebhookPayload;
     const normalized = normalizeIncomingUploadPayload(payload);
+    const classified = classifyAuditaPatronBridgeEvent(normalized.event);
+
+    if (classified.kind === "missing") {
+      res.status(400).json({
+        verified: false,
+        issues: buildWebhookIssues("missing_field", "The event field is required.", "event"),
+        responseContract: RESPONSE_CONTRACT,
+      });
+      return;
+    }
+
+    if (classified.kind === "unknown") {
+      logUnknownBridgeEvent({
+        event: classified.event,
+        endpoint: "/api/auditapatron/webhook",
+        documentId: normalized.documentId,
+      });
+      res.status(400).json({
+        verified: false,
+        issues: buildWebhookIssues("unknown_event", `Unsupported event '${classified.event}'.`, "event"),
+        responseContract: RESPONSE_CONTRACT,
+      });
+      return;
+    }
+
+    if (classified.kind === "return") {
+      const outcome = await ingestCompliLinkReturnPayload({
+        payload: (req.body ?? {}) as Partial<CompliLinkReturnEnvelope>,
+        rawBody,
+        signatureHeader: req.header("X-AuditaPatron-Signature"),
+        timestampHeader: req.header("X-AuditaPatron-Timestamp"),
+      });
+      res.status(outcome.statusCode).json(outcome.body);
+      return;
+    }
+
     const issues = [
-      ...(!normalized.event ? buildWebhookIssues("missing_field", "The event field is required.", "event") : []),
       ...(!normalized.documentId ? buildWebhookIssues("missing_field", "The documentId field is required.", "documentId") : []),
       ...(!normalized.sourceUserId ? buildWebhookIssues("missing_field", "The sourceUserId field is required.", "sourceUserId") : []),
       ...(!normalized.docType ? buildWebhookIssues("missing_field", "The docType field is required.", "docType") : []),
@@ -496,11 +583,10 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
       ...(!normalized.sha256 ? buildWebhookIssues("missing_field", "The sha256 field is required.", "sha256") : []),
       ...(!normalized.mimeType ? buildWebhookIssues("missing_field", "The mimeType field is required.", "mimeType") : []),
       ...(!normalized.uploadedAt ? buildWebhookIssues("missing_field", "The uploadedAt field is required.", "uploadedAt") : []),
+      ...(normalized.event && normalized.event !== AUDITAPATRON_OUTBOUND_EVENT
+        ? buildWebhookIssues("unknown_event", `Unsupported event '${normalized.event}'.`, "event")
+        : []),
     ];
-
-    if (normalized.event && normalized.event !== "document.uploaded") {
-      issues.push(...buildWebhookIssues("unknown_event", `Unsupported event '${normalized.event}'.`, "event"));
-    }
 
     if (issues.length > 0) {
       res.status(400).json({
@@ -576,6 +662,11 @@ export async function ingestCompliLinkReturnPayload(params: {
   }
 
   if (!isSupportedCompliLinkReturnEvent(payload.event)) {
+    logUnknownBridgeEvent({
+      event: payload.event,
+      endpoint: "complilink-return",
+      documentId: typeof payload.documentId === "string" ? payload.documentId : null,
+    });
     return {
       ok: false as const,
       statusCode: 400,
@@ -642,18 +733,31 @@ export async function ingestCompliLinkReturnPayload(params: {
   });
 
   if (!registeredWebhookEvent.created) {
-    return {
-      ok: true as const,
-      statusCode: 200,
-      body: buildWebhookAck({
-        payload,
-        document,
-        intakeId: String(registeredWebhookEvent.event?.id ?? eventKey),
-        receivedAt,
+    if (!shouldReplayCompliLinkWebhookEvent(registeredWebhookEvent.event)) {
+      return {
+        ok: true as const,
+        statusCode: 200,
+        body: buildWebhookAck({
+          payload,
+          document,
+          intakeId: String(registeredWebhookEvent.event?.id ?? eventKey),
+          receivedAt,
+          correlationId,
+          duplicate: true,
+        }),
+      };
+    }
+
+    if (registeredWebhookEvent.event) {
+      await updateCompliLinkWebhookEvent({
+        id: registeredWebhookEvent.event.id,
+        status: "processing",
+        processedAt: null,
+        failureReason: null,
+        compliLinkId: payload.compliLinkId ?? null,
         correlationId,
-        duplicate: true,
-      }),
-    };
+      });
+    }
   }
 
   const webhookEvent = registeredWebhookEvent.event;
@@ -769,7 +873,7 @@ export async function ingestCompliLinkReturnPayload(params: {
         severity: payload.event === "document.rejected.v1" ? "critical" : "warning",
         category: "integrity_gap",
         title: "Resultado con advertencias de revisión",
-        description: `Se recibieron advertencias desde CompliLink MX para ${document.originalName}: ${guardrails.join(" | ")}`,
+        description: `Se recibieron advertencias para ${document.originalName}: ${guardrails.join(" | ")}`,
         status: "open",
         raisedAt: receivedAt,
       });
