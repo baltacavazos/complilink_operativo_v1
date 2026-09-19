@@ -102,7 +102,7 @@ export function HeliosCopilotSheet({
   onFocusSuggestedDocument,
   uiCopy,
 }: HeliosCopilotSheetProps) {
-  const copy = {
+  const mergedCopy = {
     eyebrow: "Asesor laboral",
     title: "Tu asesor laboral ya entendió lo visible de tu expediente",
     description:
@@ -129,6 +129,28 @@ export function HeliosCopilotSheet({
       "Tu asesor laboral ya tiene contexto para empezar. Puede explicarte tu situación actual, decirte qué falta confirmar y señalar qué documento podría ayudarte más después.",
     closeLabel: "Volver al expediente",
     ...uiCopy,
+  };
+  const copy = {
+    ...mergedCopy,
+    eyebrow: sanitizeClientVisibleCopy(mergedCopy.eyebrow) ?? mergedCopy.eyebrow,
+    title: sanitizeClientVisibleCopy(mergedCopy.title) ?? mergedCopy.title,
+    description: sanitizeClientVisibleCopy(mergedCopy.description) ?? mergedCopy.description,
+    documentBadge: sanitizeClientVisibleCopy(mergedCopy.documentBadge) ?? mergedCopy.documentBadge,
+    capabilityBadge:
+      sanitizeClientVisibleCopy(mergedCopy.capabilityBadge) ?? mergedCopy.capabilityBadge,
+    promptsHeading:
+      sanitizeClientVisibleCopy(mergedCopy.promptsHeading) ?? mergedCopy.promptsHeading,
+    historyHeading:
+      sanitizeClientVisibleCopy(mergedCopy.historyHeading) ?? mergedCopy.historyHeading,
+    supportingHeading:
+      sanitizeClientVisibleCopy(mergedCopy.supportingHeading) ?? mergedCopy.supportingHeading,
+    placeholder: sanitizeClientVisibleCopy(mergedCopy.placeholder) ?? mergedCopy.placeholder,
+    emptyStateMessage:
+      sanitizeClientVisibleCopy(mergedCopy.emptyStateMessage) ?? mergedCopy.emptyStateMessage,
+    closeLabel: sanitizeClientVisibleCopy(mergedCopy.closeLabel) ?? mergedCopy.closeLabel,
+    quickHighlights: mergedCopy.quickHighlights.map(
+      (item) => sanitizeClientVisibleCopy(item) ?? item,
+    ),
   };
   const visibleHistoryItems = historyItems.slice(0, 3).map((item) => ({
     ...item,

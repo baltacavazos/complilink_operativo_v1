@@ -52,7 +52,7 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replaceAll("Tipo Helios", "tipo sugerido");
   next = next.replaceAll("motor Helios", "inteligencia laboral");
   next = next.replaceAll("Motor Helios", "Inteligencia laboral");
-  next = next.replaceAll("Preguntar a Helios", "Preguntar al asesor");
+  next = next.replaceAll("Preguntar a Helios", "Preguntar al asesor laboral");
   next = next.replace(/\bHelios\b/g, "la inteligencia laboral");
   next = next.replace(/\bhelios\b/gi, "la inteligencia laboral");
 

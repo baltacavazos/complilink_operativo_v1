@@ -18,7 +18,7 @@ describe("sanitizeClientVisibleCopy", () => {
   });
 
   it("oculta Helios, Manus y jerga de score/ONLINE", () => {
-    expect(sanitizeClientVisibleCopy("Preguntar a Helios")).toBe("Preguntar al asesor");
+    expect(sanitizeClientVisibleCopy("Preguntar a Helios")).toBe("Preguntar al asesor laboral");
     expect(sanitizeClientVisibleCopy("El copiloto Helios ya leyó tu expediente")).toBe(
       "El asesor laboral ya leyó tu expediente",
     );

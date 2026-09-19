@@ -28,6 +28,17 @@ const KEY_CLIENT_PAGES = [
   "pages/LegalDocuments.tsx",
   "components/DashboardLayout.tsx",
   "components/MobileAppShell.tsx",
+  "components/HeliosCopilotSheet.tsx",
+  "App.tsx",
+] as const;
+
+const WORKER_PAGES = [
+  "pages/Home.tsx",
+  "pages/Auditar.tsx",
+  "pages/Access.tsx",
+  "pages/Payments.tsx",
+  "pages/LegalDocuments.tsx",
+  "components/MobileAppShell.tsx",
   "App.tsx",
 ] as const;
 
@@ -37,7 +48,19 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
       const source = readClientSource(relativePath);
       expect(source, relativePath).not.toContain("CompliLink");
       expect(source, relativePath).not.toContain("CompliLink Operativo");
+      expect(visibleCopySurface(source), relativePath).not.toMatch(/complilink/i);
     }
+  });
+
+  it("falla si Helios queda visible en rutas de trabajador", () => {
+    for (const relativePath of WORKER_PAGES) {
+      const visible = visibleCopySurface(readClientSource(relativePath));
+      expect(visible, relativePath).not.toMatch(/\bHelios\b/);
+    }
+
+    const ceo = readClientSource("pages/CeoDashboard.tsx");
+    expect(ceo).not.toContain("Preguntar a Helios");
+    expect(visibleCopySurface(ceo)).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);
   });
 
   it("no deja Manus, Forge, APIMarket ni Forensic en copy visible de chrome y flujos clave", () => {
@@ -76,6 +99,24 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("Subir mi primer documento");
     expect(auditar).toContain("Ver toda la bóveda");
     expect(auditar).toContain("focusRecommendedUpload()");
+    expect(auditar).toContain('className="mt-4 rounded-full bg-teal-600 text-white hover:bg-teal-700"');
+    expect(auditar).toContain('text-xs font-semibold tracking-tight text-emerald-800">Señal inicial');
+    expect(auditar).not.toContain(
+      'text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Señal inicial',
+    );
+    expect(auditar).toContain('label: "Bien"');
+    expect(auditar).toContain('label: "Atención"');
+    expect(auditar).toContain('label: "Crítico"');
+    expect(auditar).not.toContain('label: "Riesgo crítico"');
+    expect(auditar).not.toContain("complilinkMonitoring");
+  });
+
+  it("oculta el chrome CEO cuando la sesión no es admin", () => {
+    const ceo = readClientSource("pages/CeoDashboard.tsx");
+    expect(ceo).toContain("if (!isAdmin) {\n    return (");
+    expect(ceo.indexOf("if (!isAdmin) {\n    return (")).toBeLessThan(ceo.indexOf("<DashboardLayout"));
+    expect(ceo).toContain("Preguntar al asesor laboral");
+    expect(ceo).not.toContain("Preguntar a Helios");
   });
 
   it("usa el sanitizador central en Home, Auditar y el panel conversacional", () => {

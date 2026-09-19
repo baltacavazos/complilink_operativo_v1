@@ -311,7 +311,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Modo CEO");
     expect(source).toContain("Prioridades del día en una sola vista.");
     expect(source).toContain("Empieza por alertas críticas, documentos pendientes y accesos vigentes. El detalle técnico queda abajo, solo cuando haga falta.");
-    expect(source).toContain("Preguntar a Helios");
+    expect(source).toContain("Preguntar al asesor laboral");
+    expect(source).not.toContain("Preguntar a Helios");
     expect(source).toContain("Qué ver primero");
     expect(source).toContain("Qué queda oculto");
     expect(source).toContain("Qué puedes hacer");

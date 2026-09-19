@@ -20,6 +20,7 @@ import {
   selectNativeDocumentForCaptureMode,
 } from "@/lib/platformDocumentInput";
 import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
   platformStorageGetJSON,
   platformStorageRemove,
@@ -690,7 +691,7 @@ function buildCommercePromptContext(params: {
     };
   }
 
-  if (/Helios con lectura de varios documentos|varios documentos del expediente/i.test(params.message)) {
+  if (/con lectura de varios documentos|varios documentos del expediente/i.test(params.message)) {
     const targetPlan = params.activePlanKey === "essential" ? "pro" : "essential";
     const price = targetPlan === "pro" ? 199 : 79;
 
@@ -2409,8 +2410,8 @@ function getDocumentVerdictState(confidence?: number | null) {
 
   if ((confidence ?? 0) >= 65) {
     return {
-      label: "Requiere revisión",
-      shortLabel: "Revisar",
+      label: "Atención",
+      shortLabel: "Atención",
       classes: "bg-amber-100 text-amber-900 border border-amber-200",
       panelClasses: "border-amber-100 bg-amber-50",
       description: "Ya aporta contexto, pero conviene revisar detalles antes de tomarlo como base.",
@@ -2460,22 +2461,22 @@ function getHeliosRiskCopy(value?: string | null) {
   switch (value) {
     case "critical":
       return {
-        label: "Riesgo crítico",
+        label: "Crítico",
         classes: "bg-rose-100 text-rose-800",
       } as const;
     case "high":
       return {
-        label: "Riesgo alto",
+        label: "Atención",
         classes: "bg-red-100 text-red-800",
       } as const;
     case "medium":
       return {
-        label: "Riesgo medio",
+        label: "Atención",
         classes: "bg-amber-100 text-amber-800",
       } as const;
     case "low":
       return {
-        label: "Riesgo bajo",
+        label: "Bien",
         classes: "bg-emerald-100 text-emerald-800",
       } as const;
     default:
@@ -2490,7 +2491,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
   switch (value) {
     case "critical":
       return {
-        eyebrow: "Atención inmediata",
+        eyebrow: "Crítico",
         title: "Aquí sí vemos algo que conviene revisar hoy",
         description:
           "Hay señales que no se ven normales y vale la pena actuar rápido para evitar que el caso crezca.",
@@ -2499,7 +2500,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "high":
       return {
-        eyebrow: "Atención alta",
+        eyebrow: "Atención",
         title: "Aquí sí hay algo importante por revisar",
         description:
           "Ya encontramos señales suficientes para tratar este punto como relevante, aunque todavía puede requerir contraste adicional.",
@@ -2508,7 +2509,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "medium":
       return {
-        eyebrow: "Conviene confirmarlo",
+        eyebrow: "Atención",
         title: "Hay algo que vale la pena revisar con calma",
         description:
           "No parece una alerta máxima, pero sí hay indicios que conviene validar antes de cerrar una conclusión.",
@@ -2517,7 +2518,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "low":
       return {
-        eyebrow: "Sin alerta fuerte",
+        eyebrow: "Bien",
         title: "Por ahora no vemos una señal grave",
         description:
           "Con lo que la inteligencia laboral ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
@@ -6336,8 +6337,8 @@ export default function Auditar() {
   const resultRevealCopy = getResultRevealCopy(
     lastUpload?.classification.documentType
   );
-  const complilinkMonitoring = caseDetailQuery.data?.complilinkMonitoring;
-  const monitoringDocuments = complilinkMonitoring?.documents ?? [];
+  const expedienteMonitoring = readExpedienteMonitoring(caseDetailQuery.data);
+  const monitoringDocuments = expedienteMonitoring?.documents ?? [];
   const pendingMonitoringDocuments = monitoringDocuments.filter(
     item => item.status === "waiting" || item.status === "attention"
   );
@@ -6351,9 +6352,9 @@ export default function Auditar() {
   );
   const monitoringOverview = getMonitoringOverviewCopy({
     monitoringDocumentsCount: monitoringDocuments.length,
-    waitingCount: complilinkMonitoring?.summary.waitingCount ?? 0,
-    attentionCount: complilinkMonitoring?.summary.attentionCount ?? 0,
-    receivedCount: complilinkMonitoring?.summary.receivedCount ?? 0,
+    waitingCount: expedienteMonitoring?.summary.waitingCount ?? 0,
+    attentionCount: expedienteMonitoring?.summary.attentionCount ?? 0,
+    receivedCount: expedienteMonitoring?.summary.receivedCount ?? 0,
   });
   const operationalFunnelSteps = [
     {
@@ -8144,30 +8145,30 @@ export default function Auditar() {
             <div className="flex items-center gap-3">
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Señal inicial</p>
+                <p className="text-xs font-semibold tracking-tight text-emerald-800">Señal inicial</p>
                 <p className="mt-1 text-sm text-slate-600">Lectura orientativa; no es validación oficial ni asesoría legal.</p>
               </div>
             </div>
             <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
             <div className="mt-5 grid gap-4">
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Qué conviene revisar</p>
+                <p className="text-xs font-semibold tracking-tight text-amber-800">Qué conviene revisar</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalWhy}</p>
               </div>
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-800">Hoy conviene poner atención especial en esto</p>
+                <p className="text-xs font-semibold tracking-tight text-amber-800">Hoy conviene poner atención especial en esto</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
               </div>
               <div className="rounded-[1.35rem] border border-cyan-200 bg-cyan-50/70 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-800">IMSS según este documento</p>
+                <p className="text-xs font-semibold tracking-tight text-cyan-800">IMSS según este documento</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.imss}</p>
               </div>
               <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-600">Impuestos y retenciones</p>
+                <p className="text-xs font-semibold tracking-tight text-slate-600">Impuestos y retenciones</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.retentions}</p>
               </div>
               <div className="rounded-[1.35rem] border border-teal-200 bg-teal-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-teal-800">Siguiente paso útil</p>
+                <p className="text-xs font-semibold tracking-tight text-teal-800">Siguiente paso útil</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
               </div>
             </div>
@@ -8507,7 +8508,7 @@ export default function Auditar() {
           <section className="mt-6 rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-900">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-amber-900">
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
                   Autorización legal pendiente
                 </div>
@@ -8781,7 +8782,7 @@ export default function Auditar() {
                               {lastUploadResultLead}
                             </p>
                             <div className="mt-3 rounded-[1rem] border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-left">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                              <p className="text-[11px] font-semibold tracking-tight text-emerald-800">
                                 Qué sigue
                               </p>
                               <p className="mt-1 text-sm leading-6 text-slate-900">
@@ -8789,7 +8790,7 @@ export default function Auditar() {
                               </p>
                             </div>
                             <div className="mt-3 rounded-[1rem] border border-amber-200 bg-amber-50/80 px-3 py-3 text-left">
-                              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-amber-800">
+                              <p className="text-[11px] font-semibold tracking-tight text-amber-800">
                                 Hoy conviene poner atención especial en esto
                               </p>
                               <p className="mt-1 text-sm leading-6 text-slate-900">
@@ -8798,11 +8799,11 @@ export default function Auditar() {
                             </div>
                             <div className="mt-3 grid gap-3 sm:grid-cols-2">
                               <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-800">IMSS según este documento</p>
+                                <p className="text-[11px] font-semibold tracking-tight text-cyan-800">IMSS según este documento</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
                               </div>
                               <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-600">Impuestos y retenciones</p>
+                                <p className="text-[11px] font-semibold tracking-tight text-slate-600">Impuestos y retenciones</p>
                                 <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
                               </div>
                             </div>
@@ -8811,7 +8812,7 @@ export default function Auditar() {
                       </div>
                     </div>
                     {shouldCompactPostUploadExperience ? null : (
-                      <p className={`mt-2 font-semibold text-emerald-900 ${shouldCompactPostUploadExperience ? "text-base tracking-[-0.01em]" : "text-[13px] uppercase tracking-[0.16em] text-slate-500 sm:mt-3 sm:text-xs"}`}>
+                      <p className={`mt-2 font-semibold text-emerald-900 ${shouldCompactPostUploadExperience ? "text-base tracking-[-0.01em]" : "text-[13px] tracking-tight text-slate-500 sm:mt-3 sm:text-xs"}`}>
                         {lastUploadResultHeadline}
                       </p>
                     )}
@@ -9167,7 +9168,7 @@ export default function Auditar() {
 
               <div className="mt-4 flex flex-col gap-2.5 rounded-[1.25rem] border border-slate-200 bg-white p-3.5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  <p className="text-xs font-semibold tracking-tight text-slate-400">
                     Siguiente paso recomendado
                   </p>
                   <p className="mt-1.5 text-base font-semibold leading-5 text-slate-950">
@@ -12956,7 +12957,7 @@ Reforzar con otro documento
                   </h2>
                 </div>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  {complilinkMonitoring?.summary.waitingCount ?? 0} en espera
+                  {expedienteMonitoring?.summary.waitingCount ?? 0} en espera
                 </span>
               </div>
 
@@ -12966,15 +12967,15 @@ Reforzar con otro documento
                     En espera
                   </p>
                   <p className="mt-2 text-xl font-semibold text-slate-950">
-                    {complilinkMonitoring?.summary.waitingCount ?? 0}
+                    {expedienteMonitoring?.summary.waitingCount ?? 0}
                   </p>
                 </div>
                 <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-amber-700">
-                    Revisar
+                  <p className="text-[11px] font-semibold tracking-tight text-amber-700">
+                    Atención
                   </p>
                   <p className="mt-2 text-xl font-semibold text-amber-950">
-                    {complilinkMonitoring?.summary.attentionCount ?? 0}
+                    {expedienteMonitoring?.summary.attentionCount ?? 0}
                   </p>
                 </div>
                 <div className="col-span-2 rounded-[1rem] border border-emerald-100 bg-emerald-50 p-3 sm:col-span-1">
@@ -12982,7 +12983,7 @@ Reforzar con otro documento
                     Listos
                   </p>
                   <p className="mt-2 text-xl font-semibold text-emerald-950">
-                    {complilinkMonitoring?.summary.receivedCount ?? 0}
+                    {expedienteMonitoring?.summary.receivedCount ?? 0}
                   </p>
                 </div>
               </div>
@@ -13997,7 +13998,7 @@ Reforzar con otro documento
                     En espera
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-slate-950">
-                    {complilinkMonitoring?.summary.waitingCount ?? 0}
+                    {expedienteMonitoring?.summary.waitingCount ?? 0}
                   </p>
                 </div>
                 <div className="rounded-[1.1rem] border border-amber-200 bg-amber-50 p-4">
@@ -14005,7 +14006,7 @@ Reforzar con otro documento
                     Conviene revisar
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-amber-950">
-                    {complilinkMonitoring?.summary.attentionCount ?? 0}
+                    {expedienteMonitoring?.summary.attentionCount ?? 0}
                   </p>
                 </div>
                 <div className="rounded-[1.1rem] border border-emerald-100 bg-emerald-50 p-4 sm:col-span-2 lg:col-span-1">
@@ -14013,7 +14014,7 @@ Reforzar con otro documento
                     Ya respondidos
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-emerald-950">
-                    {complilinkMonitoring?.summary.receivedCount ?? 0}
+                    {expedienteMonitoring?.summary.receivedCount ?? 0}
                   </p>
                 </div>
               </div>
