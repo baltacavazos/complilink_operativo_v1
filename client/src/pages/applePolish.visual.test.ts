@@ -28,9 +28,9 @@ describe("Apple tip #3 — pulido visual", () => {
   it("pasa las pastillas uppercase tracking a minúsculas de oración", () => {
     const css = readRepoFile("client", "src", "index.css");
 
-    expect(css).toContain('.rounded-full.uppercase[class*="tracking-"]');
-    expect(css).toContain("text-transform: none");
-    expect(css).toContain("letter-spacing: 0.01em");
+    expect(css).toContain('.uppercase[class*="tracking-"]');
+    expect(css).toContain("text-transform: none !important");
+    expect(css).toContain("letter-spacing: 0.01em !important");
     expect(css).toContain(".audita-home");
     expect(css).toContain(".audita-access");
     expect(css).toContain(".audita-auditar");

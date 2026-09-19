@@ -485,12 +485,12 @@
    * Apple tip #3 — additive visual polish only.
    * Contrast on /auditar result panels, sentence-case chips, hero CTA weight.
    */
-  .audita-home :is(span, p, div).rounded-full.uppercase[class*="tracking-"],
-  .audita-access :is(span, p, div).rounded-full.uppercase[class*="tracking-"],
-  .audita-auditar :is(span, p, div).rounded-full.uppercase[class*="tracking-"],
-  main :is(span, p, div).rounded-full.uppercase[class*="tracking-"] {
-    text-transform: none;
-    letter-spacing: 0.01em;
+  .audita-home :is(span, p, div).uppercase[class*="tracking-"],
+  .audita-access :is(span, p, div).uppercase[class*="tracking-"],
+  .audita-auditar :is(span, p, div).uppercase[class*="tracking-"],
+  main :is(span, p, div).uppercase[class*="tracking-"] {
+    text-transform: none !important;
+    letter-spacing: 0.01em !important;
   }
 
   .ap-hero-cta-row {
