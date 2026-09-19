@@ -1,10 +1,15 @@
 import {
+  emptyOfficialDigest,
+  type OfficialDigestResult,
+} from "@shared/officialDigest";
+import {
   WORKER_CHAT_CLEAR_HEADING,
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_KNOWN_HEADING,
   WORKER_CHAT_MISSING_HEADING,
   WORKER_CHAT_MULTI_DOC_UPSELL,
   WORKER_CHAT_NEXT_HEADING,
+  WORKER_CHAT_SOURCES_HEADING,
   WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
   formatWorkerChatAnswer,
@@ -41,6 +46,7 @@ export type WorkerChatGrounding = {
   uncertainties: string[];
   keyFacts: string[];
   legalFoundations: WorkerChatLegalFoundation[];
+  officialDigest: OfficialDigestResult;
   allowedLegalReferences: string[];
   laborFacts: ReturnType<typeof summarizeLaborFiscalSignals>["facts"];
   laborExplanations: ReturnType<typeof summarizeLaborFiscalSignals>["explanations"];
@@ -103,6 +109,7 @@ export function buildWorkerChatGrounding(params: {
   opinion?: unknown;
   missingDocument?: { label?: string | null; reason?: string | null } | null;
   multiDocUpsell?: string | null;
+  officialDigest?: OfficialDigestResult | null;
 }): WorkerChatGrounding {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
@@ -126,6 +133,7 @@ export function buildWorkerChatGrounding(params: {
     uncertainties: asTextList(opinion?.uncertainties).slice(0, 3),
     keyFacts: asTextList(opinion?.keyFactsUsed).slice(0, 4),
     legalFoundations,
+    officialDigest: params.officialDigest ?? emptyOfficialDigest(),
     allowedLegalReferences: legalFoundations.flatMap((item) => [item.title, item.reference]),
     laborFacts: labor.facts,
     laborExplanations: labor.explanations,
@@ -186,6 +194,8 @@ export function buildWorkerChatFallbackAnswer(
     known: guidance.known,
     missing: guidance.missing,
     nextStep: guidance.nextStep,
+    officialSources: grounding.officialDigest.citations,
+    officialSourcesNote: grounding.officialDigest.honestyNote,
     disclaimer: grounding.disclaimer,
     multiDocUpsell: grounding.multiDocUpsell,
   });
@@ -202,6 +212,17 @@ export function buildWorkerChatLlmInstructions(
           .map((item) => `- ${item.title} (${item.reference}): ${item.relevance}`)
           .join("\n")
       : "- No hay bases legales extra en esta lectura. No inventes artículos, tesis ni jurisprudencia.";
+  const officialLines =
+    grounding.officialDigest.citations.length > 0
+      ? grounding.officialDigest.citations
+          .map(
+            (item) =>
+              `- ${item.title} (${item.kindLabel}; liga oficial: ${item.url})`,
+          )
+          .join("\n")
+      : grounding.officialDigest.honestyNote
+        ? `- ${grounding.officialDigest.honestyNote}`
+        : "- No hay lecturas oficiales en el digest para esta pregunta. No inventes títulos, IUS ni registro digital.";
   const visibleFacts =
     guidance.visibleFactLines.length > 0
       ? guidance.visibleFactLines.map((item) => `- ${item}`).join("\n")
@@ -216,6 +237,10 @@ export function buildWorkerChatLlmInstructions(
     "Usa únicamente las señales del documento y las bases legales ya listadas.",
     "Si un dato no aparece, di que no se ve en tus papeles.",
     "Nunca inventes tesis, registro digital, Semanario Judicial, IUS ni jurisprudencia.",
+    "Si el digest trae lecturas oficiales, puedes citar SOLO esos títulos y ligas, en palabras simples, sin claves de tesis.",
+    "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Si es criterio reiterado, dilo así. Nunca etiquetes doctrina como jurisprudencia.",
+    `Si el digest está bloqueado o viene de una consulta anterior, di esa honestidad. Frase útil: ${grounding.officialDigest.honestyNote ?? "No pude abrir la fuente oficial ahora. No invento criterios ni números."}`,
+    `Si citas lecturas oficiales, usa el título exacto y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}.`,
     "Nunca digas que consultaste IMSS, SAT o Infonavit en vivo, ni que confirmaste un alta oficial.",
     `Modo de lectura: ${grounding.validationMode}. Validación IMSS en vivo: no.`,
     `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
@@ -228,6 +253,8 @@ export function buildWorkerChatLlmInstructions(
     visibleFacts,
     "Bases legales ya presentes en la lectura (únicas que puedes mencionar, en palabras simples):",
     foundations,
+    "Lecturas oficiales del digest (únicos títulos y ligas que puedes citar):",
+    officialLines,
     `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${guidance.nextStep}`,
     `Si preguntan por IMSS e ISR (o impuestos/retenciones) juntos, el siguiente paso debe cubrir ambos: cruzar NSS/IMSS con el siguiente recibo o un papel IMSS (sin confirmar alta oficial) y cruzar la retención ISR con el CFDI o el depósito del mismo periodo. Si también mencionan Infonavit —o preguntan los tres—, cubre además el cruce de retención/crédito Infonavit con el aviso de retención o estado de crédito. Si preguntan por IMSS, impuestos o Infonavit por separado, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
     `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
@@ -248,6 +275,8 @@ export function sanitizeWorkerChatAnswer(
     known: guidance.known,
     missing: guidance.missing,
     nextStep: guidance.nextStep,
+    officialSources: grounding.officialDigest.citations,
+    officialSourcesNote: grounding.officialDigest.honestyNote,
     disclaimer: grounding.disclaimer,
     multiDocUpsell: grounding.multiDocUpsell,
   });
@@ -265,6 +294,16 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
       uncertainties: grounding.uncertainties,
       keyFacts: grounding.keyFacts,
       legalFoundations: grounding.legalFoundations,
+      officialDigest: {
+        freshness: grounding.officialDigest.freshness,
+        liveBlocked: grounding.officialDigest.liveBlocked,
+        honestyNote: grounding.officialDigest.honestyNote,
+        titles: grounding.officialDigest.citations.map((item) => ({
+          title: item.title,
+          url: item.url,
+          kindLabel: item.kindLabel,
+        })),
+      },
       laborFacts: grounding.laborFacts,
       laborExplanations: grounding.laborExplanations.slice(0, 6),
       missingDocumentLabel: grounding.missingDocumentLabel,

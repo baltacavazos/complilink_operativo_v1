@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import {
   WORKER_CHAT_NEXT_HEADING,
+  WORKER_CHAT_SOURCES_HEADING,
   parseWorkerStructuredAnswer,
   sanitizeVisibleChatHistoryContent,
 } from "@shared/workerChatUx";
@@ -146,6 +147,7 @@ function CalmAssistantAnswer({ content }: { content: string }) {
                 ? cn(
                     "ap-chat-section",
                     block.heading === WORKER_CHAT_NEXT_HEADING && "ap-chat-section-next",
+                    block.heading === WORKER_CHAT_SOURCES_HEADING && "ap-chat-section-official",
                   )
                 : null,
           )}

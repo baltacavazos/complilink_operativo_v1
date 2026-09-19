@@ -8566,6 +8566,23 @@ export default function Auditar() {
             reason: "Sirve para comparar lo timbrado con lo que te pagaron.",
             ctaLabel: "Subir este documento ahora",
           }}
+          officialTitles={[
+            {
+              title:
+                "Decreto por el que se reforman, adicionan y derogan diversas disposiciones de la Ley Federal del Trabajo, en materia de reducción de la jornada laboral.",
+              url: "https://www.dof.gob.mx/nota_detalle.php?codigo=5786537&fecha=01/05/2026",
+              kindLabel: "Publicación del Diario Oficial",
+              source: "dof",
+            },
+            {
+              title:
+                "OFRECIMIENTO DE TRABAJO. PARA CALIFICARLO DE BUENA FE Y, EN SU CASO, DETERMINAR LA PROCEDENCIA DE LA REVERSIÓN DE LA CARGA DE LA PRUEBA, NO DEBEN VALORARSE LOS MEDIOS PROBATORIOS RELACIONADOS CON LA EXISTENCIA O INEXISTENCIA DEL DESPIDO QUE DIO ORIGEN AL JUICIO LABORAL.",
+              url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032614",
+              kindLabel: "Criterio reiterado de la Corte",
+              source: "scjn",
+            },
+          ]}
+          officialSourcesNote="Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial."
           responseTone="brief"
         />
       </main>
@@ -14242,6 +14259,8 @@ Reforzar con otro documento
                   heliosCopilotSupportingDocuments
                 }
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
+                officialTitles={heliosCopilotMutation.data?.officialTitles ?? []}
+                officialSourcesNote={heliosCopilotMutation.data?.officialSourcesNote ?? null}
                 responseTone={preferredTone}
                 onResponseToneChange={setPreferredTone}
                 onFocusSuggestedDocument={() => {

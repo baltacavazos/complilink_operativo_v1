@@ -132,6 +132,7 @@ import {
   sanitizeWorkerChatAnswer,
   scopeWorkerChatDocumentsForPlan,
 } from "./workerChatUx";
+import { resolveOfficialDigest } from "./officialDigest";
 import { sanitizeWorkerChatCopy, WORKER_CHAT_DISCLAIMER } from "@shared/workerChatUx";
 import {
   humanizeMissingExtractionTarget,
@@ -2133,7 +2134,7 @@ function buildHeliosCopilotContext(params: {
       recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
       missingDocuments: params.missingDocuments,
       guidance:
-        "Responde solo con las señales del documento y las bases legales ya listadas. Si algo no aparece, dilo. No inventes consulta oficial ni jurisprudencia.",
+        "Responde solo con las señales del documento, las bases legales ya listadas y los títulos oficiales del digest. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
       pedagogyMode: hasComplexSignals ? "high" : "standard",
     },
     null,
@@ -3477,11 +3478,24 @@ export const appRouter = router({
           pickPreferredWorkerOpinion(chatDocuments.map((item) => item.heliosOpinion)) ??
           asObjectRecord(chatDocuments.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const missingDocuments = inferHeliosMissingDocuments({ documents });
+        const laborSignals = summarizeLaborFiscalSignals(chatDocuments);
+        const officialDigest = await resolveOfficialDigest(
+          {
+            prompt: input.prompt,
+            documentType:
+              laborSignals.snapshots[0]?.documentType ?? chatDocuments[0]?.documentType ?? null,
+            hasImssSignal: laborSignals.hasImssSignal,
+            hasFiscalSignal: laborSignals.hasFiscalSignal,
+            hasInfonavitSignal: laborSignals.hasInfonavitSignal,
+          },
+          { live: process.env.VITEST !== "true" },
+        );
         const workerChatGrounding = buildWorkerChatGrounding({
           documents: chatDocuments,
           opinion: latestOpinion,
           missingDocument: missingDocuments[0] ?? null,
           multiDocUpsell: scopedChat.upsell,
+          officialDigest,
         });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
@@ -3560,6 +3574,11 @@ export const appRouter = router({
             suggestedPrompts,
             supportingDocuments,
             commercePlanKey: commerceStatus.activePlanKey,
+            officialDigest: {
+              freshness: officialDigest.freshness,
+              liveBlocked: officialDigest.liveBlocked,
+              titles: officialDigest.citations.map((item) => item.officialId),
+            },
           },
         });
 
@@ -3569,6 +3588,13 @@ export const appRouter = router({
           confidenceScore,
           suggestedPrompts,
           supportingDocuments,
+          officialTitles: officialDigest.citations.slice(0, 3).map((item) => ({
+            title: item.title,
+            url: item.url,
+            kindLabel: item.kindLabel,
+            source: item.source,
+          })),
+          officialSourcesNote: officialDigest.honestyNote,
           missingDocuments,
           sourceDocumentCount: chatDocuments.length,
           commercePlanKey: commerceStatus.activePlanKey,

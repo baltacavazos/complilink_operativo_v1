@@ -52,6 +52,18 @@ describe("sanitizeWorkerChatCopy", () => {
     expect(hasInventedLegalCitation(clean)).toBe(false);
   });
 
+  it("conserva un título y liga oficiales reales del digest", () => {
+    const official =
+      "OFRECIMIENTO DE TRABAJO. PARA CALIFICARLO DE BUENA FE Y, EN SU CASO, DETERMINAR LA PROCEDENCIA DE LA REVERSIÓN DE LA CARGA DE LA PRUEBA, NO DEBEN VALORARSE LOS MEDIOS PROBATORIOS RELACIONADOS CON LA EXISTENCIA O INEXISTENCIA DEL DESPIDO QUE DIO ORIGEN AL JUICIO LABORAL. https://sjf2.scjn.gob.mx/detalle/tesis/2032614";
+    const clean = sanitizeWorkerChatCopy(official);
+
+    expect(hasInventedLegalCitation(official)).toBe(false);
+    expect(clean).toContain("OFRECIMIENTO DE TRABAJO");
+    expect(clean).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032614");
+    expect(hasInventedLegalCitation(clean)).toBe(false);
+    expect(hasInventedLegalCitation("https://sjf2.scjn.gob.mx/detalle/tesis/9999999")).toBe(true);
+  });
+
   it("neutraliza una validación IMSS en vivo inventada", () => {
     const dirty = "Ya validamos ante el IMSS y confirmamos tu alta.";
     const clean = sanitizeWorkerChatCopy(dirty);
@@ -253,6 +265,7 @@ describe("chat UX helpers", () => {
 
   it("el panel usa Asesor laboral, las cuatro secciones y el sanitizador no reintroduce Helios", () => {
     expect(WORKER_CHAT_SHEET_COPY.title).toBe(WORKER_CHAT_TITLE);
+    expect(WORKER_CHAT_SHEET_COPY.eyebrow).toBe("Lectura de tus papeles");
     expect(WORKER_CHAT_ASK_CTA).toBe("Preguntar al asesor");
     expect(WORKER_CHAT_SHEET_COPY.promptsHeading).toBe("Empieza por aquí");
     expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("No es un abogado");

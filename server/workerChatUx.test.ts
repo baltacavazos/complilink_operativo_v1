@@ -231,6 +231,51 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/Hechos visibles/);
     expect(instructions).toMatch(/\$120\.50|12345678901/);
     expect(instructions).toMatch(/Siguiente paso ya anclado/);
+    expect(instructions).toMatch(/Lecturas oficiales del digest/);
+    expect(instructions).toMatch(/doctrina de la Corte, no jurisprudencia/);
+  });
+
+  it("en una pregunta legal cita títulos reales del digest y etiqueta doctrina", () => {
+    const digest = {
+      citations: [
+        {
+          title:
+            "TIEMPO EXTRAORDINARIO DE LAS PERSONAS TRABAJADORAS AL SERVICIO DEL ESTADO DE GUERRERO. NO ES REQUISITO LA AUTORIZACIÓN POR ESCRITO DE LA PATRONAL PARA LABORARLAS, A FIN DE RECLAMAR SU PAGO [INTERRUPCIÓN DE LA JURISPRUDENCIA XXI.2o.C.T. J/1 L (11a.)].",
+          url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032611",
+          source: "scjn" as const,
+          kind: "doctrina" as const,
+          kindLabel: "Doctrina de la Corte, no jurisprudencia",
+          officialId: "2032611",
+          publishedAt: "2026-09-04 10:13",
+          matchedTopics: ["tiempo extraordinario"],
+          freshness: "last_good" as const,
+        },
+      ],
+      freshness: "last_good" as const,
+      liveAttempted: false,
+      liveBlocked: false,
+      honestyNote:
+        "Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial.",
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+      officialDigest: digest,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, {
+      prompt: "¿Qué dice la ley sobre horas extra?",
+    });
+    const instructions = buildWorkerChatLlmInstructions(grounding, {
+      prompt: "¿Qué dice la ley sobre horas extra?",
+    });
+
+    expect(answer).toContain("Lecturas oficiales");
+    expect(answer).toContain("TIEMPO EXTRAORDINARIO DE LAS PERSONAS TRABAJADORAS");
+    expect(answer).toContain("consulta anterior");
+    expect(answer).not.toMatch(/registro digital 2032611|IUS 2032611|XXI\.2o\.C\.T\.1/);
+    expect(instructions).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032611");
+    expect(instructions).toMatch(/Doctrina de la Corte, no jurisprudencia/);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
   it("en plan gratis recorta a un documento y deja upsell limpio, sin marcadores", () => {

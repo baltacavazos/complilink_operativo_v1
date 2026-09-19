@@ -942,6 +942,7 @@ describe("appRouter case workflows", () => {
         ]),
       }),
     );
+    expect(result.officialTitles).toEqual([]);
     expect(result.suggestedPrompts).toContain("¿Qué dice mi contrato?");
     expect(result.suggestedPrompts.join(" ")).not.toMatch(/Helios|CompliLink/i);
     expect(result.supportingDocuments[0]?.detail).toMatch(/Lectura visible: esta lectura generó una lectura preliminar útil del contrato/);
@@ -1068,6 +1069,65 @@ describe("appRouter case workflows", () => {
     expect(result.answer).not.toMatch(/Helios|consulta en vivo/i);
     expect(result.supportingDocuments.some((item) => item.id === "DOC-PAY-001")).toBe(true);
     expect(result.supportingDocuments.some((item) => item.id === "DOC-CFDI-001")).toBe(false);
+  });
+
+  it("cites real official digest titles for a legal question and keeps freemium copy clean", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-PAY-001",
+        originalName: "recibo_mayo.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-05-16T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-PAY-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "El recibo muestra periodo y un descuento de IMSS.",
+          legalOpinion: "Hay señales de descuento IMSS en el papel.",
+          riskLevel: "medium",
+          recommendedNextStep: "Compara el descuento con tu siguiente recibo.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: ["Periodo 1 al 15 de mayo"],
+          uncertainties: [],
+          confidenceScore: 80,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-05-16T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content:
+              "Respuesta clara: Sobre horas extra solo puedo citar lecturas oficiales del digest.\nLo que sí se sabe: El recibo no trae horas extra.\nLo que falta: Falta un papel que muestre las horas.\nSiguiente paso: Compara con tu siguiente recibo.",
+          },
+        },
+      ],
+    } as never);
+
+    const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
+    const result = await caller.cases.heliosCopilotChat({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      prompt: "¿Qué dice la ley sobre horas extra?",
+    });
+
+    expect(result.officialTitles.length).toBeGreaterThan(0);
+    expect(result.officialTitles.length).toBeLessThanOrEqual(3);
+    expect(result.officialTitles.some((item) => item.url.includes("2032611"))).toBe(true);
+    expect(result.officialTitles.some((item) => item.kindLabel.includes("Doctrina"))).toBe(true);
+    expect(result.answer).toContain("Lecturas oficiales");
+    expect(result.answer).toMatch(/TIEMPO EXTRAORDINARIO|jornada laboral/i);
+    expect(result.answer).not.toMatch(/required_plan|current_plan|\|\||Helios|CompliLink/i);
+    expect(result.officialTitles.some((item) => item.url.includes("9999999"))).toBe(false);
   });
 
   it("revalidates IMSS and Infonavit with a Helios audit contract and traceable evidence", async () => {

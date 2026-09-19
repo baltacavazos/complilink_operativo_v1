@@ -3,6 +3,12 @@
  * Español plano, «Asesor laboral», secciones fijas y sin jerga interna.
  */
 
+import {
+  OFFICIAL_SOURCES_HEADING,
+  maskOfficialDigestSpans,
+  type OfficialDigestCitation,
+} from "./officialDigest";
+
 const EMPTY_QUOTES = /["“”‘’`]{2,}/g;
 const EXTRA_SPACE = /\s{2,}/g;
 
@@ -13,6 +19,7 @@ export const WORKER_CHAT_CLEAR_HEADING = "Respuesta clara";
 export const WORKER_CHAT_KNOWN_HEADING = "Lo que sí se sabe";
 export const WORKER_CHAT_MISSING_HEADING = "Lo que falta";
 export const WORKER_CHAT_NEXT_HEADING = "Siguiente paso";
+export const WORKER_CHAT_SOURCES_HEADING = OFFICIAL_SOURCES_HEADING;
 export const WORKER_CHAT_WHAT_NOW_HEADING = WORKER_CHAT_NEXT_HEADING;
 
 export const WORKER_CHAT_DISCLAIMER =
@@ -41,12 +48,13 @@ export function hasInternalControlMarkers(value?: string | null): boolean {
 }
 
 export const WORKER_CHAT_SHEET_COPY = {
-  eyebrow: WORKER_CHAT_TITLE,
+  eyebrow: "Lectura de tus papeles",
   title: WORKER_CHAT_TITLE,
   description:
     "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
   documentBadge: "Solo lee tus papeles",
   capabilityBadge: "No es un abogado",
+  officialSourcesHeading: WORKER_CHAT_SOURCES_HEADING,
   quickHighlights: [
     WORKER_CHAT_CLEAR_HEADING,
     WORKER_CHAT_KNOWN_HEADING,
@@ -92,6 +100,7 @@ export type WorkerChatAnswerSections = {
   known: string | null;
   missing: string | null;
   nextStep: string | null;
+  officialSources: string | null;
 };
 
 export type WorkerChatDisplayBlock = {
@@ -119,12 +128,13 @@ export function hasForbiddenWorkerBrand(value?: string | null): boolean {
 
 export function hasInventedLegalCitation(value?: string | null): boolean {
   if (!value) return false;
+  const { masked } = maskOfficialDigestSpans(value);
   return (
-    /\btesis\b/i.test(value) ||
-    /registro digital/i.test(value) ||
-    /semanario judicial/i.test(value) ||
-    /\bIUS\s*\d+/i.test(value) ||
-    /jurisprudencia\s+\d+/i.test(value)
+    /\btesis\b/i.test(masked) ||
+    /registro digital/i.test(masked) ||
+    /semanario judicial/i.test(masked) ||
+    /\bIUS\s*\d+/i.test(masked) ||
+    /jurisprudencia\s+\d+/i.test(masked)
   );
 }
 
@@ -153,7 +163,8 @@ export function hasForbiddenWorkerChatClaim(value?: string | null): boolean {
 }
 
 export function stripInventedLegalCitations(value: string): string {
-  let next = value;
+  const { masked, restore } = maskOfficialDigestSpans(value);
+  let next = masked;
   next = next.replace(
     /\b(?:tesis|jurisprudencia)\s+(?:p\.|1a\.|2a\.|pc\.)?\/?j\.?\s*\d+(?:\s*\/\s*\d+)?(?:\s*\([^)]+\))?/gi,
     "la lectura de tus documentos",
@@ -163,7 +174,7 @@ export function stripInventedLegalCitations(value: string): string {
   next = next.replace(/semanario judicial(?: de la federaci[oó]n)?/gi, "tus documentos");
   next = next.replace(/\bIUS\s*\d+/gi, "tus documentos");
   next = next.replace(/jurisprudencia\s+\d+(?:\s*\/\s*\d+)?/gi, "la lectura de tus documentos");
-  return next;
+  return restore(next);
 }
 
 export function stripLiveValidationClaims(value: string): string {
@@ -285,6 +296,7 @@ const KNOWN_HEADING_RE = /(?:^|\n)\s*(?:\d+\)\s*)?Lo que s[ií] se sabe\s*:?\s*/
 const MISSING_HEADING_RE = /(?:^|\n)\s*(?:\d+\)\s*)?Lo que falta(?: confirmar)?\s*:?\s*/i;
 const NEXT_HEADING_RE =
   /(?:^|\n)\s*(?:\d+\)\s*)?(?:Siguiente paso(?: [uú]til)?|Qu[eé] hacer ahora)\s*:?\s*/i;
+const SOURCES_HEADING_RE = /(?:^|\n)\s*(?:\d+\)\s*)?Lecturas oficiales\s*:?\s*/i;
 const DISCLAIMER_HEADING_RE = /(?:^|\n)\s*(?:Esto no es asesor[ií]a legal|\d+\))/i;
 
 function takeSection(content: string, startRe: RegExp, endRes: RegExp[]): string | null {
@@ -304,39 +316,52 @@ function takeSection(content: string, startRe: RegExp, endRes: RegExp[]): string
 export function extractWorkerChatSections(content: string): WorkerChatAnswerSections {
   const normalized = content.replace(/\r/g, "").trim();
   if (!normalized) {
-    return { clearAnswer: "", known: null, missing: null, nextStep: null };
+    return { clearAnswer: "", known: null, missing: null, nextStep: null, officialSources: null };
   }
 
   const known = takeSection(normalized, KNOWN_HEADING_RE, [
     MISSING_HEADING_RE,
     NEXT_HEADING_RE,
+    SOURCES_HEADING_RE,
     DISCLAIMER_HEADING_RE,
   ]);
   const missing = takeSection(normalized, MISSING_HEADING_RE, [
     NEXT_HEADING_RE,
+    SOURCES_HEADING_RE,
     DISCLAIMER_HEADING_RE,
   ]);
-  const nextStep = takeSection(normalized, NEXT_HEADING_RE, [DISCLAIMER_HEADING_RE]);
+  const nextStep = takeSection(normalized, NEXT_HEADING_RE, [
+    SOURCES_HEADING_RE,
+    DISCLAIMER_HEADING_RE,
+  ]);
+  const officialSources = takeSection(normalized, SOURCES_HEADING_RE, [DISCLAIMER_HEADING_RE]);
   const clearFromHeading = takeSection(normalized, CLEAR_HEADING_RE, [
     KNOWN_HEADING_RE,
     MISSING_HEADING_RE,
     NEXT_HEADING_RE,
+    SOURCES_HEADING_RE,
     DISCLAIMER_HEADING_RE,
   ]);
 
   if (clearFromHeading) {
-    return { clearAnswer: clearFromHeading, known, missing, nextStep };
+    return { clearAnswer: clearFromHeading, known, missing, nextStep, officialSources };
   }
 
-  if (known || missing || nextStep) {
+  if (known || missing || nextStep || officialSources) {
     const firstHeading = normalized.search(
-      /(?:^|\n)\s*(?:\d+\)\s*)?(?:Lo que s[ií] se sabe|Lo que falta|Siguiente paso|Qu[eé] hacer ahora)/i,
+      /(?:^|\n)\s*(?:\d+\)\s*)?(?:Lo que s[ií] se sabe|Lo que falta|Siguiente paso|Qu[eé] hacer ahora|Lecturas oficiales)/i,
     );
     const before = asText(normalized.slice(0, firstHeading >= 0 ? firstHeading : normalized.length));
-    return { clearAnswer: before ?? normalized, known, missing, nextStep };
+    return { clearAnswer: before ?? normalized, known, missing, nextStep, officialSources };
   }
 
-  return { clearAnswer: collapseCopy(normalized), known: null, missing: null, nextStep: null };
+  return {
+    clearAnswer: collapseCopy(normalized),
+    known: null,
+    missing: null,
+    nextStep: null,
+    officialSources: null,
+  };
 }
 
 export function extractWorkerClearAnswer(content: string): string {
@@ -352,6 +377,8 @@ export function formatWorkerChatAnswer(params: {
   known?: string | null;
   missing?: string | null;
   nextStep?: string | null;
+  officialSources?: string | OfficialDigestCitation[] | null;
+  officialSourcesNote?: string | null;
   disclaimer?: string | null;
   multiDocUpsell?: string | boolean | null;
 }): string {
@@ -368,6 +395,15 @@ export function formatWorkerChatAnswer(params: {
   const nextStep =
     sanitizeWorkerChatCopy(sections.nextStep ?? params.nextStep ?? null) ??
     "Revisa lo que ya se ve en tus papeles y, si puedes, sube el siguiente documento del mismo periodo.";
+  const officialFromParams = Array.isArray(params.officialSources)
+    ? params.officialSources
+        .slice(0, 3)
+        .map((item) => item.title)
+        .join("\n")
+    : params.officialSources;
+  const officialSources =
+    sanitizeWorkerChatCopy(sections.officialSources ?? officialFromParams ?? null);
+  const officialNote = sanitizeWorkerChatCopy(params.officialSourcesNote ?? null);
   const disclaimer = asText(params.disclaimer) ?? WORKER_CHAT_DISCLAIMER;
   const upsell =
     params.multiDocUpsell === true
@@ -386,6 +422,11 @@ export function formatWorkerChatAnswer(params: {
     "",
     WORKER_CHAT_NEXT_HEADING,
     nextStep,
+    ...(officialSources
+      ? ["", WORKER_CHAT_SOURCES_HEADING, officialSources, ...(officialNote ? [officialNote] : [])]
+      : officialNote
+        ? ["", WORKER_CHAT_SOURCES_HEADING, officialNote]
+        : []),
     "",
     disclaimer,
     ...(upsell ? ["", upsell] : []),
@@ -466,7 +507,8 @@ export function parseWorkerStructuredAnswer(content: string): WorkerChatDisplayB
     CLEAR_HEADING_RE.test(normalized) ||
     KNOWN_HEADING_RE.test(normalized) ||
     MISSING_HEADING_RE.test(normalized) ||
-    NEXT_HEADING_RE.test(normalized);
+    NEXT_HEADING_RE.test(normalized) ||
+    SOURCES_HEADING_RE.test(normalized);
 
   if (!hasStructuredHeadings) {
     const disclaimerMatch = normalized.match(/\n\s*(Esto no es asesor[ií]a legal[\s\S]*)$/i);
@@ -506,6 +548,13 @@ export function parseWorkerStructuredAnswer(content: string): WorkerChatDisplayB
     blocks.push({
       heading: WORKER_CHAT_NEXT_HEADING,
       body: sections.nextStep,
+      kind: "section",
+    });
+  }
+  if (sections.officialSources) {
+    blocks.push({
+      heading: WORKER_CHAT_SOURCES_HEADING,
+      body: sections.officialSources,
       kind: "section",
     });
   }

@@ -14,6 +14,10 @@ describe("worker chat visual polish", () => {
     const sheet = read("HeliosCopilotSheet.tsx");
     const chat = read("AIChatBox.tsx");
     const css = read("../index.css");
+    const helpers = readFileSync(
+      resolve(currentDir, "../../../shared/workerChatUx.ts"),
+      "utf8",
+    );
 
     expect(sheet).toContain('data-testid="ap-worker-chat"');
     expect(sheet).toContain("ap-worker-chat");
@@ -33,6 +37,13 @@ describe("worker chat visual polish", () => {
     expect(chat).toContain('ap-chat-next-step');
     expect(css).toContain(".ap-worker-chat .ap-chat-section-next");
     expect(sheet).toContain("sanitizeVisibleChatHistoryContent");
+    expect(sheet).toContain("ap-chat-official");
+    expect(sheet).toContain("ap-chat-source-link");
+    expect(sheet).toContain("line-clamp-3");
+    expect(sheet).toContain("officialTitles");
+    expect(helpers).toContain('title: WORKER_CHAT_TITLE');
+    expect(helpers).toContain("Lectura de tus papeles");
+    expect(helpers).toContain('WORKER_CHAT_TITLE = "Asesor laboral"');
     expect(chat).toContain('variant?: "default" | "calm"');
     expect(chat).toContain("ap-chat-bubble-user");
     expect(chat).toContain("ap-chat-bubble-assistant");
@@ -46,6 +57,8 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-bubble-assistant");
     expect(css).toContain(".ap-worker-chat .ap-chat-chip");
     expect(css).toContain(".ap-worker-chat .ap-chat-section-label");
+    expect(css).toContain(".ap-worker-chat .ap-chat-official");
+    expect(css).toContain(".ap-worker-chat .ap-chat-source-link");
     expect(css).toContain("letter-spacing: -0.018em");
     expect(css).toContain("color-scheme: light");
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
@@ -62,5 +75,8 @@ describe("worker chat visual polish", () => {
     expect(auditar).toContain("descuento Infonavit $80.00");
     expect(auditar).toContain("aviso de retención o estado de crédito");
     expect(auditar).toContain("acreditación de pagos y deducciones");
+    expect(auditar).toContain("officialTitles");
+    expect(auditar).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032614");
+    expect(auditar).toContain("codigo=5786537");
   });
 });

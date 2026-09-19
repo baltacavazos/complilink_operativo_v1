@@ -3,6 +3,7 @@ import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_SHEET_COPY,
+  WORKER_CHAT_SOURCES_HEADING,
   sanitizeVisibleChatHistoryContent,
 } from "@shared/workerChatUx";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { ArrowRight, Clock3, FileText, Sparkles } from "lucide-react";
+import { ArrowRight, Clock3, FileText, Scale, Sparkles } from "lucide-react";
+
+export type HeliosOfficialTitle = {
+  title: string;
+  url: string;
+  kindLabel?: string | null;
+  source?: "scjn" | "dof" | string;
+};
 
 export type HeliosCopilotMessage = AIChatMessage;
 export type HeliosCopilotResponseTone = "brief" | "explained";
@@ -60,6 +68,7 @@ export type HeliosCopilotSheetCopy = {
   placeholder?: string;
   emptyStateMessage?: string;
   closeLabel?: string;
+  officialSourcesHeading?: string;
 };
 
 type HeliosCopilotSheetProps = {
@@ -82,6 +91,8 @@ type HeliosCopilotSheetProps = {
   responseTone?: HeliosCopilotResponseTone;
   onResponseToneChange?: ((tone: HeliosCopilotResponseTone) => void) | null;
   onFocusSuggestedDocument?: (() => void) | null;
+  officialTitles?: HeliosOfficialTitle[];
+  officialSourcesNote?: string | null;
   uiCopy?: HeliosCopilotSheetCopy;
 };
 
@@ -105,6 +116,8 @@ export function HeliosCopilotSheet({
   responseTone = "brief",
   onResponseToneChange,
   onFocusSuggestedDocument,
+  officialTitles = [],
+  officialSourcesNote,
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const mergedCopy = {
@@ -134,6 +147,10 @@ export function HeliosCopilotSheet({
     emptyStateMessage:
       sanitizeClientVisibleCopy(mergedCopy.emptyStateMessage) ?? mergedCopy.emptyStateMessage,
     closeLabel: sanitizeClientVisibleCopy(mergedCopy.closeLabel) ?? mergedCopy.closeLabel,
+    officialSourcesHeading:
+      sanitizeClientVisibleCopy(
+        mergedCopy.officialSourcesHeading ?? WORKER_CHAT_SOURCES_HEADING,
+      ) ?? WORKER_CHAT_SOURCES_HEADING,
     quickHighlights: mergedCopy.quickHighlights.map(
       (item) => sanitizeClientVisibleCopy(item) ?? item,
     ),
@@ -158,6 +175,15 @@ export function HeliosCopilotSheet({
   const visibleSummary = sanitizeMultiline(summary) ?? summary;
   const visibleDisclaimer = sanitizeMultiline(disclaimer) ?? disclaimer;
   const visibleCaseTitle = sanitizeClientVisibleCopy(caseTitle) ?? caseTitle;
+  const visibleOfficialTitles = officialTitles.slice(0, 3).map((item) => ({
+    ...item,
+    title: sanitizeClientVisibleCopy(item.title) ?? item.title,
+    kindLabel: item.kindLabel
+      ? sanitizeClientVisibleCopy(item.kindLabel) ?? item.kindLabel
+      : null,
+  }));
+  const visibleOfficialNote =
+    sanitizeClientVisibleCopy(officialSourcesNote) ?? officialSourcesNote;
   const visiblePromptsContext =
     sanitizeClientVisibleCopy(suggestedPromptsContext) ?? suggestedPromptsContext;
   const visibleHistoryContext = sanitizeClientVisibleCopy(historyContext) ?? historyContext;
@@ -171,25 +197,25 @@ export function HeliosCopilotSheet({
         className="ap-worker-chat w-full border-l border-slate-200/80 bg-[#f7f8fa] p-0 sm:max-w-xl"
       >
         <div className="flex h-full flex-col">
-          <SheetHeader className="border-b border-slate-200/70 bg-white/80 px-5 py-4 text-left backdrop-blur-md sm:px-6">
+          <SheetHeader className="border-b border-slate-200/80 bg-white/90 px-5 py-5 text-left backdrop-blur-md sm:px-6">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
                 <Sparkles className="h-5 w-5" strokeWidth={1.7} />
               </div>
               <div className="min-w-0">
-                <p className="text-[12px] font-medium tracking-[-0.01em] text-teal-700">
+                <p className="text-[12px] font-medium tracking-[-0.01em] text-teal-800">
                   {copy.eyebrow}
                 </p>
-                <SheetTitle className="mt-1 text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950">
+                <SheetTitle className="mt-1 text-[1.4rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950">
                   {copy.title}
                 </SheetTitle>
-                <SheetDescription className="mt-1.5 text-[0.95rem] leading-6 tracking-[-0.015em] text-slate-500">
+                <SheetDescription className="mt-1.5 text-[0.95rem] leading-6 tracking-[-0.015em] text-slate-600">
                   {copy.description}
                 </SheetDescription>
               </div>
             </div>
 
-            <div className="mt-4 space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.28)]">
+            <div className="mt-5 space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.28)]">
               <p className="text-sm font-semibold text-slate-950">
                 {visibleCaseTitle ?? "Expediente activo"}
                 {employeeName ? (
@@ -282,7 +308,7 @@ export function HeliosCopilotSheet({
                       key={prompt}
                       type="button"
                       variant="outline"
-                      className="ap-chat-prompt motion-hover-lift h-auto rounded-full px-3.5 py-2 text-left text-[0.8rem] leading-5 tracking-[-0.01em] text-slate-700"
+                      className="ap-chat-prompt motion-hover-lift h-auto rounded-full px-3.5 py-2 text-left text-[0.82rem] leading-5 tracking-[-0.01em] text-slate-800"
                       onClick={() => onSendMessage(prompt)}
                     >
                       {prompt}
@@ -405,6 +431,50 @@ export function HeliosCopilotSheet({
               </div>
             ) : null}
 
+            {visibleOfficialTitles.length || visibleOfficialNote ? (
+              <div
+                className="ap-chat-official mb-4 rounded-[1.2rem] border border-slate-200/90 bg-white p-4"
+                data-testid="ap-chat-official-sources"
+              >
+                <div className="flex items-center gap-2">
+                  <Scale className="h-4 w-4 text-teal-800" strokeWidth={1.8} />
+                  <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-600">
+                    {copy.officialSourcesHeading}
+                  </p>
+                </div>
+                {visibleOfficialNote ? (
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {visibleOfficialNote}
+                  </p>
+                ) : null}
+                {visibleOfficialTitles.length ? (
+                  <div className="mt-3 space-y-2.5">
+                    {visibleOfficialTitles.map((item) => (
+                      <a
+                        key={`${item.source ?? "official"}-${item.url}`}
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="ap-chat-source-link block rounded-[1rem] border border-slate-200/80 bg-[#f7f8fa] px-3 py-3"
+                      >
+                        {item.kindLabel ? (
+                          <p className="text-[11px] font-medium tracking-[-0.01em] text-teal-800">
+                            {item.kindLabel}
+                          </p>
+                        ) : null}
+                        <p
+                          className="mt-1 line-clamp-3 text-sm font-medium leading-6 tracking-[-0.015em] text-slate-950"
+                          title={item.title}
+                        >
+                          {item.title}
+                        </p>
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
             {visibleSupportingDocuments.length ? (
               <div className="mb-4 rounded-[1.2rem] border border-teal-100 bg-teal-50/70 p-4 transition-colors duration-300">
                 <div className="flex items-center gap-2">
@@ -449,8 +519,8 @@ export function HeliosCopilotSheet({
             </div>
           </div>
 
-          <div className="border-t border-slate-200/70 bg-white/85 px-5 py-4 backdrop-blur-md transition-colors duration-300 sm:px-6">
-            <p className="text-[0.78rem] leading-6 tracking-[-0.01em] text-slate-500">
+          <div className="border-t border-slate-200/80 bg-white/90 px-5 py-4 backdrop-blur-md transition-colors duration-300 sm:px-6">
+            <p className="text-[0.78rem] leading-6 tracking-[-0.01em] text-slate-600">
               {visibleDisclaimer ?? WORKER_CHAT_DISCLAIMER}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
