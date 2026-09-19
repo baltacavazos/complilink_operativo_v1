@@ -126,6 +126,22 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).not.toContain("CompliLink");
   });
 
+  it("deja un solo CTA primario «Sube tu recibo» en /auditar sin archivo", () => {
+    const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
+
+    expect(auditar).toContain('{(selectedFile || pendingDraft) ? (');
+    expect(auditar).toContain("hidden gap-2.5 sm:grid");
+    expect(auditar).toContain(': "Sube tu recibo"');
+    expect(auditar).toContain("Tu recibo o comprobante");
+    expect(auditar).toContain("Revisa lo importante");
+    expect(auditar).toContain("Foto o archivo para empezar");
+    expect(auditar).not.toContain("Sube tu recibo o comprobante");
+    expect(auditar).not.toContain("Sube tu recibo y revisa lo importante");
+    expect(auditar).toContain(
+      'className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start"',
+    );
+  });
+
   it("deja /acceso sin caja redundante, con marca limpia y formulario Apple", () => {
     const gate = readRepoFile("client", "src", "pages", "AccessGate.tsx");
     const form = readRepoFile("client", "src", "pages", "LocalPasswordForm.tsx");

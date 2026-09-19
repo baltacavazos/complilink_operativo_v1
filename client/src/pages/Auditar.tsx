@@ -8555,7 +8555,7 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo o comprobante"}
+                {isNativeAppExperience ? "Tu documento" : "Tu recibo o comprobante"}
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
@@ -9865,7 +9865,7 @@ export default function Auditar() {
                     {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
                   </p>
                   <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
-                    {isNativeAppExperience ? "Sube y revisa" : "Sube tu recibo y revisa lo importante"}
+                    Revisa lo importante
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-5 text-slate-600">
@@ -10011,7 +10011,7 @@ export default function Auditar() {
                     </div>
                     <div>
                       <p className="font-semibold leading-5 text-slate-950">
-                        Sube tu recibo o comprobante
+                        Foto o archivo para empezar
                       </p>
                       <p className="text-sm leading-5 text-slate-600">
                         Foto o archivo. Lo revisamos al momento y después decides si se guarda.
@@ -11385,6 +11385,7 @@ export default function Auditar() {
                 </div>
               ) : null}
 
+              {(selectedFile || pendingDraft) ? (
               <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Button
@@ -11451,6 +11452,7 @@ export default function Auditar() {
                     : "Limpiar formulario"}
                 </Button>
               </div>
+              ) : null}
             </div>
 
             <div className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
