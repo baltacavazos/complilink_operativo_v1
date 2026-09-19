@@ -34,10 +34,8 @@ describe("MICRO residual clarity — /auditar", () => {
   it("hace legible el tip Documento sugerido: blanco sobre pizarra, no azul sobre azul", () => {
     const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
     const css = readRepoFile("client", "src", "index.css");
-    const tipBlock = auditar.slice(
-      auditar.indexOf("Documento sugerido preparado") - 280,
-      auditar.indexOf("Documento sugerido preparado") + 420,
-    );
+    const tipAnchor = auditar.indexOf('data-testid="auditar-suggested-tip"');
+    const tipBlock = auditar.slice(tipAnchor - 80, tipAnchor + 900);
 
     expect(tipBlock).toContain("data-ap-suggested-tip");
     expect(tipBlock).toContain('data-testid="auditar-suggested-tip"');
@@ -100,7 +98,7 @@ describe("MICRO residual clarity — /auditar", () => {
     );
   });
 
-  it("no regressa Volver único, CTA de carga, cero señal ni pagos demo", () => {
+  it("no regressa Volver único, CTA de carga ni pagos demo", () => {
     const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
     const app = readRepoFile("client", "src", "App.tsx");
     const shell = readRepoFile("client", "src", "components", "MobileAppShell.tsx");
