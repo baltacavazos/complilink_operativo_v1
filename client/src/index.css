@@ -977,7 +977,22 @@
   }
 
   .ap-worker-chat .ap-chat-disclaimer {
-    color: var(--ap-chat-faint);
+    color: var(--ap-chat-muted);
+  }
+
+  .ap-worker-chat .ap-chat-official {
+    box-shadow: 0 16px 36px -32px rgba(15, 23, 42, 0.35);
+  }
+
+  .ap-worker-chat .ap-chat-source-link {
+    color: var(--ap-chat-ink);
+    text-decoration: none;
+    transition: border-color 160ms ease, background-color 160ms ease;
+  }
+
+  .ap-worker-chat .ap-chat-source-link:hover {
+    border-color: rgba(13, 148, 136, 0.28);
+    background: rgb(255 255 255);
   }
 
   .ap-worker-chat .ap-chat-dot {
