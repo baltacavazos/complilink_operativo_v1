@@ -25,6 +25,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { trackCeoViewModeToggled } from "@/lib/analytics";
+import { formatWorkerAccountChrome } from "@/lib/clientVisibleCopy";
 import { cn } from "@/lib/utils";
 import { LogOut, PanelLeft, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { type CSSProperties, useEffect, useMemo, useRef, useState } from "react";
@@ -202,14 +203,25 @@ function DashboardLayoutContent({
     };
   }, [isResizing, setSidebarWidth]);
 
+  const accountChrome = useMemo(
+    () =>
+      formatWorkerAccountChrome({
+        name: realUser?.name || user?.name,
+        email: realUser?.email || user?.email,
+      }),
+    [realUser?.email, realUser?.name, user?.email, user?.name],
+  );
   const userInitials = useMemo(() => {
-    const source = user?.name || user?.email || "CL";
+    const source = accountChrome.title;
+    if (source === "Tu cuenta") {
+      return "TÚ";
+    }
     return source
       .split(" ")
       .slice(0, 2)
       .map((chunk) => chunk.charAt(0).toUpperCase())
       .join("");
-  }, [user?.email, user?.name]);
+  }, [accountChrome.title]);
 
   return (
     <>
@@ -283,8 +295,8 @@ function DashboardLayoutContent({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                    <p className="truncate text-sm font-medium text-sidebar-foreground">{realUser?.name || user?.name || "Usuario"}</p>
-                    <p className="truncate text-xs text-muted-foreground">{realUser?.email || user?.email || "Sesión protegida"}</p>
+                    <p className="truncate text-sm font-medium text-sidebar-foreground">{accountChrome.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">{accountChrome.subtitle}</p>
                     {canToggleUserView ? (
                       <p className="truncate text-[11px] font-medium text-sidebar-foreground/70">
                         {isViewingAsUser ? "Vista activa: usuario normal" : "Vista activa: modo CEO"}

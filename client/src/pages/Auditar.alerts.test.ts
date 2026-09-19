@@ -318,8 +318,8 @@ describe("digital archive round 8", () => {
 
   it("expone un retorno móvil fijo al expediente cuando ya hay documentos", () => {
     expect(auditarSource).toContain('data-testid="auditar-mobile-archive-return"');
-    expect(auditarSource).toContain("Volver al expediente filtrado");
-    expect(auditarSource).toContain("Volver al expediente");
+    expect(auditarSource).toContain("Ver el expediente filtrado");
+    expect(auditarSource).toContain("Ver tu expediente");
   });
 });
 

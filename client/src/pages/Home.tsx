@@ -8,7 +8,7 @@ import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogoIcon, AuditaPatronLogoWordmar
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { humanizeDossierProgressLabel, humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
@@ -1839,7 +1839,7 @@ function HeliosFirstEntrySection() {
               <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">Primero ves valor y luego decides</span>
             </div>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
-              {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, retomamos tu lectura y la guardas solo si te sirve."}
+              {latestCase?.stageLabel ? `Tu bóveda va en ${humanizeDossierProgressLabel(latestCase.stageLabel)}.` : "Si ya entraste antes, retomamos tu lectura y la guardas solo si te sirve."}
             </p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               {latestCase?.summary ?? "Si vuelves desde correo, retomamos la lectura temporal sin pedirte volver a subir el archivo. El acceso por correo aparece solo cuando quieres guardar, proteger y continuar."}

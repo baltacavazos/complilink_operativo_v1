@@ -37,7 +37,7 @@ describe("responsive layout regression guards", () => {
     expect(homeSource).toContain('motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto');
   });
 
-  it("keeps the quick exit action compact on mobile", () => {
+  it("keeps a single in-flow mobile back control instead of a floating exit", () => {
     const appSource = readProjectFile("client", "src", "App.tsx");
     const shellSource = readProjectFile("client", "src", "components", "MobileAppShell.tsx");
 
@@ -46,5 +46,8 @@ describe("responsive layout regression guards", () => {
     expect(appSource).toContain("path === \"/auditar\"");
     expect(appSource).toMatch(/>\s*Volver\s*</);
     expect(shellSource).toMatch(/>\s*Volver\s*</);
+    expect(shellSource).toContain('data-testid="mobile-header-back"');
+    expect(shellSource).not.toContain("sticky top-3 z-40");
+    expect(shellSource).not.toContain("inline-flex shrink-0 items-center rounded-full bg-slate-950 px-3 py-1.5");
   });
 });

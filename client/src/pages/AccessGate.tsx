@@ -1,5 +1,5 @@
 import { AuditaPatronLogoIcon, AuditaPatronLogoWordmark } from "@/components/AuditaPatronLogo";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import LocalPasswordForm from "./LocalPasswordForm";
@@ -77,6 +77,14 @@ export default function AccessGate() {
     <main className="audita-access min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-12 sm:px-6 sm:py-16">
         <div className="ap-access-surface px-1 py-4">
+          <a
+            href="/"
+            data-testid="mobile-header-back"
+            className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 sm:hidden"
+          >
+            <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
+            Volver
+          </a>
           <div className="ap-access-mark flex justify-center">
             <AuditaPatronLogoIcon imageClassName="h-12 w-12 object-contain" />
           </div>
@@ -86,7 +94,7 @@ export default function AccessGate() {
             subtitleClassName="text-[11px] tracking-tight text-slate-500"
           />
           <LocalPasswordForm returnPath={returnTo} accessMode={accessMode} />
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 hidden justify-center sm:flex">
             <a href="/" className="text-sm font-medium text-slate-600 hover:text-slate-900">
               Volver al inicio
             </a>
