@@ -105,7 +105,11 @@ import {
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { ingestCompliLinkReturnPayload } from "./auditaPatronReturnWebhook";
-import { buildHeliosOpinionContract } from "./heliosIntegrationService";
+import {
+  applyEngineDispatchToHeliosOpinionContract,
+  buildHeliosOpinionContract,
+  type HeliosOpinionContract,
+} from "./heliosIntegrationService";
 import { buildSalaryDiscrepancySignal, extractSalarySignalFromClassificationPayload } from "./operationalSignals";
 import {
   DOCUMENT_SIGNAL_DISCLAIMER,
@@ -219,6 +223,28 @@ export async function ingestSynchronousCompliLinkAckEvent(params: {
   });
 
   return true;
+}
+
+async function finalizeHeliosOpinionAfterDispatch(params: {
+  tenantId: string;
+  caseId: string;
+  traceId: string;
+  contract: HeliosOpinionContract;
+  dispatch: Awaited<ReturnType<typeof sendDocumentToAuditaPatronEngine>>;
+}) {
+  const next = applyEngineDispatchToHeliosOpinionContract(params.contract, params.dispatch);
+  if (next.status === "error" && next !== params.contract) {
+    await upsertCanonicalContract({
+      tenantId: params.tenantId,
+      caseId: params.caseId,
+      traceId: params.traceId,
+      contractType: "audit",
+      schemaVersion: "helios_v1",
+      payload: JSON.stringify(next),
+      status: "ready",
+    });
+  }
+  return next;
 }
 
 const caseStatusSchema = z.enum(CASE_STATUSES);
@@ -1746,7 +1772,7 @@ function buildCompliLinkMonitoring(
         dispatchedAt,
         respondedAt: returnEntry.event.eventAt.toISOString(),
         responseEvent: String(returnEntry.metadata?.event ?? returnEntry.event.title),
-        message: "CompliLink ya devolvió una respuesta para este documento.",
+        message: "Ya llegó el resultado de la lectura de este documento.",
       } as const;
     }
 
@@ -4082,7 +4108,7 @@ export const appRouter = router({
           status: "ready",
         });
 
-        const heliosOpinionContract = buildHeliosOpinionContract({
+        let heliosOpinionContract = buildHeliosOpinionContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -4110,25 +4136,6 @@ export const appRouter = router({
 
         await upsertCanonicalContracts(contractsToPersist);
 
-        await addCaseEvent({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
-          traceId: detail.case.traceId,
-          actorUserId: ctx.user.id,
-          eventType: "note_added",
-          title: "El asesor laboral preparó una opinión inicial",
-          description: heliosOpinionContract.opinion.summary,
-          metadata: JSON.stringify({
-            engine: "helios",
-            document_id: documentId,
-            guest_preview_id: payload.guestPreviewId,
-            risk_level: heliosOpinionContract.opinion.riskLevel,
-            confidence_score: heliosOpinionContract.opinion.confidenceScore,
-            generated_at: heliosOpinionContract.opinion.generatedAt,
-          }),
-          eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
-        });
-
         const engineDispatch = await sendDocumentToAuditaPatronEngine({
           caseContract,
           documentContract,
@@ -4148,6 +4155,14 @@ export const appRouter = router({
           },
         });
 
+        heliosOpinionContract = await finalizeHeliosOpinionAfterDispatch({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contract: heliosOpinionContract,
+          dispatch: engineDispatch,
+        });
+
         if (engineDispatch.status === "sent") {
           await ingestSynchronousCompliLinkAckEvent({
             engineDispatch,
@@ -4155,6 +4170,28 @@ export const appRouter = router({
             traceId: detail.case.traceId,
           });
         }
+
+        await addCaseEvent({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          actorUserId: ctx.user.id,
+          eventType: "note_added",
+          title:
+            heliosOpinionContract.status === "error"
+              ? "No pudimos completar la lectura avanzada"
+              : "El asesor laboral preparó una opinión inicial",
+          description: heliosOpinionContract.opinion.summary,
+          metadata: JSON.stringify({
+            engine: "helios",
+            document_id: documentId,
+            guest_preview_id: payload.guestPreviewId,
+            risk_level: heliosOpinionContract.opinion.riskLevel,
+            confidence_score: heliosOpinionContract.opinion.confidenceScore,
+            generated_at: heliosOpinionContract.opinion.generatedAt,
+          }),
+          eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
+        });
 
         await createAuditLog({
           tenantId: input.tenantId,
@@ -4617,7 +4654,7 @@ export const appRouter = router({
           status: "ready",
         });
 
-        const heliosOpinionContract = buildHeliosOpinionContract({
+        let heliosOpinionContract = buildHeliosOpinionContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -4694,6 +4731,25 @@ export const appRouter = router({
           },
         });
 
+        heliosOpinionContract = await finalizeHeliosOpinionAfterDispatch({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contract: heliosOpinionContract,
+          dispatch: engineDispatch,
+        });
+
+        const queuedHeliosEvent = caseEventsToPersist.find(
+          (event) => event.title === "El asesor laboral preparó una opinión inicial",
+        );
+        if (queuedHeliosEvent) {
+          queuedHeliosEvent.title =
+            heliosOpinionContract.status === "error"
+              ? "No pudimos completar la lectura avanzada"
+              : queuedHeliosEvent.title;
+          queuedHeliosEvent.description = heliosOpinionContract.opinion.summary;
+        }
+
         if (engineDispatch.status !== "sent") {
           await addOperationalAlert({
             tenantId: input.tenantId,
@@ -4701,8 +4757,9 @@ export const appRouter = router({
             traceId: detail.case.traceId,
             severity: engineDispatch.status === "failed" ? "critical" : "warning",
             category: "upload_pending",
-            title: "Entrega al motor inteligente pendiente",
-            description: `La entrega documental al motor inteligente no se completó el ${engineDispatch.dispatchedAt}. Estado: ${engineDispatch.status}. Motivo: ${engineDispatch.reason ?? "sin detalle"}.`,
+            title: "No se pudo completar el envío del documento",
+            description:
+              "El documento sí quedó guardado en tu expediente, pero la lectura avanzada no se pudo completar. Intenta de nuevo más tarde. Los datos visibles del archivo siguen disponibles.",
             status: "open",
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
@@ -4719,8 +4776,8 @@ export const appRouter = router({
             traceId: detail.case.traceId,
             actorUserId: ctx.user.id,
             eventType: "note_added",
-            title: "Documento enviado a CompliLink",
-            description: "CompliLink recibió este documento y estamos esperando su respuesta automática.",
+            title: "Documento enviado a revisión avanzada",
+            description: "El documento ya se envió y estamos esperando el resultado de la lectura.",
             metadata: JSON.stringify({
               document_id: documentId,
               draft_id: payload.draftId,
@@ -5149,7 +5206,7 @@ export const appRouter = router({
           status: "ready",
         });
 
-        const heliosOpinionContract = buildHeliosOpinionContract({
+        let heliosOpinionContract = buildHeliosOpinionContract({
           tenantId: input.tenantId,
           caseId: input.caseId,
           traceId: detail.case.traceId,
@@ -5234,6 +5291,14 @@ export const appRouter = router({
           },
         });
 
+        heliosOpinionContract = await finalizeHeliosOpinionAfterDispatch({
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+          traceId: detail.case.traceId,
+          contract: heliosOpinionContract,
+          dispatch: engineDispatch,
+        });
+
         if (engineDispatch.status !== "sent") {
           await addOperationalAlert({
             tenantId: input.tenantId,
@@ -5241,8 +5306,9 @@ export const appRouter = router({
             traceId: detail.case.traceId,
             severity: engineDispatch.status === "failed" ? "critical" : "warning",
             category: "upload_pending",
-            title: "Entrega al motor inteligente pendiente",
-            description: `La entrega documental al motor inteligente no se completó el ${engineDispatch.dispatchedAt}. Estado: ${engineDispatch.status}. Motivo: ${engineDispatch.reason ?? "sin detalle"}.`,
+            title: "No se pudo completar el envío del documento",
+            description:
+              "El documento sí quedó guardado en tu expediente, pero la lectura avanzada no se pudo completar. Intenta de nuevo más tarde. Los datos visibles del archivo siguen disponibles.",
             status: "open",
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
@@ -5259,8 +5325,8 @@ export const appRouter = router({
             traceId: detail.case.traceId,
             actorUserId: ctx.user.id,
             eventType: "note_added",
-            title: "Documento enviado a CompliLink",
-            description: "CompliLink recibió este documento y estamos esperando su respuesta automática.",
+            title: "Documento enviado a revisión avanzada",
+            description: "El documento ya se envió y estamos esperando el resultado de la lectura.",
             metadata: JSON.stringify({
               document_id: documentId,
               stage: "complilink_dispatch",

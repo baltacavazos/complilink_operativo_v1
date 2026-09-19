@@ -26,7 +26,10 @@ vi.mock("./_core/env", () => ({
   },
 }));
 
-import { registerCompliLinkReturnWebhook } from "./auditaPatronReturnWebhook";
+import {
+  registerCompliLinkReturnWebhook,
+  shouldReplayCompliLinkWebhookEvent,
+} from "./auditaPatronReturnWebhook";
 
 const serversToClose: Array<ReturnType<typeof createServer>> = [];
 const realFetch = globalThis.fetch;
@@ -137,6 +140,13 @@ describe("auditaPatronReturnWebhook", () => {
       bridge: "auditapatron",
       webhookPath: "/api/auditapatron/webhook",
       responseContract: "auditapatron.bridge.ack.v1",
+      completeness: {
+        phase: "fase_0",
+        heliosApiKeyRequired: false,
+        requiredPresent: {
+          AUDITAPATRON_ENGINE_HMAC_SECRET: true,
+        },
+      },
     });
   });
 
@@ -534,6 +544,150 @@ describe("auditaPatronReturnWebhook", () => {
         failureReason: expect.stringContaining("storage unavailable"),
       }),
     );
+  });
+
+  it("acepta document.processed.v1 firmado en /api/auditapatron/webhook", async () => {
+    dbMocks.registerCompliLinkWebhookEvent.mockResolvedValue({
+      created: true,
+      event: {
+        id: 910,
+      },
+    });
+
+    const payload = buildReturnPayload({
+      eventId: "evt-webhook-return-001",
+      idempotencyKey: "evt-webhook-return-001",
+    });
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      received: true,
+      documentId: "DOC-BRIDGE-001",
+      processingStatus: "processed",
+      responseContract: "auditapatron.bridge.ack.v1",
+    });
+    expect(dbMocks.registerCompliLinkWebhookEvent).toHaveBeenCalledTimes(1);
+    expect(dbMocks.addCaseEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Documento revisado",
+      }),
+    );
+  });
+
+  it("rechaza un evento desconocido en ambos webhooks y no lo procesa", async () => {
+    const payload = { event: "document.processed", documentId: "DOC-BRIDGE-001" };
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+
+    const publicResponse = await fetch(`http://127.0.0.1:${address.port}/api/auditapatron/webhook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+    const returnResponse = await fetch(`http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+      body,
+    });
+
+    expect(publicResponse.status).toBe(400);
+    expect(returnResponse.status).toBe(400);
+    await expect(publicResponse.json()).resolves.toMatchObject({
+      issues: [{ code: "unknown_event", field: "event" }],
+    });
+    await expect(returnResponse.json()).resolves.toMatchObject({
+      issues: [{ code: "unknown_event", field: "event" }],
+    });
+    expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+  });
+
+  it("reprocesa de forma segura un evento failed_processing o processing estancado", async () => {
+    dbMocks.registerCompliLinkWebhookEvent.mockResolvedValue({
+      created: false,
+      event: {
+        id: 911,
+        status: "failed_processing",
+        createdAt: new Date("2026-04-11T18:00:00.000Z"),
+      },
+    });
+
+    const payload = buildReturnPayload({
+      eventId: "evt-bridge-replay-001",
+      idempotencyKey: "evt-bridge-replay-001",
+    });
+    const body = JSON.stringify(payload);
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+      body,
+    });
+
+    expect(response.status).toBe(200);
+    expect(dbMocks.updateCompliLinkWebhookEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 911,
+        status: "processing",
+        processedAt: null,
+        failureReason: null,
+      }),
+    );
+    expect(dbMocks.updateDocumentPostProcessing).toHaveBeenCalledTimes(1);
+    expect(dbMocks.addCaseEvent).toHaveBeenCalledTimes(1);
+    expect(dbMocks.updateCompliLinkWebhookEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 911,
+        status: "processed",
+      }),
+    );
+    expect(shouldReplayCompliLinkWebhookEvent({ status: "processed" })).toBe(false);
+    expect(
+      shouldReplayCompliLinkWebhookEvent({
+        status: "processing",
+        createdAt: new Date(Date.now() - 30_000),
+      }),
+    ).toBe(false);
+    expect(
+      shouldReplayCompliLinkWebhookEvent({
+        status: "processing",
+        createdAt: new Date(Date.now() - 3 * 60_000),
+      }),
+    ).toBe(true);
   });
 
   it("rechaza payloads inválidos con issues[] y código 400", async () => {

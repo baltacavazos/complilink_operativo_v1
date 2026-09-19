@@ -15,13 +15,25 @@ const WORKER_SYSTEM_FIELD_KEYS = new Set([
   "sourcechannel",
   "sourceModule",
   "sourcemodule",
+  "sha256",
+  "eventid",
+  "eventkey",
+  "eventname",
+  "complilinkid",
+  "correlationid",
+  "dispatchid",
+  "traceid",
+  "engine",
+  "helios",
+  "webhookpath",
+  "responsecontract",
 ]);
 
 const WORKER_SYSTEM_LABEL =
   /^(archivo|formato|tipo de documento|detalle detectado|nivel de revisi[oó]n|puede leer detalles|puede estimar prestaciones)$/i;
 
 const WORKER_INTERNAL_VALUE =
-  /^(application\/[a-z0-9.+-]+|image\/[a-z0-9.+-]+|text\/[a-z0-9.+-]+|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+|multipart\/[a-z0-9.+-]+|other|expanded|standard|contract[_-]?deep[_-]?dive|payroll[_-]?receipt|cfdi|imss|contract|settlement|evidence|true|false)$/i;
+  /^(application\/[a-z0-9.+-]+|image\/[a-z0-9.+-]+|text\/[a-z0-9.+-]+|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+|multipart\/[a-z0-9.+-]+|other|expanded|standard|contract[_-]?deep[_-]?dive|payroll[_-]?receipt|cfdi|imss|contract|settlement|evidence|true|false|document\.(uploaded|processed\.v1|rejected\.v1|retry_requested\.v1)|hmac-sha256:[a-f0-9]+|[a-f0-9]{64})$/i;
 
 const WORKER_FIELD_LABELS: Record<string, string> = {
   employerRfc: "RFC visible",

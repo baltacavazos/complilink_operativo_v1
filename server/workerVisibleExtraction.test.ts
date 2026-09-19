@@ -12,6 +12,10 @@ describe("workerVisibleExtraction", () => {
     expect(isWorkerSystemStructuredField({ key: "hasInfonavitSignal", value: "true" })).toBe(true);
     expect(isWorkerSystemStructuredField({ key: "infonavitDeductionType", value: "010" })).toBe(true);
     expect(isWorkerSystemStructuredField({ key: "structuredExtractionReady", value: true })).toBe(true);
+    expect(isWorkerSystemStructuredField({ key: "eventName", value: "document.processed.v1" })).toBe(true);
+    expect(isWorkerSystemStructuredField({ key: "sha256", value: "a".repeat(64) })).toBe(true);
+    expect(isWorkerSystemStructuredField({ value: "hmac-sha256:abcdef0123456789" })).toBe(true);
+    expect(isWorkerSystemStructuredField({ value: "document.uploaded" })).toBe(true);
     expect(
       isWorkerSystemStructuredField({
         key: "employerRfc",

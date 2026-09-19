@@ -2,8 +2,12 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  AUDITAPATRON_EVENT_CATALOG,
+  AUDITAPATRON_OUTBOUND_EVENT,
+  AUDITAPATRON_RETURN_EVENTS,
   buildAuditaPatronEnginePayload,
   buildAuditaPatronEngineSignature,
+  classifyAuditaPatronBridgeEvent,
   sendDocumentToAuditaPatronEngine,
   verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
@@ -524,6 +528,49 @@ describe("auditaPatronIntegrationService", () => {
       attempted: true,
       ok: false,
       reason: "health_non_json",
+    });
+  });
+
+  it("clasifica el catálogo de eventos y rechaza nombres desconocidos", () => {
+    expect(AUDITAPATRON_OUTBOUND_EVENT).toBe("document.uploaded");
+    expect(AUDITAPATRON_RETURN_EVENTS).toEqual([
+      "document.processed.v1",
+      "document.rejected.v1",
+      "document.retry_requested.v1",
+    ]);
+    expect(AUDITAPATRON_EVENT_CATALOG.acceptedInbound).toEqual([
+      "document.uploaded",
+      "document.processed.v1",
+      "document.rejected.v1",
+      "document.retry_requested.v1",
+    ]);
+    expect(classifyAuditaPatronBridgeEvent("document.uploaded")).toEqual({
+      kind: "outbound_upload",
+      event: "document.uploaded",
+    });
+    expect(classifyAuditaPatronBridgeEvent("document.processed.v1").kind).toBe("return");
+    expect(classifyAuditaPatronBridgeEvent("document.processed")).toEqual({
+      kind: "unknown",
+      event: "document.processed",
+    });
+    expect(classifyAuditaPatronBridgeEvent("")).toEqual({ kind: "missing", event: null });
+  });
+
+  it("rejects HMAC signatures outside the 5-minute window", () => {
+    const timestamp = (Math.floor(Date.now() / 1000) - 400).toString();
+    const body = JSON.stringify({ event: "document.processed.v1", documentId: "DOC-001" });
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "secret-for-engine-123456");
+
+    expect(
+      verifySignedWebhook({
+        signatureHeader: signature,
+        timestampHeader: timestamp,
+        payloadBody: body,
+        hmacSecret: "secret-for-engine-123456",
+      }),
+    ).toMatchObject({
+      ok: false,
+      reason: "stale_timestamp",
     });
   });
 

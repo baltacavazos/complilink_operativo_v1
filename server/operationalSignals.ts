@@ -253,10 +253,10 @@ export function deriveBridgeCallbackAlerts(params: {
       traceId: params.traceId ?? null,
       severity: timedOut ? "critical" : "warning",
       category: "upload_pending",
-      title: timedOut ? "Callback de CompliLink fuera de ventana" : "Callback de CompliLink pendiente",
+      title: timedOut ? "Todavía no llega el resultado de la lectura" : "Seguimos esperando el resultado de la lectura",
       description: timedOut
-        ? `El documento ${dispatch.documentId} fue aceptado por el bridge el ${dispatch.dispatchedAt.toISOString()}, pero no existe callback correlacionado dentro de la ventana de ${Math.round(timeoutMs / 60000)} minutos.`
-        : `El documento ${dispatch.documentId} ya fue aceptado por el bridge el ${dispatch.dispatchedAt.toISOString()} y seguimos esperando el callback asíncrono de CompliLink.`,
+        ? `El documento ${dispatch.documentId} ya se envió el ${dispatch.dispatchedAt.toISOString()}, pero todavía no llega el resultado de la lectura dentro de la ventana de ${Math.round(timeoutMs / 60000)} minutos.`
+        : `El documento ${dispatch.documentId} ya se envió el ${dispatch.dispatchedAt.toISOString()} y seguimos esperando el resultado de la lectura.`,
       status: "open",
       raisedAt: dispatch.dispatchedAt,
       updatedAt: now,

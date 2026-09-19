@@ -6,13 +6,22 @@ import {
   buildSharedEngineEnvelope,
 } from "./caseContracts";
 
-const AUDITAPATRON_ENGINE_EVENT_NAME = "document.uploaded" as const;
+export const AUDITAPATRON_OUTBOUND_EVENT = "document.uploaded" as const;
+const AUDITAPATRON_ENGINE_EVENT_NAME = AUDITAPATRON_OUTBOUND_EVENT;
 const DEFAULT_RETRY_DELAYS_MS = [30_000, 60_000, 120_000] as const;
-const SUPPORTED_RETURN_EVENTS = [
+export const AUDITAPATRON_RETURN_EVENTS = [
   "document.processed.v1",
   "document.rejected.v1",
   "document.retry_requested.v1",
 ] as const;
+const SUPPORTED_RETURN_EVENTS = AUDITAPATRON_RETURN_EVENTS;
+export const AUDITAPATRON_EVENT_CATALOG = {
+  outbound: [AUDITAPATRON_OUTBOUND_EVENT],
+  inboundReturn: AUDITAPATRON_RETURN_EVENTS,
+  acceptedInbound: [AUDITAPATRON_OUTBOUND_EVENT, ...AUDITAPATRON_RETURN_EVENTS],
+} as const;
+
+export type AuditaPatronBridgeEventKind = "outbound_upload" | "return" | "unknown" | "missing";
 const COMPLILINK_BRIDGE_RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
 const DEFAULT_PROCESSING_STATUS = "queued" as const;
 const DEFAULT_SOURCE_MODULE = "complilink_operativo" as const;
@@ -679,6 +688,23 @@ export function buildAuditaPatronBodySignature(payloadBody: string, hmacSecret: 
 
 export function isSupportedCompliLinkReturnEvent(event: string): event is SupportedCompliLinkReturnEvent {
   return SUPPORTED_RETURN_EVENTS.includes(event as SupportedCompliLinkReturnEvent);
+}
+
+export function classifyAuditaPatronBridgeEvent(event?: string | null): {
+  kind: AuditaPatronBridgeEventKind;
+  event: string | null;
+} {
+  const normalized = typeof event === "string" ? event.trim() : "";
+  if (!normalized) {
+    return { kind: "missing", event: null };
+  }
+  if (normalized === AUDITAPATRON_OUTBOUND_EVENT) {
+    return { kind: "outbound_upload", event: normalized };
+  }
+  if (isSupportedCompliLinkReturnEvent(normalized)) {
+    return { kind: "return", event: normalized };
+  }
+  return { kind: "unknown", event: normalized };
 }
 
 export function verifySignedWebhook(params: {
