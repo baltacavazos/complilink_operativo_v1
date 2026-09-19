@@ -33,6 +33,8 @@ export const WORKER_CHAT_MULTI_DOC_UPSELL =
   "La lectura de varios documentos juntos está en el plan Esencial. Con tu plan gratis puedes preguntar sobre este documento.";
 
 export const WORKER_CHAT_RETRY_ERROR = "No pude completar esa respuesta. Intenta de nuevo.";
+export const WORKER_EXPEDIENTE_NEEDED_COPY =
+  "Esta consulta necesita tu expediente abierto.";
 export const WORKER_CHAT_HISTORY_MAX_MESSAGES = 6;
 export const WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS = 1800;
 
@@ -191,20 +193,49 @@ export function stripLiveValidationClaims(value: string): string {
   next = next.replace(/validaci[oó]n en vivo/gi, "lectura de tus documentos");
   next = next.replace(
     /ya (?:consultamos|validamos|verificamos) (?:ante |en )?(?:el )?(IMSS|SAT|Infonavit)/gi,
-    "en tus papeles se ve una señal de $1, pero no es una consulta oficial",
+    "en tus papeles se ve una alerta de $1, pero no es una consulta oficial",
   );
   next = next.replace(
     /confirmamos (?:tu |el )?alta(?: ante el IMSS)?/gi,
-    "en tus papeles se ve una señal de IMSS, pero eso no confirma el alta oficial",
+    "en tus papeles se ve una alerta de IMSS, pero eso no confirma el alta oficial",
   );
   next = next.replace(
     /(?:confirmamos|validamos|verificamos|confirma(?:mos)? que|s[ií][,.]?\s+que)\s+(?:est[aá]s? )?(?:oficialmente )?(?:bien )?dado de alta(?: en el IMSS)?/gi,
-    "en tus papeles se ve una señal de IMSS, pero eso no confirma el alta oficial",
+    "en tus papeles se ve una alerta de IMSS, pero eso no confirma el alta oficial",
   );
   next = next.replace(
     /(?:^|[.]\s+)est[aá]s? (?:oficialmente )?(?:bien )?dado de alta(?: en el IMSS)?/gim,
-    "En tus papeles se ve una señal de IMSS, pero eso no confirma el alta oficial",
+    "En tus papeles se ve una alerta de IMSS, pero eso no confirma el alta oficial",
   );
+  return next;
+}
+
+export function rewriteReadingJargon(value: string): string {
+  let next = value;
+  next = next.replace(/una señal inicial/gi, "un resultado inicial");
+  next = next.replace(/señales iniciales/gi, "un resultado inicial");
+  next = next.replace(/señal inicial/gi, "resultado inicial");
+  next = next.replace(/Ves la señal/g, "Ves el resultado");
+  next = next.replace(/ves la señal/gi, "ves el resultado");
+  next = next.replace(/faltan señales/gi, "falta qué revisar");
+  next = next.replace(/Aún no hay señales visibles/gi, "Aún no se ve un resultado");
+  next = next.replace(/te señala/gi, "te marca");
+  next = next.replace(/señales de confianza/gi, "alertas de confianza");
+  next = next.replace(/señales operativas/gi, "alertas operativas");
+  next = next.replace(/señales del sistema/gi, "alertas del sistema");
+  next = next.replace(/las señales del documento/gi, "los datos del documento");
+  next = next.replace(/señales del documento/gi, "datos del documento");
+  next = next.replace(/señales visibles/gi, "un resultado visible");
+  next = next.replace(/señales llamativas/gi, "alertas");
+  next = next.replace(/señales útiles/gi, "un resultado útil");
+  next = next.replace(/Esta señal se/gi, "Esta alerta se");
+  next = next.replace(/Se detectó una señal/gi, "Se detectó una alerta");
+  next = next.replace(/Señal de acceso/gi, "Alerta de acceso");
+  next = next.replace(/Señal visible/gi, "Lectura visible");
+  next = next.replace(/Señal para revisar/gi, "Alerta para revisar");
+  next = next.replace(/Señales operativas/gi, "Alertas operativas");
+  next = next.replace(/\bseñales\b/gi, "alertas");
+  next = next.replace(/\bseñal\b/gi, "alerta");
   return next;
 }
 
@@ -213,6 +244,7 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   if (!value) return value;
 
   let next = stripInternalControlMarkers(value);
+  next = rewriteReadingJargon(next);
   next = next.replace(/CompliLink Operativo/gi, "AuditaPatrón");
   next = next.replace(/CompliLink/gi, "AuditaPatrón");
   next = next.replace(/Modo Helios/gi, "Asesor laboral");
@@ -226,6 +258,14 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   next = next.replace(/\bForge\b/g, "la plataforma");
   next = next.replace(/APIMarket/gi, "el servicio de consulta");
   next = next.replace(/\bForensic\b/gi, "revisión documental");
+  next = next.replace(
+    /No tienes acceso a este espacio\.?/gi,
+    WORKER_EXPEDIENTE_NEEDED_COPY,
+  );
+  next = next.replace(
+    /Access denied for tenant\.?/gi,
+    WORKER_EXPEDIENTE_NEEDED_COPY,
+  );
   next = stripInventedLegalCitations(next);
   next = stripLiveValidationClaims(next);
   next = collapseCopy(next);

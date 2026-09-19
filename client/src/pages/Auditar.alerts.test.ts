@@ -129,7 +129,7 @@ describe("compact mobile upload entry", () => {
   });
 });
 
-describe("dato factual del recibo", () => {
+describe("resultado factual del recibo", () => {
   it("convierte los datos extraídos de nómina en una lectura concreta para la persona trabajadora", () => {
     const signal = buildPayrollFactSignal({
       documentType: "cfdi",
@@ -811,7 +811,7 @@ describe("getPrimaryContextualShortcut", () => {
         {
           id: "contract-ask-clauses",
           label: "Resumir cláusulas importantes",
-          description: "Helios te indica lo que vale la pena contrastar después con nómina o CFDI.",
+          description: "El asesor te marca lo que vale la pena contrastar después con nómina o CFDI.",
           action: "assistant",
           prompt: "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
         },
@@ -830,9 +830,9 @@ describe("getPrimaryContextualShortcut", () => {
         {
           id: "payroll-ask-deductions",
           label: "Explicar deducciones clave",
-          description: "Helios te resume descuentos, pagos y datos llamativos en palabras simples.",
+          description: "El asesor te resume descuentos, pagos y alertas en palabras simples.",
           action: "assistant",
-          prompt: "Explícame las deducciones, pagos y datos más importantes que ves en esta nómina con palabras simples.",
+          prompt: "Explícame las deducciones, pagos y alertas más importantes que ves en esta nómina con palabras simples.",
         },
       ])?.id,
     ).toBe("payroll-upload-cfdi");

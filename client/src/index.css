@@ -1075,6 +1075,52 @@
     color: rgb(51 65 85);
   }
 
+  .ap-legal-confirmation,
+  .dark .audita-auditar .ap-legal-confirmation,
+  .dark .audita-auditar section.ap-legal-confirmation {
+    background-color: #ffffff !important;
+    border: 1px solid rgb(203 213 225) !important;
+    color: rgb(15 23 42) !important;
+  }
+
+  .ap-legal-confirmation h2,
+  .ap-legal-confirmation p,
+  .ap-legal-confirmation span,
+  .ap-legal-confirmation button,
+  .dark .audita-auditar .ap-legal-confirmation h2,
+  .dark .audita-auditar .ap-legal-confirmation p,
+  .dark .audita-auditar .ap-legal-confirmation span,
+  .dark .audita-auditar .ap-legal-confirmation button,
+  .dark .audita-auditar .ap-legal-confirmation [class*="text-slate-"] {
+    color: rgb(15 23 42) !important;
+  }
+
+  .ap-legal-confirmation p,
+  .dark .audita-auditar .ap-legal-confirmation p {
+    color: rgb(51 65 85) !important;
+  }
+
+  .ap-suggested-document,
+  .dark .audita-auditar .ap-suggested-document,
+  .dark .audita-auditar div.ap-suggested-document {
+    background-color: #ffffff !important;
+    border: 1px solid rgb(203 213 225) !important;
+    color: rgb(15 23 42) !important;
+  }
+
+  .ap-suggested-document p,
+  .ap-suggested-document button,
+  .dark .audita-auditar .ap-suggested-document p,
+  .dark .audita-auditar .ap-suggested-document button,
+  .dark .audita-auditar .ap-suggested-document [class*="text-"] {
+    color: rgb(15 23 42) !important;
+  }
+
+  .ap-suggested-document p + p,
+  .dark .audita-auditar .ap-suggested-document p + p {
+    color: rgb(51 65 85) !important;
+  }
+
   @media (max-width: 390px) {
     .ap-worker-chat {
       inset: 0 !important;
@@ -1086,6 +1132,17 @@
 
     .ap-worker-chat .ap-chat-compact-hide {
       display: none !important;
+    }
+
+    .ap-worker-chat .ap-chat-prompt-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ap-worker-chat .ap-chat-prompt {
+      min-width: 0;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .ap-worker-chat .ap-chat-header {

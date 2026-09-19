@@ -8556,7 +8556,11 @@ export default function Auditar() {
           suggestedPromptsContext="Preguntas simples sobre tu recibo."
           caseTitle="Recibo de mayo"
           employeeName="Ana Pérez"
-          confidenceScore={86}
+          confidenceScore={
+            new URLSearchParams(window.location.search).get("confidence") === "0"
+              ? 0
+              : 86
+          }
           disclaimer={WORKER_CHAT_DISCLAIMER}
           summary="En tu recibo se ve un descuento de IMSS de $120.50."
           nextSuggestedDocument={{
@@ -8673,7 +8677,7 @@ export default function Auditar() {
                 Crear cuenta y guardar esta revisión <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
-                Cambiar recibo
+                Cambiar documento
               </Button>
             </div>
           </section>
@@ -8845,7 +8849,7 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                {isNativeAppExperience ? "Tu documento" : "Tu recibo o comprobante"}
+                Tu documento
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
@@ -8877,7 +8881,7 @@ export default function Auditar() {
                 />
                 {isNativeAppExperience
                   ? "Tu documento sigue privado dentro de la app"
-                  : "Tu recibo está seguro y solo tú lo ves"}
+                  : "Tu archivo está seguro y solo tú lo ves"}
               </div>
             ) : null}
           </div>
@@ -9002,31 +9006,34 @@ export default function Auditar() {
         ) : null}
 
         {!auth.canToggleUserView && (legalGateRequired || legalGateHarnessMode) ? (
-          <section className="mt-6 rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm">
+          <section
+            className="ap-legal-confirmation mt-6 rounded-[1.5rem] border p-5 shadow-sm"
+            data-testid="auditar-legal-confirmation"
+          >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-amber-900">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-amber-950">
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
                   Autorización legal pendiente
                 </div>
-                <h2 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                   La confirmación aparece justo cuando envías o guardas tu
                   archivo.
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
+                <p className="mt-2 text-sm leading-6 text-slate-800">
                   No interrumpe tu flujo antes de tiempo. Solo protege el
                   expediente y deja registro versionado en la acción principal.
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-700"
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 underline decoration-slate-400 underline-offset-4 transition hover:text-slate-700"
                     onClick={() => setLegalDocumentsDrawerOpen(true)}
                   >
                     Revisar aviso y términos vigentes
                     <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
                   </button>
-                  <span className="text-slate-500">
+                  <span className="font-medium text-slate-700">
                     Versión vigente{" "}
                     {legalAcceptance?.legalVersion ?? LEGAL_VERSION}
                   </span>
@@ -10317,7 +10324,10 @@ export default function Auditar() {
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
-                  <div className="mt-3 rounded-[1.1rem] border border-sky-100 bg-sky-50 px-3.5 py-2 text-sm leading-5 text-sky-950">
+                  <div
+                    data-testid="auditar-suggested-document"
+                    className="ap-suggested-document mt-3 rounded-[1.1rem] border px-3.5 py-2 text-sm leading-5 shadow-[inset_3px_0_0_0_#0f766e]"
+                  >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-semibold">
@@ -10329,7 +10339,7 @@ export default function Auditar() {
                       </div>
                       <button
                         type="button"
-                        className="text-sm font-semibold text-sky-700 underline-offset-4 hover:underline"
+                        className="text-sm font-semibold underline-offset-4 hover:underline"
                         onClick={() => setSelectedRecommendedTargetType(null)}
                       >
                         Quitar enfoque
@@ -12762,7 +12772,8 @@ Reforzar con otro documento
                           <span className="rounded-full bg-white px-3 py-1 text-slate-700">
                             {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).action}
                           </span>
-                          {typeof lastHeliosOpinion.confidenceScore === "number" ? (
+                          {typeof lastHeliosOpinion.confidenceScore === "number" &&
+                          lastHeliosOpinion.confidenceScore > 0 ? (
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                               Confianza {lastHeliosOpinion.confidenceScore}%
                             </span>
@@ -14004,7 +14015,8 @@ Reforzar con otro documento
 
                                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
                                   {typeof heliosOpinion.confidenceScore ===
-                                  "number" ? (
+                                    "number" &&
+                                  heliosOpinion.confidenceScore > 0 ? (
                                     <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                                       Confianza {heliosOpinion.confidenceScore}%
                                     </span>
@@ -15388,7 +15400,7 @@ Reforzar con otro documento
                 className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 onClick={handleOpenBillingPortal}
               >
-                Gestionar suscripción y cobros
+                Gestionar suscripción y pagos
               </Button>
             ) : null}
             <DrawerClose asChild>
@@ -15484,20 +15496,20 @@ Reforzar con otro documento
             </div>
           </div>
           {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
-            <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
+            <div className="mb-3 grid min-w-0 grid-cols-3 gap-1.5 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               {workspaceSectionCards.map(item => {
                 const isActive = workspaceSection === item.key;
                 return (
                   <button
                     key={`mobile-nav-${item.key}`}
                     type="button"
-                    className={`rounded-[0.95rem] px-3 py-2 text-left transition ${isActive ? "bg-slate-950 text-white shadow-sm" : "bg-white text-slate-700"}`}
+                    className={`min-w-0 overflow-hidden rounded-[0.95rem] px-1.5 py-2 text-left transition ${isActive ? "bg-slate-950 text-white shadow-sm" : "bg-white text-slate-700"}`}
                     onClick={() => setWorkspaceSection(item.key)}
                   >
-                    <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-slate-300" : "text-slate-400"}`}>
+                    <p className={`truncate text-[10px] font-semibold tracking-tight ${isActive ? "text-slate-300" : "text-slate-400"}`}>
                       {item.label}
                     </p>
-                    <p className={`mt-1 text-xs leading-5 ${isActive ? "text-slate-100" : "text-slate-600"}`}>
+                    <p className={`mt-1 truncate text-[11px] leading-4 ${isActive ? "text-slate-100" : "text-slate-600"}`}>
                       {item.key === "resumen"
                         ? "Lo esencial"
                         : item.key === "expediente"

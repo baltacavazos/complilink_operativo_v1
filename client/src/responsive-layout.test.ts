@@ -42,8 +42,11 @@ describe("responsive layout regression guards", () => {
     const shellSource = readProjectFile("client", "src", "components", "MobileAppShell.tsx");
 
     expect(appSource).not.toContain("fixed bottom-3 right-3");
+    expect(appSource).not.toContain("fixed top-3 right-3");
     expect(appSource).not.toContain(">Salir<");
     expect(appSource).toContain("path === \"/auditar\"");
+    expect(appSource).toContain("path.startsWith(\"/legal\")");
+    expect(appSource).toContain('aria-label="Volver al inicio"');
     expect(appSource).toMatch(/>\s*Volver\s*</);
     expect(shellSource).toMatch(/>\s*Volver\s*</);
   });

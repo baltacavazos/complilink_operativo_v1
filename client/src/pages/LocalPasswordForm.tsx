@@ -81,8 +81,9 @@ export default function LocalPasswordForm({
       <h1 className="text-center text-[1.85rem] font-semibold tracking-[-0.04em] text-slate-950">
         {mode === "signup" ? "Crea tu cuenta" : "Entra a tu cuenta"}
       </h1>
-      <p className="ap-access-note text-center text-sm leading-6 text-slate-600">
-        Entras con correo y contraseña para volver a tu revisión.
+      <p className="ap-access-note text-center text-sm leading-6 text-slate-700">
+        Entras con correo y contraseña para volver a tu revisión. Si ya subiste un
+        recibo, CFDI o PDF del IMSS, aquí recuperas el resultado.
       </p>
 
       <div className="space-y-2">

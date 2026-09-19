@@ -23,6 +23,13 @@ describe("worker chat visual polish", () => {
     expect(sheet).toContain("ap-worker-chat");
     expect(sheet).toContain("ap-chat-chip");
     expect(sheet).toContain("ap-chat-prompt");
+    expect(sheet).toContain("ap-chat-prompt-grid");
+    expect(sheet).toContain("hasOrientativeConfidence");
+    expect(sheet).toContain("confidenceScore > 0");
+    expect(sheet).not.toContain("typeof confidenceScore === \"number\" ? (");
+    expect(sheet).toContain("grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2");
+    expect(sheet).toContain("sm:col-span-2");
+    expect(sheet).toContain("w-full min-w-0 max-w-full");
     expect(sheet).toContain('variant="calm"');
     expect(sheet).toContain("sanitizeMultiline");
     expect(sheet).toContain("WORKER_CHAT_SHEET_COPY");
@@ -61,7 +68,10 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-source-link");
     expect(css).toContain("@media (max-width: 390px)");
     expect(css).toContain(".ap-worker-chat .ap-chat-compact-hide");
+    expect(css).toContain(".ap-worker-chat .ap-chat-prompt-grid");
+    expect(css).toContain("grid-template-columns: minmax(0, 1fr)");
     expect(sheet).toContain("ap-chat-compact-hide");
+    expect(sheet).toContain("ap-chat-prompt-grid");
     expect(sheet).toContain("ap-chat-header");
     expect(sheet).toContain("h-dvh max-h-dvh w-full max-w-full");
     expect(css).toContain("letter-spacing: -0.018em");
@@ -69,6 +79,9 @@ describe("worker chat visual polish", () => {
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
     const auditar = read("../pages/Auditar.tsx");
     expect(auditar).toContain('chatHarness") === "1"');
+    expect(auditar).toContain('get("confidence") === "0"');
+    expect(auditar).toContain("ap-suggested-document");
+    expect(auditar).toContain('data-testid="auditar-suggested-document"');
     expect(auditar).toContain('chatHistoryHarness") === "1"');
     expect(auditar).toContain(
       "||required_plan=essential||current_plan=free",
@@ -81,6 +94,8 @@ describe("worker chat visual polish", () => {
     expect(auditar).toContain("aviso de retención o estado de crédito");
     expect(auditar).toContain("acreditación de pagos y deducciones");
     expect(auditar).toContain("officialTitles");
+    expect(auditar).toContain("grid min-w-0 grid-cols-3 gap-1.5");
+    expect(auditar).toContain("confidenceScore > 0");
     expect(auditar).toContain('legalHarness") === "1"');
     expect(auditar).toContain("https://sjf2.scjn.gob.mx/detalle/tesis/2032614");
     expect(auditar).toContain("codigo=5786537");

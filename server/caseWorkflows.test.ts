@@ -466,7 +466,7 @@ describe("appRouter case workflows", () => {
     expect(result.legalAcceptance.missingDocuments).toHaveLength(LEGAL_DOCUMENTS.length);
     expect(result.socialSecurityValidation).toMatchObject({
       statusLabel: "Cruce pendiente",
-      actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+      actionLabel: "Revisar alertas visibles de IMSS e Infonavit",
       liveImssValidation: false,
       hasImssSignal: false,
       hasInfonavitSignal: false,
@@ -565,7 +565,7 @@ describe("appRouter case workflows", () => {
       lastRevalidationSummary: "Cruce confirmado con nuevas señales visibles.",
       recommendedDocumentKey: null,
       recommendedDocumentTitle: "Cruce base cubierto",
-      recommendedDocumentReason: expect.stringContaining("revisar las señales"),
+      recommendedDocumentReason: expect.stringContaining("revisar las alertas"),
       hasNewClarity: false,
       clarityDelta: 0,
     });
@@ -1201,7 +1201,7 @@ describe("appRouter case workflows", () => {
 
     expect(result).toMatchObject({
       statusLabel: "Cruce visible listo",
-      actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+      actionLabel: "Revisar alertas visibles de IMSS e Infonavit",
       liveImssValidation: false,
       hasImssSignal: true,
       hasInfonavitSignal: true,
@@ -1209,7 +1209,7 @@ describe("appRouter case workflows", () => {
       infonavitSignalsCount: 1,
       documentsWithOpinion: 2,
       lastRevalidationSummary:
-        "Ya hay señales visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente.",
+        "Ya hay alertas visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente.",
     });
     expect(result.coverageScore).toBeGreaterThan(60);
     expect(result.lastRevalidatedAt).toMatch(/^2026-/);
@@ -1355,7 +1355,36 @@ describe("appRouter case workflows", () => {
     });
     expect(result.answer).toContain("Respuesta clara");
     expect(result.answer).not.toMatch(/No tienes acceso a este espacio/i);
+    expect(result.answer).not.toMatch(/Esta consulta necesita tu expediente abierto/i);
     expect(result.answer).not.toMatch(/labor_cases|SQL|ER_NO_SUCH_TABLE/i);
+  });
+
+  it("no usa un expediente ajeno ni copy de candado si el workspace personal aún no tiene caso", async () => {
+    vi.mocked(db.ensurePersonalWorkspaceForUser).mockResolvedValue({
+      tenant: null,
+      tenantId: null,
+      caseId: null,
+    } as never);
+    vi.mocked(db.isCeoBypassUser).mockResolvedValue(false);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 24,
+        openId: "email:tester-24",
+        role: "user",
+        name: "Tester Inf 24",
+      }),
+    );
+
+    await expect(
+      caller.cases.heliosCopilotChat({
+        tenantId: "tenant-equivocado",
+        caseId: "CASE-AJENO",
+        prompt: "¿Me descontaron IMSS, impuestos o Infonavit?",
+      }),
+    ).rejects.toThrow(/Esta consulta necesita tu expediente abierto/i);
+
+    expect(db.getCaseDetailForUser).not.toHaveBeenCalled();
   });
 
   it("acepta historial grande con rubros oficiales y responde IMSS en 4 secciones sin too_big ni portal en vivo", async () => {

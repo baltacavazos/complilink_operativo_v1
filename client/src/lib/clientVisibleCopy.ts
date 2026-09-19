@@ -175,8 +175,12 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
     "No tienes permiso de administración en este espacio.",
   );
   next = next.replace(
+    /No tienes acceso a este espacio\.?/gi,
+    "Esta consulta necesita tu expediente abierto.",
+  );
+  next = next.replace(
     /Access denied for tenant\.?/gi,
-    "No tienes acceso a este espacio.",
+    "Esta consulta necesita tu expediente abierto.",
   );
   next = next.replace(
     /Access denied for case\.?/gi,

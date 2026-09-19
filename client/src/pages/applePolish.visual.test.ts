@@ -22,6 +22,8 @@ describe("Apple tip #3 — pulido visual", () => {
     expect(css).toContain("background-color: var(--ap-panel-bg-strong) !important");
     expect(css).toContain("--ap-text-muted: rgb(203 213 225)");
     expect(css).toContain("color: rgb(51 65 85)");
+    expect(css).toContain(".ap-legal-confirmation");
+    expect(css).toContain(".dark .audita-auditar section.ap-legal-confirmation");
     expect(css).toContain("color: rgb(226 232 240) !important");
   });
 
@@ -134,7 +136,12 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).toContain('const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento"');
     expect(auditar).toContain("UPLOAD_ACCEPTED_DOCUMENTS_HINT");
     expect(auditar).toContain("Recibo, CFDI o PDF del IMSS");
-    expect(auditar).toContain("Tu recibo o comprobante");
+    expect(auditar).toContain("Tu documento");
+    expect(auditar).not.toContain("Tu recibo o comprobante");
+    expect(auditar).toContain("Cambiar documento");
+    expect(auditar).not.toContain("Cambiar recibo");
+    expect(auditar).toContain("ap-suggested-document");
+    expect(auditar).toContain('data-testid="auditar-suggested-document"');
     expect(auditar).toContain("Revisa lo importante");
     expect(auditar).toContain("Foto o archivo para empezar");
     expect(auditar).not.toContain("Sube tu recibo o comprobante");
@@ -159,6 +166,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(gate).not.toContain("Entra con tu correo y contraseña. La revisión pública por RFC sigue disponible sin cuenta.");
     expect(form).toContain("ap-access-note");
     expect(form).toContain("Entras con correo y contraseña para volver a tu revisión.");
+    expect(form).toContain("recibo, CFDI o PDF del IMSS");
     expect(form).not.toContain("La revisión pública por RFC sigue igual, sin cuenta.");
     expect(form).toContain("h-12 w-full rounded-full bg-slate-950");
     expect(form).toContain("border-0 bg-transparent text-base font-medium text-slate-600");
@@ -186,6 +194,8 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(css).toContain("background-color: rgb(255 255 255) !important");
     expect(css).toContain("color: rgb(51 65 85) !important");
     expect(css).toContain("color: rgb(15 23 42) !important");
+    expect(css).toContain(".ap-suggested-document");
+    expect(auditar).toContain('data-testid="auditar-suggested-document"');
     expect(auditar).not.toContain("CompliLink");
     expect(auditar).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);
 

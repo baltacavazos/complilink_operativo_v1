@@ -188,6 +188,10 @@ export function HeliosCopilotSheet({
     sanitizeClientVisibleCopy(suggestedPromptsContext) ?? suggestedPromptsContext;
   const visibleHistoryContext = sanitizeClientVisibleCopy(historyContext) ?? historyContext;
   const quickHighlights = copy.quickHighlights.slice(0, 4);
+  const hasOrientativeConfidence =
+    typeof confidenceScore === "number" &&
+    Number.isFinite(confidenceScore) &&
+    confidenceScore > 0;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -236,7 +240,7 @@ export function HeliosCopilotSheet({
                 <span className="ap-chat-chip">
                   {copy.capabilityBadge}
                 </span>
-                {typeof confidenceScore === "number" ? (
+                {hasOrientativeConfidence ? (
                   <span className="ap-chat-chip">
                     Confianza orientativa {confidenceScore}%
                   </span>
@@ -293,7 +297,7 @@ export function HeliosCopilotSheet({
             </div>
 
             {visibleSuggestedPrompts.length ? (
-              <div className="ap-chat-compact-hide mt-4 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.22)] transition-colors duration-300">
+              <div className="mt-4 min-w-0 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.22)] transition-colors duration-300">
                 <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">
                   {copy.promptsHeading}
                 </p>
@@ -302,13 +306,18 @@ export function HeliosCopilotSheet({
                     {visiblePromptsContext}
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {visibleSuggestedPrompts.map((prompt) => (
+                <div className="ap-chat-prompt-grid mt-3 grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+                  {visibleSuggestedPrompts.map((prompt, index) => (
                     <Button
                       key={prompt}
                       type="button"
                       variant="outline"
-                      className="ap-chat-prompt motion-hover-lift h-auto rounded-full px-3.5 py-2 text-left text-[0.82rem] leading-5 tracking-[-0.01em] text-slate-800"
+                      className={`ap-chat-prompt motion-hover-lift h-auto w-full min-w-0 max-w-full whitespace-normal break-words rounded-2xl px-3.5 py-2 text-left text-[0.82rem] leading-5 tracking-[-0.01em] text-slate-800 ${
+                        visibleSuggestedPrompts.length % 2 === 1 &&
+                        index === visibleSuggestedPrompts.length - 1
+                          ? "sm:col-span-2"
+                          : ""
+                      }`}
                       onClick={() => onSendMessage(prompt)}
                     >
                       {prompt}

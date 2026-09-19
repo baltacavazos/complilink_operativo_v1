@@ -19,8 +19,8 @@ describe("errores de base nunca llegan crudos", () => {
   });
 
   it("conserva denegaciones claras de acceso en español", () => {
-    expect(toUserFacingDatabaseError(new Error("No tienes acceso a este espacio.")).message).toBe(
-      "No tienes acceso a este espacio.",
+    expect(toUserFacingDatabaseError(new Error("Esta consulta necesita tu expediente abierto.")).message).toBe(
+      "Esta consulta necesita tu expediente abierto.",
     );
     expect(
       toUserFacingDatabaseError(new Error("Esta cuenta aún no tiene un expediente personal.")).message,
