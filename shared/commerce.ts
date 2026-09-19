@@ -52,7 +52,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
   {
     key: "free",
     name: "Audita Gratis",
-    headline: "Para validar tu primer señal sin pagar.",
+    headline: "Para validar tu primer resultado sin pagar.",
     monthlyPriceMx: 0,
     badge: "Freemium",
     ctaLabel: "Empezar gratis",

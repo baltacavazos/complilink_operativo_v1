@@ -30,15 +30,15 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(sanitizeClientVisibleCopy("Helios · modo CEO")).toBe("Asesor laboral · modo CEO");
     expect(
       sanitizeClientVisibleCopy(
-        "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+        "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con alertas y siguientes pasos útiles.",
       ),
     ).toBe(
-      "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+      "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con alertas y siguientes pasos útiles.",
     );
     expect(
       hasForbiddenClientBrand(
         sanitizeClientVisibleCopy(
-          "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+          "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con alertas y siguientes pasos útiles.",
         ),
       ),
     ).toBe(false);
