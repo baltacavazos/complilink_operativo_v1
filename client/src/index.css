@@ -850,6 +850,9 @@
     --ap-chat-bubble: rgb(244 246 248);
     --ap-chat-user: rgb(15 23 42);
     --ap-chat-accent: rgb(13 148 136);
+    color-scheme: light;
+    background-color: var(--ap-chat-wash) !important;
+    color: var(--ap-chat-ink);
     font-feature-settings: "ss01" 1, "kern" 1;
     letter-spacing: -0.015em;
   }
@@ -952,13 +955,23 @@
     animation-delay: 280ms;
   }
 
+  .dark .ap-worker-chat,
+  .dark .ap-worker-chat [class*="bg-white"],
+  .dark .ap-worker-chat [class*="bg-slate"],
+  .dark .ap-worker-chat [class*="text-slate"],
+  .dark .ap-worker-chat [class*="border-slate"] {
+    --ap-chat-ink: rgb(15 23 42);
+    --ap-chat-muted: rgb(71 85 105);
+    --ap-chat-faint: rgb(100 116 139);
+    --ap-chat-line: rgba(15, 23, 42, 0.08);
+    --ap-chat-wash: rgb(247 248 250);
+    --ap-chat-bubble: rgb(244 246 248);
+    color-scheme: light;
+  }
+
   .dark .ap-worker-chat {
-    --ap-chat-ink: rgb(248 250 252);
-    --ap-chat-muted: rgb(203 213 225);
-    --ap-chat-faint: rgb(148 163 184);
-    --ap-chat-line: rgba(148, 163, 184, 0.16);
-    --ap-chat-wash: rgba(2, 6, 23, 0.88);
-    --ap-chat-bubble: rgba(30, 41, 59, 0.72);
-    --ap-chat-user: rgb(15 23 42);
+    background-color: var(--ap-chat-wash) !important;
+    color: var(--ap-chat-ink) !important;
+    border-color: rgba(15, 23, 42, 0.08) !important;
   }
 }

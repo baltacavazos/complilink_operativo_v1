@@ -29,6 +29,7 @@ describe("worker chat visual polish", () => {
     expect(chat).toContain("ap-chat-bubble-user");
     expect(chat).toContain("ap-chat-bubble-assistant");
     expect(chat).toContain("ap-chat-composer");
+    expect(chat).toContain("!isCalm &&");
     expect(chat).toContain('aria-label={isCalm ? "Enviar" : undefined}');
     expect(chat).toContain('aria-label={isCalm ? "Escribiendo" : undefined}');
 
@@ -37,5 +38,8 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-bubble-assistant");
     expect(css).toContain(".ap-worker-chat .ap-chat-chip");
     expect(css).toContain("letter-spacing: -0.018em");
+    expect(css).toContain("color-scheme: light");
+    expect(sheet).not.toMatch(/dark:bg-slate-950/);
+    expect(read("../pages/Auditar.tsx")).toContain('chatHarness") === "1"');
   });
 });

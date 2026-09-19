@@ -242,7 +242,10 @@ export function AIChatBox({
                 // Apply min-height to last message only if NOT loading (when loading, the loading indicator gets it)
                 const isLastMessage = index === displayMessages.length - 1;
                 const shouldApplyMinHeight =
-                  isLastMessage && !isLoading && minHeightForLastMessage > 0;
+                  !isCalm &&
+                  isLastMessage &&
+                  !isLoading &&
+                  minHeightForLastMessage > 0;
 
                 return (
                   <div
@@ -290,12 +293,12 @@ export function AIChatBox({
                             ),
                       )}
                     >
-                      {message.role === "assistant" ? (
+                      {message.role === "assistant" && !isCalm ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
                           <Streamdown>{message.content}</Streamdown>
                         </div>
                       ) : (
-                        <p className={cn("whitespace-pre-wrap", isCalm ? "text-[0.95rem] leading-[1.55]" : "text-sm")}>
+                        <p className={cn("whitespace-pre-wrap", isCalm ? "text-[0.95rem] leading-[1.55] tracking-[-0.018em]" : "text-sm")}>
                           {message.content}
                         </p>
                       )}
@@ -314,7 +317,7 @@ export function AIChatBox({
                 <div
                   className="flex items-start gap-3"
                   style={
-                    minHeightForLastMessage > 0
+                    !isCalm && minHeightForLastMessage > 0
                       ? { minHeight: `${minHeightForLastMessage}px` }
                       : undefined
                   }

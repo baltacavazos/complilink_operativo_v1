@@ -4359,7 +4359,13 @@ export default function Auditar() {
       "1"
     );
   }, []);
-  const auditarHarnessBypass = legalGateHarnessMode || postUploadHarnessMode;
+  const chatHarnessMode = useMemo(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return new URLSearchParams(window.location.search).get("chatHarness") === "1";
+  }, []);
+  const auditarHarnessBypass = legalGateHarnessMode || postUploadHarnessMode || chatHarnessMode;
   const billingReturnState = useMemo(() => {
     if (typeof window === "undefined") {
       return {
@@ -8463,6 +8469,56 @@ export default function Auditar() {
       guestReview?.heliosOpinion.resultCard?.nextStepSummary ??
         guestReview?.heliosOpinion.recommendedNextStep
     ) ?? guestSignalFallback.nextStep;
+
+  if (chatHarnessMode) {
+    return (
+      <main className="audita-auditar min-h-screen bg-[#f7f8fa]" data-testid="worker-chat-harness">
+        <HeliosCopilotSheet
+          open
+          onOpenChange={() => undefined}
+          onSendMessage={() => undefined}
+          messages={[
+            {
+              role: "assistant",
+              content:
+                "Pregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora.",
+            },
+            { role: "user", content: "¿Me descontaron IMSS?" },
+            {
+              role: "assistant",
+              content: [
+                "Respuesta clara",
+                "En tu recibo se ve un descuento de IMSS de $120.50. Eso no confirma que el patrón lo haya pagado al IMSS.",
+                "",
+                "Qué hacer ahora",
+                "Compara ese descuento con tu siguiente recibo.",
+                "",
+                WORKER_CHAT_DISCLAIMER,
+              ].join("\n"),
+            },
+          ]}
+          suggestedPrompts={[
+            "¿Qué dice mi recibo?",
+            "¿Me descontaron IMSS o impuestos?",
+            "¿Qué hago ahora?",
+          ]}
+          suggestedPromptsContext="Preguntas simples sobre tu recibo."
+          caseTitle="Recibo de mayo"
+          employeeName="Ana Pérez"
+          confidenceScore={86}
+          disclaimer={WORKER_CHAT_DISCLAIMER}
+          summary="En tu recibo se ve un descuento de IMSS de $120.50."
+          nextSuggestedDocument={{
+            title: "Para ver más claro",
+            label: "CFDI del mismo periodo",
+            reason: "Sirve para comparar lo timbrado con lo que te pagaron.",
+            ctaLabel: "Subir este documento ahora",
+          }}
+          responseTone="brief"
+        />
+      </main>
+    );
+  }
 
   if (auth.loading) {
     return (
