@@ -80,6 +80,10 @@ describe("workerChatLaborGuidance", () => {
     expect(inferWorkerChatPromptFocus("¿Me descontaron IMSS?")).toBe("imss");
     expect(inferWorkerChatPromptFocus("¿Estoy bien dado de alta?")).toBe("alta");
     expect(inferWorkerChatPromptFocus("¿Me descontaron impuestos?")).toBe("fiscal");
+    expect(inferWorkerChatPromptFocus("¿Me descontaron IMSS o impuestos?")).toBe("imss_fiscal");
+    expect(inferWorkerChatPromptFocus("¿Reviso IMSS e ISR?")).toBe("imss_fiscal");
+    expect(inferWorkerChatPromptFocus("¿El NSS y las retenciones coinciden?")).toBe("imss_fiscal");
+    expect(inferWorkerChatPromptFocus("¿Me descontaron la retención IMSS?")).toBe("imss");
     expect(inferWorkerChatPromptFocus("¿Qué hay de Infonavit?")).toBe("infonavit");
     expect(inferWorkerChatPromptFocus("¿Qué hago ahora?")).toBe("general");
   });
@@ -119,6 +123,38 @@ describe("workerChatLaborGuidance", () => {
     expect(guidance.nextStep).toMatch(/ISR \$310\.00/);
     expect(guidance.nextStep).toMatch(/CFDI|depositaron/i);
     expect(guidance.nextStep).toMatch(/no prueba el entero al SAT/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan IMSS e ISR juntos, el siguiente paso cubre alta y retención", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      localInput,
+      "¿Me descontaron IMSS o impuestos?",
+    );
+
+    expect(guidance.promptFocus).toBe("imss_fiscal");
+    expect(guidance.nextStep).toMatch(/IMSS \$120\.50|NSS 12345678901/);
+    expect(guidance.nextStep).toMatch(/no confirma el alta oficial/i);
+    expect(guidance.nextStep).toMatch(/ISR \$310\.00/);
+    expect(guidance.nextStep).toMatch(/CFDI|depositaron/i);
+    expect(guidance.nextStep).not.toMatch(/tesis|registro digital|Semanario|Helios|consulta en vivo/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan IMSS y retenciones sin monto ISR, igual pide cruce fiscal concreto", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      {
+        ...localInput,
+        laborFacts: { ...FACTS, isrWithheld: null },
+        hasFiscalSignal: false,
+      },
+      "¿Reviso IMSS y las retenciones?",
+    );
+
+    expect(guidance.promptFocus).toBe("imss_fiscal");
+    expect(guidance.nextStep).toMatch(/no confirma el alta oficial|no confirma alta/i);
+    expect(guidance.nextStep).toMatch(/CFDI|dep[oó]sito/i);
+    expect(guidance.nextStep).toMatch(/ISR|impuestos|retenciones/i);
     expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
   });
 

@@ -6,7 +6,17 @@ import {
   type LaborFiscalStructuredFacts,
 } from "./laborFiscalSignals";
 
-export type WorkerChatPromptFocus = "imss" | "fiscal" | "infonavit" | "alta" | "general";
+export type WorkerChatPromptFocus =
+  | "imss"
+  | "fiscal"
+  | "imss_fiscal"
+  | "infonavit"
+  | "alta"
+  | "general";
+
+const IMSS_TOPIC_RE = /\bimss\b|cuota obrera|seguro social|\bnss\b|\balta\b|semanas cotiz/;
+const FISCAL_TOPIC_RE =
+  /\bisr\b|impuestos?\b|\bsat\b|retenci[oó]n(?:es)?(?!\s+(?:de\s+)?(?:imss|infonavit))/;
 
 export type WorkerChatGuidanceFoundation = {
   title: string;
@@ -63,10 +73,13 @@ function cleanCopy(value?: string | null) {
 export function inferWorkerChatPromptFocus(prompt?: string | null): WorkerChatPromptFocus {
   const text = (prompt ?? "").toLowerCase();
   if (!text) return "general";
+  const mentionsImss = IMSS_TOPIC_RE.test(text);
+  const mentionsFiscal = FISCAL_TOPIC_RE.test(text);
+  if (mentionsImss && mentionsFiscal) return "imss_fiscal";
   if (/infonavit/.test(text)) return "infonavit";
   if (/\balta\b|semanas cotiz/.test(text)) return "alta";
-  if (/\bimss\b|cuota obrera|seguro social|\bnss\b/.test(text)) return "imss";
-  if (/\bisr\b|impuesto|sat\b|\brfc\b|cfdi/.test(text)) return "fiscal";
+  if (mentionsImss) return "imss";
+  if (mentionsFiscal || /\brfc\b|cfdi/.test(text)) return "fiscal";
   return "general";
 }
 
@@ -98,6 +111,59 @@ function firstExplanationLine(explanations: WorkerChatLaborGuidanceInput["laborE
   return explanations.find((item) => !/l[ií]mite de esta lectura/i.test(item.label))?.summary ?? null;
 }
 
+function composeImssCrossStep(input: WorkerChatLaborGuidanceInput, altaEmphasis = false): string {
+  const facts = input.laborFacts;
+  const period = periodPhrase(facts.period);
+
+  if (altaEmphasis) {
+    return facts.nss
+      ? `El NSS ${facts.nss} se ve en el papel${period}, pero eso no confirma el alta oficial. Si puedes, sube otro recibo o un papel IMSS que tú tengas para comparar.`
+      : "En tus papeles puede verse una señal de IMSS, pero eso no confirma el alta oficial. Sube un papel IMSS o el siguiente recibo si lo tienes.";
+  }
+
+  if (facts.imssWithheld) {
+    return `Cruza el descuento IMSS ${facts.imssWithheld}${period} con tu siguiente recibo o con un papel IMSS que tú subas. Verlo en el recibo no confirma alta ni semanas cotizadas.`;
+  }
+  if (facts.nss) {
+    return `El NSS ${facts.nss} se ve en el papel${period}. Compáralo con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial.`;
+  }
+  return "Hay una señal de IMSS en tus papeles, pero no confirma alta. Sube otro recibo o un papel IMSS si lo tienes.";
+}
+
+function composeFiscalCrossStep(input: WorkerChatLaborGuidanceInput): string {
+  const facts = input.laborFacts;
+  const period = periodPhrase(facts.period);
+  const documentType = input.documentType;
+
+  if (facts.isrWithheld && documentType === "cfdi") {
+    return `Compara la retención ISR ${facts.isrWithheld}${period} con tu recibo o depósito del mismo periodo. Verla timbrada no prueba que el patrón la haya enterado al SAT.`;
+  }
+  if (facts.isrWithheld) {
+    return `Cruza la retención ISR ${facts.isrWithheld}${period} con el CFDI o con lo que realmente te depositaron. Verla en el recibo no prueba el entero al SAT.`;
+  }
+  return documentType === "cfdi"
+    ? "Compara lo timbrado con tu recibo o depósito del mismo periodo antes de dar por bueno el pago."
+    : "Si puedes, sube el CFDI del mismo periodo para cruzar impuestos y lo que realmente te depositaron.";
+}
+
+function composeImssFiscalNextStep(input: WorkerChatLaborGuidanceInput): string {
+  const facts = input.laborFacts;
+  const period = periodPhrase(facts.period);
+  const imssPart =
+    facts.imssWithheld && facts.nss
+      ? `Cruza el descuento IMSS ${facts.imssWithheld} y el NSS ${facts.nss}${period} con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial.`
+      : composeImssCrossStep(input).replace(
+          /no confirma alta ni semanas cotizadas\.?$/i,
+          "no confirma el alta oficial.",
+        );
+  const fiscalPart = facts.isrWithheld
+    ? `Cruza también la retención ISR ${facts.isrWithheld} con el CFDI o con lo que te depositaron del mismo periodo.`
+    : input.documentType === "cfdi"
+      ? "Cruza también lo timbrado de ISR o impuestos con tu recibo o depósito del mismo periodo."
+      : "Cruza también las retenciones o impuestos con el CFDI o el depósito del mismo periodo.";
+  return `${imssPart} ${fiscalPart}`;
+}
+
 function composeSignalNextStep(
   input: WorkerChatLaborGuidanceInput,
   focus: WorkerChatPromptFocus,
@@ -107,19 +173,15 @@ function composeSignalNextStep(
   const documentType = input.documentType;
 
   if (focus === "alta") {
-    return facts.nss
-      ? `El NSS ${facts.nss} se ve en el papel${period}, pero eso no confirma el alta oficial. Si puedes, sube otro recibo o un papel IMSS que tú tengas para comparar.`
-      : "En tus papeles puede verse una señal de IMSS, pero eso no confirma el alta oficial. Sube un papel IMSS o el siguiente recibo si lo tienes.";
+    return composeImssCrossStep(input, true);
   }
 
   if (focus === "imss") {
-    if (facts.imssWithheld) {
-      return `Cruza el descuento IMSS ${facts.imssWithheld}${period} con tu siguiente recibo o con un papel IMSS que tú subas. Verlo en el recibo no confirma alta ni semanas cotizadas.`;
-    }
-    if (facts.nss) {
-      return `El NSS ${facts.nss} se ve en el papel${period}. Compáralo con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial.`;
-    }
-    return "Hay una señal de IMSS en tus papeles, pero no confirma alta. Sube otro recibo o un papel IMSS si lo tienes.";
+    return composeImssCrossStep(input);
+  }
+
+  if (focus === "imss_fiscal") {
+    return composeImssFiscalNextStep(input);
   }
 
   if (focus === "infonavit") {
@@ -129,15 +191,7 @@ function composeSignalNextStep(
   }
 
   if (focus === "fiscal") {
-    if (facts.isrWithheld && documentType === "cfdi") {
-      return `Compara la retención ISR ${facts.isrWithheld}${period} con tu recibo o depósito del mismo periodo. Verla timbrada no prueba que el patrón la haya enterado al SAT.`;
-    }
-    if (facts.isrWithheld) {
-      return `Cruza la retención ISR ${facts.isrWithheld}${period} con el CFDI o con lo que realmente te depositaron. Verla en el recibo no prueba el entero al SAT.`;
-    }
-    return documentType === "cfdi"
-      ? "Compara lo timbrado con tu recibo o depósito del mismo periodo antes de dar por bueno el pago."
-      : "Si puedes, sube el CFDI del mismo periodo para cruzar impuestos y lo que realmente te depositaron.";
+    return composeFiscalCrossStep(input);
   }
 
   if (documentType === "cfdi" && facts.period && facts.netAmount) {

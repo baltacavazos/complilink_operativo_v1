@@ -55,7 +55,10 @@ describe("worker chat visual polish", () => {
     expect(auditar).toContain(
       "||required_plan=essential||current_plan=free",
     );
+    expect(auditar).toContain("¿Me descontaron IMSS o impuestos?");
     expect(auditar).toContain("Cruza el descuento IMSS $120.50");
+    expect(auditar).toContain("no confirma el alta oficial");
+    expect(auditar).toContain("retención ISR $310.00");
     expect(auditar).toContain("acreditación de pagos y deducciones");
   });
 });

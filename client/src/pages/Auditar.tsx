@@ -8527,7 +8527,7 @@ export default function Auditar() {
               content:
                 "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
             },
-            { role: "user", content: "¿Me descontaron IMSS?" },
+            { role: "user", content: "¿Me descontaron IMSS o impuestos?" },
             {
               role: "assistant",
               content: [
@@ -8541,7 +8541,7 @@ export default function Auditar() {
                 "No se ve una constancia oficial de alta, vigencia o semanas cotizadas.",
                 "",
                 "Siguiente paso",
-                "Cruza el descuento IMSS $120.50 del periodo 2026-05-01 al 2026-05-15 con tu siguiente recibo o con un papel IMSS que tú subas. Verlo en el recibo no confirma alta ni semanas cotizadas. Esta lectura usa acreditación de pagos y deducciones para comparar lo que sí se ve en tus papeles.",
+                "Cruza el descuento IMSS $120.50 y el NSS 12345678901 del periodo 2026-05-01 al 2026-05-15 con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial. Cruza también la retención ISR $310.00 con el CFDI o con lo que te depositaron del mismo periodo.",
                 "",
                 WORKER_CHAT_DISCLAIMER,
               ].join("\n"),
