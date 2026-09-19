@@ -121,6 +121,15 @@ import {
   summarizeLaborFiscalSignals,
 } from "./laborFiscalSignals";
 import {
+  buildWorkerChatContextNote,
+  buildWorkerChatFallbackAnswer,
+  buildWorkerChatGrounding,
+  buildWorkerChatLlmInstructions,
+  buildWorkerChatSuggestedPrompts,
+  sanitizeWorkerChatAnswer,
+} from "./workerChatUx";
+import { sanitizeWorkerChatCopy, WORKER_CHAT_DISCLAIMER } from "@shared/workerChatUx";
+import {
   humanizeMissingExtractionTarget,
   humanizeStructuredFieldLabel,
   isWorkerSystemStructuredField,
@@ -2000,8 +2009,8 @@ function inferHeliosMissingDocuments(params: {
     suggestions.push({
       targetType: "contract",
       label: "Contrato laboral o condiciones iniciales",
-      reason: "Ayuda a comparar lo pactado con lo que realmente ocurrió durante la relación laboral.",
-      prompt: "¿Te serviría más ver mi contrato laboral o condiciones iniciales?",
+      reason: "Sirve para comparar lo que te prometieron con lo que realmente pasó.",
+      prompt: "¿Me sirve subir mi contrato?",
     });
   }
 
@@ -2009,8 +2018,8 @@ function inferHeliosMissingDocuments(params: {
     suggestions.push({
       targetType: "cfdi",
       label: "CFDI del mismo periodo",
-      reason: "Sirve para contrastar lo timbrado fiscalmente contra lo que aparece en tu nómina.",
-      prompt: "¿Por qué me convendría subir el CFDI del mismo periodo?",
+      reason: "Sirve para comparar lo timbrado con lo que aparece en tu recibo.",
+      prompt: "¿Me sirve subir el CFDI del mismo periodo?",
     });
   }
 
@@ -2018,8 +2027,8 @@ function inferHeliosMissingDocuments(params: {
     suggestions.push({
       targetType: "payroll_receipt",
       label: "Recibo de nómina del mismo periodo",
-      reason: "Ayuda a aterrizar pagos, descuentos y periodos para comparar lo fiscal con lo laboral.",
-      prompt: "¿Qué me puede aclarar subir la nómina del mismo periodo?",
+      reason: "Ayuda a ver pagos y descuentos del mismo periodo.",
+      prompt: "¿Me sirve subir el recibo del mismo periodo?",
     });
   }
 
@@ -2027,8 +2036,8 @@ function inferHeliosMissingDocuments(params: {
     suggestions.push({
       targetType: "imss",
       label: "Soporte IMSS",
-      reason: "Refuerza fechas, altas, bajas y señales de seguridad social que pueden mover la lectura del caso.",
-      prompt: "¿Necesito también un soporte IMSS para entender mejor mi caso?",
+      reason: "Ayuda a ver fechas o movimientos de IMSS que ya vengan en un papel oficial que tú subas. No consulta IMSS en vivo.",
+      prompt: "¿Me sirve subir un papel del IMSS?",
     });
   }
 
@@ -2047,31 +2056,18 @@ function inferHeliosMissingDocuments(params: {
 function buildHeliosCopilotSuggestedPrompts(params: {
   opinion: Record<string, unknown> | null;
   documentsCount: number;
+  documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
   missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
-  const prompts = [
-    "¿Cuál es el riesgo principal que ves hoy en mi expediente?",
-    "Explícame mi situación actual con palabras simples.",
-    "¿Qué paso práctico me conviene seguir ahora?",
-  ];
-
-  if (params.documentsCount > 0) {
-    prompts.push("Explícame esto como si me lo dijera un abogado laboral en corto.");
-  }
-
-  if (params.missingDocuments[0]?.prompt) {
-    prompts.push(params.missingDocuments[0].prompt);
-  }
-
-  if (getOptionalString(params.opinion?.recommendedNextStep)) {
-    prompts.push("Explícame por qué recomiendas ese siguiente paso.");
-  }
-
-  if (params.missingDocuments.length > 0 || getOptionalStringList(params.opinion?.uncertainties).length > 0) {
-    prompts.push("¿Qué cosas todavía faltan confirmar y qué documento ayudaría más?");
-  }
-
-  return Array.from(new Set(prompts)).slice(0, 4);
+  const grounding = buildWorkerChatGrounding({
+    documents: params.documents,
+    opinion: params.opinion,
+    missingDocument: params.missingDocuments[0] ?? null,
+  });
+  return buildWorkerChatSuggestedPrompts({
+    ...grounding,
+    documentsCount: params.documentsCount,
+  });
 }
 
 function buildHeliosCopilotContext(params: {
@@ -2098,13 +2094,16 @@ function buildHeliosCopilotContext(params: {
       documentType: document.documentType,
       classificationConfidence: document.classificationConfidence,
       createdAt: document.createdAt?.toISOString?.() ?? document.createdAt,
-      heliosSummary: getOptionalString(opinion?.summary),
-      legalOpinion: getOptionalString(opinion?.legalOpinion),
-      recommendedNextStep: getOptionalString(opinion?.recommendedNextStep),
-      recommendedActions: getOptionalStringList(opinion?.recommendedActions).slice(0, 4),
-      uncertainties: getOptionalStringList(opinion?.uncertainties).slice(0, 4),
-      riskLevel: getOptionalString(opinion?.riskLevel),
-      confidenceScore: getOptionalNumber(opinion?.confidenceScore),
+          heliosSummary: getOptionalString(opinion?.summary),
+          legalOpinion: getOptionalString(opinion?.legalOpinion),
+          recommendedNextStep: getOptionalString(opinion?.recommendedNextStep),
+          recommendedActions: getOptionalStringList(opinion?.recommendedActions).slice(0, 4),
+          uncertainties: getOptionalStringList(opinion?.uncertainties).slice(0, 4),
+          legalFoundations: Array.isArray(opinion?.legalFoundations)
+            ? opinion.legalFoundations.slice(0, 4)
+            : [],
+          riskLevel: getOptionalString(opinion?.riskLevel),
+          confidenceScore: getOptionalNumber(opinion?.confidenceScore),
     };
   });
 
@@ -2119,7 +2118,7 @@ function buildHeliosCopilotContext(params: {
       recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
       missingDocuments: params.missingDocuments,
       guidance:
-        "Responde solo con base en este expediente visible. Si algo no aparece aquí, dilo con claridad en vez de asumirlo.",
+        "Responde solo con las señales del documento y las bases legales ya listadas. Si algo no aparece, dilo. No inventes consulta oficial ni jurisprudencia.",
       pedagogyMode: hasComplexSignals ? "high" : "standard",
     },
     null,
@@ -2129,29 +2128,19 @@ function buildHeliosCopilotContext(params: {
 
 function buildHeliosCopilotFallbackAnswer(params: {
   opinion: Record<string, unknown> | null;
+  documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
   documentsCount: number;
   missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
-  if (params.documentsCount === 0) {
-    return [
-      "1) Respuesta clara: Todavía no veo documentos integrados en este expediente, así que aún no te puedo orientar con la misma precisión que cuando ya existe respaldo visible.",
-      "2) Lo que sí se sabe: Tu expediente ya está listo para empezar a ordenarse en cuanto subas el primer documento útil.",
-      "3) Lo que falta confirmar: Si puedes, empieza con tu contrato, un recibo de nómina o un CFDI del mismo periodo para que la lectura tenga base real.",
-      "4) Siguiente paso útil: Sube primero el documento laboral que tengas más a la mano y después yo te digo qué otra pieza podría ayudarte más.",
-    ].join("\n\n");
-  }
-
-  const summary = getOptionalString(params.opinion?.summary);
-  const nextStep = getOptionalString(params.opinion?.recommendedNextStep);
-  const uncertainties = getOptionalStringList(params.opinion?.uncertainties);
-  const firstMissingDocument = params.missingDocuments[0];
-
-  return [
-    `1) Respuesta clara: ${summary ?? "Ya existe una lectura preliminar del expediente y sí puedo orientarte, aunque todavía faltan algunas piezas para darte una respuesta más cerrada."}`,
-    "2) Lo que sí se sabe: Ya hay documentos visibles que permiten una primera lectura laboral sobre tu situación actual.",
-    `3) Lo que falta confirmar: ${firstMissingDocument ? `${firstMissingDocument.label}. ${firstMissingDocument.reason}` : uncertainties.length > 0 ? uncertainties.slice(0, 2).join("; ") : "Todavía conviene contrastar algunos datos con más contexto documental."}`,
-    `4) Siguiente paso útil: ${nextStep ?? (firstMissingDocument ? `Si lo tienes a la mano, sube ${firstMissingDocument.label.toLowerCase()} para afinar la lectura y decirte mejor qué sigue.` : "Cuéntame qué punto te preocupa más y te lo explico con palabras más simples sobre lo que ya está visible.")}`,
-  ].join("\n\n");
+  const grounding = buildWorkerChatGrounding({
+    documents: params.documents,
+    opinion: params.opinion,
+    missingDocument: params.missingDocuments[0] ?? null,
+  });
+  return buildWorkerChatFallbackAnswer({
+    ...grounding,
+    documentsCount: params.documentsCount,
+  });
 }
 
 function buildHeliosCopilotSupportingDocuments(params: {
@@ -2176,13 +2165,18 @@ function buildHeliosCopilotSupportingDocuments(params: {
       const nextStep = getOptionalString(opinion?.recommendedNextStep);
       const uncertainties = getOptionalStringList(opinion?.uncertainties);
 
+      const foundationTitle = Array.isArray(opinion?.legalFoundations)
+        ? getOptionalString((opinion.legalFoundations[0] as { title?: unknown } | undefined)?.title)
+        : null;
+
       return {
         id: document.documentId,
         label: document.originalName,
         detail: [
           `Tipo: ${document.documentType}.`,
           summary ? `Lectura visible: ${summary}` : null,
-          nextStep ? `Paso sugerido: ${nextStep}` : null,
+          nextStep ? `Siguiente paso: ${nextStep}` : null,
+          foundationTitle ? `Base ya usada: ${foundationTitle}` : null,
           uncertainties[0] ? `Por confirmar: ${uncertainties[0]}` : null,
         ]
           .filter((item): item is string => Boolean(item))
@@ -3449,21 +3443,32 @@ export const appRouter = router({
           });
         }
         const missingDocuments = inferHeliosMissingDocuments({ documents });
+        const workerChatGrounding = buildWorkerChatGrounding({
+          documents,
+          opinion: latestOpinion,
+          missingDocument: missingDocuments[0] ?? null,
+        });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
           documentsCount: documents.length,
+          documents,
           missingDocuments,
         });
-        const disclaimer =
-          getOptionalString(latestOpinion?.disclaimer) ??
-          `Esta respuesta se basa en los documentos visibles del expediente y en el marco operativo vigente de AuditaPatron ${LEGAL_VERSION}. No sustituye asesoría profesional vinculante.`;
+        const disclaimer = WORKER_CHAT_DISCLAIMER;
         const confidenceScore = getOptionalNumber(latestOpinion?.confidenceScore);
         const fallbackAnswer = buildHeliosCopilotFallbackAnswer({
           opinion: latestOpinion,
+          documents,
           documentsCount: documents.length,
           missingDocuments,
         });
-        const supportingDocuments = buildHeliosCopilotSupportingDocuments({ documents, missingDocuments });
+        const supportingDocuments = buildHeliosCopilotSupportingDocuments({ documents, missingDocuments }).map(
+          (document) => ({
+            ...document,
+            label: sanitizeWorkerChatCopy(document.label) ?? document.label,
+            detail: sanitizeWorkerChatCopy(document.detail) ?? document.detail,
+          }),
+        );
 
         let answer = fallbackAnswer;
 
@@ -3473,16 +3478,15 @@ export const appRouter = router({
               messages: [
                 {
                   role: "system",
-                  content:
-                    "Eres el asesor laboral de AuditaPatron para México. Responde siempre en español claro, práctico, conversacional y útil. Usa únicamente el contexto del expediente proporcionado y la conversación reciente visible. Si falta información, dilo de frente. No inventes hechos, no prometas resultados, no sustituyas a un abogado y evita lenguaje alarmista. Cuando el caso sea complejo, explica en lenguaje sencillo qué significa el punto legal importante. Si detectas un documento faltante que podría mover la lectura, nómbralo y explica por qué ayudaría. Si una pregunta conecta con algo ya hablado en la conversación reciente, retómalo de forma natural. Si la preferencia visible es breve, responde con síntesis y sin rodeos. Si la preferencia visible es explicativa, agrega un poco más de contexto práctico y baja a lenguaje simple el punto legal importante. Cierra con una nota corta recordando que es orientación general basada en documentos visibles. Nunca te presentes como Helios.",
+                  content: buildWorkerChatLlmInstructions(workerChatGrounding),
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents, conversationHistory, missingDocuments })}\n\nMarco operativo y legal:\n${ADVISOR_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents, conversationHistory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nMarco operativo:\n${ADVISOR_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
-                  }.\n- Preferencia visible de tono: ${responseTone === "explained" ? "más explicativo" : "breve"}.\n\nPregunta de la persona usuaria: ${input.prompt}\n\nResponde con cuatro partes breves y con esos títulos exactos: 1) Respuesta clara, 2) Lo que sí se sabe, 3) Lo que falta confirmar, 4) Siguiente paso útil. Mantén un tono de abogado laboral cercano y pedagógico. Si mencionas un término legal importante, explícalo en una frase simple. Si detectas un documento faltante útil, di su nombre y por qué conviene subirlo. Adapta la extensión al tono visible: en modo breve usa 1 o 2 frases por bloque; en modo más explicativo puedes usar hasta 3 o 4 frases por bloque si ayudan a entender mejor el punto.`,
+                  }.\n- Preferencia visible de tono: ${responseTone === "explained" ? "un poco más" : "corta"}.\n\nPregunta de la persona usuaria: ${input.prompt}`,
 
                 },
               ],
@@ -3490,7 +3494,7 @@ export const appRouter = router({
 
             const candidate = readLlmMessageText(response.choices[0]?.message.content).trim();
             if (candidate) {
-              answer = candidate;
+              answer = sanitizeWorkerChatAnswer(candidate, workerChatGrounding);
             }
           } catch {
             answer = fallbackAnswer;

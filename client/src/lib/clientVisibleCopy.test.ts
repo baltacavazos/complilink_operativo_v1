@@ -22,8 +22,8 @@ describe("sanitizeClientVisibleCopy", () => {
   });
 
   it("oculta Helios, Manus y jerga de score/ONLINE", () => {
-    expect(sanitizeClientVisibleCopy("Preguntar a Helios")).toBe("Preguntar al asesor laboral");
-    expect(sanitizeClientVisibleCopy("Modo Helios")).toBe("Modo asesor");
+    expect(sanitizeClientVisibleCopy("Preguntar a Helios")).toBe("Preguntar al asesor");
+    expect(sanitizeClientVisibleCopy("Modo Helios")).toBe("Asesor laboral");
     expect(sanitizeClientVisibleCopy("Helios básico")).toBe("asesor laboral básico");
     expect(sanitizeClientVisibleCopy("Helios multi-documento")).toBe("lectura de varios documentos");
     expect(sanitizeClientVisibleCopy("motor Helios")).toBe("inteligencia laboral");
@@ -112,6 +112,12 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(isWorkerSystemFieldLabel("Nivel de revisión")).toBe(true);
     expect(isWorkerSystemFieldLabel("RFC visible")).toBe(false);
     expect(isWorkerSystemFieldLabel("Periodo visible")).toBe(false);
+  });
+
+  it("el chat del trabajador complementa el sanitizador y no reintroduce Helios", () => {
+    const dirty = "Helios y CompliLink ya leyeron tu recibo";
+    expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy(dirty))).toBe(false);
+    expect(sanitizeClientVisibleCopy(dirty)).not.toMatch(/\bHelios\b|CompliLink/);
   });
 
   it("oculta Webhook y webhook_rejected con copy humano", () => {

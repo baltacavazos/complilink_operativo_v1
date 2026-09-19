@@ -122,10 +122,16 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("Revisa esto primero");
     expect(auditar).toContain("Todo en orden por ahora");
     expect(auditar).toContain("Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.");
-    expect(auditar).toContain("Modo asesor");
-    expect(auditar).toContain("No pudimos recibir el aviso.");
+    expect(auditar).toContain("Asesor laboral");
+    expect(auditar).toContain("Preguntar al asesor");
+    expect(auditar).toContain("Lo que sí se sabe");
+    expect(auditar).toContain("Lo que falta");
+    expect(auditar).toContain("Siguiente paso");
+    expect(auditar).not.toContain("Abrir asesor laboral");
     expect(auditar).not.toContain("Modo Helios");
+    expect(auditar).not.toContain("Modo asesor");
     expect(auditar).not.toContain("Modo del asesor");
+    expect(auditar).toContain("No pudimos recibir el aviso.");
   });
 
   it("deja /auditar sin Helios, CompliLink ni Webhook en copy que se renderiza", () => {

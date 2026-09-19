@@ -1,5 +1,6 @@
 import { AIChatBox, type Message as AIChatMessage } from "@/components/AIChatBox";
 import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { WORKER_CHAT_DISCLAIMER, WORKER_CHAT_SHEET_COPY } from "@shared/workerChatUx";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -103,32 +104,16 @@ export function HeliosCopilotSheet({
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const mergedCopy = {
-    eyebrow: "Asesor laboral",
-    title: "Tu asesor laboral ya entendió lo visible de tu expediente",
-    description:
-      "Cuéntale qué te preocupa y te responderá con una orientación clara, lo que ya se puede sostener, lo que falta confirmar y el siguiente paso más útil con base en tus documentos.",
-    documentBadge: "Basado en tus documentos visibles",
-    capabilityBadge: "Puede explicar, conectar y señalar el documento útil que falte",
-    quickHighlights: [
-      "Te traduce lo complejo a lenguaje claro",
-      "Retoma tu contexto reciente sin sacarte del flujo",
-      "Te dice qué documento puede destrabar mejor tu caso",
-    ],
-    promptsHeading: "Preguntas rápidas para seguir contigo",
-    historyHeading: "Continuidad reciente de tu caso",
-    supportingHeading: "Evidencia de tu caso",
-    toneHeading: "Cómo quieres que responda",
-    toneBriefLabel: "Breve",
-    toneExplainedLabel: "Más explicativo",
-    toneBriefHint: "Va al punto y resume lo esencial en menos líneas.",
-    toneExplainedHint:
-      "Da más contexto y baja a lenguaje simple lo importante del punto legal.",
-    placeholder:
-      "Cuéntame qué pasó o qué te preocupa. Tu asesor laboral responde con base en tus documentos visibles",
-    emptyStateMessage:
-      "Tu asesor laboral ya tiene contexto para empezar. Puede explicarte tu situación actual, decirte qué falta confirmar y señalar qué documento podría ayudarte más después.",
-    closeLabel: "Volver al expediente",
+    ...WORKER_CHAT_SHEET_COPY,
+    quickHighlights: [...WORKER_CHAT_SHEET_COPY.quickHighlights],
     ...uiCopy,
+  };
+  const sanitizeMultiline = (value?: string | null) => {
+    if (value == null) return value ?? null;
+    return value
+      .split(/\r?\n/)
+      .map((line) => sanitizeClientVisibleCopy(line) ?? line)
+      .join("\n");
   };
   const copy = {
     ...mergedCopy,
@@ -167,91 +152,92 @@ export function HeliosCopilotSheet({
     .map((prompt) => sanitizeClientVisibleCopy(prompt) ?? prompt);
   const visibleMessages = messages.map((message) => ({
     ...message,
-    content: sanitizeClientVisibleCopy(message.content) ?? message.content,
+    content: sanitizeMultiline(message.content) ?? message.content,
   }));
-  const visibleSummary = sanitizeClientVisibleCopy(summary) ?? summary;
-  const visibleDisclaimer = sanitizeClientVisibleCopy(disclaimer) ?? disclaimer;
+  const visibleSummary = sanitizeMultiline(summary) ?? summary;
+  const visibleDisclaimer = sanitizeMultiline(disclaimer) ?? disclaimer;
   const visibleCaseTitle = sanitizeClientVisibleCopy(caseTitle) ?? caseTitle;
   const visiblePromptsContext =
     sanitizeClientVisibleCopy(suggestedPromptsContext) ?? suggestedPromptsContext;
   const visibleHistoryContext = sanitizeClientVisibleCopy(historyContext) ?? historyContext;
-  const quickHighlights = copy.quickHighlights.slice(0, 3);
+  const quickHighlights = copy.quickHighlights.slice(0, 4);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full border-l border-slate-200 bg-white p-0 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950 sm:max-w-xl"
+        data-testid="ap-worker-chat"
+        className="ap-worker-chat w-full border-l border-slate-200/80 bg-[#f7f8fa] p-0 sm:max-w-xl"
       >
         <div className="flex h-full flex-col">
-          <SheetHeader className="border-b border-slate-200 bg-slate-50/80 px-5 py-5 text-left transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/90 sm:px-6">
+          <SheetHeader className="border-b border-slate-200/70 bg-white/80 px-5 py-4 text-left backdrop-blur-md sm:px-6">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-100 text-teal-700 transition-colors duration-300 dark:bg-teal-400/14 dark:text-teal-200">
-                <Sparkles className="h-5 w-5" strokeWidth={1.8} />
+              <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-700">
+                <Sparkles className="h-5 w-5" strokeWidth={1.7} />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold tracking-tight text-teal-700 dark:text-teal-200">
+                <p className="text-[12px] font-medium tracking-[-0.01em] text-teal-700">
                   {copy.eyebrow}
                 </p>
-                <SheetTitle className="mt-1 text-lg tracking-[-0.02em] text-slate-950 dark:text-slate-50">
+                <SheetTitle className="mt-1 text-[1.35rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950">
                   {copy.title}
                 </SheetTitle>
-                <SheetDescription className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                <SheetDescription className="mt-1.5 text-[0.95rem] leading-6 tracking-[-0.015em] text-slate-500">
                   {copy.description}
                 </SheetDescription>
               </div>
             </div>
 
-            <div className="mt-4 space-y-3 rounded-[1.2rem] border border-teal-100 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-teal-400/25 dark:bg-slate-900/85">
-              <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+            <div className="mt-4 space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.28)]">
+              <p className="text-sm font-semibold text-slate-950">
                 {visibleCaseTitle ?? "Expediente activo"}
                 {employeeName ? (
-                  <span className="font-normal text-slate-600 dark:text-slate-300">
+                  <span className="font-normal text-slate-600">
                     {" "}· {employeeName}
                   </span>
                 ) : null}
               </p>
               {visibleSummary ? (
-                <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">
+                <p className="text-sm leading-6 text-slate-700">
                   {visibleSummary}
                 </p>
               ) : null}
-              <div className="flex flex-wrap gap-2 text-xs font-semibold">
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+              <div className="flex flex-wrap gap-1.5">
+                <span className="ap-chat-chip">
                   {copy.documentBadge}
                 </span>
-                <span className="rounded-full bg-white px-3 py-1 text-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                <span className="ap-chat-chip">
                   {copy.capabilityBadge}
                 </span>
                 {typeof confidenceScore === "number" ? (
-                  <span className="rounded-full bg-teal-50 px-3 py-1 text-teal-800 dark:bg-teal-400/14 dark:text-teal-100">
+                  <span className="ap-chat-chip">
                     Confianza orientativa {confidenceScore}%
                   </span>
                 ) : null}
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              <div className="mt-3 grid gap-2 sm:grid-cols-2">
                 {quickHighlights.map((item) => (
                   <div
                     key={item}
-                    className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-700 dark:border-white/10 dark:bg-slate-950/70 dark:text-slate-200"
+                    className="rounded-2xl border border-slate-200/80 bg-[#f7f8fa] px-3 py-2.5 text-[0.78rem] leading-5 tracking-[-0.01em] text-slate-600"
                   >
                     {item}
                   </div>
                 ))}
               </div>
               {onResponseToneChange ? (
-                <div className="rounded-[1rem] border border-slate-200 bg-slate-50 px-3 py-3 dark:border-white/10 dark:bg-slate-950/70">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                <div className="rounded-[1.15rem] border border-slate-200/80 bg-[#f7f8fa] px-3 py-3">
+                  <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">
                     {copy.toneHeading}
                   </p>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="mt-2.5 grid grid-cols-2 gap-1 rounded-full bg-white p-1">
                     <Button
                       type="button"
                       variant="outline"
-                      className={`rounded-full ${
+                      className={`h-9 rounded-full border-0 text-[0.82rem] shadow-none ${
                         responseTone === "brief"
-                          ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100 dark:border-teal-400/30 dark:bg-teal-400/14 dark:text-teal-100"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/12 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                          ? "bg-slate-950 text-white hover:bg-slate-800"
+                          : "bg-transparent text-slate-600 hover:bg-slate-50"
                       }`}
                       onClick={() => onResponseToneChange("brief")}
                     >
@@ -260,17 +246,17 @@ export function HeliosCopilotSheet({
                     <Button
                       type="button"
                       variant="outline"
-                      className={`rounded-full ${
+                      className={`h-9 rounded-full border-0 text-[0.82rem] shadow-none ${
                         responseTone === "explained"
-                          ? "border-teal-200 bg-teal-50 text-teal-900 hover:bg-teal-100 dark:border-teal-400/30 dark:bg-teal-400/14 dark:text-teal-100"
-                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/12 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                          ? "bg-slate-950 text-white hover:bg-slate-800"
+                          : "bg-transparent text-slate-600 hover:bg-slate-50"
                       }`}
                       onClick={() => onResponseToneChange("explained")}
                     >
                       {copy.toneExplainedLabel}
                     </Button>
                   </div>
-                  <p className="mt-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
+                  <p className="mt-2 text-xs leading-5 text-slate-500">
                     {responseTone === "explained"
                       ? copy.toneExplainedHint
                       : copy.toneBriefHint}
@@ -280,12 +266,12 @@ export function HeliosCopilotSheet({
             </div>
 
             {visibleSuggestedPrompts.length ? (
-              <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/85">
-                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+              <div className="mt-4 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.22)] transition-colors duration-300">
+                <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">
                   {copy.promptsHeading}
                 </p>
                 {visiblePromptsContext ? (
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  <p className="mt-2 text-[0.92rem] leading-6 tracking-[-0.015em] text-slate-500">
                     {visiblePromptsContext}
                   </p>
                 ) : null}
@@ -295,7 +281,7 @@ export function HeliosCopilotSheet({
                       key={prompt}
                       type="button"
                       variant="outline"
-                      className="h-auto rounded-full border-slate-200 bg-white px-4 py-2 text-left text-xs leading-5 text-slate-700 hover:bg-slate-50 dark:border-white/12 dark:bg-slate-950/70 dark:text-slate-100 dark:hover:bg-slate-900"
+                      className="ap-chat-prompt motion-hover-lift h-auto rounded-full px-3.5 py-2 text-left text-[0.8rem] leading-5 tracking-[-0.01em] text-slate-700"
                       onClick={() => onSendMessage(prompt)}
                     >
                       {prompt}
@@ -308,18 +294,18 @@ export function HeliosCopilotSheet({
 
           <div className="flex-1 overflow-y-auto px-4 pb-4 pt-4 sm:px-6">
             {visibleHistoryItems.length ? (
-              <div className="mb-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-colors duration-300 dark:border-white/10 dark:bg-slate-900/75">
+              <div className="mb-4 rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 transition-colors duration-300">
                 <div className="flex items-center gap-2">
                   <Clock3
-                    className="h-4 w-4 text-slate-500 dark:text-slate-400"
+                    className="h-4 w-4 text-slate-500"
                     strokeWidth={1.8}
                   />
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
+                  <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">
                     {copy.historyHeading}
                   </p>
                 </div>
                 {visibleHistoryContext ? (
-                  <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
                     {visibleHistoryContext}
                   </p>
                 ) : null}
@@ -327,19 +313,19 @@ export function HeliosCopilotSheet({
                   {visibleHistoryItems.map((item) => (
                     <div
                       key={item.id}
-                      className="rounded-[1rem] border border-white bg-white p-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/70"
+                      className="rounded-[1rem] border border-white bg-white p-3 transition-colors duration-300"
                     >
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                        <p className="text-sm font-semibold text-slate-950">
                           {item.title}
                         </p>
                         {item.timestampLabel ? (
-                          <span className="shrink-0 text-[11px] font-medium uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+                          <span className="shrink-0 text-[11px] font-medium tracking-[-0.01em] text-slate-400">
                             {item.timestampLabel}
                           </span>
                         ) : null}
                       </div>
-                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
                         {item.detail}
                       </p>
                     </div>
@@ -349,46 +335,46 @@ export function HeliosCopilotSheet({
             ) : null}
 
             {nextSuggestedDocument ? (
-              <div className="mb-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/80 p-4 transition-colors duration-300 dark:border-emerald-400/20 dark:bg-emerald-400/10">
+              <div className="mb-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/80 p-4 transition-colors duration-300">
                 <div className="flex items-center gap-2">
                   <FileText
-                    className="h-4 w-4 text-emerald-700 dark:text-emerald-200"
+                    className="h-4 w-4 text-emerald-700"
                     strokeWidth={1.8}
                   />
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-800 dark:text-emerald-100">
+                  <p className="text-[12px] font-medium tracking-[-0.01em] text-emerald-800">
                     {nextSuggestedDocument.title}
                   </p>
                 </div>
-                <div className="mt-3 rounded-[1rem] border border-white/90 bg-white p-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/70">
-                  <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                <div className="mt-3 rounded-[1rem] border border-white/90 bg-white p-3 transition-colors duration-300">
+                  <p className="text-sm font-semibold text-slate-950">
                     {nextSuggestedDocument.label}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
                     {nextSuggestedDocument.reason}
                   </p>
 
                   {nextSuggestedDocument.confirmedSummary ||
                   nextSuggestedDocument.missingSummary ? (
-                    <div className="mt-3 rounded-[0.95rem] border border-emerald-100 bg-emerald-50/70 p-3 dark:border-emerald-400/20 dark:bg-emerald-400/10">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800 dark:text-emerald-100">
+                    <div className="mt-3 rounded-[0.95rem] border border-emerald-100 bg-emerald-50/70 p-3">
+                      <p className="text-[12px] font-medium tracking-[-0.01em] text-emerald-800">
                         {nextSuggestedDocument.contrastTitle ??
                           "Lo ya confirmado vs lo que este archivo aclararía"}
                       </p>
                       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-[0.9rem] border border-white/90 bg-white px-3 py-3 dark:border-white/10 dark:bg-slate-950/70">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                        <div className="rounded-[0.9rem] border border-white/90 bg-white px-3 py-3">
+                          <p className="text-[11px] font-medium tracking-[-0.01em] text-slate-500">
                             Ya confirmado
                           </p>
-                          <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-200">
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
                             {nextSuggestedDocument.confirmedSummary ??
                               "Ya existe base inicial en tu expediente."}
                           </p>
                         </div>
-                        <div className="rounded-[0.9rem] border border-white/90 bg-white px-3 py-3 dark:border-white/10 dark:bg-slate-950/70">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+                        <div className="rounded-[0.9rem] border border-white/90 bg-white px-3 py-3">
+                          <p className="text-[11px] font-medium tracking-[-0.01em] text-slate-500">
                             Lo que aclararía
                           </p>
-                          <p className="mt-1 text-sm leading-6 text-slate-700 dark:text-slate-200">
+                          <p className="mt-1 text-sm leading-6 text-slate-700">
                             {nextSuggestedDocument.missingSummary ??
                               nextSuggestedDocument.reason}
                           </p>
@@ -398,7 +384,7 @@ export function HeliosCopilotSheet({
                   ) : null}
 
                   {nextSuggestedDocument.actionHint ? (
-                    <p className="mt-3 text-xs leading-5 text-emerald-900 dark:text-emerald-100">
+                    <p className="mt-3 text-xs leading-5 text-emerald-900">
                       {nextSuggestedDocument.actionHint}
                     </p>
                   ) : null}
@@ -407,7 +393,7 @@ export function HeliosCopilotSheet({
                     <Button
                       type="button"
                       variant="outline"
-                      className="mt-3 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100 dark:border-emerald-400/30 dark:bg-slate-950 dark:text-emerald-100 dark:hover:bg-slate-900"
+                      className="mt-3 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
                       onClick={onFocusSuggestedDocument}
                     >
                       {nextSuggestedDocument.ctaLabel ?? "Subir este documento ahora"}
@@ -419,13 +405,13 @@ export function HeliosCopilotSheet({
             ) : null}
 
             {visibleSupportingDocuments.length ? (
-              <div className="mb-4 rounded-[1.2rem] border border-teal-100 bg-teal-50/70 p-4 transition-colors duration-300 dark:border-teal-400/25 dark:bg-teal-400/10">
+              <div className="mb-4 rounded-[1.2rem] border border-teal-100 bg-teal-50/70 p-4 transition-colors duration-300">
                 <div className="flex items-center gap-2">
                   <FileText
-                    className="h-4 w-4 text-teal-700 dark:text-teal-200"
+                    className="h-4 w-4 text-teal-700"
                     strokeWidth={1.8}
                   />
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800 dark:text-teal-100">
+                  <p className="text-[12px] font-medium tracking-[-0.01em] text-teal-800">
                     {copy.supportingHeading}
                   </p>
                 </div>
@@ -433,12 +419,12 @@ export function HeliosCopilotSheet({
                   {visibleSupportingDocuments.map((document) => (
                     <div
                       key={document.id}
-                      className="rounded-[1rem] border border-white/90 bg-white p-3 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/70"
+                      className="rounded-[1rem] border border-white/90 bg-white p-3 transition-colors duration-300"
                     >
-                      <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
+                      <p className="text-sm font-semibold text-slate-950">
                         {document.label}
                       </p>
-                      <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                      <p className="mt-1 text-sm leading-6 text-slate-600">
                         {document.detail}
                       </p>
                     </div>
@@ -452,7 +438,8 @@ export function HeliosCopilotSheet({
                 messages={visibleMessages}
                 onSendMessage={onSendMessage}
                 isLoading={isLoading}
-                className="h-full border-slate-200 shadow-none dark:border-white/10"
+                variant="calm"
+                className="h-full border-0 bg-transparent shadow-none"
                 height="100%"
                 placeholder={copy.placeholder}
                 emptyStateMessage={copy.emptyStateMessage}
@@ -461,16 +448,15 @@ export function HeliosCopilotSheet({
             </div>
           </div>
 
-          <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/90 sm:px-6">
-            <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">
-              {visibleDisclaimer ??
-                "Esta orientación se basa en los documentos visibles de tu expediente y en una lectura preliminar. No sustituye a un abogado ni constituye asesoría legal vinculante."}
+          <div className="border-t border-slate-200/70 bg-white/85 px-5 py-4 backdrop-blur-md transition-colors duration-300 sm:px-6">
+            <p className="text-[0.78rem] leading-6 tracking-[-0.01em] text-slate-500">
+              {visibleDisclaimer ?? WORKER_CHAT_DISCLAIMER}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100 dark:border-white/12 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                className="h-10 rounded-full border-slate-200/80 bg-white px-5 text-[0.88rem] text-slate-600 hover:bg-slate-50"
                 onClick={() => onOpenChange(false)}
               >
                 {copy.closeLabel}

@@ -39,7 +39,7 @@ describe("Auditar first visit", () => {
     expect(source).toContain("RFC de la persona trabajadora");
     expect(source).toContain("previewMissingFields");
     expect(source).toContain("previewReviewNotes");
-    expect(advisorSheetSource).toContain('eyebrow: "Asesor laboral"');
+    expect(advisorSheetSource).toContain("WORKER_CHAT_SHEET_COPY");
     expect(advisorSheetSource).not.toContain('eyebrow: "Helios · asesor laboral"');
   });
 

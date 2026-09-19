@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { parseWorkerStructuredAnswer } from "@shared/workerChatUx";
 import { Loader2, Send, User, Sparkles } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Streamdown } from "streamdown";
@@ -57,6 +58,11 @@ export type AIChatBoxProps = {
    * Click to send directly
    */
   suggestedPrompts?: string[];
+
+  /**
+   * Visual surface. `calm` is the Apple-quiet worker chat.
+   */
+  variant?: "default" | "calm";
 };
 
 /**
@@ -110,6 +116,52 @@ export type AIChatBoxProps = {
  * };
  * ```
  */
+function CalmAssistantAnswer({ content }: { content: string }) {
+  const blocks = parseWorkerStructuredAnswer(content);
+  if (blocks.length === 0) {
+    return null;
+  }
+
+  if (blocks.length === 1 && blocks[0]?.kind === "plain") {
+    return (
+      <p className="whitespace-pre-wrap text-[0.95rem] leading-[1.55] tracking-[-0.018em]">
+        {blocks[0].body}
+      </p>
+    );
+  }
+
+  return (
+    <div className="ap-chat-answer space-y-3">
+      {blocks.map((block, index) => (
+        <div
+          key={`${block.kind}-${block.heading ?? "body"}-${index}`}
+          className={cn(
+            block.kind === "disclaimer"
+              ? "ap-chat-disclaimer"
+              : block.kind === "section"
+                ? "ap-chat-section"
+                : null,
+          )}
+        >
+          {block.heading ? (
+            <p className="ap-chat-section-label">{block.heading}</p>
+          ) : null}
+          <p
+            className={cn(
+              "whitespace-pre-wrap",
+              block.kind === "disclaimer"
+                ? "text-[0.78rem] leading-5 tracking-[-0.01em] text-slate-500"
+                : "text-[0.95rem] leading-[1.55] tracking-[-0.018em]",
+            )}
+          >
+            {block.body}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AIChatBox({
   messages,
   onSendMessage,
@@ -119,7 +171,9 @@ export function AIChatBox({
   height = "600px",
   emptyStateMessage = "Start a conversation with AI",
   suggestedPrompts,
+  variant = "default",
 }: AIChatBoxProps) {
+  const isCalm = variant === "calm";
   const [input, setInput] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -191,9 +245,13 @@ export function AIChatBox({
     <div
       ref={containerRef}
       className={cn(
-        "flex flex-col bg-card text-card-foreground rounded-lg border shadow-sm",
+        "flex flex-col",
+        isCalm
+          ? "bg-transparent text-slate-950 rounded-none border-0 shadow-none"
+          : "bg-card text-card-foreground rounded-lg border shadow-sm",
         className
       )}
+      data-ap-chat-box={isCalm ? "calm" : "default"}
       style={{ height }}
     >
       {/* Messages Area */}
@@ -202,8 +260,10 @@ export function AIChatBox({
           <div className="flex h-full flex-col p-4">
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-muted-foreground">
               <div className="flex flex-col items-center gap-3">
-                <Sparkles className="size-12 opacity-20" />
-                <p className="text-sm">{emptyStateMessage}</p>
+                <Sparkles className={cn("opacity-20", isCalm ? "size-8 text-teal-700" : "size-12")} />
+                <p className={cn(isCalm ? "max-w-[22rem] text-center text-[0.95rem] leading-6 text-slate-500" : "text-sm")}>
+                  {emptyStateMessage}
+                </p>
               </div>
 
               {suggestedPrompts && suggestedPrompts.length > 0 && (
@@ -224,12 +284,15 @@ export function AIChatBox({
           </div>
         ) : (
           <ScrollArea className="h-full">
-            <div className="flex flex-col space-y-4 p-4">
+            <div className={cn("flex flex-col", isCalm ? "space-y-5 px-1 py-3" : "space-y-4 p-4")}>
               {displayMessages.map((message, index) => {
                 // Apply min-height to last message only if NOT loading (when loading, the loading indicator gets it)
                 const isLastMessage = index === displayMessages.length - 1;
                 const shouldApplyMinHeight =
-                  isLastMessage && !isLoading && minHeightForLastMessage > 0;
+                  !isCalm &&
+                  isLastMessage &&
+                  !isLoading &&
+                  minHeightForLastMessage > 0;
 
                 return (
                   <div
@@ -247,35 +310,54 @@ export function AIChatBox({
                     }
                   >
                     {message.role === "assistant" && (
-                      <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Sparkles className="size-4 text-primary" />
+                      <div
+                        className={cn(
+                          "shrink-0 mt-1 rounded-full flex items-center justify-center",
+                          isCalm
+                            ? "size-7 bg-teal-50 text-teal-700"
+                            : "size-8 bg-primary/10",
+                        )}
+                      >
+                        <Sparkles className={cn(isCalm ? "size-3.5" : "size-4 text-primary")} strokeWidth={1.7} />
                       </div>
                     )}
 
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-lg px-4 py-2.5",
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-foreground"
+                        "max-w-[80%]",
+                        isCalm
+                          ? cn(
+                              "ap-chat-bubble px-4 py-3",
+                              message.role === "user"
+                                ? "ap-chat-bubble-user"
+                                : "ap-chat-bubble-assistant",
+                            )
+                          : cn(
+                              "rounded-lg px-4 py-2.5",
+                              message.role === "user"
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-foreground",
+                            ),
                       )}
                     >
-                      {message.role === "assistant" ? (
+                      {message.role === "assistant" && !isCalm ? (
                         <div className="prose prose-sm dark:prose-invert max-w-none">
                           <Streamdown>{message.content}</Streamdown>
                         </div>
+                      ) : message.role === "assistant" && isCalm ? (
+                        <CalmAssistantAnswer content={message.content} />
                       ) : (
-                        <p className="whitespace-pre-wrap text-sm">
+                        <p className={cn("whitespace-pre-wrap", isCalm ? "text-[0.95rem] leading-[1.55] tracking-[-0.018em]" : "text-sm")}>
                           {message.content}
                         </p>
                       )}
                     </div>
 
-                    {message.role === "user" && (
+                    {message.role === "user" && !isCalm ? (
                       <div className="size-8 shrink-0 mt-1 rounded-full bg-secondary flex items-center justify-center">
                         <User className="size-4 text-secondary-foreground" />
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 );
               })}
@@ -284,16 +366,36 @@ export function AIChatBox({
                 <div
                   className="flex items-start gap-3"
                   style={
-                    minHeightForLastMessage > 0
+                    !isCalm && minHeightForLastMessage > 0
                       ? { minHeight: `${minHeightForLastMessage}px` }
                       : undefined
                   }
                 >
-                  <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="size-4 text-primary" />
+                  <div
+                    className={cn(
+                      "shrink-0 mt-1 rounded-full flex items-center justify-center",
+                      isCalm ? "size-7 bg-teal-50 text-teal-700" : "size-8 bg-primary/10",
+                    )}
+                  >
+                    <Sparkles className={cn(isCalm ? "size-3.5" : "size-4 text-primary")} strokeWidth={1.7} />
                   </div>
-                  <div className="rounded-lg bg-muted px-4 py-2.5">
-                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <div
+                    className={cn(
+                      isCalm
+                        ? "ap-chat-bubble ap-chat-bubble-assistant px-4 py-3"
+                        : "rounded-lg bg-muted px-4 py-2.5",
+                    )}
+                    aria-label={isCalm ? "Escribiendo" : undefined}
+                  >
+                    {isCalm ? (
+                      <div className="flex items-center gap-1.5 py-0.5">
+                        <span className="ap-chat-dot" />
+                        <span className="ap-chat-dot" />
+                        <span className="ap-chat-dot" />
+                      </div>
+                    ) : (
+                      <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                    )}
                   </div>
                 </div>
               )}
@@ -306,29 +408,50 @@ export function AIChatBox({
       <form
         ref={inputAreaRef}
         onSubmit={handleSubmit}
-        className="flex gap-2 p-4 border-t bg-background/50 items-end"
+        className={cn(
+          "flex items-end",
+          isCalm ? "gap-0 p-1 pt-2" : "gap-2 p-4 border-t bg-background/50",
+        )}
       >
-        <Textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="flex-1 max-h-32 resize-none min-h-9"
-          rows={1}
-        />
-        <Button
-          type="submit"
-          size="icon"
-          disabled={!input.trim() || isLoading}
-          className="shrink-0 h-[38px] w-[38px]"
-        >
-          {isLoading ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Send className="size-4" />
+        <div
+          className={cn(
+            "flex w-full items-end gap-2",
+            isCalm && "ap-chat-composer px-2.5 py-1",
           )}
-        </Button>
+        >
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            className={cn(
+              "flex-1 max-h-32 resize-none",
+              isCalm
+                ? "min-h-10 border-0 bg-transparent shadow-none focus-visible:ring-0"
+                : "min-h-9",
+            )}
+            rows={1}
+          />
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!input.trim() || isLoading}
+            aria-label={isCalm ? "Enviar" : undefined}
+            className={cn(
+              "shrink-0",
+              isCalm
+                ? "h-10 w-10 rounded-full bg-teal-600 text-white shadow-none hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400"
+                : "h-[38px] w-[38px]",
+            )}
+          >
+            {isLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Send className="size-4" strokeWidth={1.8} />
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   );
