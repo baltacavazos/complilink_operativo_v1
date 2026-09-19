@@ -48,6 +48,27 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(hasForbiddenClientBrand("Tu recibo ya tiene una lectura útil")).toBe(false);
   });
 
+  it("reescribe frases legales viejas de Helios/CompliLink y omite la promesa vacía de identidad", () => {
+    expect(
+      sanitizeClientVisibleCopy(
+        "así como la interacción con Helios, CompliLink y demás componentes del ecosistema",
+      ),
+    ).toBe("así como la interacción con el asesor laboral");
+    expect(
+      sanitizeClientVisibleCopy("incluyendo CompliLink y Helios"),
+    ).toBe("incluyendo AuditaPatrón y su asesor laboral");
+    expect(
+      sanitizeClientVisibleCopy(
+        "La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.",
+      ),
+    ).toBe("");
+    expect(
+      hasForbiddenClientBrand(
+        sanitizeClientVisibleCopy("interacción con Helios, CompliLink"),
+      ),
+    ).toBe(false);
+  });
+
   it("oculta Webhook y webhook_rejected con copy humano", () => {
     expect(sanitizeClientVisibleCopy("webhook_rejected")).toBe("No pudimos recibir el aviso.");
     expect(sanitizeClientVisibleCopy("compra detectada por webhook")).toBe(

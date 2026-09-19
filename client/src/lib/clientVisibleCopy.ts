@@ -22,6 +22,16 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
 
   let next = value;
 
+  next = next.replace(
+    /interacci[oó]n con Helios(?:,)?\s*CompliLink(?:\s+y\s+dem[aá]s componentes(?:\s+del ecosistema)?)?/gi,
+    "interacción con el asesor laboral",
+  );
+  next = next.replace(/incluyendo CompliLink y Helios/gi, "incluyendo AuditaPatrón y su asesor laboral");
+  next = next.replace(
+    /La identidad legal del responsable y el domicilio se publicar[aá]n antes del lanzamiento comercial definitivo\.?\s*/gi,
+    "",
+  );
+
   next = next.replace(/CompliLink Operativo/gi, "AuditaPatrón");
   next = next.replace(/CompliLink\s*ID/gi, "ID de integración");
   next = next.replace(/Snapshot operativo CompliLink/gi, "Snapshot operativo del puente");

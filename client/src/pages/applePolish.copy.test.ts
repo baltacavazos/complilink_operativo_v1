@@ -163,10 +163,18 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(password).not.toContain("En esta copia");
     expect(notFound).toContain("Página no encontrada");
     expect(notFound).toContain("Ir al inicio");
-    expect(notFound).toContain("Pronto verás aquí tus papeles");
+    expect(notFound).not.toContain("Pronto verás aquí tus papeles");
     expect(notFound).not.toContain("Page Not Found");
     expect(notFound).not.toContain("Go Home");
     expect(notFound).not.toContain("text-4xl font-bold text-slate-900 mb-2\">404");
+
+    const papers = readClientSource("pages/PapersPlaceholder.tsx");
+    expect(papers).toContain("Pronto verás aquí tus papeles");
+    expect(papers).toContain("Ir a mi revisión");
+    expect(papers).not.toContain("Page Not Found");
+    expect(papers).not.toContain("Página no encontrada");
+    expect(papers).not.toMatch(/\bHelios\b/);
+    expect(papers).not.toMatch(/CompliLink|complilink/);
     expect(auditar).toContain("{auth.canToggleUserView ? (\n              <article");
     expect(auditar).toContain("Conversión de esta sesión");
     expect(auditar).toContain("{auth.canToggleUserView ? (\n            <article");
@@ -204,7 +212,13 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(legal).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
     expect(legal).not.toContain("Nadie de tu empresa puede ver lo que subes.");
     expect(app).toContain('path={"/historial"}');
+    expect(app).toContain("PapersPlaceholder");
     expect(app).toContain('path={"/expediente"}');
+    expect(app).not.toContain('path={"/historial"} component={NotFound}');
+    expect(auditar).toContain("lastUploadRiskCopy.label");
+    expect(auditar).not.toContain("Resultado listo");
+    expect(payments).not.toContain("Historial comercial");
+    expect(payments).toContain("Tu plan y lo que ya pagaste");
     expect(sanitizer).toContain("CompliLink");
     expect(sanitizer).toContain("Helios");
   });

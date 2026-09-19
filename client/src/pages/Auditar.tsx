@@ -1305,7 +1305,7 @@ const dossierTargets: DossierTarget[] = [
   },
   {
     type: "cfdi",
-    label: "CFDI",
+    label: "Comprobante fiscal (CFDI)",
     description:
       "Sirven para contrastar lo timbrado fiscalmente contra lo que recibiste.",
     benefit: "Aclaran diferencias entre nómina y comprobantes fiscales.",
@@ -2153,7 +2153,7 @@ function buildPayrollSignalFallback(documentType?: string | null) {
   return {
     headline: "Revisa el periodo, el pago neto y las deducciones",
     why: `Este ${documentLabel} ya permite una lectura inicial, pero un solo archivo no confirma por sí mismo que haya un error. Comparar el periodo, los montos y las deducciones te ayuda a detectar qué conviene aclarar.`,
-    nextStep: "Guarda este recibo y compáralo con el CFDI del mismo periodo. Si algo no coincide, pide el desglose por escrito antes de sacar conclusiones.",
+    nextStep: "Guarda este recibo y compáralo con el comprobante fiscal (CFDI) del mismo periodo. Si algo no coincide, pide el desglose por escrito antes de sacar conclusiones.",
   };
 }
 
@@ -2165,6 +2165,17 @@ type PayrollFactSignal = {
   retentions: string;
   nextStep: string;
 };
+
+const LEAKED_PAYROLL_FIELD_LABEL =
+  /(?:[.…]+\s*|\s+)(?:Importe|Deducciones|Percepciones|Empresa|RFC|Neto|Emisor|Periodo|Pago|NSS|Registro\s+patronal|Retenciones)\s*\.?$/i;
+
+export function cleanPayrollExtractedValue(value?: string | null): string | null {
+  if (!value) return null;
+  let next = value.replace(/\s+/g, " ").trim();
+  next = next.replace(LEAKED_PAYROLL_FIELD_LABEL, "").trim();
+  next = next.replace(/[.…]+\s*$/g, "").trim();
+  return next.length >= 2 ? next : null;
+}
 
 export function buildPayrollFactSignal(params: {
   documentType?: string | null;
@@ -2181,12 +2192,14 @@ export function buildPayrollFactSignal(params: {
       for (const [key, rawValue] of Object.entries(source)) {
         const normalizedKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
         if (!keys.includes(normalizedKey)) continue;
-        const value = plainWorkerCopy(
-          sanitizePreviewText(rawValue, {
-            maxLength: 120,
-            emptyFallback: "",
-            technicalFallback: "",
-          })
+        const value = cleanPayrollExtractedValue(
+          plainWorkerCopy(
+            sanitizePreviewText(rawValue, {
+              maxLength: 120,
+              emptyFallback: "",
+              technicalFallback: "",
+            })
+          )
         );
         if (value) return value;
       }
@@ -2278,7 +2291,7 @@ export function buildPayrollFactSignal(params: {
   ].filter((item): item is string => Boolean(item));
 
   const headline = employer || employerRfc || period
-    ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}`
+    ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}.`
     : fallback.headline;
   const attention = deductions
     ? deductionsAreZero
@@ -2288,8 +2301,8 @@ export function buildPayrollFactSignal(params: {
       ? `Se alcanza a leer un pago de ${payment}, pero faltan datos para confirmar cómo se compone. Revisa el desglose de percepciones y deducciones.`
       : "El archivo se leyó de forma parcial. Conviene revisar una versión donde se vean completos el periodo, el pago y las deducciones.";
   const nextStep = period
-    ? `Compara este recibo del periodo ${period} con el CFDI o comprobante del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
-    : "Conserva este recibo y, si puedes, sube el CFDI o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
+    ? `Compara este recibo del periodo ${period} con el comprobante fiscal (CFDI) del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
+    : "Conserva este recibo y, si puedes, sube el comprobante fiscal (CFDI) o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
 
   return { headline, facts: facts.join(" "), attention, imss, retentions, nextStep };
 }
@@ -2307,7 +2320,7 @@ function getSimpleDocumentTypeLabel(value?: string | null) {
     case "payroll_receipt":
       return "Recibo de nómina";
     case "cfdi":
-      return "CFDI";
+      return "Comprobante fiscal (CFDI)";
     case "imss":
       return "Soporte IMSS";
     case "contract":
@@ -2450,7 +2463,7 @@ function getResultRevealCopy(documentType?: string | null) {
       case "payroll_receipt":
         return "Recibo de nómina listo para revisar";
       case "cfdi":
-        return "CFDI listo para revisar";
+        return "Comprobante fiscal (CFDI) listo para revisar";
       case "contract":
         return "Contrato listo para revisar";
       case "imss":
@@ -5736,6 +5749,9 @@ export default function Auditar() {
   const lastUploadVerdict = getDocumentVerdictState(
     lastUpload?.classification?.classificationConfidence
   );
+  const lastUploadRiskCopy = getHeliosRiskCopy(
+    lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel
+  );
   const primaryLastUploadShortcut = useMemo(
     () =>
       getPrimaryContextualShortcut(
@@ -8809,10 +8825,10 @@ export default function Auditar() {
                     )}
                     {shouldCompactPostUploadExperience ? (
                       <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
-                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
-                          Resultado listo
+                        <span className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-tight ${lastUploadRiskCopy.classes}`}>
+                          {lastUploadRiskCopy.label}
                         </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500 shadow-sm">
+                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-500 shadow-sm">
                           {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
                         </span>
                       </div>
@@ -8825,6 +8841,11 @@ export default function Auditar() {
                             ? lastUploadResultHeadline
                             : lastUploadVerdict.label}
                         </h2>
+                        {shouldCompactPostUploadExperience ? (
+                          <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
+                            Estado: {lastUploadRiskCopy.label}. {lastUploadRiskCopy.action}.
+                          </p>
+                        ) : null}
                         {shouldCompactPostUploadExperience ? (
                           <>
                             <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">

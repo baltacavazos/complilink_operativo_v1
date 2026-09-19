@@ -2,8 +2,26 @@ import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 
+import { sanitizeClientVisibleCopy } from "./lib/clientVisibleCopy";
+import {
+  LEGAL_DOCUMENTS,
+  LEGAL_GATE_COPY,
+  PRIVACY_CENTER_COPY,
+} from "../../shared/legal";
+
 const root = path.resolve(import.meta.dirname, "..");
 const read = (relativePath: string) => fs.readFileSync(path.join(root, relativePath), "utf8");
+
+const CLIENT_FACING_LEGAL_SURFACES = [
+  "src/pages/LegalDocuments.tsx",
+  "src/pages/Home.tsx",
+  "src/pages/Auditar.tsx",
+  "src/pages/AccessGate.tsx",
+  "src/pages/Payments.tsx",
+  "src/pages/PapersPlaceholder.tsx",
+  "src/pages/NotFound.tsx",
+  "../shared/legal.ts",
+] as const;
 
 describe("copy público y aviso de privacidad", () => {
   it("mantiene el lema y presenta la lectura como orientativa", () => {
@@ -48,7 +66,49 @@ describe("copy público y aviso de privacidad", () => {
     expect(legalPage).toContain("visibleLegalCopy");
     expect(legalPage).toContain("sanitizeClientVisibleCopy");
     expect(app).toContain('path={"/historial"}');
+    expect(app).toContain("PapersPlaceholder");
     expect(app).toContain('path={"/expediente"}');
+    expect(app).not.toContain('path={"/historial"} component={NotFound}');
+  });
+
+  it("falla si el copy legal o cliente visible menciona Helios o CompliLink", () => {
+    const visibleLegalTexts = [
+      ...LEGAL_DOCUMENTS.map((document) => sanitizeClientVisibleCopy(document.markdown) ?? ""),
+      ...Object.values(LEGAL_GATE_COPY).map((value) => sanitizeClientVisibleCopy(value) ?? ""),
+      PRIVACY_CENTER_COPY.title,
+      PRIVACY_CENTER_COPY.intro,
+      ...PRIVACY_CENTER_COPY.rightsSummary,
+      PRIVACY_CENTER_COPY.revocationNotice,
+    ].join("\n");
+
+    expect(visibleLegalTexts).not.toMatch(/\bHelios\b/i);
+    expect(visibleLegalTexts).not.toMatch(/CompliLink|complilink/);
+    expect(visibleLegalTexts).not.toContain("interacción con Helios");
+    expect(visibleLegalTexts).not.toContain("incluyendo CompliLink y Helios");
+    expect(visibleLegalTexts).not.toContain(
+      "La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.",
+    );
+
+    for (const relativePath of CLIENT_FACING_LEGAL_SURFACES) {
+      const source = read(relativePath);
+      expect(source, relativePath).not.toContain("interacción con Helios");
+      expect(source, relativePath).not.toContain("incluyendo CompliLink y Helios");
+      expect(source, relativePath).not.toContain(
+        "La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.",
+      );
+
+      if (relativePath.endsWith("legal.ts")) {
+        expect(source, relativePath).not.toMatch(/\bHelios\b/);
+        expect(source, relativePath).not.toMatch(/CompliLink|complilink/);
+        continue;
+      }
+
+      const quoted = [...source.matchAll(/(["'`])([^"'`\n]{3,220})\1/g)]
+        .map((match) => match[2])
+        .join("\n");
+      expect(quoted, relativePath).not.toMatch(/\bHelios\b/);
+      expect(quoted, relativePath).not.toMatch(/CompliLink|complilink/);
+    }
 
     const commerceCopy = read("../shared/commerce.ts");
     const commerceQuoted = [...commerceCopy.matchAll(/(["'`])([^"'`\n]{3,220})\1/g)]

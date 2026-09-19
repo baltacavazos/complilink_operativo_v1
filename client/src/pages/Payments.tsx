@@ -107,7 +107,7 @@ export default function Payments() {
           <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.85)]">
             <div className="flex items-center gap-3 text-sm text-slate-200">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Cargando historial comercial…
+              Cargando tus pagos…
             </div>
           </div>
         </div>
@@ -129,9 +129,9 @@ export default function Payments() {
                 Volver al expediente
               </a>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-200/80">Cobros y suscripción</p>
+                <p className="text-xs font-semibold tracking-tight text-teal-200/80">Tus pagos</p>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                  Historial comercial del expediente
+                  Tu plan y lo que ya pagaste
                 </h1>
                 <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                   Aquí ves tu suscripción y lo que ya pagaste. La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
@@ -146,7 +146,7 @@ export default function Payments() {
                 disabled={historyQuery.isFetching}
               >
                 {historyQuery.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ReceiptText className="mr-2 h-4 w-4" />}
-                Actualizar historial
+                Actualizar pagos
               </Button>
               {commerceStatusQuery.data?.canManageBilling ? (
                 <Button
@@ -177,16 +177,20 @@ export default function Payments() {
             </p>
           </article>
           <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(59,130,246,0.45)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Cuenta de cobro</p>
-            <p className="mt-3 text-2xl font-semibold text-white">{maskCustomerId(historyQuery.data?.customerId ?? null)}</p>
+            <p className="text-xs font-semibold tracking-tight text-slate-300">Tu cuenta</p>
+            <p className="mt-3 text-2xl font-semibold text-white">
+              {auth.canToggleUserView
+                ? maskCustomerId(historyQuery.data?.customerId ?? null)
+                : "Lista para tus cobros"}
+            </p>
             <p className="mt-2 text-sm text-slate-300">
               {commerceStatusQuery.data?.environment?.mode === "sandbox" && auth.canToggleUserView
                 ? "Modo prueba activo para validar el cobro."
-                : "Referencia de tu cuenta para soporte, sin datos técnicos de cobro."}
+                : "Si pagas algo, aquí queda el producto, el importe y la fecha."}
             </p>
           </article>
           <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(168,85,247,0.45)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Compras detectadas</p>
+            <p className="text-xs font-semibold tracking-tight text-slate-300">Pagos registrados</p>
             <p className="mt-3 text-2xl font-semibold text-white">{paidCount}</p>
             <p className="mt-2 text-sm text-slate-300">
               {lastPayment ? `Último cobro: ${formatDate(lastPayment.paidAt)}` : "Todavía no hay cobros en esta cuenta."}
@@ -214,7 +218,7 @@ export default function Payments() {
         <section className="rounded-[2rem] border border-white/10 bg-white p-5 text-slate-950 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.75)] sm:p-6">
           <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Tu historial de cobros</p>
+              <p className="text-xs font-semibold tracking-tight text-slate-500">Tus cobros</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Pagos y compras registradas</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 Cada fila muestra el producto, el importe y la fecha del cobro.
@@ -225,7 +229,7 @@ export default function Payments() {
           {historyQuery.isLoading ? (
             <div className="flex items-center gap-3 py-8 text-sm text-slate-500">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Consultando historial comercial…
+              Consultando tus pagos…
             </div>
           ) : payments.length === 0 ? (
             <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm leading-6 text-slate-600">
