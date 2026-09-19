@@ -312,7 +312,7 @@ export function HeliosCopilotSheet({
                       key={prompt}
                       type="button"
                       variant="outline"
-                      className={`ap-chat-prompt motion-hover-lift h-auto min-w-0 max-w-full whitespace-normal break-words rounded-2xl px-3.5 py-2 text-left text-[0.82rem] leading-5 tracking-[-0.01em] text-slate-800 ${
+                      className={`ap-chat-prompt motion-hover-lift h-auto w-full min-w-0 max-w-full whitespace-normal break-words rounded-2xl px-3.5 py-2 text-left text-[0.82rem] leading-5 tracking-[-0.01em] text-slate-800 ${
                         visibleSuggestedPrompts.length % 2 === 1 &&
                         index === visibleSuggestedPrompts.length - 1
                           ? "sm:col-span-2"

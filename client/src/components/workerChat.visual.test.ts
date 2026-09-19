@@ -29,6 +29,7 @@ describe("worker chat visual polish", () => {
     expect(sheet).not.toContain("typeof confidenceScore === \"number\" ? (");
     expect(sheet).toContain("grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2");
     expect(sheet).toContain("sm:col-span-2");
+    expect(sheet).toContain("w-full min-w-0 max-w-full");
     expect(sheet).toContain('variant="calm"');
     expect(sheet).toContain("sanitizeMultiline");
     expect(sheet).toContain("WORKER_CHAT_SHEET_COPY");
