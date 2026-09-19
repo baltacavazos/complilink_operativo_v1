@@ -1333,6 +1333,9 @@ type ConfirmedUploadResultView = {
     disclaimer?: string | null;
     liveImssValidation?: boolean;
     validationMode?: string | null;
+    hasImssSignal?: boolean;
+    hasFiscalSignal?: boolean;
+    hasInfonavitSignal?: boolean;
     facts?: {
       period?: string | null;
       netAmount?: string | null;
@@ -8529,16 +8532,16 @@ export default function Auditar() {
               role: "assistant",
               content: [
                 "Respuesta clara",
-                "En tu recibo se ve un descuento de IMSS de $120.50. Eso no confirma que el patrón lo haya pagado al IMSS.",
+                "En tus papeles se alcanza a leer periodo 2026-05-01 al 2026-05-15, IMSS $120.50 e ISR $310.00. Esta lectura ya usa acreditación de pagos y deducciones: permite revisar si los pagos documentados coinciden con la relación laboral. Si se ve IMSS en el papel, eso no confirma alta, vigencia ni semanas cotizadas.",
                 "",
                 "Lo que sí se sabe",
-                "El recibo muestra periodo, neto y un descuento de IMSS de $120.50.",
+                "Periodo 2026-05-01 al 2026-05-15. IMSS $120.50. ISR $310.00. NSS 12345678901.",
                 "",
                 "Lo que falta",
-                "No se ve una constancia oficial de que el patrón lo haya pagado al IMSS.",
+                "No se ve una constancia oficial de alta, vigencia o semanas cotizadas.",
                 "",
                 "Siguiente paso",
-                "Compara ese descuento con tu siguiente recibo.",
+                "Cruza el descuento IMSS $120.50 del periodo 2026-05-01 al 2026-05-15 con tu siguiente recibo o con un papel IMSS que tú subas. Verlo en el recibo no confirma alta ni semanas cotizadas. Esta lectura usa acreditación de pagos y deducciones para comparar lo que sí se ve en tus papeles.",
                 "",
                 WORKER_CHAT_DISCLAIMER,
               ].join("\n"),

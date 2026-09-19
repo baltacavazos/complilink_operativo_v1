@@ -13,9 +13,15 @@ import {
 } from "@shared/workerChatUx";
 import {
   DOCUMENT_SIGNAL_DISCLAIMER,
+  describeWorkerReviewSource,
+  isPreferredRemoteWorkerOpinion,
   summarizeLaborFiscalSignals,
   type DocumentLaborFiscalInput,
 } from "./laborFiscalSignals";
+import {
+  buildLaborFiscalChatGuidance,
+  type WorkerChatLaborGuidance,
+} from "./workerChatLaborGuidance";
 
 type RecordLike = Record<string, unknown>;
 
@@ -46,6 +52,10 @@ export type WorkerChatGrounding = {
   resultCardQuestions: string[];
   disclaimer: string;
   multiDocUpsell: string | null;
+  sourceOpinion: unknown;
+  prefersRemoteOpinion: boolean;
+  reviewSource: "local" | "remote";
+  reviewSourceLabel: string;
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -88,12 +98,6 @@ function readLegalFoundations(opinion: RecordLike | null): WorkerChatLegalFounda
     .slice(0, 4);
 }
 
-function firstFactLine(explanations: WorkerChatGrounding["laborExplanations"]): string | null {
-  return (
-    explanations.find((item) => !/l[ií]mite de esta lectura/i.test(item.label))?.summary ?? null
-  );
-}
-
 export function buildWorkerChatGrounding(params: {
   documents: DocumentLaborFiscalInput[];
   opinion?: unknown;
@@ -110,6 +114,7 @@ export function buildWorkerChatGrounding(params: {
     asText(resultCard?.nextStepSummary) ??
     asText(params.missingDocument?.reason) ??
     null;
+  const review = describeWorkerReviewSource(params.opinion);
 
   return {
     liveImssValidation: false,
@@ -132,7 +137,18 @@ export function buildWorkerChatGrounding(params: {
     resultCardQuestions: asTextList(resultCard?.suggestedQuestions).slice(0, 4),
     disclaimer: WORKER_CHAT_DISCLAIMER,
     multiDocUpsell: asText(params.multiDocUpsell),
+    sourceOpinion: params.opinion ?? null,
+    prefersRemoteOpinion: isPreferredRemoteWorkerOpinion(params.opinion),
+    reviewSource: review.reviewSource,
+    reviewSourceLabel: review.reviewSourceLabel,
   };
+}
+
+export function resolveWorkerChatGuidance(
+  grounding: WorkerChatGrounding,
+  prompt?: string | null,
+): WorkerChatLaborGuidance {
+  return buildLaborFiscalChatGuidance(grounding, prompt);
 }
 
 export function buildWorkerChatSuggestedPrompts(grounding: WorkerChatGrounding): string[] {
@@ -149,7 +165,10 @@ export function buildWorkerChatSuggestedPrompts(grounding: WorkerChatGrounding):
   return buildWorkerStarterQuestions(context);
 }
 
-export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): string {
+export function buildWorkerChatFallbackAnswer(
+  grounding: WorkerChatGrounding,
+  options?: { prompt?: string | null },
+): string {
   if (grounding.documentsCount === 0) {
     return formatWorkerChatAnswer({
       answer: "Todavía no hay un documento para leer. Sin un recibo, contrato o CFDI no puedo decirte qué se ve ni qué falta.",
@@ -160,57 +179,33 @@ export function buildWorkerChatFallbackAnswer(grounding: WorkerChatGrounding): s
     });
   }
 
-  const factLine = firstFactLine(grounding.laborExplanations);
-  const foundation = grounding.legalFoundations[0];
-  const foundationLine = foundation
-    ? ` Esta lectura ya usa ${foundation.title.toLowerCase()}: ${foundation.relevance}`
-    : "";
-  const uncertainty = grounding.uncertainties[0];
-  const knownFacts = grounding.keyFacts.slice(0, 3).join(". ");
-  const clearAnswer = [
-    factLine ??
-      grounding.summary ??
-      "Ya hay una primera lectura de tus papeles, aunque todavía faltan piezas para cerrar la respuesta.",
-    grounding.hasImssSignal
-      ? " Si se ve IMSS en el papel, eso no confirma alta, vigencia ni semanas cotizadas."
-      : "",
-    foundationLine,
-  ]
-    .join("")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  const nextStep =
-    grounding.recommendedNextStep ??
-    (grounding.missingDocumentLabel
-      ? `Si lo tienes, sube ${grounding.missingDocumentLabel.toLowerCase()}. ${grounding.missingDocumentReason ?? ""}`.trim()
-      : "Revisa lo que ya se ve y, si puedes, sube otro documento del mismo periodo.");
+  const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
 
   return formatWorkerChatAnswer({
-    answer: clearAnswer,
-    known:
-      knownFacts ||
-      factLine ||
-      grounding.summary ||
-      "Ya hay una primera lectura de tus papeles.",
-    missing:
-      uncertainty ??
-      (grounding.missingDocumentLabel
-        ? `Todavía no está ${grounding.missingDocumentLabel.toLowerCase()}.`
-        : "Todavía falta contrastar con más papeles del mismo periodo."),
-    nextStep,
+    answer: guidance.clearAnswer,
+    known: guidance.known,
+    missing: guidance.missing,
+    nextStep: guidance.nextStep,
     disclaimer: grounding.disclaimer,
     multiDocUpsell: grounding.multiDocUpsell,
   });
 }
 
-export function buildWorkerChatLlmInstructions(grounding: WorkerChatGrounding): string {
+export function buildWorkerChatLlmInstructions(
+  grounding: WorkerChatGrounding,
+  options?: { prompt?: string | null },
+): string {
+  const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
   const foundations =
     grounding.legalFoundations.length > 0
       ? grounding.legalFoundations
           .map((item) => `- ${item.title} (${item.reference}): ${item.relevance}`)
           .join("\n")
       : "- No hay bases legales extra en esta lectura. No inventes artículos, tesis ni jurisprudencia.";
+  const visibleFacts =
+    guidance.visibleFactLines.length > 0
+      ? guidance.visibleFactLines.map((item) => `- ${item}`).join("\n")
+      : "- No hay montos, RFC ni NSS claros. No inventes ninguno.";
 
   return [
     `Internamente puedes razonar como Helios, pero NUNCA escribas Helios, Modo Helios ni CompliLink en la respuesta visible.`,
@@ -223,26 +218,36 @@ export function buildWorkerChatLlmInstructions(grounding: WorkerChatGrounding): 
     "Nunca inventes tesis, registro digital, Semanario Judicial, IUS ni jurisprudencia.",
     "Nunca digas que consultaste IMSS, SAT o Infonavit en vivo, ni que confirmaste un alta oficial.",
     `Modo de lectura: ${grounding.validationMode}. Validación IMSS en vivo: no.`,
+    `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
+      guidance.prefersRemoteOpinion
+        ? "Hay revisión avanzada usable. Prefiere su resumen, opinión y siguiente paso. No los sustituyas por una plantilla local."
+        : "Esta es la ruta local. Profundiza con las señales visibles, sin inventar consulta oficial."
+    }`,
     `Límite: ${DOCUMENT_SIGNAL_DISCLAIMER}`,
+    "Hechos visibles (únicos montos, RFC o NSS que puedes citar):",
+    visibleFacts,
     "Bases legales ya presentes en la lectura (únicas que puedes mencionar, en palabras simples):",
     foundations,
+    `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${guidance.nextStep}`,
+    `Si preguntan por IMSS, impuestos o Infonavit, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
     `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
     "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
     `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
   ].join("\n");
 }
 
-export function sanitizeWorkerChatAnswer(answer: string, grounding: WorkerChatGrounding): string {
+export function sanitizeWorkerChatAnswer(
+  answer: string,
+  grounding: WorkerChatGrounding,
+  options?: { prompt?: string | null },
+): string {
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
+  const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
   return formatWorkerChatAnswer({
     answer: cleaned,
-    known: grounding.keyFacts.slice(0, 3).join(". ") || grounding.summary,
-    missing:
-      grounding.uncertainties[0] ??
-      (grounding.missingDocumentLabel
-        ? `Todavía no está ${grounding.missingDocumentLabel.toLowerCase()}.`
-        : null),
-    nextStep: grounding.recommendedNextStep,
+    known: guidance.known,
+    missing: guidance.missing,
+    nextStep: guidance.nextStep,
     disclaimer: grounding.disclaimer,
     multiDocUpsell: grounding.multiDocUpsell,
   });
@@ -265,8 +270,10 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
       missingDocumentLabel: grounding.missingDocumentLabel,
       missingDocumentReason: grounding.missingDocumentReason,
       resultCardQuestions: grounding.resultCardQuestions,
+      prefersRemoteOpinion: grounding.prefersRemoteOpinion,
+      reviewSource: grounding.reviewSource,
       guidance:
-        "Responde solo con estas señales y bases. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia. Nunca uses Helios en la salida visible.",
+        "Responde solo con estas señales y bases. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia. Nunca uses Helios en la salida visible. Si hay revisión avanzada, prefierela.",
     },
     null,
     2,
