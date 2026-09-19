@@ -199,8 +199,8 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("Esta revisión es para ti. No compartimos tu archivo con tu empresa.");
     expect(auditar).toContain("{legalGateHarnessMode ? (");
     expect(auditar).toContain("data-testid=\"legal-gate-lock-metrics\"");
-    expect(auditar).toContain("typeof value === \"boolean\"");
-    expect(auditar).toContain('return value ? "Sí" : "No"');
+    expect(auditar).toContain("humanizeWorkerVisibleScalar");
+    expect(auditar).toContain("sanitizePreviewText(field.value");
     expect(payments).not.toContain("Stripe");
     expect(payments).not.toContain("persistencia local");
     expect(payments).not.toContain("Checkout:");
