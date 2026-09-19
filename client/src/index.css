@@ -1075,9 +1075,34 @@
     color: rgb(51 65 85);
   }
 
+  .audita-auditar [data-testid="auditar-legal-confirmation"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"][class*="bg-white"] {
+    background-color: #ffffff !important;
+    border-color: rgb(203 213 225) !important;
+    color: rgb(15 23 42) !important;
+  }
+
+  .audita-auditar [data-testid="auditar-legal-confirmation"] h2,
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-950"],
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-900"],
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-800"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] h2,
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-950"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-900"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-800"] {
+    color: rgb(15 23 42) !important;
+  }
+
+  .audita-auditar [data-testid="auditar-legal-confirmation"] p,
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-700"],
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-600"],
   .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-500"],
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-600"] {
-    color: rgb(51 65 85);
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] p,
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-700"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-600"],
+  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-500"] {
+    color: rgb(51 65 85) !important;
   }
 
   @media (max-width: 390px) {
