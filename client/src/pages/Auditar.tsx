@@ -3088,8 +3088,42 @@ function isTechnicalAnalysisKey(key: string) {
     return true;
   }
 
+  const compact = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (
+    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready)$/.test(
+      compact
+    )
+  ) {
+    return true;
+  }
+
   return /^(confirmed|estimated|analysis|metadata|processing|structured|internal|raw|debug|payload|profile)/i.test(
-    key.replace(/[^a-z0-9]/gi, "")
+    compact
+  );
+}
+
+function isHumanMeaningfulAnalysisKey(key: string) {
+  if (isTechnicalAnalysisKey(key)) {
+    return false;
+  }
+
+  if (
+    analysisFieldLabels[key] &&
+    [
+      "employerRfc",
+      "period",
+      "apparentAmount",
+      "apparentEffectiveDate",
+      "workerName",
+      "employerName",
+      "jobTitle",
+    ].includes(key)
+  ) {
+    return true;
+  }
+
+  return /rfc|periodo|period|monto|amount|fecha|date|nombre|name|puesto|job|neto|deducc|empresa|employer/i.test(
+    key
   );
 }
 
@@ -3140,7 +3174,13 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
           }),
         ] as [string, string]
     )
-    .filter(([key, value]) => value.length > 0 && !isTechnicalAnalysisKey(key) && !/^(true|false)$/i.test(value));
+    .filter(
+      ([key, value]) =>
+        value.length > 0 &&
+        isHumanMeaningfulAnalysisKey(key) &&
+        !/^(true|false)$/i.test(value)
+    )
+    .slice(0, 6);
 }
 
 export function sanitizeStructuredExtractionView(
@@ -8397,7 +8437,7 @@ export default function Auditar() {
                 {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial del recibo"}
               </div>
               <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
+                {isNativeAppExperience ? "Tu documento, en palabras simples" : "Tu recibo, en palabras simples"}
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
@@ -9056,7 +9096,7 @@ export default function Auditar() {
                 </details>
               ) : null}
               <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView || isFirstDocumentFlow ? "hidden" : ""}`}>
-                <div>
+                <div data-ap-upload-copy>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
                       ? "Opcional si sigues hoy"
@@ -9075,6 +9115,7 @@ export default function Auditar() {
 
                   </p>
                   <div
+                    data-ap-status-cluster
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                   >
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
@@ -11027,7 +11068,7 @@ export default function Auditar() {
                         )}
                       </div>
 
-                      <div className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
+                      <div data-ap-review-panel className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-amber-950">
                             Lo que conviene revisar

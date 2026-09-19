@@ -106,11 +106,16 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     const css = readRepoFile("client", "src", "index.css");
 
     expect(auditar).toContain("data-ap-privacy-bar");
+    expect(auditar).toContain("data-ap-upload-copy");
+    expect(auditar).toContain("data-ap-status-cluster");
+    expect(auditar).toContain("data-ap-review-panel");
     expect(auditar).toContain("ap-worker-field");
     expect(auditar).toContain("ap-status-chip");
+    expect(auditar).toContain("isHumanMeaningfulAnalysisKey");
+    expect(auditar).toContain("Tu recibo, en palabras simples");
     expect(auditar).toContain('cardClass: "border-teal-200 bg-teal-50/90"');
     expect(css).toContain('.audita-auditar [data-ap-privacy-bar]');
-    expect(css).toContain("background-color: rgb(240 253 250)");
+    expect(css).toContain("background-color: rgb(15 23 42) !important");
     expect(css).toContain(".audita-auditar .ap-worker-field");
     expect(css).toContain(".dark .audita-auditar .ap-worker-field");
     expect(css).toContain("background-color: rgba(30, 41, 59, 0.46) !important");
@@ -128,7 +133,10 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(gate).toContain("ap-access-surface");
     expect(gate).toContain("ap-access-mark");
     expect(gate).not.toContain("rounded-[2rem] border border-slate-200 bg-white/95 px-6 py-8 shadow-[0_28px_80px_-42px_rgba(15,23,42,0.34)]");
+    expect(gate).not.toContain("Entra con tu correo y contraseña. La revisión pública por RFC sigue disponible sin cuenta.");
     expect(form).toContain("ap-access-note");
+    expect(form).toContain("Entras con correo y contraseña para volver a tu revisión.");
+    expect(form).not.toContain("La revisión pública por RFC sigue igual, sin cuenta.");
     expect(form).toContain("h-12 w-full rounded-full bg-slate-950");
     expect(form).toContain("border-0 bg-transparent text-base font-medium text-slate-600");
     expect(access).toContain("audita-access");

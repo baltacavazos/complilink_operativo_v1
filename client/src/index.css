@@ -650,19 +650,55 @@
 
   /* /auditar: privacy bar contrast + quieter worker fields */
   .audita-auditar [data-ap-privacy-bar] {
-    border-color: rgb(13 148 136 / 0.38);
-    background-color: rgb(240 253 250);
+    border-color: rgb(15 23 42) !important;
+    background-color: rgb(15 23 42) !important;
+    color: rgb(248 250 252) !important;
     box-shadow: var(--ap-shadow-soft);
   }
 
-  .audita-auditar [data-ap-privacy-bar] [class*="text-slate-700"],
-  .audita-auditar [data-ap-privacy-bar] [class*="text-slate-600"] {
-    color: rgb(30 41 59);
+  .audita-auditar [data-ap-privacy-bar] [class*="text-"] {
+    color: rgb(226 232 240) !important;
   }
 
   .audita-auditar [data-ap-privacy-bar] [class*="text-slate-950"],
   .audita-auditar [data-ap-privacy-bar] [class*="text-slate-900"] {
-    color: rgb(15 23 42);
+    color: rgb(248 250 252) !important;
+  }
+
+  .audita-auditar [data-ap-upload-copy] {
+    background-color: rgb(248 250 252) !important;
+    border-radius: 1.25rem;
+    color: rgb(15 23 42) !important;
+  }
+
+  .audita-auditar [data-ap-upload-copy] [class*="text-slate-700"],
+  .audita-auditar [data-ap-upload-copy] [class*="text-slate-600"],
+  .audita-auditar [data-ap-upload-copy] [class*="text-slate-500"] {
+    color: rgb(51 65 85) !important;
+  }
+
+  .audita-auditar [data-ap-upload-copy] [class*="text-slate-950"],
+  .audita-auditar [data-ap-upload-copy] [class*="text-slate-900"],
+  .audita-auditar [data-ap-upload-copy] h2 {
+    color: rgb(15 23 42) !important;
+  }
+
+  .audita-auditar [data-ap-status-cluster] article {
+    background-color: rgb(255 255 255) !important;
+    border-color: rgb(204 251 241) !important;
+    color: rgb(30 41 59) !important;
+    box-shadow: none;
+  }
+
+  .audita-auditar [data-ap-review-panel] {
+    background-color: rgb(255 251 235) !important;
+    border-color: rgb(217 119 6) !important;
+    color: rgb(67 20 7) !important;
+  }
+
+  .audita-auditar [data-ap-review-panel] [class*="text-amber-"],
+  .audita-auditar [data-ap-review-panel] [class*="text-slate-"] {
+    color: rgb(67 20 7) !important;
   }
 
   .audita-auditar .ap-worker-field {

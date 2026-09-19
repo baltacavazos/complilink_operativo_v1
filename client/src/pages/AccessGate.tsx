@@ -85,9 +85,6 @@ export default function AccessGate() {
             imageClassName="max-w-[210px]"
             subtitleClassName="text-[11px] tracking-tight text-slate-500"
           />
-          <p className="mt-8 text-center text-sm leading-6 text-slate-600">
-            Entra con tu correo y contraseña. La revisión pública por RFC sigue disponible sin cuenta.
-          </p>
           <LocalPasswordForm returnPath={returnTo} accessMode={accessMode} />
           <div className="mt-8 flex justify-center">
             <a href="/" className="text-sm font-medium text-slate-600 hover:text-slate-900">

@@ -48,7 +48,7 @@ describe("mobile native readiness", () => {
       "ic_launcher_background.xml",
     );
 
-    expect(logo).toContain('/manus-storage/pwa-512_c25a4918.png');
+    expect(logo).toContain('/favicon.svg');
     expect(logo).not.toContain("auditapatron-icon-base_034a1256.png");
     expect(html).toContain('/favicon.svg');
     expect(html).toContain('/favicon-32.png');

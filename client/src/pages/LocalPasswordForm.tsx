@@ -81,10 +81,9 @@ export default function LocalPasswordForm({
       <h1 className="text-center text-[1.85rem] font-semibold tracking-[-0.04em] text-slate-950">
         {mode === "signup" ? "Crea tu cuenta" : "Entra a tu cuenta"}
       </h1>
-      <div className="ap-access-note space-y-1 text-center text-sm leading-6 text-slate-600">
-        <p className="font-medium text-slate-700">Entras con correo y contraseña para volver a tu revisión.</p>
-        <p>La revisión pública por RFC sigue igual, sin cuenta.</p>
-      </div>
+      <p className="ap-access-note text-center text-sm leading-6 text-slate-600">
+        Entras con correo y contraseña para volver a tu revisión.
+      </p>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-slate-900" htmlFor="local-access-email">
