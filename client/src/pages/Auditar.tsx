@@ -4384,7 +4384,20 @@ export default function Auditar() {
     }
     return new URLSearchParams(window.location.search).get("chatHistoryHarness") === "1";
   }, []);
-  const auditarHarnessBypass = legalGateHarnessMode || postUploadHarnessMode || chatHarnessMode;
+  const suggestedTipHarnessMode = useMemo(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    return (
+      new URLSearchParams(window.location.search).get("suggestedTipHarness") ===
+      "1"
+    );
+  }, []);
+  const auditarHarnessBypass =
+    legalGateHarnessMode ||
+    postUploadHarnessMode ||
+    chatHarnessMode ||
+    suggestedTipHarnessMode;
   const billingReturnState = useMemo(() => {
     if (typeof window === "undefined") {
       return {
@@ -4451,6 +4464,14 @@ export default function Auditar() {
       },
     });
   }, [postUploadHarnessMode]);
+
+  useEffect(() => {
+    if (!suggestedTipHarnessMode) {
+      return;
+    }
+
+    setSelectedRecommendedTargetType("cfdi");
+  }, [suggestedTipHarnessMode]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -8689,7 +8710,7 @@ export default function Auditar() {
           <MobileAppShell
             current="auditar"
             title="Empieza tu auditoría"
-            subtitle="Primero ves el resultado."
+            subtitle="Primero revisas. Guardas solo si te sirve."
           />
           <input
             ref={guestFileInputRef}
@@ -8777,7 +8798,7 @@ export default function Auditar() {
                     ]
                   : [
                       "Subes un solo archivo desde tu celular o computadora.",
-                      "Ves el resultado y decides si quieres guardarlo o seguir con otro documento.",
+                      "Después decides si lo guardas o sigues con otro documento.",
                     ]).map(item => (
                   <div
                     key={item}
@@ -8809,7 +8830,7 @@ export default function Auditar() {
         <MobileAppShell
           current="auditar"
           title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
-          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión." : "Primero ves el resultado."}
+          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión." : "Primero revisas. Guardas solo si te sirve."}
         />
         <div
           ref={heroCardRef}
@@ -9370,7 +9391,10 @@ export default function Auditar() {
                   </p>
                   {selectedRecommendedTargetType &&
                   effectiveRecommendedTarget ? (
-                    <div className="mt-3 rounded-[1rem] border border-sky-100 bg-sky-50 px-3 py-2 text-[13px] leading-5 text-sky-950">
+                    <div
+                      data-ap-suggested-tip
+                      className="mt-3 rounded-[1rem] border border-slate-800 bg-white px-3 py-2 text-[13px] leading-5 text-slate-950"
+                    >
                       Hoy conviene empezar por <strong>{effectiveRecommendedTarget.label.toLowerCase()}</strong>.
                     </div>
                   ) : null}
@@ -9403,7 +9427,7 @@ export default function Auditar() {
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700 sm:mt-3 sm:text-base sm:leading-7">
                     {shouldCompactPostUploadExperience
                       ? "Úsalo solo si quieres sumar otra pieza."
-                                                : "Empieza con una foto o PDF. Subes, ves el resultado y luego decides si sigues."}
+                                                : "Empieza con una foto o PDF. Luego decides si sigues."}
 
                   </p>
                   <p className="sr-only">
@@ -9420,7 +9444,10 @@ export default function Auditar() {
 
                   {selectedRecommendedTargetType &&
                   effectiveRecommendedTarget ? (
-                    <div className="mt-3 rounded-[1.15rem] border border-sky-100 bg-sky-50 px-3 py-2 text-[13px] leading-5 text-sky-950 sm:mt-4 sm:px-4 sm:py-3 sm:text-sm sm:leading-6">
+                    <div
+                      data-ap-suggested-tip
+                      className="mt-3 rounded-[1.15rem] border border-slate-800 bg-white px-3 py-2 text-[13px] leading-5 text-slate-950 sm:mt-4 sm:px-4 sm:py-3 sm:text-sm sm:leading-6"
+                    >
                       Hoy conviene empezar por{" "}
                       <strong>
                         {effectiveRecommendedTarget.label.toLowerCase()}
@@ -9605,17 +9632,20 @@ export default function Auditar() {
                     </div>
 
                     {condensedPriorityUploadGuides[0] ? (
-                      <article className="rounded-[1.2rem] border border-teal-100 bg-teal-50 p-4">
+                      <article
+                        data-ap-suggested-tip
+                        className="rounded-[1.2rem] border border-slate-800 bg-white p-4"
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-700">
+                            <p className="text-xs font-semibold tracking-tight text-slate-800">
                               Documento sugerido
                             </p>
                             <p className="mt-2 font-semibold text-slate-950">
                               {condensedPriorityUploadGuides[0].title}
                             </p>
                           </div>
-                          <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-800">
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-800">
                             {presentTypes.has(condensedPriorityUploadGuides[0].type)
                               ? "Ya lo tienes"
                               : "Siguiente mejor paso"}
@@ -10317,7 +10347,11 @@ export default function Auditar() {
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
-                  <div className="mt-3 rounded-[1.1rem] border border-sky-100 bg-sky-50 px-3.5 py-2 text-sm leading-5 text-sky-950">
+                  <div
+                    data-ap-suggested-tip
+                    data-testid="auditar-suggested-tip"
+                    className="mt-3 rounded-[1.1rem] border border-slate-800 bg-white px-3.5 py-2 text-sm leading-5 text-slate-950"
+                  >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="font-semibold">
@@ -10329,7 +10363,7 @@ export default function Auditar() {
                       </div>
                       <button
                         type="button"
-                        className="text-sm font-semibold text-sky-700 underline-offset-4 hover:underline"
+                        className="text-sm font-semibold text-slate-800 underline-offset-4 hover:underline"
                         onClick={() => setSelectedRecommendedTargetType(null)}
                       >
                         Quitar enfoque
