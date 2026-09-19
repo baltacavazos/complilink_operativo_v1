@@ -7,7 +7,7 @@ function readFromPages(fileName: string) {
 }
 
 function readRepo(relativePath: string) {
-  return fs.readFileSync(path.resolve(import.meta.dirname, "../../", relativePath), "utf8");
+  return fs.readFileSync(path.resolve(import.meta.dirname, "../../..", relativePath), "utf8");
 }
 
 describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {

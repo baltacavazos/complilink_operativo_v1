@@ -39,7 +39,9 @@ describe("copy público y aviso de privacidad", () => {
     expect(legalPage).toContain("Este aviso carga sin login");
     expect(legalPage).toContain("resguardo con acceso controlado");
     expect(legalCopy).toContain('route: "/aviso-de-privacidad"');
-    expect(legalCopy).toContain("CVZ Liderazgo en Gestión Laboral, S.A. de C.V., con domicilio en 459 Av. Santa Fe");
+    expect(legalCopy).toContain("CVZ Liderazgo en Gestión Laboral, S.A. de C.V.");
+    expect(legalCopy).toContain("459 Av. Santa Fe, Col. Cruz Manca, Cuajimalpa, Ciudad de México, C.P. 05349");
+    expect(legalCopy).toContain("${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}");
     expect(legalCopy).not.toContain("se publicarán antes del lanzamiento comercial definitivo.");
     expect(legalPage).toContain("Responsable: ${LEGAL_CONTROLLER_NAME}, con domicilio en ${LEGAL_CONTROLLER_ADDRESS}.");
   });
