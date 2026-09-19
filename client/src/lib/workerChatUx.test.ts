@@ -104,7 +104,7 @@ describe("chat UX helpers", () => {
     );
 
     expect(sections.clearAnswer).toMatch(/periodo/i);
-    expect(sections.whatToDoNow).toMatch(/CFDI/i);
+    expect(sections.whatToDoNow ?? "").toMatch(/CFDI/i);
   });
 
   it("el panel usa copy idiot-proof y el sanitizador central no reintroduce Helios", () => {

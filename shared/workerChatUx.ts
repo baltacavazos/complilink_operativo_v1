@@ -229,10 +229,10 @@ export function extractWorkerChatSections(content: string): {
   }
 
   const whatNowMatch = normalized.match(
-    /(?:^|\n)\s*(?:2\)\s*)?(?:Qu[eé] hacer ahora|Siguiente paso [uú]til)\s*:?\s*([\s\S]*?)(?:\n\s*(?:Esto no es asesor[ií]a legal|3\)|4\))|$)/i,
+    /(?:^|\n)\s*(?:\d+\)\s*)?(?:Qu[eé] hacer ahora|Siguiente paso [uú]til)\s*:?\s*([\s\S]*?)(?:\n\s*(?:Esto no es asesor[ií]a legal|\d+\))|$)/i,
   );
   const clearMatch = normalized.match(
-    /(?:^|\n)\s*(?:1\)\s*)?Respuesta clara\s*:?\s*([\s\S]*?)(?:\n\s*(?:2\)\s*)?(?:Qu[eé] hacer ahora|Siguiente paso [uú]til|Lo que s[ií] se sabe)|$)/i,
+    /(?:^|\n)\s*(?:\d+\)\s*)?Respuesta clara\s*:?\s*([\s\S]*?)(?:\n\s*(?:\d+\)\s*)?(?:Qu[eé] hacer ahora|Siguiente paso [uú]til|Lo que s[ií] se sabe)|$)/i,
   );
 
   const whatToDoNow = asText(whatNowMatch?.[1] ?? null);

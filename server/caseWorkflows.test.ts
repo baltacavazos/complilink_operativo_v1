@@ -914,7 +914,7 @@ describe("appRouter case workflows", () => {
         ]),
       }),
     );
-    expect(result.suggestedPrompts).toContain("¿Qué dice mi documento?");
+    expect(result.suggestedPrompts).toContain("¿Qué dice mi contrato?");
     expect(result.suggestedPrompts.join(" ")).not.toMatch(/Helios|CompliLink/i);
     expect(result.supportingDocuments[0]?.detail).toMatch(/Lectura visible: esta lectura generó una lectura preliminar útil del contrato/);
     expect(result.supportingDocuments[1]?.detail).toContain("Soporte IMSS");
