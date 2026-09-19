@@ -33,6 +33,7 @@ import {
   extractWorkerClearAnswer,
   extractWorkerWhatToDoNow,
   sanitizeWorkerChatCopy,
+  toFriendlyWorkerChatError,
 } from "@shared/workerChatUx";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
@@ -7432,9 +7433,10 @@ export default function Auditar() {
           setHeliosCopilotMessages(current =>
             appendHeliosCopilotMessage(current, {
               role: "assistant",
-              content:
-                error.message ||
-                "No tengo suficiente claridad para responderte bien en este momento. Si quieres, intenta decirme qué te preocupa o sube otro documento útil y seguimos desde ahí.",
+              content: toFriendlyWorkerChatError(
+                error.message,
+                "No tengo suficiente claridad para responderte bien en este momento. Si quieres, intenta decirme qué te preocupa o sube otro documento útil y seguimos desde ahí."
+              ),
             })
           );
         },

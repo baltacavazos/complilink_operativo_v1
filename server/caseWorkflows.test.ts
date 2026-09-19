@@ -961,6 +961,104 @@ describe("appRouter case workflows", () => {
     );
   });
 
+  it("keeps freemium single-document asesor chat working when the expediente has more papers", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-PAY-001",
+        originalName: "recibo_mayo.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-05-16T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-PAY-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "El recibo muestra periodo, neto y un descuento de IMSS.",
+          legalOpinion: "Hay señales de descuento IMSS en el papel, no un alta oficial.",
+          riskLevel: "medium",
+          recommendedNextStep: "Compara el descuento con tu siguiente recibo.",
+          recommendedActions: ["Subir CFDI del mismo periodo"],
+          legalFoundations: [],
+          keyFactsUsed: ["Periodo 1 al 15 de mayo", "NSS 12345678901"],
+          uncertainties: ["No se ve una constancia oficial de semanas cotizadas."],
+          confidenceScore: 82,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-05-16T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+      {
+        documentId: "DOC-CFDI-001",
+        originalName: "cfdi_mayo.pdf",
+        documentType: "cfdi",
+        classificationConfidence: 86,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-05-02T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-CFDI-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "El CFDI muestra el mismo periodo.",
+          legalOpinion: "Sirve para comparar lo timbrado con el recibo.",
+          riskLevel: "low",
+          recommendedNextStep: "Contrasta montos con el recibo.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: ["Periodo visible"],
+          uncertainties: [],
+          confidenceScore: 70,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-05-02T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content:
+              "Respuesta clara: En tu recibo se ve un descuento de IMSS.\nLo que sí se sabe: Hay NSS y periodo visibles.\nLo que falta: No hay constancia oficial de semanas.\nSiguiente paso: Compara con tu siguiente recibo.",
+          },
+        },
+      ],
+    } as never);
+
+    const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
+    const result = await caller.cases.heliosCopilotChat({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      prompt: "¿Qué dice mi recibo?",
+    });
+
+    expect(invokeLLM).toHaveBeenCalledTimes(1);
+    const llmInput = vi.mocked(invokeLLM).mock.calls[0]?.[0] as {
+      messages?: Array<{ role?: string; content?: string }>;
+    };
+    const userMessage = llmInput.messages?.find((item) => item.role === "user")?.content ?? "";
+    expect(userMessage).toContain("DOC-PAY-001");
+    expect(userMessage).not.toContain("DOC-CFDI-001");
+
+    expect(result.sourceDocumentCount).toBe(1);
+    expect(result.answer).toContain("Respuesta clara");
+    expect(result.answer).toContain("Lo que sí se sabe");
+    expect(result.answer).toContain("Lo que falta");
+    expect(result.answer).toContain("Siguiente paso");
+    expect(result.answer).toContain(
+      "La lectura de varios documentos juntos está en el plan Esencial. Con tu plan gratis puedes preguntar sobre este documento.",
+    );
+    expect(result.answer).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(result.answer).not.toMatch(/Helios|consulta en vivo/i);
+    expect(result.supportingDocuments.some((item) => item.id === "DOC-PAY-001")).toBe(true);
+    expect(result.supportingDocuments.some((item) => item.id === "DOC-CFDI-001")).toBe(false);
+  });
+
   it("revalidates IMSS and Infonavit with a Helios audit contract and traceable evidence", async () => {
     vi.mocked(db.listVisibleDocuments).mockResolvedValue([
       {

@@ -4,6 +4,8 @@
  * sin tocar identificadores de código ni claves de storage.
  */
 
+import { stripInternalControlMarkers } from "@shared/workerChatUx";
+
 const EMPTY_QUOTES = /["“”‘’`]{2,}/g;
 const EXTRA_SPACE = /\s{2,}/g;
 const RAW_BOOLEAN_VALUE =
@@ -78,7 +80,7 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
     return value;
   }
 
-  let next = value;
+  let next = stripInternalControlMarkers(value);
 
   next = next.replace(
     /interacci[oó]n con Helios(?:,)?\s*CompliLink(?:\s+y\s+dem[aá]s componentes(?:\s+del ecosistema)?)?/gi,

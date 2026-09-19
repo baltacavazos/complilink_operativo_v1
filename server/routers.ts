@@ -127,6 +127,7 @@ import {
   buildWorkerChatLlmInstructions,
   buildWorkerChatSuggestedPrompts,
   sanitizeWorkerChatAnswer,
+  scopeWorkerChatDocumentsForPlan,
 } from "./workerChatUx";
 import { sanitizeWorkerChatCopy, WORKER_CHAT_DISCLAIMER } from "@shared/workerChatUx";
 import {
@@ -686,12 +687,22 @@ function throwUpgradeRequired(params: {
   requiredPlan: CommercePlanKey;
   currentPlan: CommercePlanKey;
 }) {
-  throw new TRPCError({
-    code: "FORBIDDEN",
-    message: `${buildUpgradeMessage({
+  void params.currentPlan;
+  const message =
+    sanitizeWorkerChatCopy(
+      buildUpgradeMessage({
+        featureLabel: params.featureLabel,
+        requiredPlan: params.requiredPlan,
+      }),
+    ) ??
+    buildUpgradeMessage({
       featureLabel: params.featureLabel,
       requiredPlan: params.requiredPlan,
-    })}||required_plan=${params.requiredPlan}||current_plan=${params.currentPlan}`,
+    });
+
+  throw new TRPCError({
+    code: "FORBIDDEN",
+    message,
   });
 }
 
@@ -3428,41 +3439,38 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
-        const latestOpinion =
-          pickPreferredWorkerOpinion(documents.map((item) => item.heliosOpinion)) ??
-          asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
         const responseTone = input.responseTone === "explained" ? "explained" : "brief";
         const commerceStatus = await getUserCommerceStatus(ctx.user);
-        if (documents.length > 1 && !commerceStatus.entitlements.canUseHeliosMultiDocument) {
-          throwUpgradeRequired({
-            featureLabel: "Asesor laboral con lectura de varios documentos del expediente",
-            requiredPlan: "essential",
-            currentPlan: commerceStatus.activePlanKey,
-          });
-        }
+        const scopedChat = scopeWorkerChatDocumentsForPlan({
+          documents,
+          canUseMultiDocument: commerceStatus.entitlements.canUseHeliosMultiDocument,
+        });
+        const chatDocuments = scopedChat.documents;
+        const latestOpinion =
+          pickPreferredWorkerOpinion(chatDocuments.map((item) => item.heliosOpinion)) ??
+          asObjectRecord(chatDocuments.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const missingDocuments = inferHeliosMissingDocuments({ documents });
         const workerChatGrounding = buildWorkerChatGrounding({
-          documents,
+          documents: chatDocuments,
           opinion: latestOpinion,
           missingDocument: missingDocuments[0] ?? null,
+          multiDocUpsell: scopedChat.upsell,
         });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
-          documentsCount: documents.length,
-          documents,
+          documentsCount: chatDocuments.length,
+          documents: chatDocuments,
           missingDocuments,
         });
         const disclaimer = WORKER_CHAT_DISCLAIMER;
         const confidenceScore = getOptionalNumber(latestOpinion?.confidenceScore);
-        const fallbackAnswer = buildHeliosCopilotFallbackAnswer({
-          opinion: latestOpinion,
-          documents,
-          documentsCount: documents.length,
+        const fallbackAnswer = buildWorkerChatFallbackAnswer(workerChatGrounding);
+        const supportingDocuments = buildHeliosCopilotSupportingDocuments({
+          documents: chatDocuments,
           missingDocuments,
-        });
-        const supportingDocuments = buildHeliosCopilotSupportingDocuments({ documents, missingDocuments }).map(
+        }).map(
           (document) => ({
             ...document,
             label: sanitizeWorkerChatCopy(document.label) ?? document.label,
@@ -3472,7 +3480,7 @@ export const appRouter = router({
 
         let answer = fallbackAnswer;
 
-        if (documents.length > 0) {
+        if (chatDocuments.length > 0) {
           try {
             const response = await invokeLLM({
               messages: [
@@ -3482,7 +3490,7 @@ export const appRouter = router({
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents, conversationHistory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nMarco operativo:\n${ADVISOR_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nMarco operativo:\n${ADVISOR_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
@@ -3512,7 +3520,9 @@ export const appRouter = router({
           afterState: {
             prompt: input.prompt,
             responseTone,
-            sourceDocumentCount: documents.length,
+            sourceDocumentCount: chatDocuments.length,
+            visibleDocumentCount: documents.length,
+            scopedToSingleDocument: scopedChat.scopedToSingleDocument,
             confidenceScore,
             conversationHistory,
             missingDocuments,
@@ -3529,7 +3539,7 @@ export const appRouter = router({
           suggestedPrompts,
           supportingDocuments,
           missingDocuments,
-          sourceDocumentCount: documents.length,
+          sourceDocumentCount: chatDocuments.length,
           commercePlanKey: commerceStatus.activePlanKey,
         };
       }),

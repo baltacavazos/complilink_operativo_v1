@@ -1,12 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { WORKER_CHAT_DISCLAIMER, hasForbiddenWorkerChatClaim } from "@shared/workerChatUx";
+import {
+  WORKER_CHAT_DISCLAIMER,
+  WORKER_CHAT_MULTI_DOC_UPSELL,
+  hasForbiddenWorkerChatClaim,
+  hasInternalControlMarkers,
+} from "@shared/workerChatUx";
 import {
   buildWorkerChatFallbackAnswer,
   buildWorkerChatGrounding,
   buildWorkerChatLlmInstructions,
   buildWorkerChatSuggestedPrompts,
+  pickPrincipalWorkerChatDocument,
   sanitizeWorkerChatAnswer,
+  scopeWorkerChatDocumentsForPlan,
 } from "./workerChatUx";
 
 const payrollDocument = {
@@ -114,5 +121,59 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/Lo que s[ií] se sabe/);
     expect(instructions).toMatch(/Lo que falta/);
     expect(instructions).toMatch(/Siguiente paso/);
+  });
+
+  it("en plan gratis recorta a un documento y deja upsell limpio, sin marcadores", () => {
+    const secondDocument = {
+      documentType: "cfdi",
+      originalName: "cfdi-mayo.pdf",
+      createdAt: new Date("2026-05-02T10:00:00.000Z"),
+      heliosOpinion: {
+        summary: "El CFDI muestra el mismo periodo.",
+      },
+    };
+    const principal = {
+      ...payrollDocument,
+      createdAt: new Date("2026-05-16T10:00:00.000Z"),
+    };
+    const scoped = scopeWorkerChatDocumentsForPlan({
+      documents: [secondDocument, principal],
+      canUseMultiDocument: false,
+    });
+
+    expect(pickPrincipalWorkerChatDocument([secondDocument, principal])?.originalName).toBe(
+      "recibo-mayo.pdf",
+    );
+    expect(scoped.scopedToSingleDocument).toBe(true);
+    expect(scoped.documents).toHaveLength(1);
+    expect(scoped.documents[0]?.originalName).toBe("recibo-mayo.pdf");
+    expect(scoped.upsell).toBe(WORKER_CHAT_MULTI_DOC_UPSELL);
+    expect(hasInternalControlMarkers(scoped.upsell)).toBe(false);
+
+    const grounding = buildWorkerChatGrounding({
+      documents: scoped.documents,
+      opinion: principal.heliosOpinion,
+      multiDocUpsell: scoped.upsell,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding);
+
+    expect(answer).toContain("Respuesta clara");
+    expect(answer).toContain("Lo que sí se sabe");
+    expect(answer).toContain("Lo que falta");
+    expect(answer).toContain("Siguiente paso");
+    expect(answer).toContain(WORKER_CHAT_MULTI_DOC_UPSELL);
+    expect(answer).not.toMatch(/required_plan|current_plan|\|\|/);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("con multi-documento habilitado no recorta ni pone upsell", () => {
+    const scoped = scopeWorkerChatDocumentsForPlan({
+      documents: [payrollDocument, { documentType: "cfdi", originalName: "cfdi.pdf" }],
+      canUseMultiDocument: true,
+    });
+
+    expect(scoped.scopedToSingleDocument).toBe(false);
+    expect(scoped.documents).toHaveLength(2);
+    expect(scoped.upsell).toBeNull();
   });
 });
