@@ -44,11 +44,11 @@ function DemoViewGuard() {
 
 function RouteLoadingFallback() {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-6 py-10">
-        <div className="w-full max-w-sm rounded-[2rem] border border-slate-200 bg-white/95 px-6 py-7 text-center shadow-[0_28px_80px_-42px_rgba(15,23,42,0.34)]">
-          <div className="flex justify-center">
-            <AuditaPatronLogoIcon imageClassName="h-12 w-12 rounded-2xl border border-slate-200 bg-white object-contain p-2 shadow-sm" />
+    <main className="audita-access min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
+      <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-6 py-16">
+        <div className="ap-access-surface w-full max-w-sm px-6 py-7 text-center">
+          <div className="ap-access-mark flex justify-center">
+            <AuditaPatronLogoIcon imageClassName="h-12 w-12 object-contain" />
           </div>
           <AuditaPatronLogoWordmark className="mt-4 justify-center" imageClassName="max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
           <p className="mt-5 text-sm font-medium leading-6 text-slate-600">

@@ -72,19 +72,18 @@ export default function LocalPasswordForm({
 
   return (
     <form
-      className="mt-6 space-y-4"
+      className="mt-8 space-y-5"
       onSubmit={(event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         void submit(mode === "signup" ? "register" : "login", event.currentTarget);
       }}
     >
-      <h1 className="text-center text-2xl font-semibold tracking-tight text-slate-950">
+      <h1 className="text-center text-[1.85rem] font-semibold tracking-[-0.04em] text-slate-950">
         {mode === "signup" ? "Crea tu cuenta" : "Entra a tu cuenta"}
       </h1>
-      <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50/80 px-4 py-3 text-sm leading-6 text-teal-950">
-        <p className="font-medium">Entras con correo y contraseña para volver a tu revisión.</p>
-        <p className="mt-1 text-teal-900/80">La revisión pública por RFC sigue igual, sin cuenta.</p>
-      </div>
+      <p className="ap-access-note text-center text-sm leading-6 text-slate-600">
+        Entras con correo y contraseña para volver a tu revisión.
+      </p>
 
       <div className="space-y-2">
         <label className="text-sm font-medium text-slate-900" htmlFor="local-access-email">
@@ -100,7 +99,7 @@ export default function LocalPasswordForm({
           onChange={(event) => setEmail(event.target.value)}
           onInput={(event) => setEmail((event.target as HTMLInputElement).value)}
           placeholder="nombre@empresa.com"
-          className="h-12 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+          className="h-12 w-full min-w-0 rounded-2xl border-0 bg-slate-100/90 px-4 text-base text-slate-950 outline-none ring-1 ring-transparent transition-colors placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-teal-500/25"
         />
       </div>
 
@@ -119,7 +118,7 @@ export default function LocalPasswordForm({
           onChange={(event) => setPassword(event.target.value)}
           onInput={(event) => setPassword((event.target as HTMLInputElement).value)}
           placeholder="Mínimo 8 caracteres"
-          className="h-12 w-full min-w-0 rounded-2xl border border-slate-200 bg-white px-4 text-base text-slate-950 outline-none transition-colors placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
+          className="h-12 w-full min-w-0 rounded-2xl border-0 bg-slate-100/90 px-4 text-base text-slate-950 outline-none ring-1 ring-transparent transition-colors placeholder:text-slate-400 focus:bg-white focus:ring-2 focus:ring-teal-500/25"
         />
       </div>
 
@@ -133,7 +132,7 @@ export default function LocalPasswordForm({
       <Button
         type="submit"
         size="lg"
-        className="h-12 w-full rounded-2xl bg-slate-950 text-base font-semibold text-white hover:bg-slate-900"
+        className="h-12 w-full rounded-full bg-slate-950 text-base font-semibold text-white hover:bg-slate-900"
         disabled={pending !== null}
       >
         {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LockKeyhole className="mr-2 h-4 w-4" />}
@@ -150,7 +149,7 @@ export default function LocalPasswordForm({
       <Button
         type="button"
         variant="outline"
-        className="h-12 w-full rounded-2xl border-teal-200 bg-teal-50 text-base font-semibold text-teal-900 hover:bg-teal-100"
+        className="h-12 w-full rounded-full border-0 bg-transparent text-base font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-950"
         disabled={pending !== null}
         onClick={() => {
           setError(null);

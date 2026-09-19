@@ -3088,8 +3088,42 @@ function isTechnicalAnalysisKey(key: string) {
     return true;
   }
 
+  const compact = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (
+    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready)$/.test(
+      compact
+    )
+  ) {
+    return true;
+  }
+
   return /^(confirmed|estimated|analysis|metadata|processing|structured|internal|raw|debug|payload|profile)/i.test(
-    key.replace(/[^a-z0-9]/gi, "")
+    compact
+  );
+}
+
+function isHumanMeaningfulAnalysisKey(key: string) {
+  if (isTechnicalAnalysisKey(key)) {
+    return false;
+  }
+
+  if (
+    analysisFieldLabels[key] &&
+    [
+      "employerRfc",
+      "period",
+      "apparentAmount",
+      "apparentEffectiveDate",
+      "workerName",
+      "employerName",
+      "jobTitle",
+    ].includes(key)
+  ) {
+    return true;
+  }
+
+  return /rfc|periodo|period|monto|amount|fecha|date|nombre|name|puesto|job|neto|deducc|empresa|employer/i.test(
+    key
   );
 }
 
@@ -3140,7 +3174,14 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
           }),
         ] as [string, string]
     )
-    .filter(([key, value]) => value.length > 0 && !isTechnicalAnalysisKey(key) && !/^(true|false)$/i.test(value));
+    .filter(
+      ([key, value]) =>
+        value.length > 0 &&
+        isHumanMeaningfulAnalysisKey(key) &&
+        !/^(true|false)$/i.test(value) &&
+        !/^sin dato visible$/i.test(value)
+    )
+    .slice(0, 6);
 }
 
 export function sanitizeStructuredExtractionView(
@@ -5791,9 +5832,9 @@ export default function Auditar() {
       company: "Empresa sin acceso",
       control: "Tú confirmas si se guarda",
       trace: "Rastro visible al confirmar",
-      cardClass: "border-slate-200 bg-white/95",
-      badgeClass: "border-slate-200 bg-white text-slate-700",
-      eyebrowClass: "text-slate-500",
+      cardClass: "border-teal-200 bg-teal-50/90",
+      badgeClass: "border-teal-200 bg-white text-teal-900",
+      eyebrowClass: "text-teal-800",
     };
   }, [
     documents.length,
@@ -8397,7 +8438,7 @@ export default function Auditar() {
                 {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial del recibo"}
               </div>
               <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo gratis"}
+                {isNativeAppExperience ? "Tu documento, en palabras simples" : "Tu recibo, en palabras simples"}
               </h1>
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
@@ -8514,7 +8555,7 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                {isNativeAppExperience ? "Sube tu documento" : "Sube tu recibo o comprobante"}
+                {isNativeAppExperience ? "Tu documento" : "Tu recibo o comprobante"}
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
@@ -8560,11 +8601,12 @@ export default function Auditar() {
 
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
           <div
+            data-ap-privacy-bar
             className={`rounded-[1.15rem] border px-4 py-3 shadow-[0_16px_38px_-30px_rgba(15,23,42,0.4)] backdrop-blur ${privacySignal.cardClass}`}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className={`inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] ${privacySignal.eyebrowClass}`}>
+                <div className={`inline-flex items-center gap-2 text-[11px] font-semibold tracking-tight ${privacySignal.eyebrowClass}`}>
                   <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                   Privacidad activa en este expediente
                 </div>
@@ -8572,7 +8614,7 @@ export default function Auditar() {
                   {privacySignal.title}
                 </p>
               </div>
-              <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${privacySignal.badgeClass}`}>
+              <span className={`ap-status-chip rounded-full border px-3 py-1 text-xs font-semibold ${privacySignal.badgeClass}`}>
                 {privacySignal.badge}
               </span>
             </div>
@@ -9055,7 +9097,7 @@ export default function Auditar() {
                 </details>
               ) : null}
               <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView || isFirstDocumentFlow ? "hidden" : ""}`}>
-                <div>
+                <div data-ap-upload-copy>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
                       ? "Opcional si sigues hoy"
@@ -9074,6 +9116,7 @@ export default function Auditar() {
 
                   </p>
                   <div
+                    data-ap-status-cluster
                     className={`mt-4 hidden gap-2 sm:grid sm:grid-cols-3 ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                   >
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
@@ -9143,6 +9186,7 @@ export default function Auditar() {
                 </div>
 
                 <div
+                  data-ap-status-cluster
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
                   <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
@@ -9821,7 +9865,7 @@ export default function Auditar() {
                     {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
                   </p>
                   <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
-                    {isNativeAppExperience ? "Sube y revisa" : "Sube tu recibo y revisa lo importante"}
+                    Revisa lo importante
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-5 text-slate-600">
@@ -9967,7 +10011,7 @@ export default function Auditar() {
                     </div>
                     <div>
                       <p className="font-semibold leading-5 text-slate-950">
-                        Sube tu recibo o comprobante
+                        Foto o archivo para empezar
                       </p>
                       <p className="text-sm leading-5 text-slate-600">
                         Foto o archivo. Lo revisamos al momento y después decides si se guarda.
@@ -10519,7 +10563,7 @@ export default function Auditar() {
                           .map(field => (
                             <div
                               key={`${field.key}-${field.label}`}
-                              className="rounded-[1rem] border border-slate-200 bg-slate-50 p-3"
+                              className="ap-worker-field rounded-[1rem] border border-slate-200 bg-slate-50 p-3"
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -11011,9 +11055,9 @@ export default function Auditar() {
                               ([key, value]) => (
                                 <div
                                   key={key}
-                                  className="rounded-[1rem] bg-white p-3"
+                                  className="ap-worker-field rounded-[1rem] bg-white p-3"
                                 >
-                                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                  <p className="text-xs font-semibold tracking-tight text-emerald-700">
                                     {getAnalysisFieldLabel(key)}
                                   </p>
                                   <p className="mt-1 text-sm leading-6 text-slate-800">
@@ -11026,7 +11070,7 @@ export default function Auditar() {
                         )}
                       </div>
 
-                      <div className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
+                      <div data-ap-review-panel className="rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4">
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-semibold text-amber-950">
                             Lo que conviene revisar
@@ -11054,9 +11098,9 @@ export default function Auditar() {
                               ([key, value]) => (
                                 <div
                                   key={key}
-                                  className="rounded-[1rem] bg-white p-3"
+                                  className="ap-worker-field rounded-[1rem] bg-white p-3"
                                 >
-                                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                                  <p className="text-xs font-semibold tracking-tight text-amber-700">
                                     {getAnalysisFieldLabel(key)}
                                   </p>
                                   <p className="mt-1 text-sm leading-6 text-slate-800">
@@ -11341,6 +11385,7 @@ export default function Auditar() {
                 </div>
               ) : null}
 
+              {(selectedFile || pendingDraft) ? (
               <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Button
@@ -11407,6 +11452,7 @@ export default function Auditar() {
                     : "Limpiar formulario"}
                 </Button>
               </div>
+              ) : null}
             </div>
 
             <div className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
@@ -11506,7 +11552,7 @@ export default function Auditar() {
                       </div>
                       <span
                         data-testid="auditar-verdict-pill"
-                        className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${lastUploadVerdict.classes}`}
+                        className={`ap-status-chip inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${lastUploadVerdict.classes}`}
                       >
                         {lastUploadVerdict.label}
                       </span>
@@ -12830,8 +12876,8 @@ Reforzar con otro documento
                               ) : (
                                 <div className="mt-4 space-y-3">
                                   {confirmedEntries.map(([key, value]) => (
-                                    <div key={key} className="rounded-[1rem] bg-white p-3">
-                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                                    <div key={key} className="ap-worker-field rounded-[1rem] bg-white p-3">
+                                      <p className="text-xs font-semibold tracking-tight text-emerald-700">
                                         {getAnalysisFieldLabel(key)}
                                       </p>
                                       <p className="mt-1 text-sm leading-6 text-slate-800">
@@ -12843,7 +12889,7 @@ Reforzar con otro documento
                               )}
                             </div>
 
-                            <div className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
+                            <div data-ap-review-panel className="rounded-[1rem] border border-amber-200 bg-amber-50 p-4">
                               <div className="flex items-center justify-between gap-4">
                                 <p className="font-semibold text-amber-950">
                                   Datos a revisar
@@ -12890,8 +12936,8 @@ Reforzar con otro documento
                               ) : (
                                 <div className="mt-4 space-y-3">
                                   {estimatedEntries.map(([key, value]) => (
-                                    <div key={key} className="rounded-[1rem] bg-white p-3">
-                                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                                    <div key={key} className="ap-worker-field rounded-[1rem] bg-white p-3">
+                                      <p className="text-xs font-semibold tracking-tight text-amber-700">
                                         {getAnalysisFieldLabel(key)}
                                       </p>
                                       <p className="mt-1 text-sm leading-6 text-slate-800">
@@ -15132,17 +15178,17 @@ Reforzar con otro documento
 
       <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
-          <div className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
+          <div data-ap-privacy-bar className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 pr-1">
-                <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${privacySignal.eyebrowClass}`}>
+                <p className={`text-[10px] font-semibold tracking-tight ${privacySignal.eyebrowClass}`}>
                   Privacidad activa en este expediente
                 </p>
-                <p className="mt-1 truncate text-sm font-semibold text-slate-950">
+                <p className="mt-1 break-words text-sm font-semibold text-slate-950">
                   {privacySignal.company} · {privacySignal.trace}
                 </p>
               </div>
-              <span className={`shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${privacySignal.badgeClass}`}>
+              <span className={`ap-status-chip shrink-0 rounded-full border px-2.5 py-1 text-[10px] font-semibold ${privacySignal.badgeClass}`}>
                 {privacySignal.badge}
               </span>
             </div>
