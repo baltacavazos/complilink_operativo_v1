@@ -214,5 +214,8 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(css).toContain("text-wrap: balance");
     expect(css).toContain(".audita-home .ap-status-chip");
     expect(css).toContain("text-transform: none");
+    expect(css).toContain(".audita-pagos");
+    expect(css).toContain(".audita-historial");
+    expect(css).toContain("@media (max-width: 390px)");
   });
 });

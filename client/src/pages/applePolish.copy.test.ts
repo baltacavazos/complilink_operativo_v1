@@ -175,7 +175,8 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(notFound).not.toContain("text-4xl font-bold text-slate-900 mb-2\">404");
 
     const papers = readClientSource("pages/PapersPlaceholder.tsx");
-    expect(papers).toContain("Pronto verás aquí tus papeles");
+    expect(papers).toContain("Lo que ya revisaste");
+    expect(papers).toContain("Tus documentos y revisiones viven en tu expediente");
     expect(papers).toContain("Ir a mi revisión");
     expect(papers).not.toContain("Page Not Found");
     expect(papers).not.toContain("Página no encontrada");

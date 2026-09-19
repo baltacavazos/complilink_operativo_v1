@@ -29,7 +29,8 @@ describe("responsive layout regression guards", () => {
     const homeSource = readProjectFile("client", "src", "pages", "Home.tsx");
 
     expect(homeSource).toContain('max-[359px]:text-[1.95rem]');
-    expect(homeSource).toContain('max-[359px]:leading-[0.98]');
+    expect(homeSource).toContain('max-[359px]:leading-[1.14]');
+    expect(homeSource).not.toContain('max-[359px]:leading-[0.98]');
     expect(homeSource).toContain('max-[359px]:hidden');
     expect(homeSource).toContain('ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center');
     expect(homeSource).toContain('h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto');

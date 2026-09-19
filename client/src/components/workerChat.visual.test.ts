@@ -59,6 +59,11 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-section-label");
     expect(css).toContain(".ap-worker-chat .ap-chat-official");
     expect(css).toContain(".ap-worker-chat .ap-chat-source-link");
+    expect(css).toContain("@media (max-width: 390px)");
+    expect(css).toContain(".ap-worker-chat .ap-chat-compact-hide");
+    expect(sheet).toContain("ap-chat-compact-hide");
+    expect(sheet).toContain("ap-chat-header");
+    expect(sheet).toContain("h-full w-full max-w-full");
     expect(css).toContain("letter-spacing: -0.018em");
     expect(css).toContain("color-scheme: light");
     expect(sheet).not.toMatch(/dark:bg-slate-950/);

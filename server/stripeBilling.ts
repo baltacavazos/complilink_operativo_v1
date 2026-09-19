@@ -116,29 +116,26 @@ function buildOrigin(originHeader?: string | null) {
   return "http://localhost:3000";
 }
 
+export const LIVE_BILLING_ENABLED = false;
+export const COMMERCE_DEMO_NO_CHARGE_COPY =
+  "Esto es una demostración. No se cobra nada.";
+
+export function isLiveBillingEnabled() {
+  if (!LIVE_BILLING_ENABLED) return false;
+  if (ENV.stripeSecretKey.startsWith("sk_live_")) return false;
+  return Boolean(ENV.stripeSecretKey);
+}
+
 function buildCommerceEnvironmentStatus() {
-  if (!ENV.stripeSecretKey) {
-    return {
-      mode: "unavailable" as const,
-      isSandbox: false,
-      webhookReady: false,
-      checkoutReady: false,
-      recommendedTestCard: null,
-      validationHint: "La activación de Stripe sigue pendiente.",
-    };
-  }
-
-  const isSandbox = ENV.stripeSecretKey.startsWith("sk_test_");
-
   return {
-    mode: isSandbox ? ("sandbox" as const) : ("live" as const),
-    isSandbox,
-    webhookReady: Boolean(ENV.stripeWebhookSecret),
-    checkoutReady: true,
-    recommendedTestCard: isSandbox ? "4242 4242 4242 4242" : null,
-    validationHint: isSandbox
-      ? "Puedes probar el circuito completo de checkout con la tarjeta 4242 4242 4242 4242 antes de activar cobro real."
-      : "Stripe ya está en modo live; conviene validar checkout, webhook y retorno con una compra controlada.",
+    mode: "demo" as const,
+    isSandbox: false,
+    isDemo: true,
+    liveBillingEnabled: false,
+    webhookReady: false,
+    checkoutReady: false,
+    recommendedTestCard: null,
+    validationHint: COMMERCE_DEMO_NO_CHARGE_COPY,
   };
 }
 
@@ -495,10 +492,10 @@ export async function resolveCommerceStatus(actor: CommerceActor) {
     activePlan: getCommercePlanDefinition(activePlanKey),
     entitlements,
     purchasedOneShots,
-    canManageBilling: Boolean(customerId),
-    adminBypass,
-    environment,
-  };
+    canManageBilling: false,
+      adminBypass,
+      environment,
+    };
 }
 
 export async function resolveCommerceHistory(userId: number) {
@@ -547,6 +544,10 @@ export async function createCommerceCheckoutSession(params: {
   originHeader?: string | null;
   productKey: CommerceProductKey;
 }) {
+  if (!isLiveBillingEnabled()) {
+    throw new Error(COMMERCE_DEMO_NO_CHARGE_COPY);
+  }
+
   const stripe = getStripeClient();
   if (!stripe) {
     throw new Error("Stripe no está configurado todavía.");
@@ -607,6 +608,10 @@ export async function createCommerceBillingPortalSession(params: {
   actor: CommerceActor;
   originHeader?: string | null;
 }) {
+  if (!isLiveBillingEnabled()) {
+    throw new Error(COMMERCE_DEMO_NO_CHARGE_COPY);
+  }
+
   const stripe = getStripeClient();
   if (!stripe) {
     throw new Error("Stripe no está configurado todavía.");

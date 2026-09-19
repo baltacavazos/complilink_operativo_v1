@@ -194,10 +194,10 @@ export function HeliosCopilotSheet({
       <SheetContent
         side="right"
         data-testid="ap-worker-chat"
-        className="ap-worker-chat w-full border-l border-slate-200/80 bg-[#f7f8fa] p-0 sm:max-w-xl"
+        className="ap-worker-chat h-full w-full max-w-full border-l border-slate-200/80 bg-[#f7f8fa] p-0 sm:max-w-xl"
       >
         <div className="flex h-full flex-col">
-          <SheetHeader className="border-b border-slate-200/80 bg-white/90 px-5 py-5 text-left backdrop-blur-md sm:px-6">
+          <SheetHeader className="ap-chat-header border-b border-slate-200/80 bg-white/90 px-4 py-4 pr-12 text-left backdrop-blur-md sm:px-6 sm:py-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-teal-50 text-teal-800">
                 <Sparkles className="h-5 w-5" strokeWidth={1.7} />
@@ -206,10 +206,10 @@ export function HeliosCopilotSheet({
                 <p className="text-[12px] font-medium tracking-[-0.01em] text-teal-800">
                   {copy.eyebrow}
                 </p>
-                <SheetTitle className="mt-1 text-[1.4rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950">
+                <SheetTitle className="mt-1 text-[1.25rem] font-semibold leading-snug tracking-[-0.03em] text-slate-950 sm:text-[1.4rem]">
                   {copy.title}
                 </SheetTitle>
-                <SheetDescription className="mt-1.5 text-[0.95rem] leading-6 tracking-[-0.015em] text-slate-600">
+                <SheetDescription className="mt-1.5 text-[0.95rem] leading-6 tracking-[-0.015em] text-slate-700">
                   {copy.description}
                 </SheetDescription>
               </div>
@@ -242,7 +242,7 @@ export function HeliosCopilotSheet({
                   </span>
                 ) : null}
               </div>
-              <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              <div className="ap-chat-compact-hide mt-3 grid gap-2 sm:grid-cols-2">
                 {quickHighlights.map((item) => (
                   <div
                     key={item}
@@ -253,7 +253,7 @@ export function HeliosCopilotSheet({
                 ))}
               </div>
               {onResponseToneChange ? (
-                <div className="rounded-[1.15rem] border border-slate-200/80 bg-[#f7f8fa] px-3 py-3">
+                <div className="ap-chat-compact-hide rounded-[1.15rem] border border-slate-200/80 bg-[#f7f8fa] px-3 py-3">
                   <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">
                     {copy.toneHeading}
                   </p>
@@ -504,7 +504,7 @@ export function HeliosCopilotSheet({
               </div>
             ) : null}
 
-            <div className="min-h-[22rem]">
+            <div className="ap-chat-thread min-h-[14rem] sm:min-h-[22rem]">
               <AIChatBox
                 messages={visibleMessages}
                 onSendMessage={onSendMessage}

@@ -75,7 +75,7 @@ export default function AccessGate() {
 
   return (
     <main className="audita-access min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-6 py-16">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center px-5 py-12 sm:px-6 sm:py-16">
         <div className="ap-access-surface px-1 py-4">
           <div className="ap-access-mark flex justify-center">
             <AuditaPatronLogoIcon imageClassName="h-12 w-12 object-contain" />

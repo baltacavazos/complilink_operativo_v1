@@ -25,10 +25,12 @@ describe("flujo visible de pagos", () => {
     const paymentsSource = readFromPages("Payments");
 
     expect(paymentsSource).toContain("Tu plan y lo que ya pagaste");
-    expect(paymentsSource).toContain("Gestionar suscripción");
+    expect(paymentsSource).toContain("Esto es una demostración. No se cobra nada.");
     expect(paymentsSource).toContain("Pagos y compras registradas");
-    expect(paymentsSource).toContain("Modo de prueba del cobro");
+    expect(paymentsSource).toContain("Hoy no hay cobro real ni cargo a tarjeta.");
     expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.");
+    expect(paymentsSource).not.toContain("Gestionar suscripción");
+    expect(paymentsSource).not.toContain("Modo de prueba del cobro");
     expect(paymentsSource).not.toContain("Historial comercial");
     expect(paymentsSource).not.toContain("persistencia local");
     expect(paymentsSource).not.toContain("persistencia local mínima de Stripe");

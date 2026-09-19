@@ -1,7 +1,9 @@
 /**
  * Digest honesto de fuentes oficiales (SCJN / DOF).
  * Solo títulos y ligas reales. Nunca inventa IUS ni registro digital.
+ * last_good = harvest adjunto (shared/data/scjn-harvest.v1.json) + DOF semilla.
  */
+import scjnHarvestFile from "./data/scjn-harvest.v1.json";
 
 export const OFFICIAL_SOURCES_HEADING = "Lecturas oficiales";
 
@@ -68,53 +70,43 @@ export const SCJN_API_BASE = "https://bicentenario.scjn.gob.mx/repositorio-scjn/
 export const SIDOF_TITLE_SEARCH_BASE =
   "https://sidof.segob.gob.mx/dof/sidof/buscarNotas/titulo/";
 
-export const SCJN_HARVEST_SEED: OfficialHarvestEntry[] = [
-  {
-    title:
-      "PERSONAS TRABAJADORAS DE CONFIANZA DE LA CÁMARA DE DIPUTADOS DEL CONGRESO DE LA UNIÓN. LA NATURALEZA DE SUS FUNCIONES PUEDE CORROBORARSE MEDIANTE LAS IMPUTACIONES PROBADAS EN JUICIO, CUANDO ÉSTAS EVIDENCIEN EL DESEMPEÑO DE LAS ACTIVIDADES PREVISTAS EN EL CATÁLOGO DE PUESTOS DE CONFIANZA.",
-    officialId: "2032630",
-    tesis: "I.4o.T.10 L (12a.)",
-    url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032630",
-    publishedAt: "2026-09-11 10:20",
-    matchedTopics: ["Laboral", "confianza"],
+const SCJN_HARVEST_TOPIC_EXTRAS: Record<string, string[]> = {
+  "2032630": ["confianza"],
+  "2032625": ["amparo", "competencia"],
+  "2032619": ["carga de la prueba", "vivienda"],
+  "2032614": ["despido", "ofrecimiento de trabajo"],
+  "2032611": ["tiempo extraordinario", "horas extra"],
+};
+
+function uniqueTopics(values: Array<string | undefined | null>): string[] {
+  const next: string[] = [];
+  for (const value of values) {
+    const item = (value ?? "").replace(/\s+/g, " ").trim();
+    if (!item) continue;
+    if (!next.some((existing) => existing.toLowerCase() === item.toLowerCase())) {
+      next.push(item);
+    }
+  }
+  return next;
+}
+
+export const SCJN_HARVEST_SEEDED_AT = scjnHarvestFile.harvestedAt;
+export const SCJN_HARVEST_SEED: OfficialHarvestEntry[] = (scjnHarvestFile.entries ?? []).map(
+  (entry) => {
+    const officialId = String(entry.officialId ?? "").trim();
+    return {
+      title: String(entry.title ?? "").trim(),
+      officialId,
+      tesis: entry.tesis ?? null,
+      url: entry.url || `https://sjf2.scjn.gob.mx/detalle/tesis/${officialId}`,
+      publishedAt: entry.publishedAt ?? null,
+      matchedTopics: uniqueTopics([
+        ...(entry.matchedTopics ?? []),
+        ...(SCJN_HARVEST_TOPIC_EXTRAS[officialId] ?? []),
+      ]),
+    };
   },
-  {
-    title:
-      "IMPROCEDENCIA DEL AMPARO INDIRECTO POR CAMBIO DE SITUACIÓN JURÍDICA. NO SE ACTUALIZA DICHA CAUSAL CUANDO SE RECLAMA EL ACUERDO QUE DEFINE LA COMPETENCIA EN EL JUICIO LABORAL, POR EL HECHO DE QUE EN EL MISMO SE DICTE UNO DIVERSO QUE PONGA FIN AL PROCEDIMIENTO.",
-    officialId: "2032625",
-    tesis: "VII.2o.T.18 L (12a.)",
-    url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032625",
-    publishedAt: "2026-09-11 10:20",
-    matchedTopics: ["Laboral", "amparo", "competencia"],
-  },
-  {
-    title:
-      "CARGA DE LA PRUEBA EN MATERIA LABORAL. CUANDO SE RECLAMA LA PRESTACIÓN DE VIVIENDA PREVISTA EN EL ARTÍCULO 66o., INCISO B), DEL CONTRATO LEY DE LAS INDUSTRIAS AZUCARERA, ALCOHOLERA Y SIMILARES DE LA REPÚBLICA MEXICANA, CORRESPONDE A LAS PERSONAS TRABAJADORAS ACREDITAR LOS REQUISITOS DE CLASIFICACIÓN Y TEMPORALIDAD ESTABLECIDOS EN DICHO PRECEPTO.",
-    officialId: "2032619",
-    tesis: "VII.2o.T.19 L (12a.)",
-    url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032619",
-    publishedAt: "2026-09-11 10:20",
-    matchedTopics: ["Laboral", "carga de la prueba", "vivienda"],
-  },
-  {
-    title:
-      "OFRECIMIENTO DE TRABAJO. PARA CALIFICARLO DE BUENA FE Y, EN SU CASO, DETERMINAR LA PROCEDENCIA DE LA REVERSIÓN DE LA CARGA DE LA PRUEBA, NO DEBEN VALORARSE LOS MEDIOS PROBATORIOS RELACIONADOS CON LA EXISTENCIA O INEXISTENCIA DEL DESPIDO QUE DIO ORIGEN AL JUICIO LABORAL.",
-    officialId: "2032614",
-    tesis: "PR.P.T.CN. J/14 L (12a.)",
-    url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032614",
-    publishedAt: "2026-09-11 10:20",
-    matchedTopics: ["Laboral", "despido", "ofrecimiento de trabajo"],
-  },
-  {
-    title:
-      "TIEMPO EXTRAORDINARIO DE LAS PERSONAS TRABAJADORAS AL SERVICIO DEL ESTADO DE GUERRERO. NO ES REQUISITO LA AUTORIZACIÓN POR ESCRITO DE LA PATRONAL PARA LABORARLAS, A FIN DE RECLAMAR SU PAGO [INTERRUPCIÓN DE LA JURISPRUDENCIA XXI.2o.C.T. J/1 L (11a.)].",
-    officialId: "2032611",
-    tesis: "XXI.2o.C.T.1 L (12a.)",
-    url: "https://sjf2.scjn.gob.mx/detalle/tesis/2032611",
-    publishedAt: "2026-09-04 10:13",
-    matchedTopics: ["Laboral", "tiempo extraordinario", "horas extra"],
-  },
-];
+);
 
 export const DOF_LAST_GOOD_SEED: OfficialDofSeedEntry[] = [
   {

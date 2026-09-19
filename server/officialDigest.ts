@@ -16,14 +16,20 @@ import {
   type OfficialHarvestEntry,
 } from "@shared/officialDigest";
 
-const LIVE_TIMEOUT_MS = 2500;
+const LIVE_TIMEOUT_MS = 3500;
 const SIDOF_SEARCHES = [
   "subcontratación",
   "Ley Federal del Trabajo",
   "jornada laboral",
   "Ley del Seguro Social",
   "Instituto del Fondo Nacional de la Vivienda",
+  "tiempo extraordinario",
+  "horas extra",
 ] as const;
+const SIDOF_NOTE_URLS = [
+  (id: string) => `https://sidof.segob.gob.mx/dof/sidof/notas/${id}`,
+  (id: string) => `https://sidof.segob.gob.mx/dof/sidof/nota/${id}`,
+];
 
 const LABOR_TITLE_RE =
   /ley federal del trabajo|seguro social|infonavit|subcontrat|jornada laboral|registro de prestadoras|repse|personas trabajadoras/i;
@@ -111,7 +117,67 @@ async function fetchLiveScjn(id: string): Promise<OfficialHarvestEntry | null> {
   const result = await fetchText(`${SCJN_API_BASE}${id}`);
   if (!result.ok || looksBlockedBody(result.body)) return null;
   const parsed = parseJson(result.body);
-  return parseJson(result.body) ? harvestFromLiveTesis(id, parsed) : null;
+  return parsed ? harvestFromLiveTesis(id, parsed) : null;
+}
+
+function extractOfficialIds(payload: unknown): string[] {
+  const ids: string[] = [];
+  const push = (value: unknown) => {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      ids.push(String(Math.trunc(value)));
+      return;
+    }
+    if (typeof value === "string" && /^\d+$/.test(value.trim())) {
+      ids.push(value.trim());
+    }
+  };
+  if (Array.isArray(payload)) {
+    for (const item of payload) {
+      if (item && typeof item === "object") {
+        const record = item as Record<string, unknown>;
+        push(record.registroDigital ?? record.ius ?? record.id ?? record.officialId);
+      } else {
+        push(item);
+      }
+    }
+    return [...new Set(ids)];
+  }
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>;
+    const nested = record.ids ?? record.data ?? record.tesis ?? record.results;
+    if (nested) return extractOfficialIds(nested);
+    push(record.count);
+  }
+  return [...new Set(ids)];
+}
+
+async function probeBicentenarioCatalog(): Promise<{ alive: boolean; ids: string[] }> {
+  const [countResult, idsResult] = await Promise.all([
+    fetchText(`${SCJN_API_BASE}count`),
+    fetchText(`${SCJN_API_BASE}ids`),
+  ]);
+  const countJson = countResult.ok && !looksBlockedBody(countResult.body) ? parseJson(countResult.body) : null;
+  const ids =
+    idsResult.ok && !looksBlockedBody(idsResult.body) ? extractOfficialIds(parseJson(idsResult.body)) : [];
+  return { alive: countJson != null || ids.length > 0, ids };
+}
+
+function sidofPayloadToNotes(payload: unknown): SidofNote[] {
+  if (!payload || typeof payload !== "object") return [];
+  if (Array.isArray(payload)) {
+    return payload.filter((item): item is SidofNote => Boolean(item) && typeof item === "object");
+  }
+  const record = payload as { Notas?: unknown; nota?: unknown };
+  if (Array.isArray(record.Notas)) {
+    return record.Notas.filter((item): item is SidofNote => Boolean(item) && typeof item === "object");
+  }
+  if (record.nota && typeof record.nota === "object") {
+    return [record.nota as SidofNote];
+  }
+  if ("codNota" in record || "titulo" in record) {
+    return [record as SidofNote];
+  }
+  return [];
 }
 
 function sidofNoteToSeed(note: SidofNote): OfficialDofSeedEntry | null {
@@ -130,16 +196,39 @@ function sidofNoteToSeed(note: SidofNote): OfficialDofSeedEntry | null {
 }
 
 async function fetchLiveSidof(query: string): Promise<OfficialDofSeedEntry[]> {
-  const url = `${SIDOF_TITLE_SEARCH_BASE}${encodeURIComponent(query)}/1/5/fecha/desc`;
+  const url = `${SIDOF_TITLE_SEARCH_BASE}${encodeURIComponent(query)}/1/8/fecha/desc`;
   const result = await fetchText(url);
   if (!result.ok || looksBlockedBody(result.body)) return [];
   const parsed = parseJson(result.body);
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return [];
-  const notes = (parsed as { Notas?: unknown }).Notas;
-  if (!Array.isArray(notes)) return [];
-  return notes
-    .map((item) => (item && typeof item === "object" ? sidofNoteToSeed(item as SidofNote) : null))
+  return sidofPayloadToNotes(parsed)
+    .map((item) => sidofNoteToSeed(item))
     .filter((item): item is OfficialDofSeedEntry => Boolean(item));
+}
+
+async function fetchLiveSidofNote(entry: OfficialDofSeedEntry): Promise<OfficialDofSeedEntry | null> {
+  for (const buildUrl of SIDOF_NOTE_URLS) {
+    const result = await fetchText(buildUrl(entry.officialId));
+    if (!result.ok || looksBlockedBody(result.body)) continue;
+    const parsed = parseJson(result.body);
+    const match = sidofPayloadToNotes(parsed)
+      .map((item) => sidofNoteToSeed(item))
+      .find((item) => item?.officialId === entry.officialId);
+    if (match) return match;
+  }
+  return null;
+}
+
+function uniqueCitations(items: OfficialDigestCitation[]): OfficialDigestCitation[] {
+  const next = new Map<string, OfficialDigestCitation>();
+  for (const item of items) {
+    if (!/^\d+$/.test(item.officialId)) continue;
+    const key = `${item.source}:${item.officialId}`;
+    const prev = next.get(key);
+    if (!prev || (prev.freshness !== "live" && item.freshness === "live")) {
+      next.set(key, item);
+    }
+  }
+  return [...next.values()];
 }
 
 export async function collectLiveOfficialCitations(): Promise<{
@@ -147,43 +236,58 @@ export async function collectLiveOfficialCitations(): Promise<{
   liveBlocked: boolean;
   liveAttempted: boolean;
 }> {
+  const catalog = await probeBicentenarioCatalog();
   const scjnResults = await Promise.allSettled(
     SCJN_HARVEST_SEED.map((entry) => fetchLiveScjn(entry.officialId)),
   );
-  const sidofResults = await Promise.allSettled(
+  const sidofSearchResults = await Promise.allSettled(
     SIDOF_SEARCHES.map((query) => fetchLiveSidof(query)),
+  );
+  const sidofSeedResults = await Promise.allSettled(
+    DOF_LAST_GOOD_SEED.map((entry) => fetchLiveSidofNote(entry)),
   );
 
   const liveScjn: OfficialDigestCitation[] = [];
   let scjnLiveHits = 0;
   scjnResults.forEach((result, index) => {
     const seed = SCJN_HARVEST_SEED[index];
+    if (!seed) return;
     if (result.status === "fulfilled" && result.value) {
       scjnLiveHits += 1;
-      liveScjn.push(toScjnCitation({ ...seed, ...result.value, officialId: seed.officialId }, "live"));
+      liveScjn.push(
+        toScjnCitation({ ...seed, ...result.value, officialId: seed.officialId }, "live"),
+      );
     }
   });
 
   const liveDof: OfficialDigestCitation[] = [];
   let sidofLiveHits = 0;
-  for (const result of sidofResults) {
+  for (const result of sidofSearchResults) {
     if (result.status !== "fulfilled") continue;
     if (result.value.length > 0) sidofLiveHits += 1;
     for (const entry of result.value) {
       liveDof.push(toDofCitation(entry, "live"));
     }
   }
+  for (const result of sidofSeedResults) {
+    if (result.status !== "fulfilled" || !result.value) continue;
+    sidofLiveHits += 1;
+    liveDof.push(toDofCitation(result.value, "live"));
+  }
 
-  const liveBlocked = scjnLiveHits === 0 && sidofLiveHits === 0;
+  const liveBlocked = scjnLiveHits === 0 && sidofLiveHits === 0 && !catalog.alive;
   const citations = liveBlocked
     ? []
-    : [
+    : uniqueCitations([
         ...liveScjn,
         ...SCJN_HARVEST_SEED.filter(
           (entry) => !liveScjn.some((item) => item.officialId === entry.officialId),
         ).map((entry) => toScjnCitation(entry, "last_good")),
         ...liveDof,
-      ];
+        ...DOF_LAST_GOOD_SEED.filter(
+          (entry) => !liveDof.some((item) => item.officialId === entry.officialId),
+        ).map((entry) => toDofCitation(entry, "last_good")),
+      ]);
 
   return {
     citations,

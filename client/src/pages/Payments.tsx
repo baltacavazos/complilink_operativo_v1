@@ -1,8 +1,9 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, CreditCard, ExternalLink, Loader2, ReceiptText } from "lucide-react";
-import { toast as sonnerToast } from "sonner";
+import { ArrowLeft, Loader2, ReceiptText } from "lucide-react";
+
+const DEMO_NO_CHARGE = "Esto es una demostración. No se cobra nada.";
 
 function formatCurrency(amountTotal: number, currency: string) {
   return new Intl.NumberFormat("es-MX", {
@@ -58,16 +59,6 @@ function translateSubscriptionStatus(status: string) {
   }
 }
 
-function maskCustomerId(value: string | null) {
-  if (!value) {
-    return "Aún no registrado";
-  }
-  if (value.length <= 8) {
-    return value;
-  }
-  return `${value.slice(0, 6)}…${value.slice(-4)}`;
-}
-
 export default function Payments() {
   const auth = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/pagos" });
   const historyQuery = trpc.commerce.history.useQuery(undefined, {
@@ -78,34 +69,20 @@ export default function Payments() {
     enabled: auth.isAuthenticated,
     refetchOnWindowFocus: false,
   });
-  const billingPortalMutation = trpc.commerce.createBillingPortal.useMutation();
 
   const activeSubscription = historyQuery.data?.activeSubscription ?? null;
   const payments = historyQuery.data?.payments ?? [];
   const lastPayment = payments[0] ?? null;
-  const paidCount = payments.filter(payment => payment.paymentStatus === "paid").length;
-
-  async function handleOpenBillingPortal() {
-    try {
-      const portal = await billingPortalMutation.mutateAsync();
-      if (!portal.url) {
-        throw new Error("No se recibió un enlace válido para el portal de cobros.");
-      }
-      sonnerToast("Abrimos la gestión de suscripción en una pestaña nueva.");
-      if (typeof window !== "undefined") {
-        window.open(portal.url, "_blank", "noopener,noreferrer");
-      }
-    } catch (error) {
-      sonnerToast(error instanceof Error ? error.message : "No fue posible abrir la gestión de cobros.");
-    }
-  }
+  const paidCount = payments.filter((payment) => payment.paymentStatus === "paid").length;
+  const planName =
+    activeSubscription?.planName ?? commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis";
 
   if (auth.loading) {
     return (
-      <main className="min-h-screen bg-slate-950 px-4 py-10 text-white sm:px-6">
-        <div className="container mx-auto max-w-5xl">
-          <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.85)]">
-            <div className="flex items-center gap-3 text-sm text-slate-200">
+      <main className="audita-pagos min-h-screen bg-[linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] px-4 py-10 text-slate-950 sm:px-6">
+        <div className="container mx-auto max-w-3xl">
+          <div className="rounded-[1.75rem] border border-slate-200 bg-white p-8 shadow-[0_22px_56px_-40px_rgba(15,23,42,0.2)]">
+            <div className="flex items-center gap-3 text-sm text-slate-700">
               <Loader2 className="h-4 w-4 animate-spin" />
               Cargando tus pagos…
             </div>
@@ -116,170 +93,115 @@ export default function Payments() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.12),_transparent_28%),linear-gradient(180deg,#020617_0%,#0f172a_52%,#111827_100%)] px-4 py-8 text-white sm:px-6 sm:py-10">
-      <div className="container mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.85)] backdrop-blur">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-3">
-              <a
-                href="/auditar"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-200 transition hover:bg-white/10"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Volver al expediente
-              </a>
-              <div>
-                <p className="text-xs font-semibold tracking-tight text-teal-200/80">Tus pagos</p>
-                <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
-                  Tu plan y lo que ya pagaste
-                </h1>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                  Aquí ves tu suscripción y lo que ya pagaste. La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                variant="outline"
-                className="rounded-full border-white/15 bg-white/5 text-white hover:bg-white/10"
-                onClick={() => void historyQuery.refetch()}
-                disabled={historyQuery.isFetching}
-              >
-                {historyQuery.isFetching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ReceiptText className="mr-2 h-4 w-4" />}
-                Actualizar pagos
-              </Button>
-              {commerceStatusQuery.data?.canManageBilling ? (
-                <Button
-                  className="rounded-full bg-teal-400 text-slate-950 hover:bg-teal-300"
-                  onClick={() => void handleOpenBillingPortal()}
-                  disabled={billingPortalMutation.isPending}
-                >
-                  {billingPortalMutation.isPending ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ExternalLink className="mr-2 h-4 w-4" />
-                  )}
-                  Gestionar suscripción
-                </Button>
-              ) : null}
-            </div>
+    <main className="audita-pagos min-h-screen bg-[linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] px-4 py-8 text-slate-950 sm:px-6 sm:py-10">
+      <div className="container mx-auto max-w-3xl space-y-5">
+        <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_22px_56px_-40px_rgba(15,23,42,0.2)] sm:p-6">
+          <a
+            href="/auditar"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver al expediente
+          </a>
+          <p className="mt-5 text-sm font-semibold text-teal-800">Tus pagos</p>
+          <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-4xl">
+            Tu plan y lo que ya pagaste
+          </h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base">
+            La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
+          </p>
+          <div className="mt-4 rounded-[1.25rem] border border-teal-200 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-950">
+            <p className="font-semibold">{DEMO_NO_CHARGE}</p>
+            <p className="mt-1 text-teal-900">
+              Puedes ver tu plan y esta pantalla con calma. Hoy no hay cobro real ni cargo a tarjeta.
+            </p>
+          </div>
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              className="h-11 w-full rounded-full border-slate-200 bg-white text-slate-800 hover:bg-slate-50 sm:w-auto"
+              onClick={() => void historyQuery.refetch()}
+              disabled={historyQuery.isFetching}
+            >
+              {historyQuery.isFetching ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <ReceiptText className="mr-2 h-4 w-4" />
+              )}
+              Actualizar pagos
+            </Button>
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
-          <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(20,184,166,0.6)]">
-            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-300">Plan actual</p>
-            <p className="mt-3 text-2xl font-semibold text-white">
-              {activeSubscription?.planName ?? commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis"}
-            </p>
-            <p className="mt-2 text-sm text-slate-300">
-              {activeSubscription ? translateSubscriptionStatus(activeSubscription.status) : "Aún no hay un plan de pago activo."}
-            </p>
-          </article>
-          <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(59,130,246,0.45)]">
-            <p className="text-xs font-semibold tracking-tight text-slate-300">Tu cuenta</p>
-            <p className="mt-3 text-2xl font-semibold text-white">
-              {auth.canToggleUserView
-                ? maskCustomerId(historyQuery.data?.customerId ?? null)
-                : "Lista para tus cobros"}
-            </p>
-            <p className="mt-2 text-sm text-slate-300">
-              {commerceStatusQuery.data?.environment?.mode === "sandbox" && auth.canToggleUserView
-                ? "Modo prueba activo para validar el cobro."
-                : "Si pagas algo, aquí queda el producto, el importe y la fecha."}
+        <section className="grid gap-3 sm:grid-cols-3">
+          <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+            <p className="text-sm font-medium text-slate-600">Plan actual</p>
+            <p className="mt-2 text-2xl font-semibold leading-tight text-slate-950">{planName}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              {activeSubscription
+                ? translateSubscriptionStatus(activeSubscription.status)
+                : "Sigues en la parte gratis. No hay un plan de pago activo."}
             </p>
           </article>
-          <article className="rounded-[1.75rem] border border-white/10 bg-white/5 p-5 shadow-[0_20px_70px_-50px_rgba(168,85,247,0.45)]">
-            <p className="text-xs font-semibold tracking-tight text-slate-300">Pagos registrados</p>
-            <p className="mt-3 text-2xl font-semibold text-white">{paidCount}</p>
-            <p className="mt-2 text-sm text-slate-300">
-              {lastPayment ? `Último cobro: ${formatDate(lastPayment.paidAt)}` : "Todavía no hay cobros en esta cuenta."}
+          <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+            <p className="text-sm font-medium text-slate-600">Cobro</p>
+            <p className="mt-2 text-2xl font-semibold leading-tight text-slate-950">Sin cargo</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Esta cuenta está en demostración. No se abre un cobro en vivo.
+            </p>
+          </article>
+          <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
+            <p className="text-sm font-medium text-slate-600">Pagos registrados</p>
+            <p className="mt-2 text-2xl font-semibold leading-tight text-slate-950">{paidCount}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              {lastPayment
+                ? `Último movimiento: ${formatDate(lastPayment.paidAt)}`
+                : "Todavía no hay cobros en esta cuenta."}
             </p>
           </article>
         </section>
 
-        {auth.canToggleUserView && commerceStatusQuery.data?.environment?.recommendedTestCard ? (
-          <section className="rounded-[1.75rem] border border-teal-400/20 bg-teal-400/10 p-5 text-sm text-teal-50">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="font-semibold">Modo de prueba del cobro</p>
-                <p className="mt-1 text-teal-50/85">
-                  Puedes validar el cobro de prueba con la tarjeta {commerceStatusQuery.data.environment.recommendedTestCard}.
-                </p>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-teal-300/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-teal-50">
-                <CreditCard className="h-4 w-4" />
-                {commerceStatusQuery.data.environment.mode}
-              </div>
-            </div>
-          </section>
-        ) : null}
-
-        <section className="rounded-[2rem] border border-white/10 bg-white p-5 text-slate-950 shadow-[0_28px_80px_-48px_rgba(15,23,42,0.75)] sm:p-6">
-          <div className="flex flex-col gap-3 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="text-xs font-semibold tracking-tight text-slate-500">Tus cobros</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Pagos y compras registradas</h2>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Cada fila muestra el producto, el importe y la fecha del cobro.
-              </p>
-            </div>
-          </div>
+        <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 sm:p-6">
+          <p className="text-sm font-medium text-slate-600">Tus cobros</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Pagos y compras registradas
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+            Si algún día pagas de verdad, aquí verás el producto, el importe y la fecha. Hoy no hay cargo.
+          </p>
 
           {historyQuery.isLoading ? (
-            <div className="flex items-center gap-3 py-8 text-sm text-slate-500">
+            <div className="flex items-center gap-3 py-8 text-sm text-slate-600">
               <Loader2 className="h-4 w-4 animate-spin" />
               Consultando tus pagos…
             </div>
           ) : payments.length === 0 ? (
-            <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm leading-6 text-slate-600">
-              Aún no hay pagos en esta cuenta. Cuando confirmes un cobro, aquí verás el producto, el importe y la fecha.
+            <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm leading-6 text-slate-700">
+              Aún no hay pagos en esta cuenta. Mientras tanto puedes seguir usando la lectura gratis.
             </div>
           ) : (
-            <div className="mt-5 overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3 font-semibold">Producto</th>
-                    <th className="px-4 py-3 font-semibold">Tipo</th>
-                    <th className="px-4 py-3 font-semibold">Monto</th>
-                    <th className="px-4 py-3 font-semibold">Estado</th>
-                    <th className="px-4 py-3 font-semibold">Fecha</th>
-                    <th className="px-4 py-3 font-semibold">Referencia</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {payments.map(payment => (
-                    <tr key={payment.id} className="align-top">
-                      <td className="px-4 py-4">
-                        <p className="font-semibold text-slate-950">{payment.productLabel}</p>
-                        {auth.canToggleUserView ? (
-                          <p className="mt-1 text-xs text-slate-500">Clave interna: {payment.productKey}</p>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-4 text-slate-600">
+            <div className="mt-5 grid gap-3">
+              {payments.map((payment) => (
+                <article
+                  key={payment.id}
+                  className="rounded-[1.25rem] border border-slate-200 bg-slate-50/80 px-4 py-4"
+                >
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-slate-950">{payment.productLabel}</p>
+                      <p className="mt-1 text-sm text-slate-700">
                         {payment.productType === "subscription" ? "Suscripción" : "Pago único"}
-                      </td>
-                      <td className="px-4 py-4 font-medium text-slate-950">
-                        {formatCurrency(payment.amountTotal, payment.currency)}
-                      </td>
-                      <td className="px-4 py-4 text-slate-600">{translatePaymentStatus(payment.paymentStatus)}</td>
-                      <td className="px-4 py-4 text-slate-600">{formatDate(payment.paidAt)}</td>
-                      <td className="px-4 py-4 text-xs leading-5 text-slate-500">
-                        {auth.canToggleUserView ? (
-                          <>
-                            <p>Sesión de cobro: {payment.stripeCheckoutSessionId ?? "—"}</p>
-                            <p>Factura: {payment.stripeInvoiceId ?? "—"}</p>
-                            <p>Referencia de cobro: {payment.stripePaymentIntentId ?? "—"}</p>
-                          </>
-                        ) : (
-                          <p>Cobro registrado el {formatDate(payment.paidAt)}</p>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </p>
+                    </div>
+                    <p className="text-base font-semibold text-slate-950">
+                      {formatCurrency(payment.amountTotal, payment.currency)}
+                    </p>
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">
+                    {translatePaymentStatus(payment.paymentStatus)} · {formatDate(payment.paidAt)}
+                  </p>
+                </article>
+              ))}
             </div>
           )}
         </section>

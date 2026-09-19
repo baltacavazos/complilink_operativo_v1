@@ -625,7 +625,8 @@
 
   .audita-home .ap-hero-headline {
     overflow: visible;
-    padding-bottom: 0.08em;
+    padding-bottom: 0.12em;
+    line-height: 1.12;
   }
 
   @media (min-width: 640px) {
@@ -1029,5 +1030,68 @@
     background-color: var(--ap-chat-wash) !important;
     color: var(--ap-chat-ink) !important;
     border-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .ap-worker-chat .ap-chat-header {
+    overflow: visible;
+  }
+
+  .ap-worker-chat h2,
+  .ap-worker-chat [data-slot="sheet-title"] {
+    overflow: visible;
+    text-wrap: balance;
+    padding-block-end: 0.04em;
+  }
+
+  .audita-pagos,
+  .audita-historial,
+  .audita-access {
+    --ap-radius-card: 1.5rem;
+    color: rgb(15 23 42);
+  }
+
+  .audita-pagos h1,
+  .audita-pagos h2,
+  .audita-historial h1,
+  .audita-access h1 {
+    overflow: visible;
+    text-wrap: balance;
+    padding-block-end: 0.06em;
+  }
+
+  .audita-pagos p,
+  .audita-historial p,
+  .audita-access p {
+    overflow: visible;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 390px) {
+    .ap-worker-chat {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    .ap-worker-chat .ap-chat-compact-hide {
+      display: none !important;
+    }
+
+    .ap-worker-chat .ap-chat-header {
+      padding-top: 0.85rem !important;
+      padding-bottom: 0.85rem !important;
+    }
+
+    .ap-worker-chat .ap-chat-composer textarea {
+      font-size: 16px;
+    }
+
+    .ap-worker-chat .ap-chat-thread {
+      min-height: 12rem;
+    }
+
+    .audita-home .ap-hero-headline {
+      line-height: 1.14 !important;
+      overflow: visible;
+    }
   }
 }
