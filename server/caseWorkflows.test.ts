@@ -706,9 +706,122 @@ describe("appRouter case workflows", () => {
       validationMode: "document_signals",
       statusLabel: "Cruce parcial",
       recommendedDocumentKey: "infonavit",
+      reviewSource: "local",
+      reviewSourceLabel: "Revisión local",
     });
     expect(result.socialSecurityValidation.disclaimer).toMatch(/no consulta IMSS/i);
     expect(result.socialSecurityValidation.summary).toMatch(/no es una consulta en vivo/i);
+    expect(result.socialSecurityValidation.facts).toMatchObject({
+      nss: "12345678901",
+      imssWithheld: "$120.50",
+      isrWithheld: "$310.00",
+    });
+    expect(result.socialSecurityValidation.explanations.some((item: { summary: string }) => /NSS 12345678901/.test(item.summary))).toBe(true);
+    expect(result.socialSecurityValidation.reviewSourceExplanation).toMatch(/revisión local/i);
+    expect(result.socialSecurityValidation.reviewSourceExplanation).not.toMatch(/Helios|CompliLink/i);
+  });
+
+  it("prefiere la opinión remota del cerebro cuando ya regresó y no finge consulta IMSS", async () => {
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      case: {
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        traceId: "trace-demo",
+        title: "Expediente demo",
+        jurisdiction: "CDMX",
+        status: "analysis",
+        employeeName: "Ana Pérez",
+        employerEntity: "Empresa Demo SA de CV",
+        summary: "Expediente de prueba",
+      },
+      alerts: [],
+      access: [],
+      events: [],
+      consents: [],
+    } as never);
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-RECIBO-001",
+        originalName: "recibo-abril.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 88,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-RECIBO-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Plantilla local.",
+          legalOpinion: "Lectura de plantilla.",
+          riskLevel: "medium",
+          recommendedNextStep: "Contrastar con CFDI.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: [],
+          uncertainties: [],
+          confidenceScore: 70,
+          disclaimer: "Revisión local.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+      {
+        documentId: "DOC-CFDI-001",
+        originalName: "nomina.xml",
+        documentType: "cfdi",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T11:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-CFDI-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "remote",
+          summary: "El asesor laboral ya terminó esta lectura.",
+          legalOpinion: "Ya hay una lectura consolidada del CFDI.",
+          riskLevel: "medium",
+          recommendedNextStep: "Compara periodo y retenciones.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: ["Periodo visible"],
+          uncertainties: [],
+          confidenceScore: 88,
+          disclaimer: "Opinión asistida.",
+          generatedAt: "2026-04-05T11:05:00.000Z",
+          rawPayload: {
+            preliminaryAnalysis: {
+              confirmedData: {
+                payrollPeriod: "2026-04-01 al 2026-04-15",
+                employerRfc: "GEX010101AAA",
+                payrollNss: "12345678901",
+              },
+            },
+          },
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.detail({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+
+    expect(result.socialSecurityValidation).toMatchObject({
+      reviewSource: "remote",
+      reviewSourceLabel: "Revisión avanzada",
+      liveImssValidation: false,
+      facts: {
+        period: "2026-04-01 al 2026-04-15",
+        employerRfc: "GEX010101AAA",
+        nss: "12345678901",
+      },
+    });
+    expect(result.socialSecurityValidation.reviewSourceExplanation).toMatch(/revisión avanzada/i);
+    expect(result.socialSecurityValidation.reviewSourceExplanation).not.toMatch(/Helios|CompliLink/i);
   });
 
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {

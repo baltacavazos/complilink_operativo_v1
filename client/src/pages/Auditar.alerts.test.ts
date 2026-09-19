@@ -13,6 +13,9 @@ import {
   buildInlineLegalConsentState,
   buildPayrollFactSignal,
   cleanPayrollExtractedValue,
+  getHeliosActivationCopy,
+  getHeliosModeLabel,
+  pickPreferredWorkerOpinionView,
   buildReanalyzeDraftActionState,
   buildUploadProgressState,
   formatVisibleFileSize,
@@ -199,6 +202,7 @@ describe("señal factual del recibo", () => {
       documentType: "cfdi",
       estimatedData: {
         employerRfc: "ECC190605VA1",
+        workerRfc: "XOXX010101000",
         apparentEffectiveDate: "2026-04-30",
         apparentAmount: null,
       },
@@ -206,6 +210,7 @@ describe("señal factual del recibo", () => {
 
     expect(signal.headline).toContain("RFC ECC190605VA1");
     expect(signal.facts).toContain("RFC: ECC190605VA1");
+    expect(signal.facts).toContain("RFC de la persona trabajadora: XOXX010101000");
     expect(signal.facts).toContain("Periodo identificado: 2026-04-30");
     expect(signal.facts).toContain("El monto pagado no se alcanzó a leer completo");
     expect(signal.facts).toContain("No se alcanzó a leer con claridad el total de deducciones");
@@ -235,6 +240,25 @@ describe("señal factual del recibo", () => {
     expect(signal.retentions).toContain("ISR $0.00");
     expect(signal.retentions).toContain("IMSS $0.00");
     expect(signal.imss).not.toContain("Helios");
+  });
+});
+
+describe("origen honesto de la revisión", () => {
+  it("etiqueta el mock como revisión local y prefiere la opinión remota", () => {
+    expect(getHeliosModeLabel("mock")).toBe("Revisión local");
+    expect(getHeliosModeLabel("remote", "completed")).toBe("Revisión avanzada");
+    expect(getHeliosActivationCopy("mock")).toMatch(/revisión local/i);
+    expect(getHeliosActivationCopy("mock")).not.toMatch(/Helios|CompliLink|mock/i);
+    expect(getHeliosActivationCopy("remote", "completed")).toMatch(/revisión avanzada/i);
+
+    const preferred = pickPreferredWorkerOpinionView([
+      { mode: "mock", status: "completed", summary: "Plantilla local." },
+      { mode: "remote", status: "completed", legalOpinion: "Lectura remota del recibo." },
+    ]);
+    expect(preferred?.legalOpinion).toBe("Lectura remota del recibo.");
+    expect(auditarSource).toContain("pickPreferredWorkerOpinionView");
+    expect(auditarSource).toContain("reviewSourceLabel");
+    expect(auditarSource).not.toMatch(/getHeliosModeLabel\(value === "remote" \? "Revisión ampliada"/);
   });
 });
 

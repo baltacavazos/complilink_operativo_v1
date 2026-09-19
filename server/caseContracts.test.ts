@@ -195,7 +195,7 @@ describe("caseContracts", () => {
       fileName: "recibo-nomina.xml",
       mimeType: "application/xml",
       textHint:
-        '<cfdi:Comprobante Total="4725.60"><cfdi:Emisor Rfc="GEX010101AAA" Nombre="Grupo Ejemplo, S.A. de C.V." /><nomina12:Nomina FechaPago="2026-08-15" FechaInicialPago="2026-08-01" FechaFinalPago="2026-08-15" TotalPercepciones="4725.60" TotalDeducciones="0.00" NumSeguridadSocial="12345678901" RegistroPatronal="Y1234567890" /></cfdi:Comprobante>',
+        '<cfdi:Comprobante Total="4725.60"><cfdi:Emisor Rfc="GEX010101AAA" Nombre="Grupo Ejemplo, S.A. de C.V." /><cfdi:Receptor Rfc="XOXX010101000" Nombre="Ana Pérez" /><nomina12:Nomina FechaPago="2026-08-15" FechaInicialPago="2026-08-01" FechaFinalPago="2026-08-15" TotalPercepciones="4725.60" TotalDeducciones="0.00" NumSeguridadSocial="12345678901" RegistroPatronal="Y1234567890" /></cfdi:Comprobante>',
     });
 
     expect(analysis.confirmedData.payrollEmployerName).toBe("Grupo Ejemplo, S.A. de C.V.");
@@ -205,6 +205,7 @@ describe("caseContracts", () => {
     expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
     expect(analysis.confirmedData.payrollNss).toBe("12345678901");
     expect(analysis.confirmedData.employerRfc).toBe("GEX010101AAA");
+    expect(analysis.confirmedData.workerRfc).toBe("XOXX010101000");
   });
 
   it("reads the visible facts from the printable Camreflex payroll PDF text", () => {

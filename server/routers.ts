@@ -113,6 +113,7 @@ import {
 import { buildSalaryDiscrepancySignal, extractSalarySignalFromClassificationPayload } from "./operationalSignals";
 import {
   DOCUMENT_SIGNAL_DISCLAIMER,
+  pickPreferredWorkerOpinion,
   summarizeLaborFiscalSignals,
 } from "./laborFiscalSignals";
 import {
@@ -1953,6 +1954,11 @@ function buildSocialSecurityValidationSummary(params: {
     recommendedDocumentKey,
     recommendedDocumentTitle,
     recommendedDocumentReason,
+    facts: laborFiscal.facts,
+    explanations: laborFiscal.explanations,
+    reviewSource: laborFiscal.reviewSource,
+    reviewSourceLabel: laborFiscal.reviewSourceLabel,
+    reviewSourceExplanation: laborFiscal.reviewSourceExplanation,
   };
 }
 
@@ -3421,7 +3427,9 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
-        const latestOpinion = asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
+        const latestOpinion =
+          pickPreferredWorkerOpinion(documents.map((item) => item.heliosOpinion)) ??
+          asObjectRecord(documents.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
         const responseTone = input.responseTone === "explained" ? "explained" : "brief";

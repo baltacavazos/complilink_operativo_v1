@@ -54,7 +54,7 @@ Cualquier otro nombre se rechaza con `unknown_event` y se registra en log. No se
 | Retorno | `POST /api/auditapatron/complilink-webhook` | HMAC **o** secreto compartido; idempotencia por `eventKey` con replay seguro |
 | Opinión Helios | `server/heliosIntegrationService.ts` | URL presente → remoto. Envío OK → `processing`. Envío fallido → `error` en español, **sin dictamen inventado**. Sin URL → plantilla `mock` (no es el cerebro en vivo) |
 | Shared Engine | `caseContracts.buildSharedEngineEnvelope` | Sobre `document_contracts`; no es un motor externo aparte |
-| Señales laborales/fiscales | `server/laborFiscalSignals.ts` | Lee recibo/CFDI. **No** consulta IMSS/SAT/Infonavit en vivo |
+| Señales laborales/fiscales | `server/laborFiscalSignals.ts` | Lee recibo/CFDI: periodo, montos, retenciones, RFC/NSS si aparecen, con explicación en español. **No** consulta IMSS/SAT/Infonavit en vivo. Si el cerebro remoto ya devolvió opinión, se prefiere. Si solo hay plantilla, se etiqueta **revisión local**. |
 | Sanitización al trabajador | `server/workerVisibleExtraction.ts` + `/auditar` | Quita MIME, enums, banderas, nombres de evento y hashes |
 | Inventario Fase 0 | `server/auditaPatronBridgeInventory.ts` | Completitud = URL + HMAC. No exige `API_KEY_HELIOS` |
 

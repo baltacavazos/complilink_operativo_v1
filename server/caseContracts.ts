@@ -297,6 +297,11 @@ function extractCfdiEmployerRfc(text: string) {
   return emitterRfc?.toUpperCase() ?? null;
 }
 
+function extractCfdiWorkerRfc(text: string) {
+  const receptorRfc = text.match(/<[^>]*Receptor\b[^>]*\bRfc\s*=\s*["']([^"']+)["']/i)?.[1];
+  return receptorRfc?.toUpperCase() ?? null;
+}
+
 function extractCfdiWorkerName(text: string) {
   return (
     extractXmlAttribute(text, "Nombre") ??
@@ -735,6 +740,7 @@ export function buildPreliminaryLaborAnalysis(params: {
     ? extractXmlDeductionAmount(sourceText, "010") ?? extractPayrollAmount(sourceText, ["pago infonavit", "infonavit"])
     : null;
   const xmlEmployerRfc = isPayrollDocument ? extractCfdiEmployerRfc(sourceText) : null;
+  const xmlWorkerRfc = isPayrollDocument ? extractCfdiWorkerRfc(sourceText) : null;
   const labeledEmployerRfc = extractRfc(sourceText);
   const salaryBase = isPayrollDocument ? extractSocialSecurityBaseSalary(sourceText) : { confirmed: null, estimated: null };
   const salaryIntegrated = isPayrollDocument
@@ -743,6 +749,7 @@ export function buildPreliminaryLaborAnalysis(params: {
 
   const estimatedData: Record<string, AnalysisValue> = {
     employerRfc: xmlEmployerRfc ?? labeledEmployerRfc,
+    workerRfc: xmlWorkerRfc,
     period: payrollPeriod ?? extractPeriod(sourceText),
     apparentAmount: payrollNetAmount ?? extractMoney(sourceText),
     apparentEffectiveDate: extractDate(sourceText),
@@ -775,6 +782,7 @@ export function buildPreliminaryLaborAnalysis(params: {
     imssWithheld,
     infonavitWithheld,
     employerRfc: xmlEmployerRfc,
+    workerRfc: xmlWorkerRfc,
     socialSecurityBaseSalary: salaryBase.confirmed,
     integratedDailySalary: salaryIntegrated.confirmed,
   };
