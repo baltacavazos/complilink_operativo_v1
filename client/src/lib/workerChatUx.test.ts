@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
 
+import { DOF_LAST_GOOD_SEED, listLastGoodOfficialCitations } from "@shared/officialDigest";
 import { sanitizeClientVisibleCopy } from "./clientVisibleCopy";
 import {
   WORKER_CHAT_ASK_CTA,
   WORKER_CHAT_DISCLAIMER,
+  WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS,
+  WORKER_CHAT_HISTORY_MAX_MESSAGES,
   WORKER_CHAT_KNOWN_HEADING,
   WORKER_CHAT_MISSING_HEADING,
   WORKER_CHAT_MULTI_DOC_UPSELL,
   WORKER_CHAT_NEXT_HEADING,
+  WORKER_CHAT_RETRY_ERROR,
   WORKER_CHAT_SHEET_COPY,
   WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
+  capWorkerChatConversationHistory,
+  capWorkerChatHistoryContent,
   extractWorkerChatSections,
   extractWorkerWhatToDoNow,
   formatWorkerChatAnswer,
@@ -331,5 +337,63 @@ describe("chat UX helpers", () => {
       "Siguiente paso",
       null,
     ]);
+  });
+
+  it("no muestra too_big ni jerga Zod al fallar el chat", () => {
+    const zodBlob = JSON.stringify([
+      {
+        code: "too_big",
+        maximum: 2000,
+        type: "string",
+        inclusive: true,
+        exact: false,
+        message: "String must contain at most 2000 character(s)",
+        path: ["conversationHistory", 1, "content"],
+      },
+    ]);
+
+    expect(toFriendlyWorkerChatError(zodBlob)).toBe(WORKER_CHAT_RETRY_ERROR);
+    expect(toFriendlyWorkerChatError(zodBlob)).not.toMatch(/too_big|Zod|conversationHistory|maximum/i);
+    expect(toFriendlyWorkerChatError("TRPCClientError: too_big on conversationHistory")).toBe(
+      WORKER_CHAT_RETRY_ERROR,
+    );
+    expect(
+      toFriendlyWorkerChatError("Too big: expected string to have <=2000 characters"),
+    ).toBe(WORKER_CHAT_RETRY_ERROR);
+  });
+
+  it("recorta historial largo y rubros oficiales antes de validar", () => {
+    const longOfficialAnswer = formatWorkerChatAnswer({
+      answer: "Sobre horas extra solo puedo citar lecturas oficiales del digest.",
+      known: "El recibo no trae horas extra.",
+      missing: "Falta un papel que muestre las horas.",
+      nextStep: "Compara con tu siguiente recibo.",
+      officialSources: listLastGoodOfficialCitations(),
+      officialSourcesNote:
+        "Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial.",
+    });
+    const bloatedHistoryAnswer = [
+      longOfficialAnswer,
+      ...listLastGoodOfficialCitations().map((item) => item.title),
+      DOF_LAST_GOOD_SEED[0]!.title,
+    ].join("\n\n");
+
+    expect(bloatedHistoryAnswer.length).toBeGreaterThan(2000);
+
+    const padded = Array.from({ length: 10 }, (_, index) => ({
+      role: index % 2 === 0 ? ("user" as const) : ("assistant" as const),
+      content: index % 2 === 0 ? `Pregunta previa ${index}` : bloatedHistoryAnswer,
+    }));
+
+    const capped = capWorkerChatConversationHistory(padded);
+    expect(capped).toHaveLength(WORKER_CHAT_HISTORY_MAX_MESSAGES);
+    expect(capped.every((item) => item.content.length <= WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS)).toBe(
+      true,
+    );
+    expect(capped.every((item) => item.content.length <= 2000)).toBe(true);
+    expect(capWorkerChatHistoryContent(bloatedHistoryAnswer).length).toBeLessThanOrEqual(
+      WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS,
+    );
+    expect(capped.at(-1)?.content).not.toContain(DOF_LAST_GOOD_SEED[0]!.title);
   });
 });

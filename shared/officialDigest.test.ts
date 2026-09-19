@@ -10,6 +10,8 @@ import {
   isOfficialLegalQuestion,
   listKnownOfficialIds,
   selectOfficialDigest,
+  shortenOfficialTitle,
+  shortenOfficialTitlesInText,
   toScjnCitation,
 } from "./officialDigest";
 
@@ -66,6 +68,24 @@ describe("official digest seed", () => {
     });
     expect(payroll.citations.some((item) => item.officialId === "2032630")).toBe(false);
     expect(isOfficialLegalQuestion("¿Me descontaron IMSS?")).toBe(false);
+  });
+
+  it("recorta rubros oficiales largos a una línea corta sin inventar IUS", () => {
+    const longDof = DOF_LAST_GOOD_SEED[0]!.title;
+    const shortDof = shortenOfficialTitle(longDof);
+    expect(longDof.length).toBeGreaterThan(200);
+    expect(shortDof.length).toBeLessThanOrEqual(140);
+    expect(shortDof).toMatch(/Decreto por el que se reforman/i);
+    expect(shortDof).not.toMatch(/IUS|registro digital/i);
+
+    const overtime = SCJN_HARVEST_SEED.find((item) => item.officialId === "2032611")!.title;
+    expect(shortenOfficialTitle(overtime)).toMatch(/TIEMPO EXTRAORDINARIO DE LAS PERSONAS TRABAJADORAS/);
+    expect(shortenOfficialTitle(overtime).length).toBeLessThan(overtime.length);
+
+    const haystack = `Lecturas oficiales\n${longDof}\n${overtime}`;
+    const shortened = shortenOfficialTitlesInText(haystack);
+    expect(shortened).not.toContain(longDof);
+    expect(shortened.length).toBeLessThan(haystack.length);
   });
 
   it("reconoce títulos DOF reales del last_good y rechaza IUS inventados", () => {

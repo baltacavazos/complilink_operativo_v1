@@ -559,6 +559,9 @@ describe("sanitizePersistedHeliosCopilotMessages", () => {
     expect(loaded[1]?.content).toBe("¿Qué dice mi recibo?");
     expect(JSON.stringify(loaded)).not.toMatch(/required_plan|current_plan|\|\|/);
     expect(auditarSource).toContain("sanitizeVisibleChatHistoryContent");
+    expect(auditarSource).toContain("capWorkerChatConversationHistory");
+    expect(auditarSource).toContain("WORKER_CHAT_RETRY_ERROR");
+    expect(auditarSource).not.toContain("too_big");
     expect(auditarSource).toContain(
       "sanitizePersistedHeliosCopilotMessages(heliosCopilotMessages.slice(-6))",
     );

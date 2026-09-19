@@ -6,6 +6,8 @@
 import {
   OFFICIAL_SOURCES_HEADING,
   maskOfficialDigestSpans,
+  shortenOfficialTitle,
+  shortenOfficialTitlesInText,
   type OfficialDigestCitation,
 } from "./officialDigest";
 
@@ -27,6 +29,10 @@ export const WORKER_CHAT_DISCLAIMER =
 
 export const WORKER_CHAT_MULTI_DOC_UPSELL =
   "La lectura de varios documentos juntos está en el plan Esencial. Con tu plan gratis puedes preguntar sobre este documento.";
+
+export const WORKER_CHAT_RETRY_ERROR = "No pude completar esa respuesta. Intenta de nuevo.";
+export const WORKER_CHAT_HISTORY_MAX_MESSAGES = 6;
+export const WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS = 1800;
 
 const PIPE_CONTROL_MARKER_RE = /\|\|\s*[A-Za-z][A-Za-z0-9_]*\s*=\s*[^|\s]*/g;
 const BARE_PLAN_MARKER_RE =
@@ -398,11 +404,16 @@ export function formatWorkerChatAnswer(params: {
   const officialFromParams = Array.isArray(params.officialSources)
     ? params.officialSources
         .slice(0, 3)
-        .map((item) => item.title)
+        .map((item) => shortenOfficialTitle(item.title))
         .join("\n")
-    : params.officialSources;
-  const officialSources =
-    sanitizeWorkerChatCopy(sections.officialSources ?? officialFromParams ?? null);
+    : params.officialSources
+      ? shortenOfficialTitlesInText(params.officialSources)
+      : null;
+  const officialSources = sanitizeWorkerChatCopy(
+    sections.officialSources
+      ? shortenOfficialTitlesInText(sections.officialSources)
+      : officialFromParams,
+  );
   const officialNote = sanitizeWorkerChatCopy(params.officialSourcesNote ?? null);
   const disclaimer = asText(params.disclaimer) ?? WORKER_CHAT_DISCLAIMER;
   const upsell =
@@ -433,11 +444,34 @@ export function formatWorkerChatAnswer(params: {
   ].join("\n");
 }
 
+function looksLikeApiValidationJargon(value?: string | null): boolean {
+  if (!value) return false;
+  return (
+    /\btoo_big\b/i.test(value) ||
+    /\btoo_small\b/i.test(value) ||
+    /\bZodError\b/i.test(value) ||
+    /\binvalid_type\b/i.test(value) ||
+    /"code"\s*:\s*"/i.test(value) ||
+    /String must contain at most/i.test(value) ||
+    /Array must contain at most/i.test(value) ||
+    /Too big:/i.test(value) ||
+    /expected (?:string|array) to have/i.test(value) ||
+    /conversationHistory/i.test(value)
+  );
+}
+
 export function toFriendlyWorkerChatError(raw?: string | null, fallback?: string | null): string {
-  const fallbackText =
-    asText(fallback) ??
-    "No tengo suficiente claridad para responderte bien en este momento. Si quieres, intenta decirme qué te preocupa o sube otro documento útil y seguimos desde ahí.";
+  const fallbackText = asText(fallback) ?? WORKER_CHAT_RETRY_ERROR;
+
+  if (looksLikeApiValidationJargon(raw)) {
+    return WORKER_CHAT_RETRY_ERROR;
+  }
+
   const cleaned = sanitizeWorkerChatCopy(raw) ?? fallbackText;
+
+  if (looksLikeApiValidationJargon(cleaned)) {
+    return WORKER_CHAT_RETRY_ERROR;
+  }
 
   const looksLikeUpgradeLeak =
     hasInternalControlMarkers(raw) ||
@@ -485,6 +519,67 @@ export function sanitizeVisibleChatHistoryMessages<
     if (!content) return [];
     return [{ ...message, content }];
   });
+}
+
+export function truncateSpanishSafe(value: string, maxLength: number): string {
+  const normalized = value.normalize("NFC").replace(/\u00a0/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  if (maxLength <= 1) return "…";
+  const budget = maxLength - 1;
+  let slice = normalized.slice(0, budget);
+  const breakAt = Math.max(
+    slice.lastIndexOf("\n"),
+    slice.lastIndexOf(" "),
+    slice.lastIndexOf("."),
+    slice.lastIndexOf(","),
+    slice.lastIndexOf(";"),
+    slice.lastIndexOf("?"),
+    slice.lastIndexOf("!"),
+  );
+  if (breakAt >= Math.floor(budget * 0.55)) {
+    const atBreak = slice[breakAt];
+    slice = slice.slice(0, atBreak === " " || atBreak === "\n" ? breakAt : breakAt + 1);
+  }
+  return `${slice.trimEnd()}…`;
+}
+
+export function capWorkerChatHistoryContent(
+  value: string,
+  maxLength = WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS,
+): string {
+  const cleaned = sanitizeVisibleChatHistoryContent(value);
+  if (!cleaned) return "";
+  const withShortTitles = shortenOfficialTitlesInText(cleaned);
+  if (withShortTitles.length <= maxLength) return withShortTitles;
+  return truncateSpanishSafe(withShortTitles, maxLength);
+}
+
+export type WorkerChatHistoryTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export function capWorkerChatConversationHistory(
+  history: unknown,
+  options?: { maxMessages?: number; maxContentChars?: number },
+): WorkerChatHistoryTurn[] {
+  if (!Array.isArray(history)) return [];
+  const maxMessages = Math.max(1, options?.maxMessages ?? WORKER_CHAT_HISTORY_MAX_MESSAGES);
+  const maxContentChars = options?.maxContentChars ?? WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS;
+
+  return history
+    .flatMap((item): WorkerChatHistoryTurn[] => {
+      if (!item || typeof item !== "object") return [];
+      const role = (item as { role?: unknown }).role;
+      const content = (item as { content?: unknown }).content;
+      if ((role !== "user" && role !== "assistant") || typeof content !== "string") {
+        return [];
+      }
+      const capped = capWorkerChatHistoryContent(content, maxContentChars);
+      if (!capped) return [];
+      return [{ role, content: capped }];
+    })
+    .slice(-maxMessages);
 }
 
 export function ensureWorkerChatDisclaimer(

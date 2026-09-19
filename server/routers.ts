@@ -133,7 +133,11 @@ import {
   scopeWorkerChatDocumentsForPlan,
 } from "./workerChatUx";
 import { resolveOfficialDigest } from "./officialDigest";
-import { sanitizeWorkerChatCopy, WORKER_CHAT_DISCLAIMER } from "@shared/workerChatUx";
+import {
+  capWorkerChatConversationHistory,
+  sanitizeWorkerChatCopy,
+  WORKER_CHAT_DISCLAIMER,
+} from "@shared/workerChatUx";
 import {
   humanizeMissingExtractionTarget,
   humanizeStructuredFieldLabel,
@@ -2000,19 +2004,7 @@ type HeliosCopilotConversationTurn = {
 };
 
 function normalizeHeliosCopilotConversationHistory(history?: HeliosCopilotConversationTurn[]) {
-  return (history ?? [])
-    .filter((item): item is HeliosCopilotConversationTurn => {
-      return (
-        (item.role === "user" || item.role === "assistant") &&
-        typeof item.content === "string" &&
-        item.content.trim().length > 0
-      );
-    })
-    .map((item) => ({
-      role: item.role,
-      content: item.content.trim(),
-    }))
-    .slice(-6);
+  return capWorkerChatConversationHistory(history);
 }
 
 function inferHeliosMissingDocuments(params: {
@@ -3431,15 +3423,18 @@ export const appRouter = router({
           caseId: z.string().min(3),
           prompt: z.string().trim().min(3).max(2000),
           responseTone: z.enum(["brief", "explained"]).optional(),
-          conversationHistory: z
-            .array(
-              z.object({
-                role: z.enum(["user", "assistant"]),
-                content: z.string().trim().min(1).max(2000),
-              }),
-            )
-            .max(6)
-            .optional(),
+          conversationHistory: z.preprocess(
+            (value) => (value == null ? undefined : capWorkerChatConversationHistory(value)),
+            z
+              .array(
+                z.object({
+                  role: z.enum(["user", "assistant"]),
+                  content: z.string().trim().min(1).max(2000),
+                }),
+              )
+              .max(6)
+              .optional(),
+          ),
         }),
       )
       .mutation(async ({ ctx, input }) => {
