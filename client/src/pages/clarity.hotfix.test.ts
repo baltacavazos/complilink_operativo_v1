@@ -51,7 +51,7 @@ describe("hotfix claridad residual #29", () => {
     expect(app).not.toContain("fixed bottom-3 right-3");
     expect(app).not.toContain(">Salir<");
     expect(app).toContain('path === "/auditar"');
-    expect(app).toContain(">Volver<");
-    expect(shell).toContain(">Volver<");
+    expect(app).toMatch(/>\s*Volver\s*</);
+    expect(shell).toMatch(/>\s*Volver\s*</);
   });
 });

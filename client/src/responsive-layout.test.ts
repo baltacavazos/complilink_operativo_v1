@@ -44,7 +44,7 @@ describe("responsive layout regression guards", () => {
     expect(appSource).not.toContain("fixed bottom-3 right-3");
     expect(appSource).not.toContain(">Salir<");
     expect(appSource).toContain("path === \"/auditar\"");
-    expect(appSource).toContain(">Volver<");
-    expect(shellSource).toContain(">Volver<");
+    expect(appSource).toMatch(/>\s*Volver\s*</);
+    expect(shellSource).toMatch(/>\s*Volver\s*</);
   });
 });
