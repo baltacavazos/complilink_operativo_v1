@@ -9842,6 +9842,22 @@ export default function Auditar() {
                     <p className="mt-1.5 text-xs leading-4 text-slate-500">
                       {socialSecurityLastCheckLabel}
                     </p>
+                    {effectiveSocialSecurityValidation?.reviewSourceLabel ? (
+                      <p className="mt-1.5 text-xs leading-4 text-slate-600">
+                        {effectiveSocialSecurityValidation.reviewSourceLabel}.{" "}
+                        {effectiveSocialSecurityValidation.reviewSourceExplanation}
+                      </p>
+                    ) : null}
+                    {effectiveSocialSecurityValidation?.explanations?.length ? (
+                      <ul className="mt-2 space-y-1 text-xs leading-4 text-slate-600">
+                        {effectiveSocialSecurityValidation.explanations.slice(0, 3).map(item => (
+                          <li key={`compact-${item.label}`}>
+                            <span className="font-semibold text-slate-800">{item.label}:</span>{" "}
+                            {item.summary}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
                   </div>
                 </div>
 
