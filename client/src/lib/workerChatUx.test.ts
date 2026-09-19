@@ -107,6 +107,31 @@ describe("sanitizeVisibleChatHistoryContent", () => {
     expect(rendered).not.toMatch(/\bHelios\b/i);
   });
 
+  it("al sanitizar historial no borra un siguiente paso IMSS+ISR+Infonavit", () => {
+    const tripleAnswer = formatWorkerChatAnswer({
+      answer: "En tu recibo se ve IMSS $120.50, ISR $310.00 e Infonavit $80.00.",
+      known: "Periodo 2026-05-01 al 2026-05-15. IMSS $120.50. ISR $310.00. Infonavit $80.00.",
+      missing: "No hay constancia oficial de alta, entero al SAT ni estado de crédito Infonavit.",
+      nextStep:
+        "Cruza el descuento IMSS $120.50 y el NSS 12345678901 con tu siguiente recibo o un papel IMSS; eso no confirma el alta oficial. Cruza también la retención ISR $310.00 con el CFDI o el depósito del mismo periodo. Cruza también el descuento Infonavit $80.00 con tu aviso de retención o estado de crédito.",
+    });
+    const rendered = sanitizeVisibleChatHistoryContent(tripleAnswer);
+
+    expect(parseWorkerStructuredAnswer(rendered).map((item) => item.heading)).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Lo que falta",
+      "Siguiente paso",
+      null,
+    ]);
+    expect(rendered).toMatch(/no confirma el alta oficial/i);
+    expect(rendered).toMatch(/ISR \$310\.00/);
+    expect(rendered).toMatch(/Infonavit \$80\.00/);
+    expect(rendered).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(rendered).not.toMatch(/required_plan|current_plan|\|\||\bHelios\b/i);
+    expect(hasForbiddenWorkerChatClaim(rendered)).toBe(false);
+  });
+
   it("al sanitizar historial no borra un siguiente paso IMSS+ISR", () => {
     const dualAnswer = formatWorkerChatAnswer({
       answer: "En tu recibo se ve IMSS $120.50 e ISR $310.00.",
@@ -176,6 +201,15 @@ describe("chat UX helpers", () => {
     expect(prompts).toContain("¿Qué dice mi recibo?");
     expect(prompts).toContain("¿Me descontaron IMSS o impuestos?");
     expect(prompts).toContain("¿Qué hago ahora?");
+
+    const withInfonavit = buildWorkerStarterQuestions({
+      documentType: "payroll_receipt",
+      documentsCount: 1,
+      hasImssSignal: true,
+      hasFiscalSignal: true,
+      hasInfonavitSignal: true,
+    });
+    expect(withInfonavit).toContain("¿Me descontaron IMSS, impuestos o Infonavit?");
     expect(prompts.join(" ")).not.toMatch(/Helios|CompliLink|jurisprudencia|copiloto/i);
     expect(prompts.every((item) => item.length < 80)).toBe(true);
   });

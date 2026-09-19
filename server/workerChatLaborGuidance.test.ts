@@ -85,6 +85,14 @@ describe("workerChatLaborGuidance", () => {
     expect(inferWorkerChatPromptFocus("¿El NSS y las retenciones coinciden?")).toBe("imss_fiscal");
     expect(inferWorkerChatPromptFocus("¿Me descontaron la retención IMSS?")).toBe("imss");
     expect(inferWorkerChatPromptFocus("¿Qué hay de Infonavit?")).toBe("infonavit");
+    expect(inferWorkerChatPromptFocus("¿Me descontaron IMSS o Infonavit?")).toBe("imss_infonavit");
+    expect(inferWorkerChatPromptFocus("¿Reviso ISR e Infonavit?")).toBe("fiscal_infonavit");
+    expect(inferWorkerChatPromptFocus("¿Me descontaron IMSS, impuestos o Infonavit?")).toBe(
+      "imss_fiscal_infonavit",
+    );
+    expect(inferWorkerChatPromptFocus("¿Reviso IMSS, ISR e Infonavit?")).toBe(
+      "imss_fiscal_infonavit",
+    );
     expect(inferWorkerChatPromptFocus("¿Qué hago ahora?")).toBe("general");
   });
 
@@ -137,7 +145,83 @@ describe("workerChatLaborGuidance", () => {
     expect(guidance.nextStep).toMatch(/no confirma el alta oficial/i);
     expect(guidance.nextStep).toMatch(/ISR \$310\.00/);
     expect(guidance.nextStep).toMatch(/CFDI|depositaron/i);
+    expect(guidance.nextStep).not.toMatch(/Infonavit/i);
     expect(guidance.nextStep).not.toMatch(/tesis|registro digital|Semanario|Helios|consulta en vivo/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan por Infonavit, el siguiente paso local cruza retención o crédito", () => {
+    const guidance = buildLaborFiscalChatGuidance(localInput, "¿Qué hay de Infonavit?");
+
+    expect(guidance.promptFocus).toBe("infonavit");
+    expect(guidance.nextStep).toMatch(/Infonavit \$80\.00/);
+    expect(guidance.nextStep).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(guidance.nextStep).toMatch(/no prueba/i);
+    expect(guidance.nextStep).not.toMatch(/tesis|Helios|consulta en vivo/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan IMSS e Infonavit juntos, el siguiente paso cubre alta y crédito", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      localInput,
+      "¿Me descontaron IMSS o Infonavit?",
+    );
+
+    expect(guidance.promptFocus).toBe("imss_infonavit");
+    expect(guidance.nextStep).toMatch(/IMSS \$120\.50|NSS 12345678901/);
+    expect(guidance.nextStep).toMatch(/no confirma el alta oficial/i);
+    expect(guidance.nextStep).toMatch(/Infonavit \$80\.00/);
+    expect(guidance.nextStep).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(guidance.nextStep).not.toMatch(/tesis|Helios|consulta en vivo/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan ISR e Infonavit juntos, el siguiente paso cubre retención y crédito", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      localInput,
+      "¿Reviso ISR e Infonavit?",
+    );
+
+    expect(guidance.promptFocus).toBe("fiscal_infonavit");
+    expect(guidance.nextStep).toMatch(/ISR \$310\.00/);
+    expect(guidance.nextStep).toMatch(/CFDI|depositaron/i);
+    expect(guidance.nextStep).toMatch(/Infonavit \$80\.00/);
+    expect(guidance.nextStep).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan IMSS, ISR e Infonavit, el siguiente paso cubre los tres", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      localInput,
+      "¿Me descontaron IMSS, impuestos o Infonavit?",
+    );
+
+    expect(guidance.promptFocus).toBe("imss_fiscal_infonavit");
+    expect(guidance.nextStep).toMatch(/IMSS \$120\.50|NSS 12345678901/);
+    expect(guidance.nextStep).toMatch(/no confirma el alta oficial/i);
+    expect(guidance.nextStep).toMatch(/ISR \$310\.00/);
+    expect(guidance.nextStep).toMatch(/CFDI|depositaron/i);
+    expect(guidance.nextStep).toMatch(/Infonavit \$80\.00/);
+    expect(guidance.nextStep).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(guidance.nextStep).not.toMatch(/tesis|registro digital|Semanario|Helios|consulta en vivo/i);
+    expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
+  });
+
+  it("si preguntan los tres sin monto Infonavit, igual pide cruce de retención o crédito", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      {
+        ...localInput,
+        laborFacts: { ...FACTS, infonavitWithheld: null },
+        hasInfonavitSignal: false,
+      },
+      "¿Reviso IMSS, ISR e Infonavit?",
+    );
+
+    expect(guidance.promptFocus).toBe("imss_fiscal_infonavit");
+    expect(guidance.nextStep).toMatch(/no confirma el alta oficial/i);
+    expect(guidance.nextStep).toMatch(/ISR|CFDI|dep[oó]sito/i);
+    expect(guidance.nextStep).toMatch(/Infonavit/i);
+    expect(guidance.nextStep).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
     expect(hasForbiddenWorkerChatClaim(guidance.nextStep)).toBe(false);
   });
 

@@ -213,6 +213,20 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   return next;
 }
 
+function payrollDiscountQuestion(context: WorkerChatStarterContext): string {
+  const hasImss = Boolean(context.hasImssSignal);
+  const hasFiscal = Boolean(context.hasFiscalSignal);
+  const hasInfonavit = Boolean(context.hasInfonavitSignal);
+  if ((hasImss || hasFiscal) && hasInfonavit) {
+    if (hasImss && hasFiscal) return "¿Me descontaron IMSS, impuestos o Infonavit?";
+    if (hasImss) return "¿Me descontaron IMSS o Infonavit?";
+    return "¿Me descontaron impuestos o Infonavit?";
+  }
+  if (hasImss || hasFiscal) return "¿Me descontaron IMSS o impuestos?";
+  if (hasInfonavit) return "¿Qué hay de Infonavit?";
+  return "¿Qué descuentos se ven?";
+}
+
 export function buildWorkerStarterQuestions(context: WorkerChatStarterContext = {}): string[] {
   const fromCard = (context.resultCardQuestions ?? [])
     .map((item) => asText(item))
@@ -233,11 +247,7 @@ export function buildWorkerStarterQuestions(context: WorkerChatStarterContext = 
     switch (context.documentType) {
       case "payroll_receipt":
         prompts.push("¿Qué dice mi recibo?");
-        prompts.push(
-          context.hasImssSignal || context.hasFiscalSignal
-            ? "¿Me descontaron IMSS o impuestos?"
-            : "¿Qué descuentos se ven?",
-        );
+        prompts.push(payrollDiscountQuestion(context));
         break;
       case "cfdi":
         prompts.push("¿Qué dice mi CFDI?");

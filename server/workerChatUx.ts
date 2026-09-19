@@ -229,7 +229,7 @@ export function buildWorkerChatLlmInstructions(
     "Bases legales ya presentes en la lectura (únicas que puedes mencionar, en palabras simples):",
     foundations,
     `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${guidance.nextStep}`,
-    `Si preguntan por IMSS e ISR (o impuestos/retenciones) juntos, el siguiente paso debe cubrir ambos: cruzar NSS/IMSS con el siguiente recibo o un papel IMSS (sin confirmar alta oficial) y cruzar la retención ISR con el CFDI o el depósito del mismo periodo. Si preguntan por IMSS, impuestos o Infonavit por separado, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
+    `Si preguntan por IMSS e ISR (o impuestos/retenciones) juntos, el siguiente paso debe cubrir ambos: cruzar NSS/IMSS con el siguiente recibo o un papel IMSS (sin confirmar alta oficial) y cruzar la retención ISR con el CFDI o el depósito del mismo periodo. Si también mencionan Infonavit —o preguntan los tres—, cubre además el cruce de retención/crédito Infonavit con el aviso de retención o estado de crédito. Si preguntan por IMSS, impuestos o Infonavit por separado, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
     `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
     "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
     `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,

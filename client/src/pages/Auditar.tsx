@@ -8527,21 +8527,21 @@ export default function Auditar() {
               content:
                 "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
             },
-            { role: "user", content: "¿Me descontaron IMSS o impuestos?" },
+            { role: "user", content: "¿Me descontaron IMSS, impuestos o Infonavit?" },
             {
               role: "assistant",
               content: [
                 "Respuesta clara",
-                "En tus papeles se alcanza a leer periodo 2026-05-01 al 2026-05-15, IMSS $120.50 e ISR $310.00. Esta lectura ya usa acreditación de pagos y deducciones: permite revisar si los pagos documentados coinciden con la relación laboral. Si se ve IMSS en el papel, eso no confirma alta, vigencia ni semanas cotizadas.",
+                "En tus papeles se alcanza a leer periodo 2026-05-01 al 2026-05-15, IMSS $120.50, ISR $310.00 e Infonavit $80.00. Esta lectura ya usa acreditación de pagos y deducciones: permite revisar si los pagos documentados coinciden con la relación laboral. Si se ve IMSS en el papel, eso no confirma alta, vigencia ni semanas cotizadas.",
                 "",
                 "Lo que sí se sabe",
-                "Periodo 2026-05-01 al 2026-05-15. IMSS $120.50. ISR $310.00. NSS 12345678901.",
+                "Periodo 2026-05-01 al 2026-05-15. IMSS $120.50. ISR $310.00. Infonavit $80.00. NSS 12345678901.",
                 "",
                 "Lo que falta",
                 "No se ve una constancia oficial de alta, vigencia o semanas cotizadas.",
                 "",
                 "Siguiente paso",
-                "Cruza el descuento IMSS $120.50 y el NSS 12345678901 del periodo 2026-05-01 al 2026-05-15 con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial. Cruza también la retención ISR $310.00 con el CFDI o con lo que te depositaron del mismo periodo.",
+                "Cruza el descuento IMSS $120.50 y el NSS 12345678901 del periodo 2026-05-01 al 2026-05-15 con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial. Cruza también la retención ISR $310.00 con el CFDI o con lo que te depositaron del mismo periodo. Cruza también el descuento Infonavit $80.00 con tu aviso de retención o estado de crédito, si lo tienes. Verlo en el recibo no prueba el entero.",
                 "",
                 WORKER_CHAT_DISCLAIMER,
               ].join("\n"),
@@ -8549,7 +8549,7 @@ export default function Auditar() {
           ]}
           suggestedPrompts={[
             "¿Qué dice mi recibo?",
-            "¿Me descontaron IMSS o impuestos?",
+            "¿Me descontaron IMSS, impuestos o Infonavit?",
             "¿Qué hago ahora?",
           ]}
           suggestedPromptsContext="Preguntas simples sobre tu recibo."

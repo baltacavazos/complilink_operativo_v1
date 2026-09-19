@@ -38,6 +38,7 @@ const payrollDocument = {
           payrollNss: "12345678901",
           imssWithheld: "$120.50",
           isrWithheld: "$310.00",
+          infonavitWithheld: "$80.00",
         },
       },
     },
@@ -59,6 +60,8 @@ describe("workerChatUx grounding", () => {
     expect(grounding.validationMode).toBe("document_signals");
     expect(grounding.hasImssSignal).toBe(true);
     expect(grounding.hasFiscalSignal).toBe(true);
+    expect(grounding.hasInfonavitSignal).toBe(true);
+    expect(grounding.laborFacts.infonavitWithheld).toBe("$80.00");
     expect(grounding.laborFacts.nss).toBe("12345678901");
     expect(grounding.laborFacts.imssWithheld).toBe("$120.50");
     expect(grounding.legalFoundations[0]?.title).toBe("Acreditación de pagos y deducciones");
@@ -100,6 +103,37 @@ describe("workerChatUx grounding", () => {
     expect(answer).not.toMatch(/Helios|CompliLink|required_plan|current_plan|\|\|/i);
     expect(instructions).toMatch(/IMSS e ISR/);
     expect(instructions).toMatch(/foco de esta pregunta: imss_fiscal/i);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("si preguntan IMSS, ISR e Infonavit, el fallback cubre los tres en las 4 secciones", () => {
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, {
+      prompt: "¿Me descontaron IMSS, impuestos o Infonavit?",
+    });
+    const instructions = buildWorkerChatLlmInstructions(grounding, {
+      prompt: "¿Me descontaron IMSS, impuestos o Infonavit?",
+    });
+
+    expect(answer).toContain("Respuesta clara");
+    expect(answer).toContain("Lo que sí se sabe");
+    expect(answer).toContain("Lo que falta");
+    expect(answer).toContain("Siguiente paso");
+    expect(answer).toMatch(/IMSS \$120\.50|NSS 12345678901/);
+    expect(answer).toMatch(/no confirma el alta oficial/i);
+    expect(answer).toMatch(/ISR \$310\.00/);
+    expect(answer).toMatch(/CFDI|depositaron/i);
+    expect(answer).toMatch(/Infonavit \$80\.00/);
+    expect(answer).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
+    expect(answer).not.toMatch(/Helios|CompliLink|required_plan|current_plan|\|\|/i);
+    expect(instructions).toMatch(/IMSS e ISR/);
+    expect(instructions).toMatch(/Infonavit/);
+    expect(instructions).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(instructions).toMatch(/foco de esta pregunta: imss_fiscal_infonavit/i);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 

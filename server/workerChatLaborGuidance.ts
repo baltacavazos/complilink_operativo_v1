@@ -11,12 +11,16 @@ export type WorkerChatPromptFocus =
   | "fiscal"
   | "imss_fiscal"
   | "infonavit"
+  | "imss_infonavit"
+  | "fiscal_infonavit"
+  | "imss_fiscal_infonavit"
   | "alta"
   | "general";
 
 const IMSS_TOPIC_RE = /\bimss\b|cuota obrera|seguro social|\bnss\b|\balta\b|semanas cotiz/;
 const FISCAL_TOPIC_RE =
   /\bisr\b|impuestos?\b|\bsat\b|retenci[oó]n(?:es)?(?!\s+(?:de\s+)?(?:imss|infonavit))/;
+const INFONAVIT_TOPIC_RE = /infonavit|infon[aá]vit|cr[eé]dito de vivienda/;
 
 export type WorkerChatGuidanceFoundation = {
   title: string;
@@ -75,8 +79,12 @@ export function inferWorkerChatPromptFocus(prompt?: string | null): WorkerChatPr
   if (!text) return "general";
   const mentionsImss = IMSS_TOPIC_RE.test(text);
   const mentionsFiscal = FISCAL_TOPIC_RE.test(text);
+  const mentionsInfonavit = INFONAVIT_TOPIC_RE.test(text);
+  if (mentionsImss && mentionsFiscal && mentionsInfonavit) return "imss_fiscal_infonavit";
   if (mentionsImss && mentionsFiscal) return "imss_fiscal";
-  if (/infonavit/.test(text)) return "infonavit";
+  if (mentionsImss && mentionsInfonavit) return "imss_infonavit";
+  if (mentionsFiscal && mentionsInfonavit) return "fiscal_infonavit";
+  if (mentionsInfonavit) return "infonavit";
   if (/\balta\b|semanas cotiz/.test(text)) return "alta";
   if (mentionsImss) return "imss";
   if (mentionsFiscal || /\brfc\b|cfdi/.test(text)) return "fiscal";
@@ -146,22 +154,61 @@ function composeFiscalCrossStep(input: WorkerChatLaborGuidanceInput): string {
     : "Si puedes, sube el CFDI del mismo periodo para cruzar impuestos y lo que realmente te depositaron.";
 }
 
-function composeImssFiscalNextStep(input: WorkerChatLaborGuidanceInput): string {
+function composeImssOfficialLimitPart(input: WorkerChatLaborGuidanceInput): string {
   const facts = input.laborFacts;
   const period = periodPhrase(facts.period);
-  const imssPart =
-    facts.imssWithheld && facts.nss
-      ? `Cruza el descuento IMSS ${facts.imssWithheld} y el NSS ${facts.nss}${period} con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial.`
-      : composeImssCrossStep(input).replace(
-          /no confirma alta ni semanas cotizadas\.?$/i,
-          "no confirma el alta oficial.",
-        );
-  const fiscalPart = facts.isrWithheld
-    ? `Cruza también la retención ISR ${facts.isrWithheld} con el CFDI o con lo que te depositaron del mismo periodo.`
-    : input.documentType === "cfdi"
-      ? "Cruza también lo timbrado de ISR o impuestos con tu recibo o depósito del mismo periodo."
-      : "Cruza también las retenciones o impuestos con el CFDI o el depósito del mismo periodo.";
-  return `${imssPart} ${fiscalPart}`;
+  if (facts.imssWithheld && facts.nss) {
+    return `Cruza el descuento IMSS ${facts.imssWithheld} y el NSS ${facts.nss}${period} con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial.`;
+  }
+  return composeImssCrossStep(input).replace(
+    /no confirma alta ni semanas cotizadas\.?$/i,
+    "no confirma el alta oficial.",
+  );
+}
+
+function composeFiscalAlsoPart(input: WorkerChatLaborGuidanceInput): string {
+  const facts = input.laborFacts;
+  if (facts.isrWithheld) {
+    return `Cruza también la retención ISR ${facts.isrWithheld} con el CFDI o con lo que te depositaron del mismo periodo.`;
+  }
+  return input.documentType === "cfdi"
+    ? "Cruza también lo timbrado de ISR o impuestos con tu recibo o depósito del mismo periodo."
+    : "Cruza también las retenciones o impuestos con el CFDI o el depósito del mismo periodo.";
+}
+
+function composeInfonavitCrossStep(
+  input: WorkerChatLaborGuidanceInput,
+  options?: { also?: boolean },
+): string {
+  const facts = input.laborFacts;
+  const period = options?.also ? "" : periodPhrase(facts.period);
+  const also = Boolean(options?.also);
+
+  if (facts.infonavitWithheld) {
+    return also
+      ? `Cruza también el descuento Infonavit ${facts.infonavitWithheld} con tu aviso de retención o estado de crédito, si lo tienes. Verlo en el recibo no prueba el entero.`
+      : `Cruza el descuento Infonavit ${facts.infonavitWithheld}${period} con tu aviso de retención o estado de crédito, si lo tienes. Verlo en el recibo no prueba que el patrón lo haya enterado.`;
+  }
+
+  return also
+    ? "Cruza también Infonavit con tu aviso de retención o estado de crédito. Verlo en el recibo no prueba el entero."
+    : "Si se ve Infonavit en el papel, cruza ese descuento con tu aviso de retención o estado de crédito. Verlo en el recibo no prueba el entero.";
+}
+
+function composeImssFiscalNextStep(input: WorkerChatLaborGuidanceInput): string {
+  return `${composeImssOfficialLimitPart(input)} ${composeFiscalAlsoPart(input)}`;
+}
+
+function composeImssInfonavitNextStep(input: WorkerChatLaborGuidanceInput): string {
+  return `${composeImssOfficialLimitPart(input)} ${composeInfonavitCrossStep(input, { also: true })}`;
+}
+
+function composeFiscalInfonavitNextStep(input: WorkerChatLaborGuidanceInput): string {
+  return `${composeFiscalCrossStep(input)} ${composeInfonavitCrossStep(input, { also: true })}`;
+}
+
+function composeImssFiscalInfonavitNextStep(input: WorkerChatLaborGuidanceInput): string {
+  return `${composeImssFiscalNextStep(input)} ${composeInfonavitCrossStep(input, { also: true })}`;
 }
 
 function composeSignalNextStep(
@@ -184,10 +231,20 @@ function composeSignalNextStep(
     return composeImssFiscalNextStep(input);
   }
 
+  if (focus === "imss_fiscal_infonavit") {
+    return composeImssFiscalInfonavitNextStep(input);
+  }
+
+  if (focus === "imss_infonavit") {
+    return composeImssInfonavitNextStep(input);
+  }
+
+  if (focus === "fiscal_infonavit") {
+    return composeFiscalInfonavitNextStep(input);
+  }
+
   if (focus === "infonavit") {
-    return facts.infonavitWithheld
-      ? `Cruza el descuento Infonavit ${facts.infonavitWithheld}${period} con tu aviso de retención o estado de crédito, si lo tienes. Verlo en el recibo no prueba que el patrón lo haya enterado.`
-      : "Si se ve Infonavit en el papel, cruza ese descuento con tu aviso de retención o estado de crédito. Verlo en el recibo no prueba el entero.";
+    return composeInfonavitCrossStep(input);
   }
 
   if (focus === "fiscal") {
