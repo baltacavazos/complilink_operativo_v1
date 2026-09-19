@@ -6,8 +6,10 @@
 import {
   OFFICIAL_SOURCES_HEADING,
   maskOfficialDigestSpans,
+  shouldAttachOfficialDigest,
   shortenOfficialTitle,
   shortenOfficialTitlesInText,
+  stripOfficialTitlesFromText,
   type OfficialDigestCitation,
 } from "./officialDigest";
 
@@ -385,10 +387,25 @@ export function formatWorkerChatAnswer(params: {
   nextStep?: string | null;
   officialSources?: string | OfficialDigestCitation[] | null;
   officialSourcesNote?: string | null;
+  includeOfficialSources?: boolean;
+  prompt?: string | null;
   disclaimer?: string | null;
   multiDocUpsell?: string | boolean | null;
 }): string {
-  const sections = extractWorkerChatSections(params.answer);
+  const includeOfficialSources =
+    params.includeOfficialSources ??
+    (params.prompt != null ? shouldAttachOfficialDigest(params.prompt) : true);
+  const rawSections = extractWorkerChatSections(params.answer);
+  const sections = includeOfficialSources
+    ? rawSections
+    : {
+        ...rawSections,
+        clearAnswer: stripOfficialTitlesFromText(rawSections.clearAnswer),
+        known: rawSections.known ? stripOfficialTitlesFromText(rawSections.known) : null,
+        missing: rawSections.missing ? stripOfficialTitlesFromText(rawSections.missing) : null,
+        nextStep: rawSections.nextStep ? stripOfficialTitlesFromText(rawSections.nextStep) : null,
+        officialSources: null,
+      };
   const clearAnswer =
     sanitizeWorkerChatCopy(sections.clearAnswer) ??
     "Todavía no hay suficiente para responder con lo que se ve en tus papeles.";
@@ -401,20 +418,26 @@ export function formatWorkerChatAnswer(params: {
   const nextStep =
     sanitizeWorkerChatCopy(sections.nextStep ?? params.nextStep ?? null) ??
     "Revisa lo que ya se ve en tus papeles y, si puedes, sube el siguiente documento del mismo periodo.";
-  const officialFromParams = Array.isArray(params.officialSources)
-    ? params.officialSources
-        .slice(0, 3)
-        .map((item) => shortenOfficialTitle(item.title))
-        .join("\n")
-    : params.officialSources
-      ? shortenOfficialTitlesInText(params.officialSources)
-      : null;
-  const officialSources = sanitizeWorkerChatCopy(
-    sections.officialSources
-      ? shortenOfficialTitlesInText(sections.officialSources)
-      : officialFromParams,
-  );
-  const officialNote = sanitizeWorkerChatCopy(params.officialSourcesNote ?? null);
+  const officialFromParams = includeOfficialSources
+    ? Array.isArray(params.officialSources)
+      ? params.officialSources
+          .slice(0, 3)
+          .map((item) => shortenOfficialTitle(item.title))
+          .join("\n")
+      : params.officialSources
+        ? shortenOfficialTitlesInText(params.officialSources)
+        : null
+    : null;
+  const officialSources = includeOfficialSources
+    ? sanitizeWorkerChatCopy(
+        sections.officialSources
+          ? shortenOfficialTitlesInText(sections.officialSources)
+          : officialFromParams,
+      )
+    : null;
+  const officialNote = includeOfficialSources
+    ? sanitizeWorkerChatCopy(params.officialSourcesNote ?? null)
+    : null;
   const disclaimer = asText(params.disclaimer) ?? WORKER_CHAT_DISCLAIMER;
   const upsell =
     params.multiDocUpsell === true
@@ -493,6 +516,10 @@ export function sanitizeVisibleChatHistoryContent(value?: string | null): string
   if (value == null) return "";
   const raw = value;
   if (!raw.trim()) return "";
+
+  if (looksLikeApiValidationJargon(raw)) {
+    return WORKER_CHAT_RETRY_ERROR;
+  }
 
   const looksLikeUpgradeLeak =
     hasInternalControlMarkers(raw) ||

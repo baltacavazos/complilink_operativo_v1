@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { listLastGoodOfficialCitations } from "@shared/officialDigest";
 import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_MULTI_DOC_UPSELL,
@@ -279,6 +280,44 @@ describe("workerChatUx grounding", () => {
     expect(instructions).not.toContain(digest.citations[0]!.title);
     expect(instructions).toMatch(/Doctrina de la Corte, no jurisprudencia/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("en una pregunta de IMSS del recibo no arrastra Lecturas oficiales ni DOF de subcontratación", () => {
+    const digest = {
+      citations: listLastGoodOfficialCitations(),
+      freshness: "last_good" as const,
+      liveAttempted: false,
+      liveBlocked: false,
+      honestyNote:
+        "Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial.",
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+      officialDigest: digest,
+    });
+    const leaked =
+      "Respuesta clara: En tu recibo se ve un descuento de IMSS.\nLecturas oficiales:\n" +
+      digest.citations[0]!.title +
+      "\nDecreto por el que se reforman, adicionan y derogan diversas disposiciones de la Ley Federal del Trabajo; de la Ley del Seguro Social";
+    const answer = sanitizeWorkerChatAnswer(leaked, grounding, {
+      prompt: "¿Me descontaron IMSS?",
+    });
+    const fallback = buildWorkerChatFallbackAnswer(grounding, {
+      prompt: "¿Me descontaron IMSS?",
+    });
+    const instructions = buildWorkerChatLlmInstructions(grounding, {
+      prompt: "¿Me descontaron IMSS?",
+    });
+
+    expect(answer).toContain("Respuesta clara");
+    expect(answer).toContain("Lo que sí se sabe");
+    expect(answer).toContain("Lo que falta");
+    expect(answer).toContain("Siguiente paso");
+    expect(answer).not.toMatch(/Lecturas oficiales|Subcontrataci[oó]n|Diario Oficial|consulta anterior/i);
+    expect(fallback).not.toMatch(/Lecturas oficiales|Subcontrataci[oó]n|Diario Oficial/i);
+    expect(instructions).toMatch(/NO agregues la secci[oó]n Lecturas oficiales/i);
+    expect(instructions).not.toContain(digest.citations[0]!.title);
   });
 
   it("en plan gratis recorta a un documento y deja upsell limpio, sin marcadores", () => {

@@ -1,5 +1,6 @@
 import {
   emptyOfficialDigest,
+  shouldAttachOfficialDigest,
   shortenOfficialTitle,
   type OfficialDigestResult,
 } from "@shared/officialDigest";
@@ -189,14 +190,17 @@ export function buildWorkerChatFallbackAnswer(
   }
 
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
+  const includeOfficialSources = shouldAttachOfficialDigest(options?.prompt);
 
   return formatWorkerChatAnswer({
     answer: guidance.clearAnswer,
     known: guidance.known,
     missing: guidance.missing,
     nextStep: guidance.nextStep,
-    officialSources: grounding.officialDigest.citations,
-    officialSourcesNote: grounding.officialDigest.honestyNote,
+    officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
+    officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
+    includeOfficialSources,
+    prompt: options?.prompt,
     disclaimer: grounding.disclaimer,
     multiDocUpsell: grounding.multiDocUpsell,
   });
@@ -207,14 +211,15 @@ export function buildWorkerChatLlmInstructions(
   options?: { prompt?: string | null },
 ): string {
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
+  const includeOfficialSources = shouldAttachOfficialDigest(options?.prompt);
   const foundations =
     grounding.legalFoundations.length > 0
       ? grounding.legalFoundations
           .map((item) => `- ${item.title} (${item.reference}): ${item.relevance}`)
           .join("\n")
       : "- No hay bases legales extra en esta lectura. No inventes artículos, tesis ni jurisprudencia.";
-  const officialLines =
-    grounding.officialDigest.citations.length > 0
+  const officialLines = includeOfficialSources
+    ? grounding.officialDigest.citations.length > 0
       ? grounding.officialDigest.citations
           .map(
             (item) =>
@@ -223,7 +228,8 @@ export function buildWorkerChatLlmInstructions(
           .join("\n")
       : grounding.officialDigest.honestyNote
         ? `- ${grounding.officialDigest.honestyNote}`
-        : "- No hay lecturas oficiales en el digest para esta pregunta. No inventes títulos, IUS ni registro digital.";
+        : "- No hay lecturas oficiales en el digest para esta pregunta. No inventes títulos, IUS ni registro digital."
+    : "- Esta pregunta es sobre el papel (recibo/IMSS/NSS/ISR/Infonavit). NO agregues la sección Lecturas oficiales ni cites DOF, SCJN, decretos, subcontratación u otros rubros oficiales.";
   const visibleFacts =
     guidance.visibleFactLines.length > 0
       ? guidance.visibleFactLines.map((item) => `- ${item}`).join("\n")
@@ -240,8 +246,12 @@ export function buildWorkerChatLlmInstructions(
     "Nunca inventes tesis, registro digital, Semanario Judicial, IUS ni jurisprudencia.",
     "Si el digest trae lecturas oficiales, puedes citar SOLO esos títulos y ligas, en palabras simples, sin claves de tesis.",
     "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Si es criterio reiterado, dilo así. Nunca etiquetes doctrina como jurisprudencia.",
-    `Si el digest está bloqueado o viene de una consulta anterior, di esa honestidad. Frase útil: ${grounding.officialDigest.honestyNote ?? "No pude abrir la fuente oficial ahora. No invento criterios ni números."}`,
-    `Si citas lecturas oficiales, usa el título recortado tal como aparece aquí y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}. No completes el rubro ni inventes IUS.`,
+    includeOfficialSources
+      ? `Si el digest está bloqueado o viene de una consulta anterior, di esa honestidad. Frase útil: ${grounding.officialDigest.honestyNote ?? "No pude abrir la fuente oficial ahora. No invento criterios ni números."}`
+      : "No menciones la Corte, el Diario Oficial, decretos ni lecturas oficiales. Quédate en lo que se ve en el papel.",
+    includeOfficialSources
+      ? `Si citas lecturas oficiales, usa el título recortado tal como aparece aquí y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}. No completes el rubro ni inventes IUS.`
+      : `No uses el título ${WORKER_CHAT_SOURCES_HEADING}. La respuesta son solo las cuatro secciones del papel.`,
     "Nunca digas que consultaste IMSS, SAT o Infonavit en vivo, ni que confirmaste un alta oficial.",
     `Modo de lectura: ${grounding.validationMode}. Validación IMSS en vivo: no.`,
     `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
@@ -271,13 +281,16 @@ export function sanitizeWorkerChatAnswer(
 ): string {
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
+  const includeOfficialSources = shouldAttachOfficialDigest(options?.prompt);
   return formatWorkerChatAnswer({
     answer: cleaned,
     known: guidance.known,
     missing: guidance.missing,
     nextStep: guidance.nextStep,
-    officialSources: grounding.officialDigest.citations,
-    officialSourcesNote: grounding.officialDigest.honestyNote,
+    officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
+    officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
+    includeOfficialSources,
+    prompt: options?.prompt,
     disclaimer: grounding.disclaimer,
     multiDocUpsell: grounding.multiDocUpsell,
   });

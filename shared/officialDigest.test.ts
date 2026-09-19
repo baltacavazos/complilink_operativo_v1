@@ -4,14 +4,19 @@ import {
   DOF_LAST_GOOD_SEED,
   OFFICIAL_DIGEST_DOCTRINA_LABEL,
   OFFICIAL_DIGEST_JURISPRUDENCIA_LABEL,
+  OFFICIAL_DIGEST_LAST_GOOD_COPY,
   SCJN_HARVEST_SEED,
   classifyScjnKind,
   isKnownOfficialUrl,
   isOfficialLegalQuestion,
+  isOfficialSourceAsk,
+  isPaperDocumentQuestion,
   listKnownOfficialIds,
   selectOfficialDigest,
+  shouldAttachOfficialDigest,
   shortenOfficialTitle,
   shortenOfficialTitlesInText,
+  stripOfficialTitlesFromText,
   toScjnCitation,
 } from "./officialDigest";
 
@@ -70,6 +75,38 @@ describe("official digest seed", () => {
     expect(isOfficialLegalQuestion("¿Me descontaron IMSS?")).toBe(false);
   });
 
+  it("no adjunta DOF/SCJN en preguntas de recibo, IMSS, NSS, ISR o Infonavit", () => {
+    const paperPrompts = [
+      "¿Me descontaron IMSS?",
+      "¿Qué dice mi recibo?",
+      "¿Estoy bien dado de alta?",
+      "¿Qué hay del NSS 12345678901?",
+      "¿Me descontaron ISR o impuestos?",
+      "¿Qué hay de Infonavit?",
+    ];
+
+    for (const prompt of paperPrompts) {
+      expect(isPaperDocumentQuestion(prompt)).toBe(true);
+      expect(isOfficialSourceAsk(prompt)).toBe(false);
+      expect(shouldAttachOfficialDigest(prompt)).toBe(false);
+
+      const digest = selectOfficialDigest({
+        prompt,
+        documentType: "payroll_receipt",
+        hasImssSignal: true,
+        hasFiscalSignal: true,
+        hasInfonavitSignal: true,
+      });
+      expect(digest.citations).toEqual([]);
+      expect(digest.honestyNote).toBeNull();
+      expect(JSON.stringify(digest)).not.toMatch(/Subcontrataci[oó]n|5616745|Diario Oficial/i);
+    }
+
+    expect(shouldAttachOfficialDigest("¿Qué dice la ley sobre IMSS?")).toBe(true);
+    expect(shouldAttachOfficialDigest("¿Qué dice la jurisprudencia sobre despido?")).toBe(true);
+    expect(shouldAttachOfficialDigest("¿Qué dice la ley sobre horas extra?")).toBe(true);
+  });
+
   it("recorta rubros oficiales largos a una línea corta sin inventar IUS", () => {
     const longDof = DOF_LAST_GOOD_SEED[0]!.title;
     const shortDof = shortenOfficialTitle(longDof);
@@ -86,6 +123,13 @@ describe("official digest seed", () => {
     const shortened = shortenOfficialTitlesInText(haystack);
     expect(shortened).not.toContain(longDof);
     expect(shortened.length).toBeLessThan(haystack.length);
+
+    const stripped = stripOfficialTitlesFromText(
+      `En tu recibo se ve IMSS.\n${longDof}\n${OFFICIAL_DIGEST_LAST_GOOD_COPY}`,
+    );
+    expect(stripped).not.toContain(longDof);
+    expect(stripped).not.toMatch(/Subcontrataci[oó]n|consulta anterior/i);
+    expect(stripped).toMatch(/recibo se ve IMSS/i);
   });
 
   it("reconoce títulos DOF reales del last_good y rechaza IUS inventados", () => {
