@@ -305,7 +305,7 @@ describe("ceoHeliosChat", () => {
         messages: expect.arrayContaining([
           expect.objectContaining({
             role: "system",
-            content: expect.stringContaining("misma interfaz central de AuditaPatron"),
+            content: expect.stringContaining("Eres el asesor laboral de AuditaPatron"),
           }),
           expect.objectContaining({
             role: "user",
