@@ -915,6 +915,14 @@ describe("preview sanitization", () => {
     ).toBe("Contenido técnico omitido para mantener la lectura clara.");
   });
 
+  it("nunca muestra boolean true/false en el resultado visible", () => {
+    expect(sanitizePreviewText(true)).toBe("Sí");
+    expect(sanitizePreviewText(false)).toBe("No");
+    expect(sanitizePreviewText("true")).toBe("Sí");
+    expect(sanitizePreviewText("false")).toBe("No");
+    expect(sanitizePreviewText(true)).not.toBe("true");
+  });
+
   it("recorta textos largos pero mantiene visibles los resúmenes normales", () => {
     const longNarrative =
       "Este resumen mantiene lenguaje humano y claro para la persona usuaria, pero necesita recortarse en móvil para no desbordar la tarjeta de revisión antes de guardar el documento dentro del expediente laboral.";

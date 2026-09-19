@@ -79,6 +79,8 @@ function Router() {
           <Route path={"/privacidad"} component={LegalPrivacyPage} />
           <Route path={"/legal/privacidad"} component={LegalPrivacyPage} />
           <Route path={"/legal/terminos"} component={LegalTermsPage} />
+          <Route path={"/historial"} component={NotFound} />
+          <Route path={"/expediente"} component={NotFound} />
           <Route path={"/404"} component={NotFound} />
           <Route component={NotFound} />
         </Switch>

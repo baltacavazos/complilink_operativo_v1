@@ -40,6 +40,21 @@ describe("copy público y aviso de privacidad", () => {
     expect(legalPage).toContain("Este aviso carga sin login");
     expect(legalPage).toContain("resguardo con acceso controlado");
     expect(legalCopy).toContain('route: "/aviso-de-privacidad"');
-    expect(legalCopy).toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(legalCopy).toContain("LEGAL_CONTROLLER_NAME");
+    expect(legalCopy).toContain("LEGAL_CONTROLLER_ADDRESS");
+    expect(legalCopy).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(legalCopy).not.toMatch(/\bHelios\b/);
+    expect(legalCopy).not.toMatch(/CompliLink|complilink/);
+    expect(legalPage).toContain("visibleLegalCopy");
+    expect(legalPage).toContain("sanitizeClientVisibleCopy");
+    expect(app).toContain('path={"/historial"}');
+    expect(app).toContain('path={"/expediente"}');
+
+    const commerceCopy = read("../shared/commerce.ts");
+    const commerceQuoted = [...commerceCopy.matchAll(/(["'`])([^"'`\n]{3,220})\1/g)]
+      .map((match) => match[2])
+      .join("\n");
+    expect(commerceQuoted).not.toMatch(/\bHelios\b/);
+    expect(commerceQuoted).not.toMatch(/CompliLink|complilink/);
   });
 });

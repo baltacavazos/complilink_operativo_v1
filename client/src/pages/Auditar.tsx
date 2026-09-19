@@ -284,7 +284,7 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
     "Formatos compatibles: PDF, XML, JPG, PNG, WEBP o DOCX. Límite real: 12 MB por archivo.",
   privacyRules:
-    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. Nadie de tu empresa puede ver lo que subes y puedes pedir borrado cuando lo necesites.",
+    "Tu documento no se integra al expediente hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa y puedes pedir borrado cuando lo necesites.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
@@ -533,6 +533,10 @@ export function sanitizePreviewText(
     emptyFallback = "",
     technicalFallback = "Contenido técnico omitido para mantener la lectura clara.",
   } = options;
+  if (typeof value === "boolean") {
+    return value ? "Sí" : "No";
+  }
+
   const normalized =
     typeof value === "number"
       ? String(value)
@@ -541,6 +545,10 @@ export function sanitizePreviewText(
         : String(value ?? "")
             .replace(/\s+/g, " ")
             .trim();
+
+  if (/^(true|false)$/i.test(normalized)) {
+    return normalized.toLowerCase() === "true" ? "Sí" : "No";
+  }
 
   if (!normalized) {
     return emptyFallback;
@@ -653,7 +661,7 @@ function getCommerceTriggerLabel(triggerPoint: CommerceTriggerPoint) {
     case "one_shot_card":
       return "Interés en producto puntual";
     case "checkout_return_success":
-      return "Retorno exitoso desde Stripe";
+      return "Pago confirmado";
     case "plan_card":
       return "Interés directo en un plan";
     default:
@@ -1103,6 +1111,12 @@ type StructuredExtractionFieldView = {
 };
 
 function warmVisibleNamingCopy(value?: string | null) {
+  if (value == null) return value ?? null;
+  if (typeof value === "boolean") return value ? "Sí" : "No";
+  const trimmed = String(value).trim();
+  if (/^(true|false)$/i.test(trimmed)) {
+    return trimmed.toLowerCase() === "true" ? "Sí" : "No";
+  }
   return sanitizeClientVisibleCopy(value);
 }
 
@@ -2101,6 +2115,9 @@ function writeStoredGuestReview(review: StoredGuestReview | null) {
 
 function plainWorkerCopy(value?: string | null) {
   if (!value) return null;
+  if (/^(true|false)$/i.test(value.trim())) {
+    return value.trim().toLowerCase() === "true" ? "Sí" : "No";
+  }
 
   const cleaned = sanitizeClientVisibleCopy(
     value
@@ -2981,6 +2998,10 @@ function formatAnalysisValue(key: string, value: unknown) {
 
   if (typeof value === "boolean") {
     return value ? "Sí" : "No";
+  }
+
+  if (typeof value === "string" && /^(true|false)$/i.test(value.trim())) {
+    return value.trim().toLowerCase() === "true" ? "Sí" : "No";
   }
 
   if (key === "internalDocumentType") {
@@ -4715,7 +4736,10 @@ export default function Auditar() {
       item => item.caseId === selectedCaseId
     );
     if (!selectedCaseId || !stillExists) {
-      setSelectedCaseId(casesQuery.data[0].caseId);
+      const calmCase =
+        casesQuery.data.find(item => !/despido|finiquito|demanda|injustificad/i.test(item.title)) ??
+        casesQuery.data[0];
+      setSelectedCaseId(calmCase.caseId);
     }
   }, [casesQuery.data, selectedCaseId]);
 
@@ -4990,7 +5014,11 @@ export default function Auditar() {
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
       });
-      sonnerToast(`${productName} regresó desde Stripe para validación.`);
+      sonnerToast(
+        auth.canToggleUserView
+          ? `${productName} regresó desde Stripe para validación.`
+          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu expediente.`,
+      );
     }
 
     void commerceStatusQuery.refetch();
@@ -5651,7 +5679,7 @@ export default function Auditar() {
       detail:
         "Puedes subir un archivo, revisar la primera señal y decidir después si te conviene guardarlo.",
       company: "Empresa sin acceso",
-      control: "Nada se guarda solo",
+      control: "Tú confirmas si se guarda",
       trace: "Rastro visible al confirmar",
       cardClass: "border-slate-200 bg-white/95",
       badgeClass: "border-slate-200 bg-white text-slate-700",
@@ -8569,6 +8597,7 @@ export default function Auditar() {
                     principal de este expediente.
                   </p>
                 </div>
+                {legalGateHarnessMode ? (
                 <div
                   className="rounded-[1.1rem] border border-white bg-white/90 px-4 py-3 text-sm text-slate-700"
                   data-testid="legal-gate-lock-metrics"
@@ -8637,6 +8666,7 @@ export default function Auditar() {
                     </p>
                   ) : null}
                 </div>
+                ) : null}
               </div>
             </div>
           </section>
@@ -8902,7 +8932,7 @@ export default function Auditar() {
                   </div>
                 </details>
               ) : null}
-              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "hidden" : ""}`}>
+              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView || isFirstDocumentFlow ? "hidden" : ""}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
@@ -8929,7 +8959,7 @@ export default function Auditar() {
                         Privacidad radical
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-600">
-                        Tu jefe nunca se enterará de esta revisión inicial y tu empresa no puede ver lo que subes aquí.
+                        Esta revisión es para ti. No compartimos tu archivo con tu empresa.
                       </p>
                     </article>
                     <article className="rounded-[1rem] border border-teal-100 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-sm">
@@ -9790,7 +9820,9 @@ export default function Auditar() {
                   >
                     {casesQuery.data?.map(item => (
                       <option key={item.caseId} value={item.caseId}>
-                        {item.title} · Folio {item.caseId.slice(-6)}
+                        {/despido y reclamaci[oó]n inicial/i.test(item.title)
+                          ? "Revisión laboral inicial"
+                          : item.title}
                       </option>
                     ))}
                   </select>
@@ -10316,7 +10348,7 @@ export default function Auditar() {
                   strokeWidth={1.8}
                 />
                 <span className="font-semibold">Confidencialidad activa.</span>
-                <span>Nadie de tu empresa ve lo que subes.</span>
+                <span>No lo compartimos con tu empresa.</span>
                 <span className="hidden sm:inline text-teal-400">•</span>
                 <span>Si algo falla, puedes reintentar.</span>
               </div>
@@ -11677,7 +11709,7 @@ export default function Auditar() {
                                 </span>
                               </div>
                               <p className="mt-3 text-sm leading-6 text-slate-700">
-                                Puedes guardar este hallazgo en tu archivo privado, descargarlo como respaldo o sumar otro documento para fortalecer tu caso. Solo tú decides qué conservar y tu empresa no puede ver este material.
+                                Puedes guardar este hallazgo en tu archivo privado, descargarlo como respaldo o sumar otro documento para fortalecer tu caso. Solo tú decides qué conservar; no lo compartimos con tu empresa.
                               </p>
                               <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900/80">
                                 <span className="rounded-full bg-white/90 px-3 py-1">Guardar evidencia útil</span>
@@ -11690,7 +11722,7 @@ export default function Auditar() {
                                 <div className="mt-2 grid gap-2 sm:grid-cols-3">
                                   <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
                                     <p className="font-semibold text-slate-950">Borrador primero</p>
-                                    <p className="mt-1">Nada se guarda en tu expediente hasta que tú lo confirmas.</p>
+                                    <p className="mt-1">No entra a tu expediente hasta que tú lo confirmas.</p>
                                   </div>
                                   <div className="rounded-[0.85rem] border border-slate-200 bg-white px-3 py-2">
                                     <p className="font-semibold text-slate-950">Rastro legal visible</p>
@@ -14977,7 +15009,7 @@ Reforzar con otro documento
         </DrawerContent>
       </Drawer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience ? "hidden" : ""}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
           <div className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
             <div className="flex items-center justify-between gap-3">

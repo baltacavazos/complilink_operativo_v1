@@ -27,6 +27,10 @@ describe("flujo visible de pagos", () => {
     expect(paymentsSource).toContain("Historial comercial del expediente");
     expect(paymentsSource).toContain("Gestionar suscripción");
     expect(paymentsSource).toContain("Pagos y compras registradas");
-    expect(paymentsSource).toContain("Sandbox de Stripe detectado");
+    expect(paymentsSource).toContain("Modo de prueba del cobro");
+    expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.");
+    expect(paymentsSource).not.toContain("persistencia local mínima de Stripe");
+    expect(paymentsSource).not.toContain("Cliente en Stripe");
+    expect(paymentsSource).not.toContain("Stripe confirme el pago");
   });
 });

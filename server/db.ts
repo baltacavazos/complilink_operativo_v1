@@ -2422,7 +2422,7 @@ export async function seedDemoCaseIfEmpty(userId: number) {
     tenantId,
     caseId,
     traceId,
-    title: "Despido y reclamación inicial",
+    title: "Revisión laboral inicial",
     employeeName: "María Fernanda López",
     employerEntity: "Compañía Piloto MX",
     jurisdiction: "México",

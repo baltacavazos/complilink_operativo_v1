@@ -163,8 +163,10 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(password).not.toContain("En esta copia");
     expect(notFound).toContain("Página no encontrada");
     expect(notFound).toContain("Ir al inicio");
+    expect(notFound).toContain("Pronto verás aquí tus papeles");
     expect(notFound).not.toContain("Page Not Found");
     expect(notFound).not.toContain("Go Home");
+    expect(notFound).not.toContain("text-4xl font-bold text-slate-900 mb-2\">404");
     expect(auditar).toContain("{auth.canToggleUserView ? (\n              <article");
     expect(auditar).toContain("Conversión de esta sesión");
     expect(auditar).toContain("{auth.canToggleUserView ? (\n            <article");
@@ -175,6 +177,36 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(home).not.toContain(
       "rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700",
     );
+  });
+
+  it("cierra claridad y confianza en /auditar, /pagos y legales", () => {
+    const auditar = readClientSource("pages/Auditar.tsx");
+    const payments = readClientSource("pages/Payments.tsx");
+    const legal = readClientSource("pages/LegalDocuments.tsx");
+    const app = readClientSource("App.tsx");
+    const sanitizer = readClientSource("lib/clientVisibleCopy.ts");
+
+    expect(auditar).not.toContain("Tu jefe nunca se enterará");
+    expect(auditar).not.toContain("Folio {item.caseId.slice(-6)}");
+    expect(auditar).toContain("Esta revisión es para ti. No compartimos tu archivo con tu empresa.");
+    expect(auditar).toContain("{legalGateHarnessMode ? (");
+    expect(auditar).toContain("data-testid=\"legal-gate-lock-metrics\"");
+    expect(auditar).toContain("typeof value === \"boolean\"");
+    expect(auditar).toContain('return value ? "Sí" : "No"');
+    expect(payments).not.toContain("Stripe");
+    expect(payments).not.toContain("persistencia local");
+    expect(payments).not.toContain("Checkout:");
+    expect(payments).not.toContain("Invoice:");
+    expect(payments).not.toContain("Payment Intent");
+    expect(payments).toContain("La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.");
+    expect(legal).toContain("LEGAL_CONTROLLER_NAME");
+    expect(legal).toContain("LEGAL_CONTROLLER_ADDRESS");
+    expect(legal).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(legal).not.toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(app).toContain('path={"/historial"}');
+    expect(app).toContain('path={"/expediente"}');
+    expect(sanitizer).toContain("CompliLink");
+    expect(sanitizer).toContain("Helios");
   });
 
   it("usa el sanitizador central en Home, Auditar y el panel conversacional", () => {

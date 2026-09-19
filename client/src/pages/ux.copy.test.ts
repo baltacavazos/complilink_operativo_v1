@@ -45,7 +45,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.");
     expect(source).toContain("Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.");
     expect(source).toContain("Privacidad visible y humana");
-    expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(source).toContain("No compartimos lo que subes con tu empresa.");
     expect(source).toContain("Borrado visible");
     expect(source).toContain("Ver ejemplo de resultado");
     expect(source).toContain("Guarda y sigue después");
@@ -343,10 +343,12 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Resumen humano antes del texto completo");
     expect(source).toContain("acompañamiento laboral dentro de la plataforma");
     expect(source).toContain("Privacidad visible y pública");
-    expect(source).toContain("Nadie de tu empresa puede ver lo que subes.");
+    expect(source).toContain("No compartimos lo que subes con tu empresa.");
     expect(source).toContain("Este aviso carga sin login");
     expect(source).toContain("resguardo con acceso controlado");
-    expect(source).toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
+    expect(source).toContain("LEGAL_CONTROLLER_NAME");
+    expect(source).toContain("LEGAL_CONTROLLER_ADDRESS");
+    expect(source).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
     expect(source).not.toContain("cifrado AES-256");
     expect(source).not.toContain("AuditaPatron y Helios");
   });

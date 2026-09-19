@@ -83,7 +83,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
       primaryCtaLabel: "Ver planes y activar",
       secondaryCtaLabel: "Seguir gratis por ahora",
       reassurance:
-        "La parte gratuita sigue disponible. El cobro solo aparece cuando intentas usar funciones que requieren más contexto, más memoria o entregables premium.",
+        "La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.",
       plans: COMMERCE_PLANS.map((plan) => ({
         key: plan.key,
         name: plan.name,
