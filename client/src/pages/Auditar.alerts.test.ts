@@ -30,6 +30,7 @@ import {
   formatHumanStatusWord,
   sanitizePreviewText,
   sanitizeStructuredExtractionView,
+  toFriendlyAuditarRuntimeMessage,
   isHumanMeaningfulAnalysisKey,
   isTechnicalAnalysisKey,
   isWorkerVisibleAnalysisField,
@@ -982,6 +983,31 @@ describe("preview sanitization", () => {
         technicalFallback: "Contenido técnico omitido para mantener la lectura clara.",
       }),
     ).toBe("Contenido técnico omitido para mantener la lectura clara.");
+  });
+
+  it("traduce límites de cuenta/expediente al español en toasts de subida y resultado", () => {
+    expect(
+      toFriendlyAuditarRuntimeMessage(
+        new Error("This account is limited to a single personal case"),
+        "No fue posible guardar el documento.",
+      ),
+    ).toBe("Esta cuenta solo puede tener un expediente personal.");
+    expect(
+      toFriendlyAuditarRuntimeMessage(
+        new Error("No personal case assigned to this account"),
+        "No fue posible guardar el documento.",
+      ),
+    ).toBe("Esta cuenta aún no tiene un expediente personal.");
+    expect(
+      toFriendlyAuditarRuntimeMessage(
+        new Error("Access denied for case"),
+        "No fue posible analizar el archivo.",
+      ),
+    ).toBe("No tienes acceso a este expediente.");
+    expect(auditarSource).toContain("sanitizeClientVisibleCopy(sanitized)");
+    expect(auditarSource).toContain(
+      "toFriendlyAuditarRuntimeMessage(\n              error,\n              getNativeDocumentSelectionErrorMessage(\"camera\")",
+    );
   });
 
   it("traduce booleanos crudos a palabras humanas y no deja true/false a la vista", () => {

@@ -122,4 +122,34 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(sanitizeClientVisibleCopy("Webhook listo")).toBe("Aviso listo");
     expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy("Webhook pendiente"))).toBe(false);
   });
+
+  it("reescribe límites de cuenta/expediente en español claro para el trabajador", () => {
+    expect(sanitizeClientVisibleCopy("This account is limited to a single personal case")).toBe(
+      "Esta cuenta solo puede tener un expediente personal.",
+    );
+    expect(sanitizeClientVisibleCopy("This account is limited to a single personal case.")).toBe(
+      "Esta cuenta solo puede tener un expediente personal.",
+    );
+    expect(sanitizeClientVisibleCopy("No personal case assigned to this account")).toBe(
+      "Esta cuenta aún no tiene un expediente personal.",
+    );
+    expect(sanitizeClientVisibleCopy("Access denied for tenant")).toBe(
+      "No tienes acceso a este espacio.",
+    );
+    expect(sanitizeClientVisibleCopy("Access denied for case")).toBe(
+      "No tienes acceso a este expediente.",
+    );
+    expect(sanitizeClientVisibleCopy("Write access denied for case")).toBe(
+      "No puedes modificar este expediente.",
+    );
+    expect(sanitizeClientVisibleCopy("Admin access denied for tenant")).toBe(
+      "No tienes permiso de administración en este espacio.",
+    );
+    expect(sanitizeClientVisibleCopy("Database not available")).toBe(
+      "No pudimos guardar esto ahora. Intenta de nuevo en un momento.",
+    );
+    expect(
+      sanitizeClientVisibleCopy("This account is limited to a single personal case"),
+    ).not.toMatch(/This account|personal case|Access denied/i);
+  });
 });

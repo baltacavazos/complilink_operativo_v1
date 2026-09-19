@@ -646,14 +646,16 @@ export function formatHumanStatusWord(value?: string | null) {
   }
 }
 
-function toFriendlyAuditarRuntimeMessage(error: unknown, fallback: string) {
+export function toFriendlyAuditarRuntimeMessage(error: unknown, fallback: string) {
   const candidate = error instanceof Error ? error.message : fallback;
-  return sanitizePreviewText(candidate, {
+  const sanitized = sanitizePreviewText(candidate, {
     maxLength: 220,
     emptyFallback: fallback,
     technicalFallback:
       "No pudimos completar esta parte del documento. Intenta repetir la captura o subir el archivo original.",
   });
+
+  return sanitizeClientVisibleCopy(sanitized) ?? fallback;
 }
 
 function isCommerceUpgradeMessage(message: string) {
@@ -7963,9 +7965,10 @@ export default function Auditar() {
           setAutoAnalyzeRequested(false);
           setPendingDraft(null);
           setSubmitError(
-            error instanceof Error
-              ? error.message
-              : getNativeDocumentSelectionErrorMessage("camera")
+            toFriendlyAuditarRuntimeMessage(
+              error,
+              getNativeDocumentSelectionErrorMessage("camera")
+            )
           );
           setUploadSourceOpen(false);
         });

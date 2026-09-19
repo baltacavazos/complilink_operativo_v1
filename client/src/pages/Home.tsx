@@ -1600,7 +1600,11 @@ function HeliosFirstEntrySection() {
 
     setResumeAttempted(true);
     void persistGuestPreview("resume").catch((error: unknown) => {
-      setGuestError(error instanceof Error ? error.message : "No pudimos guardar la vista previa dentro de tu expediente.");
+      setGuestError(
+        sanitizeHomeVisibleCopy(
+          error instanceof Error ? error.message : "No pudimos guardar la vista previa dentro de tu expediente.",
+        ) ?? "No pudimos guardar la vista previa dentro de tu expediente.",
+      );
     });
   }, [auth.isAuthenticated, guestPreview, resumeAttempted, tenantId]);
 
@@ -1636,7 +1640,11 @@ function HeliosFirstEntrySection() {
         confidence: result.heliosOpinion.confidenceScore ?? null,
       });
     } catch (error) {
-      setGuestError(error instanceof Error ? error.message : "No pudimos leer ese archivo en este momento.");
+      setGuestError(
+        sanitizeHomeVisibleCopy(
+          error instanceof Error ? error.message : "No pudimos leer ese archivo en este momento.",
+        ) ?? "No pudimos leer ese archivo en este momento.",
+      );
     } finally {
       event.currentTarget.value = "";
     }
