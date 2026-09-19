@@ -55,6 +55,7 @@ Cualquier otro nombre se rechaza con `unknown_event` y se registra en log. No se
 | Opinión Helios | `server/heliosIntegrationService.ts` | URL presente → remoto. Envío OK → `processing`. Envío fallido → `error` en español, **sin dictamen inventado**. Sin URL → plantilla `mock` (no es el cerebro en vivo) |
 | Shared Engine | `caseContracts.buildSharedEngineEnvelope` | Sobre `document_contracts`; no es un motor externo aparte |
 | Señales laborales/fiscales | `server/laborFiscalSignals.ts` | Lee recibo/CFDI: periodo, montos, retenciones, RFC/NSS si aparecen, con explicación en español. **No** consulta IMSS/SAT/Infonavit en vivo. Si el cerebro remoto ya devolvió opinión, se prefiere. Si solo hay plantilla, se etiqueta **revisión local**. |
+| Narrativa local del recibo | `server/laborFiscalNarrative.ts` | Si no hay opinión remota usable, una sola llamada corta a OpenAI o Gemini (cuando exista la clave) reescribe el siguiente paso en español claro. Si faltan claves o el modelo falla, se quedan las señales deterministas. **Nunca** afirma consulta oficial. |
 | Sanitización al trabajador | `server/workerVisibleExtraction.ts` + `/auditar` | Quita MIME, enums, banderas, nombres de evento y hashes |
 | Inventario Fase 0 | `server/auditaPatronBridgeInventory.ts` | Completitud = URL + HMAC. No exige `API_KEY_HELIOS` |
 
@@ -72,6 +73,7 @@ Cualquier otro nombre se rechaza con `unknown_event` y se registra en log. No se
 - Si `AUDITAPATRON_ENGINE_WEBHOOK_URL` está definida → remoto (en progreso + despacho).
 - Si no → plantilla local mock. **No es el cerebro en vivo.**
 - Railway web tiene: `AUDITAPATRON_ENGINE_WEBHOOK_URL`, `AUDITAPATRON_ENGINE_HMAC_SECRET`, `OPENAI_API_KEY`, `GEMINI_API_KEY`.
+- `OPENAI_API_KEY` / `GEMINI_API_KEY` no activan el cerebro remoto. Solo pueden mejorar la narrativa local del recibo o CFDI cuando el puente no está o no devolvió lectura.
 - **No** usa `API_KEY_HELIOS`. Esa clave no decide el modo ni la completitud del puente.
 
 ### Qué usa del cerebro

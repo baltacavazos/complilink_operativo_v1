@@ -687,6 +687,14 @@ describe("appRouter case workflows", () => {
                 isrWithheld: "$310.00",
               },
             },
+            localNarrative: {
+              source: "ai",
+              provider: "openai",
+              nextStep: "Cruza este recibo con el CFDI del mismo periodo.",
+              explanation: "Se lee NSS y retenciones en el papel. Eso no consulta IMSS en vivo.",
+              concern: "El NSS visible no confirma alta.",
+              liveOfficialValidation: false,
+            },
           },
         },
       },
@@ -717,6 +725,13 @@ describe("appRouter case workflows", () => {
       isrWithheld: "$310.00",
     });
     expect(result.socialSecurityValidation.explanations.some((item: { summary: string }) => /NSS 12345678901/.test(item.summary))).toBe(true);
+    expect(result.socialSecurityValidation.explanations[0]).toMatchObject({
+      label: "Siguiente paso",
+      summary: "Cruza este recibo con el CFDI del mismo periodo.",
+    });
+    expect(result.socialSecurityValidation.explanations.map((item: { summary: string }) => item.summary).join(" ")).not.toMatch(
+      /Helios|CompliLink|openai/i,
+    );
     expect(result.socialSecurityValidation.reviewSourceExplanation).toMatch(/revisión local/i);
     expect(result.socialSecurityValidation.reviewSourceExplanation).not.toMatch(/Helios|CompliLink/i);
   });
