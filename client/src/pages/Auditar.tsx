@@ -759,7 +759,7 @@ function buildManualCommercePromptContext(activePlanKey: CommercePlanKey): Comme
     body:
       targetPlan === "essential"
         ? `Si ya vas a seguir armando tu expediente, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`
-        : `Si ya necesitas memoria histórica, revalidaciones y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
+        : `Si ya necesitas memoria histórica, revisión de señales documentales y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
     targetPlan,
     triggerPoint: "manual_drawer_open",
     productKey: targetPlan,
@@ -801,8 +801,8 @@ function buildCommercePromptContext(params: {
 
   if (/Revalidaciones IMSS e Infonavit/i.test(params.message)) {
     return {
-      title: "Activa revalidaciones avanzadas",
-      body: `Las revalidaciones IMSS e Infonavit están disponibles desde Audita Pro por ${formatCommercePriceMx(199)} al mes. Si ya quieres esa validación más profunda, puedes activarlo aquí mismo.`,
+      title: "Activa revisión avanzada de señales",
+      body: `La revisión de señales visibles de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommercePriceMx(199)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu expediente.`,
       targetPlan: "pro",
       triggerPoint: "revalidation_blocked",
       productKey: "pro",
@@ -1317,6 +1317,10 @@ type ConfirmedUploadResultView = {
     infonavitSignalsCount?: number;
     lastRevalidatedAt?: string | null;
     lastRevalidationSummary?: string | null;
+    disclaimer?: string | null;
+    liveImssValidation?: boolean;
+    validationMode?: string | null;
+    actionLabel?: string | null;
     revalidationHistory?: Array<{
       recordedAt: string;
       summary: string;
@@ -2058,6 +2062,18 @@ const analysisFieldLabels: Record<string, string> = {
   workerName: "Nombre visible de la persona trabajadora",
   employerName: "Nombre visible de la empresa",
   jobTitle: "Puesto visible",
+  payrollEmployerName: "Nombre visible de la empresa",
+  payrollPeriod: "Periodo de pago visible",
+  payrollNetAmount: "Pago neto visible",
+  payrollPerceptions: "Total de percepciones",
+  payrollDeductions: "Total de deducciones",
+  payrollNss: "NSS visible en el comprobante",
+  payrollEmployerRegistration: "Registro patronal visible",
+  isrWithheld: "Retención de ISR visible",
+  imssWithheld: "Retención de IMSS visible",
+  infonavitWithheld: "Descuento Infonavit visible",
+  socialSecurityBaseSalary: "SBC visible en el comprobante",
+  integratedDailySalary: "SDI visible en el comprobante",
 };
 
 const missingAnalysisFieldLabels: Record<string, string> = {
@@ -3092,7 +3108,7 @@ export function isTechnicalAnalysisKey(key: string) {
 
   const compact = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
   if (
-    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready|hasinfonavitsignal|infonavitdeductiontype)$/.test(
+    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready|hasinfonavitsignal|infonavitdeductiontype|liveimssvalidation|validationsource|validationmode|readyforsharedengine)$/.test(
       compact
     )
   ) {
@@ -3119,12 +3135,24 @@ export function isHumanMeaningfulAnalysisKey(key: string) {
       "workerName",
       "employerName",
       "jobTitle",
+      "payrollEmployerName",
+      "payrollPeriod",
+      "payrollNetAmount",
+      "payrollPerceptions",
+      "payrollDeductions",
+      "payrollNss",
+      "payrollEmployerRegistration",
+      "isrWithheld",
+      "imssWithheld",
+      "infonavitWithheld",
+      "socialSecurityBaseSalary",
+      "integratedDailySalary",
     ].includes(key)
   ) {
     return true;
   }
 
-  return /rfc|periodo|period|monto|amount|fecha|date|nombre|name|puesto|job|neto|deducc|empresa|employer/i.test(
+  return /rfc|periodo|period|monto|amount|fecha|date|nombre|name|puesto|job|neto|deducc|empresa|employer|nss|imss|isr|infonavit|sbc|sdi|registro/i.test(
     key
   );
 }
@@ -5488,8 +5516,8 @@ export default function Auditar() {
     "Empieza por un soporte IMSS o un estado relacionado con Infonavit para abrir este cruce dentro del expediente.";
   const socialSecurityLastCheckLabel =
     effectiveSocialSecurityValidation?.lastRevalidatedAt
-      ? `Última revalidación: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
-      : "Aún no has revalidado este cruce desde tu expediente.";
+      ? `Última revisión de señales: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
+      : "Aún no has vuelto a revisar estas señales desde tu expediente.";
   const socialSecurityRevalidationHistory =
     effectiveSocialSecurityValidation?.revalidationHistory ?? [];
   const socialSecurityRecommendedDocument = lastUpload?.nextSuggestedDocument
@@ -7221,7 +7249,7 @@ export default function Auditar() {
   const handleRevalidateSocialSecurity = async () => {
     if (!caseDetailInput) {
       setSubmitError(
-        "Primero elige un expediente para revalidar IMSS e Infonavit."
+        "Primero elige un expediente para revisar las señales visibles de IMSS e Infonavit."
       );
       return;
     }
@@ -7229,7 +7257,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       setLegalGateError(
         buildLegalGateErrorState(
-          "Antes de revalidar IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
+          "Antes de revisar las señales visibles de IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
           "validation"
         )
       );
@@ -7248,7 +7276,7 @@ export default function Auditar() {
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
-          "No fue posible revalidar IMSS e Infonavit en este momento."
+          "No fue posible revisar las señales visibles de IMSS e Infonavit en este momento."
         )
       );
     }
@@ -9302,6 +9330,10 @@ export default function Auditar() {
                   <p className="mt-3 text-xs leading-5 text-teal-900">
                     {socialSecurityLastCheckLabel}
                   </p>
+                  <p className="mt-2 text-xs leading-5 text-teal-800">
+                    {effectiveSocialSecurityValidation?.disclaimer ??
+                      "Esto no consulta IMSS, SAT ni Infonavit en vivo. Solo lee lo que ya aparece en tus documentos."}
+                  </p>
                 </div>
               </div>
 
@@ -9770,12 +9802,12 @@ export default function Auditar() {
                     <div className="flex items-center justify-between gap-2.5">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Historial de revalidaciones
+                          Historial de revisiones de señales
                         </p>
                         <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                           {socialSecurityRevalidationHistory.length
-                            ? `${socialSecurityRevalidationHistory.length} revalidación${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
-                            : "Todavía no hay revalidaciones guardadas"}
+                            ? `${socialSecurityRevalidationHistory.length} revisión${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} de señales visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
+                            : "Todavía no hay revisiones de señales guardadas"}
                         </p>
                       </div>
                       {effectiveSocialSecurityValidation?.clarityChangeLabel ? (
@@ -9817,7 +9849,7 @@ export default function Auditar() {
                                 <p className="mt-1.5 text-xs leading-4 text-slate-500">
                                   {entry.coverageScore
                                     ? `Cobertura estimada: ${entry.coverageScore}%`
-                                    : "Cobertura registrada en esta revalidación."}
+                                    : "Cobertura registrada en esta revisión de señales."}
                                   {entry.recommendedNextStep
                                     ? ` · ${entry.recommendedNextStep}`
                                     : ""}
@@ -9828,7 +9860,7 @@ export default function Auditar() {
                         </details>
                       ) : (
                         <div className="rounded-[0.95rem] border border-dashed border-slate-200 bg-slate-50 p-2.5 text-sm leading-5 text-slate-600">
-                          Cuando revalides IMSS e Infonavit, aquí verás fecha, estado y cambios.
+                          Cuando vuelvas a revisar las señales visibles de IMSS e Infonavit, aquí verás fecha, estado y cambios. Esto no consulta esos institutos en vivo.
                         </div>
                       )}
                     </div>

@@ -446,7 +446,8 @@ describe("appRouter case workflows", () => {
     expect(result.legalAcceptance.missingDocuments).toHaveLength(LEGAL_DOCUMENTS.length);
     expect(result.socialSecurityValidation).toMatchObject({
       statusLabel: "Cruce pendiente",
-      actionLabel: "Revalidar IMSS e Infonavit",
+      actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+      liveImssValidation: false,
       hasImssSignal: false,
       hasInfonavitSignal: false,
       documentsWithOpinion: 1,
@@ -544,7 +545,7 @@ describe("appRouter case workflows", () => {
       lastRevalidationSummary: "Cruce confirmado con nuevas señales visibles.",
       recommendedDocumentKey: null,
       recommendedDocumentTitle: "Cruce base cubierto",
-      recommendedDocumentReason: expect.stringContaining("revalidar"),
+      recommendedDocumentReason: expect.stringContaining("revisar las señales"),
       hasNewClarity: false,
       clarityDelta: 0,
     });
@@ -625,9 +626,85 @@ describe("appRouter case workflows", () => {
       hasImssSignal: false,
       hasInfonavitSignal: true,
       infonavitSignalsCount: 1,
+      liveImssValidation: false,
       statusLabel: "Cruce parcial",
       recommendedDocumentKey: "imss",
     });
+  });
+
+  it("counts IMSS labor signals from a recibo or CFDI without claiming live IMSS validation", async () => {
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      case: {
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        traceId: "trace-demo",
+        title: "Expediente demo",
+        jurisdiction: "CDMX",
+        status: "analysis",
+        employeeName: "Ana Pérez",
+        employerEntity: "Empresa Demo SA de CV",
+        summary: "Expediente de prueba",
+      },
+      alerts: [],
+      access: [],
+      events: [],
+      consents: [],
+    } as never);
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-RECIBO-001",
+        originalName: "recibo-abril.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 88,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-RECIBO-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "Recibo de nómina con NSS y cuota IMSS visibles.",
+          legalOpinion: "Hay señales documentales de seguridad social.",
+          riskLevel: "medium",
+          recommendedNextStep: "Contrastar con un soporte IMSS oficial si lo tienes.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: ["NSS"],
+          uncertainties: [],
+          confidenceScore: 80,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-04-05T10:00:00.000Z",
+          rawPayload: {
+            preliminaryAnalysis: {
+              confirmedData: {
+                payrollNss: "12345678901",
+                imssWithheld: "$120.50",
+                isrWithheld: "$310.00",
+              },
+            },
+          },
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const result = await caller.cases.detail({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+
+    expect(result.socialSecurityValidation).toMatchObject({
+      hasImssSignal: true,
+      hasInfonavitSignal: false,
+      imssDocumentsCount: 1,
+      liveImssValidation: false,
+      validationMode: "document_signals",
+      statusLabel: "Cruce parcial",
+      recommendedDocumentKey: "infonavit",
+    });
+    expect(result.socialSecurityValidation.disclaimer).toMatch(/no consulta IMSS/i);
+    expect(result.socialSecurityValidation.summary).toMatch(/no es una consulta en vivo/i);
   });
 
   it("returns contextual guidance for the Helios labor copilot and leaves audit evidence", async () => {
@@ -791,13 +868,15 @@ describe("appRouter case workflows", () => {
 
     expect(result).toMatchObject({
       statusLabel: "Cruce visible listo",
-      actionLabel: "Revalidar IMSS e Infonavit",
+      actionLabel: "Revisar señales visibles de IMSS e Infonavit",
+      liveImssValidation: false,
       hasImssSignal: true,
       hasInfonavitSignal: true,
       imssDocumentsCount: 1,
       infonavitSignalsCount: 1,
       documentsWithOpinion: 2,
-      lastRevalidationSummary: "Ya hay señales visibles de IMSS e Infonavit dentro del expediente y puedes revalidarlas sin salir de AuditaPatron.",
+      lastRevalidationSummary:
+        "Ya hay señales visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente.",
     });
     expect(result.coverageScore).toBeGreaterThan(60);
     expect(result.lastRevalidatedAt).toMatch(/^2026-/);
@@ -816,7 +895,8 @@ describe("appRouter case workflows", () => {
     expect(revalidationContract).toMatchObject({
       engine: "helios",
       scope: "social_security",
-      status: "completed",
+      status: "document_signals",
+      liveImssValidation: false,
       statusLabel: "Cruce visible listo",
       signals: {
         imssDocumentsCount: 1,

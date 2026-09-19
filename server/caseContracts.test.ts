@@ -168,6 +168,8 @@ describe("caseContracts", () => {
     expect(contractAnalysis.estimatedData.contractDailySalary).toBe("$207.44");
     expect(cfdiAnalysis.estimatedData.socialSecurityBaseSalary).toBe("331.45");
     expect(cfdiAnalysis.estimatedData.integratedDailySalary).toBe("331.45");
+    expect(cfdiAnalysis.confirmedData.socialSecurityBaseSalary).toBe("331.45");
+    expect(cfdiAnalysis.confirmedData.integratedDailySalary).toBe("331.45");
   });
 
   it("keeps factual payroll and IMSS fields found in a printable CFDI PDF text layer", () => {
@@ -202,6 +204,7 @@ describe("caseContracts", () => {
     expect(analysis.confirmedData.payrollPerceptions).toBe("$4725.60");
     expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
     expect(analysis.confirmedData.payrollNss).toBe("12345678901");
+    expect(analysis.confirmedData.employerRfc).toBe("GEX010101AAA");
   });
 
   it("reads the visible facts from the printable Camreflex payroll PDF text", () => {

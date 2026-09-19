@@ -310,6 +310,11 @@ describe("auditaPatronIntegrationService", () => {
     expect(result.observabilityEnvelope.targetHost).toContain("127.0.0.1");
     expect(result.observabilityEnvelope.targetPath).toBe("/engine/webhook");
     expect(result.observabilityEnvelope.outcomeCategory).toBe("success");
+    expect(result.observabilityEnvelope.healthProbe).toMatchObject({
+      mode: "soft",
+      attempted: true,
+      ok: true,
+    });
   });
 
   it("fails with invalid_ack_contract when health is valid but the webhook returns HTML", async () => {
@@ -473,8 +478,68 @@ describe("auditaPatronIntegrationService", () => {
 
     expect(result.status).toBe("sent");
     expect(result.httpStatus).toBe(202);
-    expect(result.attempts).toBe(1);
+    expect(result.attempts).toBe(2);
     expect(result.observabilityEnvelope.targetHost).toContain(String((healthyServer.address() as AddressInfo).port));
+  });
+
+  it("keeps health soft: a failed health contract does not block a valid webhook ack", async () => {
+    const { caseContract, documentContract, sharedEngineEnvelope } = buildFixtures();
+    let webhookHits = 0;
+
+    const server = await startBridgeServer({
+      healthHandler: (_req, res) => {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end("<html>landing</html>");
+      },
+      webhookHandler: (req, res) => {
+        webhookHits += 1;
+        req.resume();
+        res.statusCode = 202;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ received: true, responseContract: "auditapatron.bridge.ack.v1" }));
+      },
+    });
+
+    const result = await sendDocumentToAuditaPatronEngine(
+      {
+        caseContract,
+        documentContract,
+        sharedEngineEnvelope,
+        sourceUserId: 77,
+        uploadedAt: "2026-04-06T10:00:00.000Z",
+      },
+      {
+        webhookUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/engine/webhook`,
+        hmacSecret: "secret-for-engine-123456",
+        retryDelaysMs: [],
+      },
+    );
+
+    expect(webhookHits).toBe(1);
+    expect(result.status).toBe("sent");
+    expect(result.httpStatus).toBe(202);
+    expect(result.observabilityEnvelope.healthProbe).toMatchObject({
+      mode: "soft",
+      attempted: true,
+      ok: false,
+      reason: "health_non_json",
+    });
+  });
+
+  it("accepts HMAC signatures regardless of hex casing", () => {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const body = JSON.stringify({ event: "document.processed.v1", documentId: "DOC-001" });
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "secret-for-engine-123456");
+
+    const verification = verifySignedWebhook({
+      signatureHeader: `hmac-sha256:${signature.toUpperCase()}`,
+      timestampHeader: timestamp,
+      payloadBody: body,
+      hmacSecret: "secret-for-engine-123456",
+    });
+
+    expect(verification.ok).toBe(true);
   });
 
   it("skips delivery cleanly when configuration is missing", async () => {

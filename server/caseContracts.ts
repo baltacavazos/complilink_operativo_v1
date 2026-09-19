@@ -270,17 +270,31 @@ function extractContractDailySalary(text: string) {
 }
 
 function extractSocialSecurityBaseSalary(text: string) {
-  return (
-    extractXmlAttribute(text, "SalarioBaseCotApor") ??
-    extractSalaryByLabel(text, ["salariobasecotapor", "sbc", "salario base de cotizacion", "salario base cotizacion"])
-  );
+  const xmlValue = extractXmlAttribute(text, "SalarioBaseCotApor");
+  const labeledValue = extractSalaryByLabel(text, [
+    "salariobasecotapor",
+    "sbc",
+    "salario base de cotizacion",
+    "salario base cotizacion",
+  ]);
+  return {
+    confirmed: xmlValue,
+    estimated: xmlValue ? null : labeledValue,
+  };
 }
 
 function extractIntegratedDailySalary(text: string) {
-  return (
-    extractXmlAttribute(text, "SalarioDiarioIntegrado") ??
-    extractSalaryByLabel(text, ["salariodiariointegrado", "sdi", "salario diario integrado"])
-  );
+  const xmlValue = extractXmlAttribute(text, "SalarioDiarioIntegrado");
+  const labeledValue = extractSalaryByLabel(text, ["salariodiariointegrado", "sdi", "salario diario integrado"]);
+  return {
+    confirmed: xmlValue,
+    estimated: xmlValue ? null : labeledValue,
+  };
+}
+
+function extractCfdiEmployerRfc(text: string) {
+  const emitterRfc = text.match(/<[^>]*Emisor\b[^>]*\bRfc\s*=\s*["']([^"']+)["']/i)?.[1];
+  return emitterRfc?.toUpperCase() ?? null;
 }
 
 function extractCfdiWorkerName(text: string) {
@@ -720,9 +734,15 @@ export function buildPreliminaryLaborAnalysis(params: {
   const infonavitWithheld = isPayrollDocument
     ? extractXmlDeductionAmount(sourceText, "010") ?? extractPayrollAmount(sourceText, ["pago infonavit", "infonavit"])
     : null;
+  const xmlEmployerRfc = isPayrollDocument ? extractCfdiEmployerRfc(sourceText) : null;
+  const labeledEmployerRfc = extractRfc(sourceText);
+  const salaryBase = isPayrollDocument ? extractSocialSecurityBaseSalary(sourceText) : { confirmed: null, estimated: null };
+  const salaryIntegrated = isPayrollDocument
+    ? extractIntegratedDailySalary(sourceText)
+    : { confirmed: null, estimated: null };
 
   const estimatedData: Record<string, AnalysisValue> = {
-    employerRfc: extractRfc(sourceText),
+    employerRfc: xmlEmployerRfc ?? labeledEmployerRfc,
     period: payrollPeriod ?? extractPeriod(sourceText),
     apparentAmount: payrollNetAmount ?? extractMoney(sourceText),
     apparentEffectiveDate: extractDate(sourceText),
@@ -730,14 +750,8 @@ export function buildPreliminaryLaborAnalysis(params: {
     employerName: payrollEmployerName,
     jobTitle: extractNamedField(sourceText, ["puesto", "cargo"]),
     contractDailySalary: classification.documentType === "contract" ? extractContractDailySalary(sourceText) : null,
-    socialSecurityBaseSalary:
-      classification.documentType === "cfdi" || classification.documentType === "payroll_receipt"
-        ? extractSocialSecurityBaseSalary(sourceText)
-        : null,
-    integratedDailySalary:
-      classification.documentType === "cfdi" || classification.documentType === "payroll_receipt"
-        ? extractIntegratedDailySalary(sourceText)
-        : null,
+    socialSecurityBaseSalary: salaryBase.confirmed ?? salaryBase.estimated,
+    integratedDailySalary: salaryIntegrated.confirmed ?? salaryIntegrated.estimated,
   };
 
   const confirmedData: Record<string, AnalysisValue> = {
@@ -760,6 +774,9 @@ export function buildPreliminaryLaborAnalysis(params: {
     isrWithheld,
     imssWithheld,
     infonavitWithheld,
+    employerRfc: xmlEmployerRfc,
+    socialSecurityBaseSalary: salaryBase.confirmed,
+    integratedDailySalary: salaryIntegrated.confirmed,
   };
 
   const extractionTargets = (() => {

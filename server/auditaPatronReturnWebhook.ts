@@ -427,6 +427,7 @@ async function forwardIncomingUploadToRemote(params: { req: RawBodyRequest; rawB
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${ENV.auditapatronEngineHmacSecret}`,
         "X-AuditaPatron-Timestamp": timestamp,
         "X-AuditaPatron-Signature": signature,
         "X-AuditaPatron-Forwarded-By": "auditapatron-intake",

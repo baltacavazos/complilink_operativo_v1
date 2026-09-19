@@ -89,6 +89,14 @@ export type AuditaPatronEnginePayload = {
   operationalContext?: Record<string, unknown>;
 };
 
+export type AuditaPatronBridgeHealthProbeObservability = {
+  mode: "soft";
+  attempted: boolean;
+  ok: boolean | null;
+  reason?: string;
+  httpStatus: number | null;
+};
+
 export type AuditaPatronBridgeObservabilityEnvelope = {
   dispatchId: string;
   correlationId: string;
@@ -99,6 +107,7 @@ export type AuditaPatronBridgeObservabilityEnvelope = {
   retryDelayMs: number | null;
   remoteSmokeEnabled: boolean;
   httpStatusCode: number | null;
+  healthProbe: AuditaPatronBridgeHealthProbeObservability;
 };
 
 export type AuditaPatronEngineDispatchResult = {
@@ -276,6 +285,39 @@ function shouldProbeBridgeHealth(webhookUrl: string, remoteSmokeEnabled: boolean
   }
 }
 
+function createFetchSignal(timeoutMs = 15_000) {
+  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+    return AbortSignal.timeout(timeoutMs);
+  }
+  return undefined;
+}
+
+function emptyHealthProbeObservability(): AuditaPatronBridgeHealthProbeObservability {
+  return {
+    mode: "soft",
+    attempted: false,
+    ok: null,
+    httpStatus: null,
+  };
+}
+
+function toHealthProbeObservability(
+  probe: BridgeHealthProbeResult | null,
+  attempted: boolean,
+): AuditaPatronBridgeHealthProbeObservability {
+  if (!attempted || !probe) {
+    return emptyHealthProbeObservability();
+  }
+
+  return {
+    mode: "soft",
+    attempted: true,
+    ok: probe.ok,
+    reason: probe.reason,
+    httpStatus: probe.httpStatus,
+  };
+}
+
 function hasValidBridgeHealthAck(value: BridgeHealthAck | null, webhookUrl: string) {
   if (value?.status !== "ok" || value?.responseContract !== COMPLILINK_BRIDGE_RESPONSE_CONTRACT) {
     return false;
@@ -306,6 +348,7 @@ async function probeBridgeHealth(webhookUrl: string): Promise<BridgeHealthProbeR
       headers: {
         Accept: "application/json",
       },
+      signal: createFetchSignal(),
     });
     const responseBody = sanitizeResponseBody(await response.text());
     const parsed = safeJsonParse<BridgeHealthAck>(responseBody);
@@ -364,6 +407,7 @@ function buildObservabilityEnvelope(params: {
   retryDelayMs: number | null;
   remoteSmokeEnabled: boolean;
   httpStatusCode: number | null;
+  healthProbe?: AuditaPatronBridgeHealthProbeObservability;
 }) {
   return {
     dispatchId: params.dispatchId,
@@ -375,6 +419,7 @@ function buildObservabilityEnvelope(params: {
     retryDelayMs: params.retryDelayMs,
     remoteSmokeEnabled: params.remoteSmokeEnabled,
     httpStatusCode: params.httpStatusCode,
+    healthProbe: params.healthProbe ?? emptyHealthProbeObservability(),
   } satisfies AuditaPatronBridgeObservabilityEnvelope;
 }
 
@@ -409,7 +454,7 @@ function slugifyDocType(value: string) {
 
 function normalizeSignatureHeader(signatureHeader?: string | null) {
   if (!signatureHeader) return "";
-  return signatureHeader.replace(/^hmac-sha256:/i, "").trim();
+  return signatureHeader.replace(/^hmac-sha256:/i, "").trim().toLowerCase();
 }
 
 function toOptionalString(value: AuditaPatronMetadataValue | undefined) {
@@ -651,7 +696,7 @@ export function verifySignedWebhook(params: {
     params.timestampHeader,
     params.payloadBody,
     params.hmacSecret,
-  );
+  ).toLowerCase();
 
   const receivedBuffer = Buffer.from(normalizedReceivedSignature, "utf8");
   const expectedBuffer = Buffer.from(expectedSignature, "utf8");
@@ -677,7 +722,8 @@ export function verifySignedWebhook(params: {
   return { ok: true as const, expectedSignature };
 }
 
-function shouldRetry(httpStatus: number | null) {
+function shouldRetry(httpStatus: number | null, reason?: string) {
+  if (reason === "network_error") return true;
   return httpStatus !== null && httpStatus >= 500 && httpStatus <= 599;
 }
 
@@ -726,6 +772,7 @@ export async function sendDocumentToAuditaPatronEngine(
         retryDelayMs: null,
         remoteSmokeEnabled,
         httpStatusCode: null,
+        healthProbe: emptyHealthProbeObservability(),
       }),
     } satisfies AuditaPatronEngineDispatchResult;
 
@@ -749,6 +796,7 @@ export async function sendDocumentToAuditaPatronEngine(
   let finalTimestamp = buildUnixTimestamp();
   let lastTargetHost = initialTarget.targetHost;
   let lastTargetPath = initialTarget.targetPath;
+  let lastHealthProbe = emptyHealthProbeObservability();
 
   for (const webhookUrl of candidateWebhookUrls) {
     const candidateTarget = parseWebhookTarget(webhookUrl);
@@ -757,13 +805,15 @@ export async function sendDocumentToAuditaPatronEngine(
 
     if (shouldProbeBridgeHealth(webhookUrl, remoteSmokeEnabled)) {
       const healthProbe = await probeBridgeHealth(webhookUrl);
+      lastHealthProbe = toHealthProbeObservability(healthProbe, true);
       if (!healthProbe.ok) {
         lastHttpStatus = healthProbe.httpStatus;
         lastResponseBody = healthProbe.responseBody;
         lastErrorMessage = healthProbe.errorMessage;
         lastReason = healthProbe.reason;
-        continue;
       }
+    } else {
+      lastHealthProbe = emptyHealthProbeObservability();
     }
 
     for (let attemptIndex = 0; attemptIndex <= config.retryDelaysMs.length; attemptIndex += 1) {
@@ -782,6 +832,7 @@ export async function sendDocumentToAuditaPatronEngine(
             "X-AuditaPatron-Timestamp": finalTimestamp,
           },
           body,
+          signal: createFetchSignal(),
         });
 
         lastHttpStatus = response.status;
@@ -810,6 +861,7 @@ export async function sendDocumentToAuditaPatronEngine(
               retryDelayMs: null,
               remoteSmokeEnabled,
               httpStatusCode: response.status,
+              healthProbe: lastHealthProbe,
             }),
           } satisfies AuditaPatronEngineDispatchResult;
 
@@ -833,7 +885,7 @@ export async function sendDocumentToAuditaPatronEngine(
             ? "authentication_failed"
             : "webhook_rejected";
 
-        if (shouldRetry(response.status) && attemptIndex < config.retryDelaysMs.length) {
+        if (shouldRetry(response.status, lastReason) && attemptIndex < config.retryDelaysMs.length) {
           const retryDelayMs = config.retryDelaysMs[attemptIndex] ?? 0;
           emitBridgeObservability({
             status: "failed",
@@ -849,6 +901,7 @@ export async function sendDocumentToAuditaPatronEngine(
               retryDelayMs,
               remoteSmokeEnabled,
               httpStatusCode: response.status,
+              healthProbe: lastHealthProbe,
             }),
           });
           await sleep(retryDelayMs);
@@ -860,6 +913,31 @@ export async function sendDocumentToAuditaPatronEngine(
         lastHttpStatus = null;
         lastReason = "network_error";
         lastErrorMessage = error instanceof Error ? error.message : String(error);
+
+        if (shouldRetry(null, lastReason) && attemptIndex < config.retryDelaysMs.length) {
+          const retryDelayMs = config.retryDelaysMs[attemptIndex] ?? 0;
+          emitBridgeObservability({
+            status: "failed",
+            attempts,
+            reason: lastReason,
+            errorMessage: lastErrorMessage,
+            observabilityEnvelope: buildObservabilityEnvelope({
+              dispatchId,
+              correlationId,
+              targetHost: candidateTarget.targetHost,
+              targetPath: candidateTarget.targetPath,
+              outcomeCategory: "retry_scheduled",
+              retryScheduled: true,
+              retryDelayMs,
+              remoteSmokeEnabled,
+              httpStatusCode: null,
+              healthProbe: lastHealthProbe,
+            }),
+          });
+          await sleep(retryDelayMs);
+          continue;
+        }
+
         break;
       }
     }
@@ -886,6 +964,7 @@ export async function sendDocumentToAuditaPatronEngine(
       retryDelayMs: null,
       remoteSmokeEnabled,
       httpStatusCode: lastHttpStatus,
+      healthProbe: lastHealthProbe,
     }),
   } satisfies AuditaPatronEngineDispatchResult;
 
