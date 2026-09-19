@@ -1452,6 +1452,9 @@ describe("appRouter case workflows", () => {
     expect(result.answer).not.toMatch(/too_big|ZodError|conversationHistory/i);
     expect(result.answer).not.toMatch(/consulta en vivo|portal oficial|validamos ante el IMSS/i);
     expect(result.answer).toContain(WORKER_CHAT_DISCLAIMER);
+    expect(result.answer).not.toMatch(/Lecturas oficiales|Subcontrataci[oó]n|Diario Oficial/i);
+    expect(result.officialTitles).toEqual([]);
+    expect(result.officialSourcesNote).toBeNull();
     expect(invokeLLM).toHaveBeenCalledTimes(1);
   });
 

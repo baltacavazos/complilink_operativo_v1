@@ -157,8 +157,31 @@ export const DOF_LAST_GOOD_SEED: OfficialDofSeedEntry[] = [
 const LEGAL_SOURCE_QUESTION_RE =
   /\b(?:ley|lft|corte|scjn|dof|diario oficial|doctrina|jurisprudencia|criterio|despido|horas?\s+extras?|tiempo extraordinario|jornada|subcontrat|repse|amparo|carga de la prueba|ofrecimiento de trabajo|reforma laboral|trabajadores? de confianza)\b/i;
 
+const OFFICIAL_SOURCE_ASK_RE =
+  /\b(?:reforma(?:\s+laboral)?|jurisprudencia|ley(?:es)?|lft|dof|diario oficial|doctrina|corte|scjn|criterio)\b/i;
+
+const PAPER_DOCUMENT_QUESTION_RE =
+  /\b(?:recibo|imss|nss|isr|infonavit|cfdi|n[oó]mina|descuent\w*|retenci[oó]n(?:es)?|impuestos?|alta|semanas?\s+cotizad\w*|seguro social)\b/i;
+
 export function isOfficialLegalQuestion(prompt?: string | null): boolean {
   return LEGAL_SOURCE_QUESTION_RE.test(prompt ?? "");
+}
+
+export function isOfficialSourceAsk(prompt?: string | null): boolean {
+  return OFFICIAL_SOURCE_ASK_RE.test(prompt ?? "");
+}
+
+export function isPaperDocumentQuestion(prompt?: string | null): boolean {
+  return PAPER_DOCUMENT_QUESTION_RE.test(prompt ?? "");
+}
+
+export function shouldAttachOfficialDigest(prompt?: string | null): boolean {
+  const text = (prompt ?? "").trim();
+  if (!text) return false;
+  if (isPaperDocumentQuestion(text) && !isOfficialSourceAsk(text)) {
+    return false;
+  }
+  return isOfficialLegalQuestion(text);
 }
 
 export function classifyScjnKind(tesisKey?: string | null): OfficialDigestKind {
@@ -357,11 +380,22 @@ export function selectOfficialDigest(
     limit?: number;
   },
 ): OfficialDigestResult {
+  const liveAttempted = Boolean(options?.liveAttempted);
+  const liveBlocked = Boolean(options?.liveBlocked);
+  if (!shouldAttachOfficialDigest(query.prompt)) {
+    return {
+      citations: [],
+      freshness: options?.freshness ?? (liveBlocked ? "blocked" : "last_good"),
+      liveAttempted,
+      liveBlocked,
+      honestyNote: null,
+    };
+  }
+
   const candidates = options?.candidates ?? listLastGoodOfficialCitations();
-  const legalQuestion = isOfficialLegalQuestion(query.prompt);
   const scored = candidates
     .map((citation) => ({ citation, score: scoreCitation(citation, query) }))
-    .filter((item) => item.score >= (legalQuestion ? 3 : 6))
+    .filter((item) => item.score >= 3)
     .sort((left, right) => right.score - left.score)
     .slice(0, options?.limit ?? 3)
     .map((item) => item.citation);
@@ -372,14 +406,12 @@ export function selectOfficialDigest(
   }
   const citations = [...unique.values()].slice(0, options?.limit ?? 3);
 
-  const liveAttempted = Boolean(options?.liveAttempted);
-  const liveBlocked = Boolean(options?.liveBlocked);
   const freshness =
     options?.freshness ??
     (liveBlocked && citations.length > 0 ? "last_good" : liveBlocked ? "blocked" : "last_good");
 
   let honestyNote: string | null = null;
-  if (legalQuestion && liveBlocked && citations.length === 0) {
+  if (liveBlocked && citations.length === 0) {
     honestyNote = OFFICIAL_DIGEST_BLOCKED_COPY;
   } else if (citations.length > 0 && (freshness === "last_good" || liveBlocked)) {
     honestyNote = OFFICIAL_DIGEST_LAST_GOOD_COPY;
@@ -450,4 +482,20 @@ export function shortenOfficialTitlesInText(
 
 export function formatOfficialCitationLines(citations: OfficialDigestCitation[]): string[] {
   return citations.slice(0, 3).map((item) => shortenOfficialTitle(item.title));
+}
+
+export function stripOfficialTitlesFromText(value: string): string {
+  let next = value;
+  for (const title of listKnownOfficialTitles()) {
+    if (title && next.includes(title)) {
+      next = next.split(title).join("");
+    }
+    const shortened = shortenOfficialTitle(title);
+    if (shortened.length >= 24 && next.includes(shortened)) {
+      next = next.split(shortened).join("");
+    }
+  }
+  next = next.replace(OFFICIAL_DIGEST_LAST_GOOD_COPY, "");
+  next = next.replace(OFFICIAL_DIGEST_BLOCKED_COPY, "");
+  return next.replace(/\n{3,}/g, "\n\n").replace(/[ \t]{2,}/g, " ").trim();
 }

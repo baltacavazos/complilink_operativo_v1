@@ -566,6 +566,28 @@ describe("sanitizePersistedHeliosCopilotMessages", () => {
       "sanitizePersistedHeliosCopilotMessages(heliosCopilotMessages.slice(-6))",
     );
   });
+
+  it("al cargar historial viejo quita el blob Zod/too_big de conversationHistory", () => {
+    const zodBlob = JSON.stringify([
+      {
+        origin: "string",
+        code: "too_big",
+        maximum: 2000,
+        inclusive: true,
+        path: ["conversationHistory", 1, "content"],
+        message: "Too big: expected string to have <=2000 characters",
+      },
+    ]);
+    const loaded = sanitizePersistedHeliosCopilotMessages([
+      { role: "user", content: "¿Me descontaron IMSS?" },
+      { role: "assistant", content: zodBlob },
+    ]);
+
+    expect(loaded).toHaveLength(2);
+    expect(loaded[0]?.content).toBe("¿Me descontaron IMSS?");
+    expect(loaded[1]?.content).toBe("No pude completar esa respuesta. Intenta de nuevo.");
+    expect(JSON.stringify(loaded)).not.toMatch(/too_big|conversationHistory|"code"|maximum/i);
+  });
 });
 
 describe("formatVisibleFileSize", () => {

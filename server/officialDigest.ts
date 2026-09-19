@@ -1,4 +1,5 @@
 import {
+  shouldAttachOfficialDigest,
   DOF_LAST_GOOD_SEED,
   SCJN_API_BASE,
   SCJN_HARVEST_SEED,
@@ -195,6 +196,16 @@ export async function resolveOfficialDigest(
   query: OfficialDigestQuery,
   options?: { live?: boolean },
 ): Promise<OfficialDigestResult> {
+  if (!shouldAttachOfficialDigest(query.prompt)) {
+    return {
+      citations: [],
+      freshness: "last_good",
+      liveAttempted: false,
+      liveBlocked: false,
+      honestyNote: null,
+    };
+  }
+
   const allowLive = options?.live !== false;
   if (!allowLive) {
     return selectOfficialDigest(query, {

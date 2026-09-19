@@ -84,6 +84,25 @@ describe("official digest live + last_good", () => {
     );
   });
 
+  it("en una pregunta de IMSS del recibo no consulta ni adjunta el digest oficial", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const digest = await resolveOfficialDigest(
+      {
+        prompt: "¿Me descontaron IMSS?",
+        documentType: "payroll_receipt",
+        hasImssSignal: true,
+      },
+      { live: true },
+    );
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(digest.citations).toEqual([]);
+    expect(digest.honestyNote).toBeNull();
+    expect(digest.liveAttempted).toBe(false);
+  });
+
   it("en modo semilla, una pregunta legal bloqueada sin candidatos dice la verdad", async () => {
     const digest = await resolveOfficialDigest(
       { prompt: "¿Qué dice la jurisprudencia inventada 45/2099?" },

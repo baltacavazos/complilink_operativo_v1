@@ -109,6 +109,33 @@ describe("sanitizeWorkerChatCopy", () => {
 });
 
 describe("sanitizeVisibleChatHistoryContent", () => {
+  it("al cargar historial viejo reemplaza el blob Zod/too_big por español limpio", () => {
+    const zodBlob = JSON.stringify([
+      {
+        origin: "string",
+        code: "too_big",
+        maximum: 2000,
+        inclusive: true,
+        path: ["conversationHistory", 3, "content"],
+        message: "Too big: expected string to have <=2000 characters",
+      },
+    ]);
+
+    expect(sanitizeVisibleChatHistoryContent(zodBlob)).toBe(WORKER_CHAT_RETRY_ERROR);
+    expect(sanitizeVisibleChatHistoryContent(zodBlob)).not.toMatch(
+      /too_big|conversationHistory|"code"|maximum/i,
+    );
+    expect(
+      sanitizeVisibleChatHistoryMessages([
+        { role: "user", content: "¿Me descontaron IMSS?" },
+        { role: "assistant", content: zodBlob },
+      ]),
+    ).toEqual([
+      { role: "user", content: "¿Me descontaron IMSS?" },
+      { role: "assistant", content: WORKER_CHAT_RETRY_ERROR },
+    ]);
+  });
+
   it("limpia burbujas viejas de localStorage y no deja required_plan/current_plan", () => {
     const storedLeak =
       "Asesor laboral con lectura de varios documentos del expediente está disponible desde Audita Esencial. Puedes seguir usando la parte gratuita o desbloquearlo cuando te haga sentido.||required_plan=essential||current_plan=free";
@@ -331,6 +358,31 @@ describe("chat UX helpers", () => {
 
     expect(lineSafe).toContain("Lo que falta");
     expect(parseWorkerStructuredAnswer(lineSafe).map((item) => item.heading)).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Lo que falta",
+      "Siguiente paso",
+      null,
+    ]);
+  });
+
+  it("en una pregunta de recibo/IMSS no pinta Lecturas oficiales aunque vengan en el digest", () => {
+    const withOfficial = formatWorkerChatAnswer({
+      answer: "En tu recibo se ve un descuento de IMSS.",
+      known: "Hay un descuento de IMSS de $120.50.",
+      missing: "No hay constancia oficial de alta.",
+      nextStep: "Compara con el siguiente recibo.",
+      officialSources: listLastGoodOfficialCitations(),
+      officialSourcesNote:
+        "Estas lecturas oficiales las tengo de una consulta anterior. Ahora no pude abrir la Corte o el Diario Oficial.",
+      prompt: "¿Me descontaron IMSS?",
+      includeOfficialSources: false,
+    });
+
+    expect(withOfficial).toContain("Respuesta clara");
+    expect(withOfficial).toContain("Siguiente paso");
+    expect(withOfficial).not.toMatch(/Lecturas oficiales|Subcontrataci[oó]n|Diario Oficial|consulta anterior/i);
+    expect(parseWorkerStructuredAnswer(withOfficial).map((item) => item.heading)).toEqual([
       "Respuesta clara",
       "Lo que sí se sabe",
       "Lo que falta",
