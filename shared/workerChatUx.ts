@@ -33,6 +33,8 @@ export const WORKER_CHAT_MULTI_DOC_UPSELL =
   "La lectura de varios documentos juntos está en el plan Esencial. Con tu plan gratis puedes preguntar sobre este documento.";
 
 export const WORKER_CHAT_RETRY_ERROR = "No pude completar esa respuesta. Intenta de nuevo.";
+export const WORKER_EXPEDIENTE_NEEDED_COPY =
+  "Esta consulta necesita tu expediente abierto.";
 export const WORKER_CHAT_HISTORY_MAX_MESSAGES = 6;
 export const WORKER_CHAT_HISTORY_MAX_CONTENT_CHARS = 1800;
 
@@ -226,6 +228,14 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   next = next.replace(/\bForge\b/g, "la plataforma");
   next = next.replace(/APIMarket/gi, "el servicio de consulta");
   next = next.replace(/\bForensic\b/gi, "revisión documental");
+  next = next.replace(
+    /No tienes acceso a este espacio\.?/gi,
+    WORKER_EXPEDIENTE_NEEDED_COPY,
+  );
+  next = next.replace(
+    /Access denied for tenant\.?/gi,
+    WORKER_EXPEDIENTE_NEEDED_COPY,
+  );
   next = stripInventedLegalCitations(next);
   next = stripLiveValidationClaims(next);
   next = collapseCopy(next);

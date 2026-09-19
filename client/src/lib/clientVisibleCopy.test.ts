@@ -159,7 +159,13 @@ describe("sanitizeClientVisibleCopy", () => {
       "Esta cuenta aún no tiene un expediente personal.",
     );
     expect(sanitizeClientVisibleCopy("Access denied for tenant")).toBe(
-      "No tienes acceso a este espacio.",
+      "Esta consulta necesita tu expediente abierto.",
+    );
+    expect(sanitizeClientVisibleCopy("No tienes acceso a este espacio.")).toBe(
+      "Esta consulta necesita tu expediente abierto.",
+    );
+    expect(sanitizeClientVisibleCopy("No tienes acceso a este espacio.")).not.toMatch(
+      /No tienes acceso a este espacio/i,
     );
     expect(sanitizeClientVisibleCopy("Access denied for case")).toBe(
       "No tienes acceso a este expediente.",

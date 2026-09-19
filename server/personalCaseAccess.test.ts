@@ -18,8 +18,17 @@ describe("acceso de expediente para cuentas nuevas", () => {
   it("el chat del asesor usa el expediente personal de la cuenta nueva", () => {
     expect(routersSource).toContain("ensurePersonalWorkspaceForUser");
     expect(routersSource).toContain("heliosCopilotChat");
-    expect(routersSource).toMatch(/!ceoBypass && workspace.caseId \? workspace.caseId : input.caseId/);
+    expect(routersSource).toContain('throw new Error("Esta consulta necesita tu expediente abierto.")');
+    expect(routersSource).not.toMatch(/workspace.caseId \? workspace.caseId : input.caseId/);
     expect(routersSource).toContain("getPrimaryCaseIdForUser");
+  });
+
+  it("repara membresía y crea expediente personal si falta case_access", () => {
+    expect(dbSource).toContain("allowCreate");
+    expect(dbSource).toContain("createBarePersonalCase");
+    expect(dbSource).toContain("isNull(laborCases.assignedUserId)");
+    expect(dbSource).toContain('throw new Error("Esta consulta necesita tu expediente abierto.")');
+    expect(dbSource).not.toContain('throw new Error("No tienes acceso a este espacio.")');
   });
 
   it("un segundo create no abre otro expediente personal", () => {

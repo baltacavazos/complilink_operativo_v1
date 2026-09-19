@@ -12,6 +12,7 @@ import {
   WORKER_CHAT_MULTI_DOC_UPSELL,
   WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_RETRY_ERROR,
+  WORKER_EXPEDIENTE_NEEDED_COPY,
   WORKER_CHAT_SHEET_COPY,
   WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
@@ -105,6 +106,22 @@ describe("sanitizeWorkerChatCopy", () => {
     expect(friendly).toContain(WORKER_CHAT_MULTI_DOC_UPSELL);
     expect(friendly).not.toMatch(/required_plan|current_plan|\|\|/);
     expect(hasForbiddenWorkerChatClaim(friendly)).toBe(false);
+  });
+
+  it("nunca deja el copy de candado «No tienes acceso a este espacio» en el Asesor", () => {
+    expect(sanitizeWorkerChatCopy("No tienes acceso a este espacio.")).toBe(
+      WORKER_EXPEDIENTE_NEEDED_COPY,
+    );
+    expect(toFriendlyWorkerChatError("No tienes acceso a este espacio.")).toBe(
+      WORKER_EXPEDIENTE_NEEDED_COPY,
+    );
+    expect(toFriendlyWorkerChatError("Access denied for tenant")).toBe(
+      WORKER_EXPEDIENTE_NEEDED_COPY,
+    );
+    expect(WORKER_EXPEDIENTE_NEEDED_COPY).toBe(
+      "Esta consulta necesita tu expediente abierto.",
+    );
+    expect(WORKER_EXPEDIENTE_NEEDED_COPY).not.toMatch(/No tienes acceso/i);
   });
 });
 

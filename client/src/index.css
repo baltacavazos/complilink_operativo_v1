@@ -1088,6 +1088,17 @@
       display: none !important;
     }
 
+    .ap-worker-chat .ap-chat-prompt-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ap-worker-chat .ap-chat-prompt {
+      min-width: 0;
+      max-width: 100%;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
     .ap-worker-chat .ap-chat-header {
       padding-top: 0.75rem !important;
       padding-bottom: 0.75rem !important;

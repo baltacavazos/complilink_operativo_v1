@@ -1355,7 +1355,36 @@ describe("appRouter case workflows", () => {
     });
     expect(result.answer).toContain("Respuesta clara");
     expect(result.answer).not.toMatch(/No tienes acceso a este espacio/i);
+    expect(result.answer).not.toMatch(/Esta consulta necesita tu expediente abierto/i);
     expect(result.answer).not.toMatch(/labor_cases|SQL|ER_NO_SUCH_TABLE/i);
+  });
+
+  it("no usa un expediente ajeno ni copy de candado si el workspace personal aún no tiene caso", async () => {
+    vi.mocked(db.ensurePersonalWorkspaceForUser).mockResolvedValue({
+      tenant: null,
+      tenantId: null,
+      caseId: null,
+    } as never);
+    vi.mocked(db.isCeoBypassUser).mockResolvedValue(false);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 24,
+        openId: "email:tester-24",
+        role: "user",
+        name: "Tester Inf 24",
+      }),
+    );
+
+    await expect(
+      caller.cases.heliosCopilotChat({
+        tenantId: "tenant-equivocado",
+        caseId: "CASE-AJENO",
+        prompt: "¿Me descontaron IMSS, impuestos o Infonavit?",
+      }),
+    ).rejects.toThrow(/Esta consulta necesita tu expediente abierto/i);
+
+    expect(db.getCaseDetailForUser).not.toHaveBeenCalled();
   });
 
   it("acepta historial grande con rubros oficiales y responde IMSS en 4 secciones sin too_big ni portal en vivo", async () => {

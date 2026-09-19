@@ -3439,16 +3439,24 @@ export const appRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
         await ensureMysqlTables();
-        const workspace = await ensurePersonalWorkspaceForUser({
+        let workspace = await ensurePersonalWorkspaceForUser({
           userId: ctx.user.id,
           userName: ctx.user.name ?? ctx.user.email ?? "AuditaPatron",
           userEmail: ctx.user.email,
         });
         const ceoBypass = await isCeoBypassUser(ctx.user.id);
-        const tenantId =
-          !ceoBypass && workspace.tenantId ? workspace.tenantId : input.tenantId;
-        const caseId =
-          !ceoBypass && workspace.caseId ? workspace.caseId : input.caseId;
+        if (!ceoBypass && (!workspace.tenantId || !workspace.caseId)) {
+          workspace = await ensurePersonalWorkspaceForUser({
+            userId: ctx.user.id,
+            userName: ctx.user.name ?? ctx.user.email ?? "AuditaPatron",
+            userEmail: ctx.user.email,
+          });
+        }
+        if (!ceoBypass && (!workspace.tenantId || !workspace.caseId)) {
+          throw new Error("Esta consulta necesita tu expediente abierto.");
+        }
+        const tenantId = ceoBypass ? input.tenantId : workspace.tenantId!;
+        const caseId = ceoBypass ? input.caseId : workspace.caseId!;
 
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,

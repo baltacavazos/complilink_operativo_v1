@@ -14,7 +14,8 @@ describe("límites de cuenta visibles al trabajador", () => {
   });
 
   it("también traduce denegaciones de acceso que pueden filtrarse en la misma subida", () => {
-    expect(dbSource).toContain('throw new Error("No tienes acceso a este espacio.")');
+    expect(dbSource).toContain('throw new Error("Esta consulta necesita tu expediente abierto.")');
+    expect(dbSource).not.toContain('throw new Error("No tienes acceso a este espacio.")');
     expect(dbSource).toContain('throw new Error("No tienes acceso a este expediente.")');
     expect(dbSource).toContain('throw new Error("No puedes modificar este expediente.")');
     expect(dbSource).toContain('throw new Error("No tienes permiso de administración en este espacio.")');

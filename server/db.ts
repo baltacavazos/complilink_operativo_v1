@@ -879,7 +879,38 @@ export async function assertTenantAccess(userId: number, tenantId: string) {
           return healed[0];
         }
       }
-      throw new Error("No tienes acceso a este espacio.");
+
+      if (!(await isCeoBypassUser(userId))) {
+        const knownTenantIds = await getAccessibleTenantIds(userId);
+        if (knownTenantIds.includes(tenantId) || knownTenantIds.length === 0) {
+          const user = await getUserById(userId);
+          if (user) {
+            const workspace = await ensurePersonalWorkspaceForUser({
+              userId,
+              userName: user.name ?? user.email ?? "AuditaPatron",
+              userEmail: user.email,
+            });
+            if (workspace.tenantId === tenantId) {
+              const personal = await db
+                .select()
+                .from(tenantMemberships)
+                .where(
+                  and(
+                    eq(tenantMemberships.userId, userId),
+                    eq(tenantMemberships.tenantId, tenantId),
+                    eq(tenantMemberships.status, "active"),
+                  ),
+                )
+                .limit(1);
+              if (personal[0]) {
+                return personal[0];
+              }
+            }
+          }
+        }
+      }
+
+      throw new Error("Esta consulta necesita tu expediente abierto.");
     }
 
     return membership[0];
@@ -2510,13 +2541,13 @@ export async function seedDemoCaseIfEmpty(userId: number) {
 
     const existingPrimary = await getPrimaryCaseIdForUser(userId, tenantIds[0]);
     if (existingPrimary) {
-      await repairPersonalCaseAccess(userId, tenantIds[0], existingPrimary);
+      await repairPersonalCaseAccess(userId, tenantIds[0], existingPrimary, { allowCreate: true });
       return false;
     }
 
     const [caseCount] = await db.select({ value: count() }).from(laborCases).where(inArray(laborCases.tenantId, tenantIds));
     if (Number(caseCount?.value ?? 0) > 0) {
-      await repairPersonalCaseAccess(userId, tenantIds[0]);
+      await repairPersonalCaseAccess(userId, tenantIds[0], undefined, { allowCreate: true });
       return false;
     }
 
@@ -2630,7 +2661,56 @@ export async function seedDemoCaseIfEmpty(userId: number) {
   }
 }
 
-export async function repairPersonalCaseAccess(userId: number, tenantId: string, caseId?: string) {
+async function createBarePersonalCase(userId: number, tenantId: string) {
+  const caseId = buildCaseId(tenantId, `u${userId}`);
+  const traceId = buildTraceId(tenantId, caseId, `u${userId}`);
+  const now = new Date();
+
+  const db = await getDb();
+  if (!db) return null;
+
+  const existing = await db
+    .select({
+      caseId: laborCases.caseId,
+      tenantId: laborCases.tenantId,
+      traceId: laborCases.traceId,
+      assignedUserId: laborCases.assignedUserId,
+    })
+    .from(laborCases)
+    .where(and(eq(laborCases.tenantId, tenantId), eq(laborCases.caseId, caseId)))
+    .limit(1);
+  if (existing[0]) {
+    return existing[0];
+  }
+
+  await createCaseRecord({
+    tenantId,
+    caseId,
+    traceId,
+    title: "Mi expediente",
+    jurisdiction: "México",
+    status: "intake",
+    priority: "medium",
+    assignedUserId: userId,
+    summary: "Expediente personal para revisar tus documentos.",
+    openedAt: now,
+    lastActivityAt: now,
+  });
+
+  return {
+    caseId,
+    tenantId,
+    traceId,
+    assignedUserId: userId,
+  };
+}
+
+export async function repairPersonalCaseAccess(
+  userId: number,
+  tenantId: string,
+  caseId?: string,
+  options?: { allowCreate?: boolean },
+) {
   try {
     await ensureMysqlTables();
     const db = await getDb();
@@ -2672,6 +2752,25 @@ export async function repairPersonalCaseAccess(userId: number, tenantId: string,
         .orderBy(asc(laborCases.createdAt))
         .limit(1);
       caseRow = assigned[0];
+    }
+
+    if (!caseRow) {
+      const unassigned = await db
+        .select({
+          caseId: laborCases.caseId,
+          tenantId: laborCases.tenantId,
+          traceId: laborCases.traceId,
+          assignedUserId: laborCases.assignedUserId,
+        })
+        .from(laborCases)
+        .where(and(eq(laborCases.tenantId, tenantId), isNull(laborCases.assignedUserId)))
+        .orderBy(asc(laborCases.createdAt))
+        .limit(1);
+      caseRow = unassigned[0];
+    }
+
+    if (!caseRow && options?.allowCreate) {
+      caseRow = (await createBarePersonalCase(userId, tenantId)) ?? undefined;
     }
 
     if (!caseRow) {
@@ -2730,15 +2829,31 @@ export async function ensurePersonalWorkspaceForUser(params: {
   userEmail?: string | null;
 }) {
   await ensureMysqlTables();
-  const tenant = await ensureTenantForUser(params);
-  await seedDemoCaseIfEmpty(params.userId);
-  const caseId = tenant?.tenantId ? await getPrimaryCaseIdForUser(params.userId, tenant.tenantId) : null;
-  if (tenant?.tenantId && caseId) {
-    await repairPersonalCaseAccess(params.userId, tenant.tenantId, caseId);
+  let tenant = await ensureTenantForUser(params);
+  if (!tenant?.tenantId) {
+    tenant = await ensureTenantForUser(params);
   }
+  const tenantId = tenant?.tenantId ?? null;
+  if (!tenantId) {
+    return {
+      tenant,
+      tenantId: null,
+      caseId: null,
+    };
+  }
+
+  await seedDemoCaseIfEmpty(params.userId);
+  let caseId = await getPrimaryCaseIdForUser(params.userId, tenantId);
+  if (!caseId) {
+    await repairPersonalCaseAccess(params.userId, tenantId, undefined, { allowCreate: true });
+    caseId = await getPrimaryCaseIdForUser(params.userId, tenantId);
+  } else {
+    await repairPersonalCaseAccess(params.userId, tenantId, caseId, { allowCreate: true });
+  }
+
   return {
     tenant,
-    tenantId: tenant?.tenantId ?? null,
+    tenantId,
     caseId,
   };
 }

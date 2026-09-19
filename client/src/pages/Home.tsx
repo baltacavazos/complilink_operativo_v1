@@ -1724,7 +1724,8 @@ function HeliosFirstEntrySection() {
                     <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
                       {guestPreview.preview.classification.normalizedDocType}
                     </span>
-                    {typeof guestPreview.heliosOpinion.confidenceScore === "number" ? (
+                    {typeof guestPreview.heliosOpinion.confidenceScore === "number" &&
+                    guestPreview.heliosOpinion.confidenceScore > 0 ? (
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700">
                         Confianza {guestPreview.heliosOpinion.confidenceScore}%
                       </span>

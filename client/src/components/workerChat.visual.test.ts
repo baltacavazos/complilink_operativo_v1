@@ -23,6 +23,12 @@ describe("worker chat visual polish", () => {
     expect(sheet).toContain("ap-worker-chat");
     expect(sheet).toContain("ap-chat-chip");
     expect(sheet).toContain("ap-chat-prompt");
+    expect(sheet).toContain("ap-chat-prompt-grid");
+    expect(sheet).toContain("hasOrientativeConfidence");
+    expect(sheet).toContain("confidenceScore > 0");
+    expect(sheet).not.toContain("typeof confidenceScore === \"number\" ? (");
+    expect(sheet).toContain("grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2");
+    expect(sheet).toContain("sm:col-span-2");
     expect(sheet).toContain('variant="calm"');
     expect(sheet).toContain("sanitizeMultiline");
     expect(sheet).toContain("WORKER_CHAT_SHEET_COPY");
@@ -61,7 +67,10 @@ describe("worker chat visual polish", () => {
     expect(css).toContain(".ap-worker-chat .ap-chat-source-link");
     expect(css).toContain("@media (max-width: 390px)");
     expect(css).toContain(".ap-worker-chat .ap-chat-compact-hide");
+    expect(css).toContain(".ap-worker-chat .ap-chat-prompt-grid");
+    expect(css).toContain("grid-template-columns: minmax(0, 1fr)");
     expect(sheet).toContain("ap-chat-compact-hide");
+    expect(sheet).toContain("ap-chat-prompt-grid");
     expect(sheet).toContain("ap-chat-header");
     expect(sheet).toContain("h-dvh max-h-dvh w-full max-w-full");
     expect(css).toContain("letter-spacing: -0.018em");

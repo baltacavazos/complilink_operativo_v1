@@ -12762,7 +12762,8 @@ Reforzar con otro documento
                           <span className="rounded-full bg-white px-3 py-1 text-slate-700">
                             {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).action}
                           </span>
-                          {typeof lastHeliosOpinion.confidenceScore === "number" ? (
+                          {typeof lastHeliosOpinion.confidenceScore === "number" &&
+                          lastHeliosOpinion.confidenceScore > 0 ? (
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                               Confianza {lastHeliosOpinion.confidenceScore}%
                             </span>
@@ -14004,7 +14005,8 @@ Reforzar con otro documento
 
                                 <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600">
                                   {typeof heliosOpinion.confidenceScore ===
-                                  "number" ? (
+                                    "number" &&
+                                  heliosOpinion.confidenceScore > 0 ? (
                                     <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                                       Confianza {heliosOpinion.confidenceScore}%
                                     </span>
@@ -15484,20 +15486,20 @@ Reforzar con otro documento
             </div>
           </div>
           {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
-            <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
+            <div className="mb-3 grid min-w-0 grid-cols-3 gap-1.5 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               {workspaceSectionCards.map(item => {
                 const isActive = workspaceSection === item.key;
                 return (
                   <button
                     key={`mobile-nav-${item.key}`}
                     type="button"
-                    className={`rounded-[0.95rem] px-3 py-2 text-left transition ${isActive ? "bg-slate-950 text-white shadow-sm" : "bg-white text-slate-700"}`}
+                    className={`min-w-0 overflow-hidden rounded-[0.95rem] px-1.5 py-2 text-left transition ${isActive ? "bg-slate-950 text-white shadow-sm" : "bg-white text-slate-700"}`}
                     onClick={() => setWorkspaceSection(item.key)}
                   >
-                    <p className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${isActive ? "text-slate-300" : "text-slate-400"}`}>
+                    <p className={`truncate text-[10px] font-semibold tracking-tight ${isActive ? "text-slate-300" : "text-slate-400"}`}>
                       {item.label}
                     </p>
-                    <p className={`mt-1 text-xs leading-5 ${isActive ? "text-slate-100" : "text-slate-600"}`}>
+                    <p className={`mt-1 truncate text-[11px] leading-4 ${isActive ? "text-slate-100" : "text-slate-600"}`}>
                       {item.key === "resumen"
                         ? "Lo esencial"
                         : item.key === "expediente"
