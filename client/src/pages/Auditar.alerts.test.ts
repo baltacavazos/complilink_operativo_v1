@@ -943,6 +943,11 @@ describe("preview sanitization", () => {
     expect(sanitizePreviewText("true")).toBe("Sí");
     expect(sanitizePreviewText("false")).toBe("No");
     expect(sanitizePreviewText(true)).not.toBe("true");
+    expect(sanitizePreviewText("true.")).toBe("Sí");
+    expect(sanitizePreviewText('"true"')).toBe("Sí");
+    expect(sanitizePreviewText("false!")).toBe("No");
+    expect(auditarSource).toContain("warmVisibleNamingCopy(item.summary)");
+    expect(auditarSource).toContain("sanitizePreviewText(field.value");
   });
 
   it("recorta textos largos pero mantiene visibles los resúmenes normales", () => {

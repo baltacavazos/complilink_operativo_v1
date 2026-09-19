@@ -546,8 +546,8 @@ export function sanitizePreviewText(
             .replace(/\s+/g, " ")
             .trim();
 
-  if (/^(true|false)$/i.test(normalized)) {
-    return normalized.toLowerCase() === "true" ? "Sí" : "No";
+  if (/^(true|false)$/i.test(normalized) || /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i.test(normalized)) {
+    return /true/i.test(normalized) ? "Sí" : "No";
   }
 
   if (!normalized) {
@@ -1114,8 +1114,8 @@ function warmVisibleNamingCopy(value?: string | null) {
   if (value == null) return value ?? null;
   if (typeof value === "boolean") return value ? "Sí" : "No";
   const trimmed = String(value).trim();
-  if (/^(true|false)$/i.test(trimmed)) {
-    return trimmed.toLowerCase() === "true" ? "Sí" : "No";
+  if (/^(true|false)$/i.test(trimmed) || /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i.test(trimmed)) {
+    return /true/i.test(trimmed) ? "Sí" : "No";
   }
   return sanitizeClientVisibleCopy(value);
 }
@@ -3013,8 +3013,8 @@ function formatAnalysisValue(key: string, value: unknown) {
     return value ? "Sí" : "No";
   }
 
-  if (typeof value === "string" && /^(true|false)$/i.test(value.trim())) {
-    return value.trim().toLowerCase() === "true" ? "Sí" : "No";
+  if (typeof value === "string" && (/^(true|false)$/i.test(value.trim()) || /^["'`“”‘’]*\s*(true|false)\s*["'`“”‘’]*[.!]?\s*$/i.test(value.trim()))) {
+    return /true/i.test(value) ? "Sí" : "No";
   }
 
   if (key === "internalDocumentType") {
@@ -3033,7 +3033,11 @@ function formatAnalysisValue(key: string, value: unknown) {
     return formatDate(value);
   }
 
-  return String(value);
+  return sanitizePreviewText(value, {
+    maxLength: 180,
+    emptyFallback: "Sin dato visible",
+    technicalFallback: "Contenido técnico omitido para mantener la lectura clara.",
+  });
 }
 
 function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
@@ -5371,7 +5375,14 @@ export default function Auditar() {
       [];
 
     if (baseExplanation.length) {
-      return baseExplanation.slice(0, 3);
+      return baseExplanation
+        .map(item => ({
+          ...item,
+          label: warmVisibleNamingCopy(item.label) ?? "Qué ya vimos",
+          summary: warmVisibleNamingCopy(item.summary) ?? "",
+        }))
+        .filter(item => item.summary.length > 0 && !/^(true|false)$/i.test(item.summary))
+        .slice(0, 3);
     }
 
     const items: HeliosSimpleExplanationItemView[] = [];
@@ -10447,7 +10458,12 @@ export default function Auditar() {
                                 </span>
                               </div>
                               <p className="mt-2 break-words text-sm leading-6 text-slate-900">
-                                {field.value}
+                                {sanitizePreviewText(field.value, {
+                                  maxLength: 160,
+                                  emptyFallback: "Sin dato visible",
+                                  technicalFallback:
+                                    "Contenido técnico omitido para mantener la vista previa clara.",
+                                })}
                               </p>
                             </div>
                           ))}
@@ -10751,7 +10767,12 @@ export default function Auditar() {
                                     </span>
                                   </div>
                                   <p className="mt-1 break-words text-sm leading-6 text-slate-800">
-                                    {field.value}
+                                    {sanitizePreviewText(field.value, {
+                                      maxLength: 160,
+                                      emptyFallback: "Sin dato visible",
+                                      technicalFallback:
+                                        "Contenido técnico omitido para mantener la vista previa clara.",
+                                    })}
                                   </p>
                                 </div>
                               ))}
