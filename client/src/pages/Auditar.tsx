@@ -8689,7 +8689,7 @@ export default function Auditar() {
           <MobileAppShell
             current="auditar"
             title="Empieza tu auditoría"
-            subtitle="Sube tu documento y mira primero el resultado."
+            subtitle="Primero ves el resultado."
           />
           <input
             ref={guestFileInputRef}
@@ -8722,15 +8722,15 @@ export default function Auditar() {
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
-                {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial del recibo"}
+                {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial"}
               </div>
-              <h1 className="mt-5 max-w-[13ch] text-balance text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">
-                {isNativeAppExperience ? "Tu documento, en palabras simples" : "Tu recibo, en palabras simples"}
+              <h1 className="mt-5 max-w-[16ch] text-balance text-3xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-4xl">
+                Tu documento, en palabras simples
               </h1>
-              <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
+              <p className="mt-4 max-w-full text-base leading-7 text-slate-700 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
                   ? "Sube foto o archivo. Te mostramos una lectura inicial cuando termine de procesarse."
-                  : "Sube un recibo, CFDI o PDF del IMSS. La lectura puede tardar un momento; te mostraremos el resultado (semáforo) y el siguiente paso útil. El resultado es la primera lectura: qué ya se entiende y qué conviene revisar."}
+                  : "La lectura puede tardar un momento. Te mostramos el resultado (semáforo) y el siguiente paso útil: qué ya se entiende y qué conviene revisar."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
@@ -8809,7 +8809,7 @@ export default function Auditar() {
         <MobileAppShell
           current="auditar"
           title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
-          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión y decide el siguiente paso." : "Sube tu documento y mira primero el resultado."}
+          subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión." : "Primero ves el resultado."}
         />
         <div
           ref={heroCardRef}

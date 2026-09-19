@@ -114,7 +114,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).toContain("isHumanMeaningfulAnalysisKey");
     expect(auditar).toContain("!/^sin dato visible$/i.test(value)");
     expect(auditar).toContain("filename|mimetype|internaldocumenttype");
-    expect(auditar).toContain("Tu recibo, en palabras simples");
+    expect(auditar).toContain("Tu documento, en palabras simples");
     expect(auditar).toContain('data-ap-status-cluster');
     expect(auditar).toContain('cardClass: "border-teal-200 bg-teal-50/90"');
     expect(css).toContain('.audita-auditar [data-ap-privacy-bar]');

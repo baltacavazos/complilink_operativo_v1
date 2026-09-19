@@ -45,7 +45,7 @@ export default function MobileAppShell({ current, title, subtitle }: MobileAppSh
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-slate-950">{title}</p>
-            <p className="mt-0.5 truncate text-xs text-slate-500">{subtitle}</p>
+            <p className="mt-0.5 truncate text-xs font-medium text-slate-700">{subtitle}</p>
           </div>
         </div>
 

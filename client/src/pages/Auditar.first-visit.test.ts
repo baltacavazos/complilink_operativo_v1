@@ -48,7 +48,7 @@ describe("Auditar first visit", () => {
     expect(source).not.toContain("Sube y revisa en segundos");
     expect(source).toContain("La lectura puede tardar un momento");
     expect(source).toContain(
-      "El resultado es la primera lectura: qué ya se entiende y qué conviene revisar.",
+      "Te mostramos el resultado (semáforo) y el siguiente paso útil: qué ya se entiende y qué conviene revisar.",
     );
   });
 });
