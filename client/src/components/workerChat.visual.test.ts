@@ -78,6 +78,8 @@ describe("worker chat visual polish", () => {
     expect(sheet).not.toMatch(/dark:bg-slate-950/);
     const auditar = read("../pages/Auditar.tsx");
     expect(auditar).toContain('chatHarness") === "1"');
+    expect(auditar).toContain('get("confidence") === "0"');
+    expect(auditar).toContain("border-slate-200 bg-white px-3.5 py-2 text-sm leading-5 text-slate-900");
     expect(auditar).toContain('chatHistoryHarness") === "1"');
     expect(auditar).toContain(
       "||required_plan=essential||current_plan=free",

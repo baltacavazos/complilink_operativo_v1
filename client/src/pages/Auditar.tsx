@@ -8556,7 +8556,11 @@ export default function Auditar() {
           suggestedPromptsContext="Preguntas simples sobre tu recibo."
           caseTitle="Recibo de mayo"
           employeeName="Ana Pérez"
-          confidenceScore={86}
+          confidenceScore={
+            new URLSearchParams(window.location.search).get("confidence") === "0"
+              ? 0
+              : 86
+          }
           disclaimer={WORKER_CHAT_DISCLAIMER}
           summary="En tu recibo se ve un descuento de IMSS de $120.50."
           nextSuggestedDocument={{
@@ -9009,11 +9013,11 @@ export default function Auditar() {
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
                   Autorización legal pendiente
                 </div>
-                <h2 className="mt-3 text-lg font-semibold tracking-[-0.03em] text-slate-950">
+                <h2 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-slate-950">
                   La confirmación aparece justo cuando envías o guardas tu
                   archivo.
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-700">
+                <p className="mt-2 text-sm leading-6 text-slate-800">
                   No interrumpe tu flujo antes de tiempo. Solo protege el
                   expediente y deja registro versionado en la acción principal.
                 </p>
@@ -10317,19 +10321,19 @@ export default function Auditar() {
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
-                  <div className="mt-3 rounded-[1.1rem] border border-sky-100 bg-sky-50 px-3.5 py-2 text-sm leading-5 text-sky-950">
+                  <div className="mt-3 rounded-[1.1rem] border border-slate-200 bg-white px-3.5 py-2 text-sm leading-5 text-slate-900 shadow-[inset_3px_0_0_0_#0f766e]">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="font-semibold">
+                        <p className="font-semibold text-slate-950">
                           Documento sugerido preparado
                         </p>
-                        <p className="mt-0.5">
+                        <p className="mt-0.5 text-slate-800">
                           Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.
                         </p>
                       </div>
                       <button
                         type="button"
-                        className="text-sm font-semibold text-sky-700 underline-offset-4 hover:underline"
+                        className="text-sm font-semibold text-teal-900 underline-offset-4 hover:underline"
                         onClick={() => setSelectedRecommendedTargetType(null)}
                       >
                         Quitar enfoque
@@ -15390,7 +15394,7 @@ Reforzar con otro documento
                 className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                 onClick={handleOpenBillingPortal}
               >
-                Gestionar suscripción y cobros
+                Gestionar suscripción y pagos
               </Button>
             ) : null}
             <DrawerClose asChild>

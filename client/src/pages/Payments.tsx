@@ -49,7 +49,7 @@ function translateSubscriptionStatus(status: string) {
     case "trialing":
       return "Suscripción en prueba";
     case "past_due":
-      return "Suscripción con cobro pendiente";
+      return "Suscripción con pago pendiente";
     case "canceled":
       return "Suscripción cancelada";
     case "unpaid":
@@ -113,7 +113,7 @@ export default function Payments() {
           <div className="mt-4 rounded-[1.25rem] border border-teal-200 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-950">
             <p className="font-semibold">{DEMO_NO_CHARGE}</p>
             <p className="mt-1 text-teal-900">
-              Puedes ver tu plan y esta pantalla con calma. Hoy no hay cobro real ni cargo a tarjeta.
+              Puedes ver tu plan y esta pantalla con calma. Hoy no hay cargo a tarjeta.
             </p>
           </div>
           <div className="mt-4">
@@ -144,10 +144,10 @@ export default function Payments() {
             </p>
           </article>
           <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
-            <p className="text-sm font-medium text-slate-600">Cobro</p>
+            <p className="text-sm font-medium text-slate-600">Cargo</p>
             <p className="mt-2 text-2xl font-semibold leading-tight text-slate-950">Sin cargo</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              Esta cuenta está en demostración. No se abre un cobro en vivo.
+              Esta cuenta está en demostración. No se abre un cargo en vivo.
             </p>
           </article>
           <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
@@ -156,13 +156,13 @@ export default function Payments() {
             <p className="mt-2 text-sm leading-6 text-slate-700">
               {lastPayment
                 ? `Último movimiento: ${formatDate(lastPayment.paidAt)}`
-                : "Todavía no hay cobros en esta cuenta."}
+                : "Todavía no hay pagos en esta cuenta."}
             </p>
           </article>
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 sm:p-6">
-          <p className="text-sm font-medium text-slate-600">Tus cobros</p>
+          <p className="text-sm font-medium text-slate-600">Aquí verás tus pagos</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
             Pagos y compras registradas
           </h2>
