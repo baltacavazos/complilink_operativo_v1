@@ -8677,7 +8677,7 @@ export default function Auditar() {
                 Crear cuenta y guardar esta revisión <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
-                Cambiar recibo
+                Cambiar documento
               </Button>
             </div>
           </section>
@@ -8849,7 +8849,7 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                {isNativeAppExperience ? "Tu documento" : "Tu recibo o comprobante"}
+                Tu documento
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
@@ -8881,7 +8881,7 @@ export default function Auditar() {
                 />
                 {isNativeAppExperience
                   ? "Tu documento sigue privado dentro de la app"
-                  : "Tu recibo está seguro y solo tú lo ves"}
+                  : "Tu archivo está seguro y solo tú lo ves"}
               </div>
             ) : null}
           </div>
@@ -10324,19 +10324,22 @@ export default function Auditar() {
                 </div>
 
                 {selectedRecommendedTargetType && effectiveRecommendedTarget ? (
-                  <div className="mt-3 rounded-[1.1rem] border border-slate-200 bg-white px-3.5 py-2 text-sm leading-5 text-slate-900 shadow-[inset_3px_0_0_0_#0f766e]">
+                  <div
+                    data-testid="auditar-suggested-document"
+                    className="ap-suggested-document mt-3 rounded-[1.1rem] border px-3.5 py-2 text-sm leading-5 shadow-[inset_3px_0_0_0_#0f766e]"
+                  >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div>
-                        <p className="font-semibold text-slate-950">
+                        <p className="font-semibold">
                           Documento sugerido preparado
                         </p>
-                        <p className="mt-0.5 text-slate-800">
+                        <p className="mt-0.5">
                           Enfocado en {effectiveRecommendedTarget.label.toLowerCase()}. Sube tu archivo para aplicar.
                         </p>
                       </div>
                       <button
                         type="button"
-                        className="text-sm font-semibold text-teal-900 underline-offset-4 hover:underline"
+                        className="text-sm font-semibold underline-offset-4 hover:underline"
                         onClick={() => setSelectedRecommendedTargetType(null)}
                       >
                         Quitar enfoque

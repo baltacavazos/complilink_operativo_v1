@@ -61,6 +61,15 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     }
   });
 
+  it("deja el CTA de /auditar como documento y el aviso sugerido legible", () => {
+    const auditar = readClientSource("pages/Auditar.tsx");
+    expect(auditar).toContain('const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento"');
+    expect(auditar).toContain("Cambiar documento");
+    expect(auditar).not.toContain("Cambiar recibo");
+    expect(auditar).toContain("ap-suggested-document");
+    expect(auditar).toContain('data-testid="auditar-suggested-document"');
+  });
+
   it("falla si Helios queda visible en rutas de trabajador", () => {
     for (const relativePath of WORKER_PAGES) {
       const visible = visibleCopySurface(readClientSource(relativePath));
@@ -236,9 +245,14 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(payments).not.toContain("Lista para tus cobros");
     expect(payments).not.toContain("Tus cobros");
     expect(app).toContain("Volver al inicio");
-    expect(app).toContain("location.startsWith(\"/auditar\")");
-    expect(app).toContain("location.startsWith(\"/pagos\")");
+    expect(app).toContain('path === "/auditar"');
+    expect(app).toContain('path === "/pagos"');
+    expect(app).toContain('path.startsWith("/legal")');
+    expect(app).toContain('path.startsWith("/ceo")');
+    expect(app).not.toContain("fixed top-3 right-3");
+    expect(app).not.toContain("fixed bottom-4 left-4");
     expect(app).not.toContain(">Salir<");
+    expect(app).toMatch(/>\s*Volver\s*</);
     expect(auditar).toContain('text-xl font-semibold tracking-[-0.03em] text-slate-950');
     expect(auditar).toContain("La confirmación aparece justo cuando envías o guardas tu");
     expect(auditar).toContain('data-testid="auditar-legal-confirmation"');

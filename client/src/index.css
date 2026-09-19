@@ -1100,6 +1100,27 @@
     color: rgb(51 65 85) !important;
   }
 
+  .ap-suggested-document,
+  .dark .audita-auditar .ap-suggested-document,
+  .dark .audita-auditar div.ap-suggested-document {
+    background-color: #ffffff !important;
+    border: 1px solid rgb(203 213 225) !important;
+    color: rgb(15 23 42) !important;
+  }
+
+  .ap-suggested-document p,
+  .ap-suggested-document button,
+  .dark .audita-auditar .ap-suggested-document p,
+  .dark .audita-auditar .ap-suggested-document button,
+  .dark .audita-auditar .ap-suggested-document [class*="text-"] {
+    color: rgb(15 23 42) !important;
+  }
+
+  .ap-suggested-document p + p,
+  .dark .audita-auditar .ap-suggested-document p + p {
+    color: rgb(51 65 85) !important;
+  }
+
   @media (max-width: 390px) {
     .ap-worker-chat {
       inset: 0 !important;

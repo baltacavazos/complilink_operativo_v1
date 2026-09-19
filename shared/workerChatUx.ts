@@ -210,11 +210,41 @@ export function stripLiveValidationClaims(value: string): string {
   return next;
 }
 
+export function rewriteReadingJargon(value: string): string {
+  let next = value;
+  next = next.replace(/una señal inicial/gi, "un resultado inicial");
+  next = next.replace(/señales iniciales/gi, "un resultado inicial");
+  next = next.replace(/señal inicial/gi, "resultado inicial");
+  next = next.replace(/Ves la señal/g, "Ves el resultado");
+  next = next.replace(/ves la señal/gi, "ves el resultado");
+  next = next.replace(/faltan señales/gi, "falta qué revisar");
+  next = next.replace(/Aún no hay señales visibles/gi, "Aún no se ve un resultado");
+  next = next.replace(/te señala/gi, "te marca");
+  next = next.replace(/señales de confianza/gi, "alertas de confianza");
+  next = next.replace(/señales operativas/gi, "alertas operativas");
+  next = next.replace(/señales del sistema/gi, "alertas del sistema");
+  next = next.replace(/las señales del documento/gi, "los datos del documento");
+  next = next.replace(/señales del documento/gi, "datos del documento");
+  next = next.replace(/señales visibles/gi, "un resultado visible");
+  next = next.replace(/señales llamativas/gi, "alertas");
+  next = next.replace(/señales útiles/gi, "un resultado útil");
+  next = next.replace(/Esta señal se/gi, "Esta alerta se");
+  next = next.replace(/Se detectó una señal/gi, "Se detectó una alerta");
+  next = next.replace(/Señal de acceso/gi, "Alerta de acceso");
+  next = next.replace(/Señal visible/gi, "Lectura visible");
+  next = next.replace(/Señal para revisar/gi, "Alerta para revisar");
+  next = next.replace(/Señales operativas/gi, "Alertas operativas");
+  next = next.replace(/\bseñales\b/gi, "alertas");
+  next = next.replace(/\bseñal\b/gi, "alerta");
+  return next;
+}
+
 export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   if (value == null) return value ?? null;
   if (!value) return value;
 
   let next = stripInternalControlMarkers(value);
+  next = rewriteReadingJargon(next);
   next = next.replace(/CompliLink Operativo/gi, "AuditaPatrón");
   next = next.replace(/CompliLink/gi, "AuditaPatrón");
   next = next.replace(/Modo Helios/gi, "Asesor laboral");

@@ -136,7 +136,12 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).toContain('const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento"');
     expect(auditar).toContain("UPLOAD_ACCEPTED_DOCUMENTS_HINT");
     expect(auditar).toContain("Recibo, CFDI o PDF del IMSS");
-    expect(auditar).toContain("Tu recibo o comprobante");
+    expect(auditar).toContain("Tu documento");
+    expect(auditar).not.toContain("Tu recibo o comprobante");
+    expect(auditar).toContain("Cambiar documento");
+    expect(auditar).not.toContain("Cambiar recibo");
+    expect(auditar).toContain("ap-suggested-document");
+    expect(auditar).toContain('data-testid="auditar-suggested-document"');
     expect(auditar).toContain("Revisa lo importante");
     expect(auditar).toContain("Foto o archivo para empezar");
     expect(auditar).not.toContain("Sube tu recibo o comprobante");
@@ -189,6 +194,8 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(css).toContain("background-color: rgb(255 255 255) !important");
     expect(css).toContain("color: rgb(51 65 85) !important");
     expect(css).toContain("color: rgb(15 23 42) !important");
+    expect(css).toContain(".ap-suggested-document");
+    expect(auditar).toContain('data-testid="auditar-suggested-document"');
     expect(auditar).not.toContain("CompliLink");
     expect(auditar).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);
 
