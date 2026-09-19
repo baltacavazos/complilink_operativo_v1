@@ -24,16 +24,17 @@ export default function PapersPlaceholder() {
           </div>
           <p className="text-center text-sm font-semibold text-teal-800">Tu historial</p>
           <h1 className="mt-2 text-center text-[1.75rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950">
-            Lo que ya revisaste
+            {auth.isAuthenticated && latestCase ? "Lo que ya revisaste" : "Aún no hay revisiones guardadas"}
           </h1>
           <p className="mt-3 text-center text-sm leading-6 text-slate-700">
-            Tus documentos y revisiones viven en tu expediente. Ábrelo para ver lo más reciente
-            con calma, en el mismo lugar donde subes tu recibo.
+            {auth.isAuthenticated && latestCase
+              ? "Aquí quedan tus documentos y el resultado de cada revisión. Ábrelo para ver lo más reciente con calma."
+              : "Aquí verás cada documento que confirmes y el resultado de esa revisión. Aparece cuando guardas la primera en Auditar."}
           </p>
 
           {auth.isAuthenticated && latestCase ? (
             <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-4 text-left">
-              <p className="text-sm font-medium text-slate-600">Última revisión</p>
+              <p className="text-sm font-medium text-slate-700">Última revisión</p>
               <p className="mt-1 text-base font-semibold text-slate-950">
                 {latestCase.stageLabel ?? "Expediente en curso"}
               </p>
@@ -42,9 +43,9 @@ export default function PapersPlaceholder() {
               ) : null}
             </div>
           ) : (
-            <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-4 text-center text-sm leading-6 text-slate-700">
-              Si todavía no subes un archivo, empieza por tu recibo. El historial se arma solo
-              cuando guardas la primera revisión.
+            <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white px-4 py-4 text-center text-sm leading-6 text-slate-700">
+              Sube un recibo, CFDI o PDF del IMSS en Auditar. Cuando confirmes esa primera
+              revisión, este historial mostrará el documento y su resultado.
             </div>
           )}
 

@@ -110,7 +110,7 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("Ver toda la bóveda");
     expect(auditar).toContain("focusRecommendedUpload()");
     expect(auditar).toContain('className="mt-4 rounded-full bg-teal-600 text-white hover:bg-teal-700"');
-    expect(auditar).toContain('text-sm font-semibold tracking-tight text-emerald-900">Señal inicial');
+    expect(auditar).toContain('text-sm font-semibold tracking-tight text-emerald-900">Resultado inicial');
     expect(auditar).not.toContain(
       'text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Señal inicial',
     );
@@ -121,7 +121,7 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).not.toContain("complilinkMonitoring");
     expect(auditar).toContain("Revisa esto primero");
     expect(auditar).toContain("Todo en orden por ahora");
-    expect(auditar).toContain("Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.");
+    expect(auditar).toContain("El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.");
     expect(auditar).toContain("Asesor laboral");
     expect(auditar).toContain("Preguntar al asesor");
     expect(auditar).toContain("Lo que sí se sabe");
@@ -176,8 +176,11 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
 
     const papers = readClientSource("pages/PapersPlaceholder.tsx");
     expect(papers).toContain("Lo que ya revisaste");
-    expect(papers).toContain("Tus documentos y revisiones viven en tu expediente");
+    expect(papers).toContain("Aún no hay revisiones guardadas");
+    expect(papers).toContain("Aquí verás cada documento que confirmes y el resultado de esa revisión");
     expect(papers).toContain("Ir a mi revisión");
+    expect(papers).not.toContain("Pronto verás");
+    expect(papers).not.toContain("todavía no está lista");
     expect(papers).not.toContain("Page Not Found");
     expect(papers).not.toContain("Página no encontrada");
     expect(papers).not.toMatch(/\bHelios\b/);

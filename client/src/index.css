@@ -515,7 +515,11 @@
   .audita-auditar [data-testid="auditar-verdict-panel"] [class*="text-slate-500"],
   .audita-auditar [data-testid="auditar-result-reveal"] [class*="text-slate-500"],
   .audita-auditar [data-testid="auditar-severity-summary"] [class*="text-slate-500"],
-  .audita-auditar [data-testid="auditar-simple-explanation"] [class*="text-slate-500"] {
+  .audita-auditar [data-testid="auditar-simple-explanation"] [class*="text-slate-500"],
+  .audita-auditar [class*="text-slate-500"],
+  .audita-auditar [class*="text-slate-400"],
+  .audita-historial [class*="text-slate-500"],
+  .audita-historial [class*="text-slate-400"] {
     color: rgb(51 65 85);
   }
 
@@ -1064,6 +1068,11 @@
   .audita-access p {
     overflow: visible;
     text-wrap: pretty;
+  }
+
+  .audita-historial [class*="text-slate-600"],
+  .audita-historial [class*="text-slate-500"] {
+    color: rgb(51 65 85);
   }
 
   @media (max-width: 390px) {
