@@ -107,6 +107,30 @@ describe("sanitizeVisibleChatHistoryContent", () => {
     expect(rendered).not.toMatch(/\bHelios\b/i);
   });
 
+  it("al sanitizar historial no borra un siguiente paso IMSS+ISR", () => {
+    const dualAnswer = formatWorkerChatAnswer({
+      answer: "En tu recibo se ve IMSS $120.50 e ISR $310.00.",
+      known: "Periodo 2026-05-01 al 2026-05-15. IMSS $120.50. ISR $310.00.",
+      missing: "No hay constancia oficial de alta ni entero al SAT.",
+      nextStep:
+        "Cruza el descuento IMSS $120.50 y el NSS 12345678901 con tu siguiente recibo o un papel IMSS; eso no confirma el alta oficial. Cruza también la retención ISR $310.00 con el CFDI o el depósito del mismo periodo.",
+    });
+    const rendered = sanitizeVisibleChatHistoryContent(dualAnswer);
+
+    expect(parseWorkerStructuredAnswer(rendered).map((item) => item.heading)).toEqual([
+      "Respuesta clara",
+      "Lo que sí se sabe",
+      "Lo que falta",
+      "Siguiente paso",
+      null,
+    ]);
+    expect(rendered).toMatch(/no confirma el alta oficial/i);
+    expect(rendered).toMatch(/ISR \$310\.00/);
+    expect(rendered).toMatch(/CFDI|dep[oó]sito/i);
+    expect(rendered).not.toMatch(/required_plan|current_plan|\|\||\bHelios\b/i);
+    expect(hasForbiddenWorkerChatClaim(rendered)).toBe(false);
+  });
+
   it("al renderizar historial sucio conserva las 4 secciones de una respuesta nueva", () => {
     const cleanAnswer = formatWorkerChatAnswer({
       answer: "En tu recibo se ve un descuento de IMSS de $120.50.",

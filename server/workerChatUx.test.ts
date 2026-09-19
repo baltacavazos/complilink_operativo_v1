@@ -76,6 +76,33 @@ describe("workerChatUx grounding", () => {
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
+  it("si preguntan IMSS e ISR juntos, el fallback cubre alta y retención en las 4 secciones", () => {
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, {
+      prompt: "¿Me descontaron IMSS o impuestos?",
+    });
+    const instructions = buildWorkerChatLlmInstructions(grounding, {
+      prompt: "¿Me descontaron IMSS o impuestos?",
+    });
+
+    expect(answer).toContain("Respuesta clara");
+    expect(answer).toContain("Lo que sí se sabe");
+    expect(answer).toContain("Lo que falta");
+    expect(answer).toContain("Siguiente paso");
+    expect(answer).toMatch(/IMSS \$120\.50|NSS 12345678901/);
+    expect(answer).toMatch(/no confirma el alta oficial/i);
+    expect(answer).toMatch(/ISR \$310\.00/);
+    expect(answer).toMatch(/CFDI|depositaron/i);
+    expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
+    expect(answer).not.toMatch(/Helios|CompliLink|required_plan|current_plan|\|\|/i);
+    expect(instructions).toMatch(/IMSS e ISR/);
+    expect(instructions).toMatch(/foco de esta pregunta: imss_fiscal/i);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
   it("si preguntan por IMSS, el fallback local cita el descuento y niega el alta oficial", () => {
     const grounding = buildWorkerChatGrounding({
       documents: [payrollDocument],
