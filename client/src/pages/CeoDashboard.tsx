@@ -1066,7 +1066,7 @@ export default function CeoDashboard() {
       },
       {
         icon: GitBranch,
-        label: "Bridge",
+        label: "Puente",
         path: "/ceo/bridge",
         badge:
           bridgeOverview.summary.critical + bridgeOverview.summary.warning + bridgeOverview.summary.pending > 0
@@ -2002,7 +2002,7 @@ export default function CeoDashboard() {
               <ShieldX className="h-6 w-6" />
             </div>
             <div className="max-w-3xl space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Acceso restringido</p>
+              <p className="text-sm font-semibold tracking-tight text-amber-700">Acceso restringido</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                 Este expediente privado sólo está disponible para el owner autorizado.
               </h2>
@@ -2025,7 +2025,7 @@ export default function CeoDashboard() {
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div className="max-w-3xl space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rose-700">Lectura no disponible</p>
+              <p className="text-sm font-semibold tracking-tight text-rose-700">Lectura no disponible</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                 No fue posible cargar el snapshot ejecutivo del CEO.
               </h2>
@@ -3467,8 +3467,8 @@ export default function CeoDashboard() {
               <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Observabilidad bridge</p>
-                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Snapshot operativo CompliLink ↔ AuditaPatron</h3>
+                    <p className="text-xs font-semibold tracking-tight text-slate-500">Observabilidad del puente</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Snapshot operativo del puente ↔ AuditaPatron</h3>
                   </div>
                   <Badge className="rounded-full border border-sky-200 bg-sky-50 text-sky-700">
                     {formatNumber(bridgeOverview.rows.length)} expedientes trazados
@@ -4208,7 +4208,7 @@ export default function CeoDashboard() {
                             </div>
                             <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[250px]">
                               <p><strong className="text-slate-950">Trace:</strong> {item.traceId || "Sin traza"}</p>
-                              <p><strong className="text-slate-950">CompliLink ID:</strong> {item.compliLinkId || "Pendiente"}</p>
+                              <p><strong className="text-slate-950">ID de integración:</strong> {item.compliLinkId || "Pendiente"}</p>
                               <p><strong className="text-slate-950">Dispatch:</strong> {formatDateTime(item.dispatchedAt)}</p>
                               <p><strong className="text-slate-950">Retorno:</strong> {formatDateTime(item.returnedAt)}</p>
                               <p><strong className="text-slate-950">HTTP:</strong> {item.httpStatusCode ?? "Sin respuesta"}</p>

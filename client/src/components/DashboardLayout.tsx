@@ -82,14 +82,14 @@ export default function DashboardLayout({
             <div className="mb-8 flex items-center gap-4">
               <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-border/70 object-contain p-1 shadow-[0_18px_40px_-24px_rgba(15,23,42,0.42)]" />
               <div>
-                <p className="text-sm font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="text-sm font-medium tracking-tight text-muted-foreground">
                   AuditaPatron · Área privada
                 </p>
                 <h1 className="text-2xl font-semibold tracking-tight">Acceso seguro a tu cuenta</h1>
               </div>
             </div>
             <p className="text-base leading-7 text-muted-foreground">
-              Tu información laboral está protegida. Inicia sesión con Manus, Google o un código por correo para entrar a tu espacio privado y continuar con tus documentos y casos.
+              Tu información laboral está protegida. Inicia sesión con Google o un código por correo para entrar a tu espacio privado y continuar con tus documentos y casos.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
@@ -319,7 +319,7 @@ function DashboardLayoutContent({
             <div className="flex min-w-0 items-center gap-3">
               {isMobile ? <SidebarTrigger className="h-9 w-9 rounded-xl border border-border bg-background" /> : null}
               <div className="min-w-0">
-                <p className="truncate text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                <p className="truncate text-xs font-medium tracking-tight text-muted-foreground">
                   {activeNavigationItem?.label ?? title}
                 </p>
                 <h1 className="truncate text-lg font-semibold tracking-tight text-foreground">

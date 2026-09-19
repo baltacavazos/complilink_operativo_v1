@@ -50,10 +50,12 @@ describe("mobile native readiness", () => {
 
     expect(logo).toContain('/manus-storage/pwa-512_c25a4918.png');
     expect(logo).not.toContain("auditapatron-icon-base_034a1256.png");
-    expect(html).toContain('/manus-storage/favicon-32_5a4f6751.png');
-    expect(html).toContain('/manus-storage/apple-touch-icon-180_5f31b507.png');
-    expect(webManifest).toContain('/manus-storage/pwa-192_aca7de64.png');
-    expect(webManifest).toContain('/manus-storage/pwa-512_c25a4918.png');
+    expect(html).toContain('/favicon.svg');
+    expect(html).toContain('/favicon-32.png');
+    expect(html).toContain('/apple-touch-icon.png');
+    expect(webManifest).toContain('/favicon-32.png');
+    expect(webManifest).toContain('/favicon-192.png');
+    expect(webManifest).toContain('/apple-touch-icon.png');
     expect(adaptiveBackground).toContain("#142C52");
 
     const nativeAssets = [

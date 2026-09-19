@@ -6,19 +6,19 @@
   "display": "standalone",
   "icons": [
     {
-      "src": "/manus-storage/favicon-32_5a4f6751.png",
+      "src": "/favicon-32.png",
       "sizes": "32x32",
       "type": "image/png"
     },
     {
-      "src": "/manus-storage/pwa-192_aca7de64.png",
+      "src": "/favicon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/manus-storage/pwa-512_c25a4918.png",
-      "sizes": "512x512",
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any maskable"
     }

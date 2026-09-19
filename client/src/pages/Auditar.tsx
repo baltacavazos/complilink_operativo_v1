@@ -19,6 +19,7 @@ import {
   readWebFileAsDataUrl,
   selectNativeDocumentForCaptureMode,
 } from "@/lib/platformDocumentInput";
+import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import {
   platformStorageGetJSON,
   platformStorageRemove,
@@ -1101,27 +1102,7 @@ type StructuredExtractionFieldView = {
 };
 
 function warmVisibleNamingCopy(value?: string | null) {
-  if (!value) return value ?? null;
-
-  return value
-    .replaceAll("copiloto Helios", "asesor laboral")
-    .replaceAll("Copiloto Helios", "Asesor laboral")
-    .replaceAll("copiloto laboral", "asesor laboral")
-    .replaceAll("Copiloto laboral", "Asesor laboral")
-    .replaceAll("asistente laboral", "asesor laboral")
-    .replaceAll("Asistente laboral", "Asesor laboral")
-    .replaceAll("Expediente Helios", "expediente laboral")
-    .replaceAll("expediente Helios", "expediente laboral")
-    .replaceAll("HeliosDocumento", "documento")
-    .replaceAll("Estado de Helios", "estado del expediente")
-    .replaceAll("Etapa Helios", "etapa del expediente")
-    .replaceAll("Tipo Helios", "tipo sugerido")
-    .replaceAll("motor Helios", "inteligencia laboral")
-    .replaceAll("Motor Helios", "Inteligencia laboral")
-    .replaceAll("Helios", "la inteligencia laboral")
-    .replace(/\bhelios\b/gi, "la inteligencia laboral")
-    .replace(/["“”‘’`]{2,}/g, "")
-    .trim();
+  return sanitizeClientVisibleCopy(value);
 }
 
 function parseQuickCalculatorAmount(value: unknown) {
@@ -2120,14 +2101,16 @@ function writeStoredGuestReview(review: StoredGuestReview | null) {
 function plainWorkerCopy(value?: string | null) {
   if (!value) return null;
 
-  const cleaned = value
-    .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
-    .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
-    .replace(/["'“”‘’`]+/g, "")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  const cleaned = sanitizeClientVisibleCopy(
+    value
+      .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
+      .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
+      .replace(/["'“”‘’`]+/g, "")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+  );
 
-  return cleaned.length >= 3 ? cleaned : null;
+  return cleaned && cleaned.length >= 3 ? cleaned : null;
 }
 
 function toWorkerReviewItem(value?: string | null, kind: "missing" | "note" = "note") {
@@ -5176,14 +5159,14 @@ export default function Auditar() {
       return `Atajos sugeridos con base en tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()} más reciente y en lo que ya está visible en este expediente.`;
     }
 
-    return "Atajos sugeridos con base en lo que Helios ya puede sostener hoy dentro de tu expediente.";
+    return "Atajos sugeridos con base en lo que ya se puede sostener hoy dentro de tu expediente.";
   }, [heliosCopilotPromptContextDocumentType]);
   const heliosCopilotHistoryContext = useMemo(() => {
     if (heliosCopilotMessages.length > 0) {
       return "Retomamos la última conversación guardada en este equipo para este expediente, así no empiezas de cero cuando vuelves.";
     }
 
-    return "Aquí verás la continuidad reciente entre lo que ya hablaste con Helios y los movimientos visibles de tu expediente.";
+    return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu expediente.";
   }, [heliosCopilotMessages.length]);
 
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
@@ -7074,7 +7057,7 @@ export default function Auditar() {
           setHeliosCopilotMessages(current =>
             appendHeliosCopilotMessage(current, {
               role: "assistant",
-              content: response.answer,
+              content: warmVisibleNamingCopy(response.answer) ?? response.answer,
             })
           );
         },
@@ -8287,7 +8270,7 @@ export default function Auditar() {
             </div>
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 sm:text-sm sm:tracking-[0.22em]">
+              <p className="text-xs font-semibold tracking-tight text-slate-500 sm:text-sm">
                 {isNativeAppExperience ? "Ruta corta dentro de la app" : "Qué pasa al subirlo"}
               </p>
               <div className="mt-4 space-y-3">
@@ -8359,7 +8342,7 @@ export default function Auditar() {
               </div>
             )}
             {shouldCompactPostUploadExperience ? null : (
-              <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-teal-300">
+              <p className="mt-3 text-[11px] font-semibold tracking-tight text-teal-300">
                 Paso 1
               </p>
             )}
@@ -8478,7 +8461,7 @@ export default function Auditar() {
           >
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-amber-900">
+                <p className="text-sm font-semibold tracking-tight text-amber-900">
                   Modo de prueba del gate legal
                 </p>
                 <p className="mt-2 text-sm leading-6 text-amber-950">
@@ -8714,7 +8697,7 @@ export default function Auditar() {
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-sm font-semibold tracking-tight text-slate-500">
                   Ordena la pantalla por capas
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:hidden">
@@ -9010,7 +8993,7 @@ export default function Auditar() {
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <p className="text-sm font-semibold tracking-tight text-slate-500">
                     {shouldCompactPostUploadExperience
                       ? "Resumen rápido del expediente"
                       : "Así va tu expediente laboral"}
@@ -10519,7 +10502,7 @@ export default function Auditar() {
                   <div className="mt-6 hidden rounded-[1.45rem] border border-sky-200 bg-sky-50 p-5 sm:block sm:p-6">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-sky-700">
+                        <p className="text-sm font-semibold tracking-tight text-sky-700">
                           Vista previa antes de guardar
                         </p>
                         <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -10654,7 +10637,7 @@ export default function Auditar() {
                       </div>
 
                       <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
-                        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        <p className="text-sm font-semibold tracking-tight text-slate-400">
                           Lectura estructurada
                         </p>
                         <h4 className="mt-2 font-semibold text-slate-950">
@@ -10790,7 +10773,7 @@ export default function Auditar() {
                             : "border-emerald-100"
                         }`}
                       >
-                        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                        <p className="text-sm font-semibold tracking-tight text-emerald-800">
                           {recommendedStepFlash
                             ? "Siguiente paso sugerido"
                             : "Sugerencia útil para seguir"}
@@ -11253,7 +11236,7 @@ export default function Auditar() {
             </div>
 
             <div className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"}>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Tu último documento
               </p>
 
@@ -12163,7 +12146,7 @@ Reforzar con otro documento
 
                       <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
                         <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-4">
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">
+                          <p className="text-sm font-semibold tracking-tight text-slate-400">
                             Resumen sencillo
                           </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -12262,7 +12245,7 @@ Reforzar con otro documento
                     <div className="rounded-[1.3rem] border border-teal-100 bg-white p-4 sm:p-5">
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-3xl">
-                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal-700">
+                          <p className="text-sm font-semibold tracking-tight text-teal-700">
                             Tu primera lectura
                           </p>
                           <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -12584,7 +12567,7 @@ Reforzar con otro documento
                                 </div>
                               ) : (
                                 <p className="mt-3 text-sm leading-6 text-slate-700">
-                                  Con lo disponible, Helios ya agotó esta parte y por ahora no dejó pendientes visibles.
+                                  Con lo disponible, tu asesor laboral ya agotó esta parte y por ahora no dejó pendientes visibles.
                                 </p>
                               )}
                             </div>
@@ -12806,7 +12789,7 @@ Reforzar con otro documento
             <details className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "group rounded-[1.75rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <p className="text-sm font-semibold tracking-tight text-slate-500">
                     Actividad completa del expediente
                   </p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
@@ -12826,7 +12809,7 @@ Reforzar con otro documento
               <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    <p className="text-sm font-semibold tracking-tight text-slate-500">
                       Línea de tiempo del expediente
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -12965,7 +12948,7 @@ Reforzar con otro documento
             <div className="rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-sm xl:hidden">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                  <p className="text-sm font-semibold tracking-tight text-slate-500">
                     Seguimiento rápido
                   </p>
                   <h2 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-slate-950">
@@ -13020,7 +13003,7 @@ Reforzar con otro documento
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                   <div>
-                    <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    <p className="text-sm font-semibold tracking-tight text-slate-500">
                       Bóveda Laboral
                     </p>
                     <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13066,7 +13049,7 @@ Reforzar con otro documento
                 <div className="mt-6 rounded-[1.4rem] border border-violet-100 bg-violet-50/70 p-4 sm:p-5">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <p className="text-sm font-semibold uppercase tracking-[0.18em] text-violet-800">
+                      <p className="text-sm font-semibold tracking-tight text-violet-800">
                         Resumen visible de tu bóveda
                       </p>
                       <h3 className="mt-2 text-xl font-semibold text-slate-950">
@@ -13285,13 +13268,36 @@ Reforzar con otro documento
                 <div className="mt-6 space-y-4">
                   {documents.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                      Aún no tienes documentos en tu bóveda laboral. Puedes
-                      empezar con el archivo que tengas más a la mano.
+                      <p>
+                        Aún no tienes documentos en tu bóveda laboral. Empieza con el
+                        archivo que tengas más a la mano: un recibo, CFDI o foto
+                        clara basta para la primera lectura.
+                      </p>
+                      <Button
+                        type="button"
+                        className="mt-4 rounded-full bg-teal-600 text-white hover:bg-teal-700"
+                        onClick={() => focusRecommendedUpload()}
+                      >
+                        Subir mi primer documento
+                      </Button>
                     </div>
                   ) : filteredArchiveDocuments.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-dashed border-slate-300 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
-                      No encontramos documentos con este filtro. Cambia el tipo o
-                      la fecha para volver a ver toda tu bóveda laboral.
+                      <p>
+                        No encontramos documentos con este filtro. Cambia el tipo o
+                        la fecha para volver a ver toda tu bóveda laboral.
+                      </p>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-4 rounded-full border-slate-200 bg-white"
+                        onClick={() => {
+                          setArchiveTypeFilter("all");
+                          setArchiveDateFilter("all");
+                        }}
+                      >
+                        Ver toda la bóveda
+                      </Button>
                     </div>
                   ) : (
                     filteredArchiveDocuments.map(document => {
@@ -13556,7 +13562,7 @@ Reforzar con otro documento
 
           <aside className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "hidden space-y-6 xl:block"}>
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Expediente laboral seleccionado
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13716,7 +13722,7 @@ Reforzar con otro documento
 
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Historial simple del expediente
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13795,7 +13801,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Privacidad y consentimiento
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -13886,7 +13892,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Ciclo de valor visible
               </p>
               <div className="mt-2 flex items-start gap-3">
@@ -13978,7 +13984,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Seguimiento automático
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -14140,7 +14146,7 @@ Reforzar con otro documento
             </div>
 
             <div className={isAdvancedWorkspaceSection ? "rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm" : "hidden"}>
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Comparación guiada
               </p>
               <div className="mt-2 flex items-start gap-3">
@@ -14444,7 +14450,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Siguiente documento recomendado
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
@@ -14532,7 +14538,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Lo que cuidamos al revisar
               </p>
               <div className="mt-4 space-y-3">
@@ -14556,7 +14562,7 @@ Reforzar con otro documento
             </div>
 
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-slate-400">
+              <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Qué suele aclararse mejor
               </p>
               <div className="mt-4 space-y-3">

@@ -8,6 +8,7 @@ import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogoIcon, AuditaPatronLogoWordmar
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
@@ -240,12 +241,14 @@ function sanitizeHomeVisibleCopy(value?: string | null) {
     return null;
   }
 
-  return value
-    .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
-    .replace(/confirmedData/gi, "datos visibles")
-    .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  return sanitizeClientVisibleCopy(
+    value
+      .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
+      .replace(/confirmedData/gi, "datos visibles")
+      .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+  );
 }
 
 function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
