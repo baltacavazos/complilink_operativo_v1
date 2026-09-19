@@ -3,6 +3,11 @@ import {
   COMMERCE_PLANS,
   formatCommercePriceMx,
 } from "@shared/commerce";
+import { sanitizeClientVisibleCopy } from "./clientVisibleCopy";
+
+function visiblePricingCopy(value: string) {
+  return sanitizeClientVisibleCopy(value) ?? value;
+}
 
 export type AuditapatronPricingExperience = {
   landing: {
@@ -70,13 +75,15 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         : "Sigue gratis y activa un plan solo si ya te hace sentido",
       title: "Planes claros para seguir gratis o desbloquear más profundidad",
       description: hasEnoughContext
-        ? `Tu expediente ya alcanzó el tramo gratuito. Si necesitas más documentos, Helios multi-documento o más continuidad, aquí puedes activarlo sin salir del expediente.`
+        ? visiblePricingCopy(
+            `Tu expediente ya alcanzó el tramo gratuito. Si necesitas más documentos, lectura de varios archivos o más continuidad, aquí puedes activarlo sin salir del expediente.`,
+          )
         : "Puedes seguir usando la parte gratuita. Cuando quieras más contexto, comparativas o productos listos para compartir, aquí mismo lo activas.",
       priceLabel: `${formatCommercePriceMx(essentialPlan.monthlyPriceMx)}/mes desde`,
       primaryCtaLabel: "Ver planes y activar",
       secondaryCtaLabel: "Seguir gratis por ahora",
       reassurance:
-        "La parte gratuita sigue disponible. El cobro solo aparece cuando intentas usar funciones que requieren más contexto, más memoria o entregables premium.",
+        "La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.",
       plans: COMMERCE_PLANS.map((plan) => ({
         key: plan.key,
         name: plan.name,
@@ -87,9 +94,9 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
             ? "Gratis"
             : `${formatCommercePriceMx(plan.monthlyPriceMx)}/mes`,
         ctaLabel: plan.ctaLabel,
-        description: plan.description,
+        description: visiblePricingCopy(plan.description),
         highlighted: plan.highlighted,
-        featureBullets: plan.featureBullets,
+        featureBullets: plan.featureBullets.map(visiblePricingCopy),
       })),
       oneShots: COMMERCE_ONE_SHOTS.map((item) => ({
         key: item.key,
@@ -97,9 +104,9 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         badge: item.badge,
         priceLabel: formatCommercePriceMx(item.priceMx),
         ctaLabel: item.ctaLabel,
-        description: item.description,
+        description: visiblePricingCopy(item.description),
         deliveryLabel: item.deliveryLabel,
-        featureBullets: item.featureBullets,
+        featureBullets: item.featureBullets.map(visiblePricingCopy),
       })),
     },
   };

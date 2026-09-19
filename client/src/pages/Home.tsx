@@ -8,6 +8,7 @@ import { AUDITAPATRON_LOGO_ASSETS, AuditaPatronLogoIcon, AuditaPatronLogoWordmar
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
@@ -47,7 +48,7 @@ Diferencia estimada: $3,240 MXN
 Subir el CFDI del mismo mes para contrastar monto, periodo y conceptos.
 Caso anonimizado: la persona pasó de sospecha general a una ruta concreta para comparar, reclamar o seguir reuniendo evidencia.
 Privacidad visible y humana
-Nadie de tu empresa puede ver lo que subes.
+No compartimos lo que subes con tu empresa.
 Borrado visible
 Ver ejemplo de resultado
 Guarda y sigue después
@@ -236,16 +237,23 @@ function readStoredHomeGuestPreview() {
 }
 
 function sanitizeHomeVisibleCopy(value?: string | null) {
-  if (!value) {
+  const humanized = humanizeWorkerVisibleScalar(value);
+  if (!humanized) {
     return null;
   }
 
-  return value
-    .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
-    .replace(/confirmedData/gi, "datos visibles")
-    .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  if (humanized === "Sí" || humanized === "No") {
+    return humanized;
+  }
+
+  return sanitizeClientVisibleCopy(
+    humanized
+      .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
+      .replace(/confirmedData/gi, "datos visibles")
+      .replace(/metadatos y clasificación actual/gi, "lo que sí se alcanzó a ver en tu documento")
+      .replace(/\s{2,}/g, " ")
+      .trim(),
+  );
 }
 
 function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
@@ -396,7 +404,7 @@ const faqs = [
     id: "privacidad",
     question: "¿Mi empresa puede ver lo que subo aquí?",
     answer:
-      "No. Lo que subes se queda dentro de tu revisión y bajo tu control. Nadie de tu empresa ve tus archivos desde esta pantalla y puedes borrarlos cuando quieras.",
+      "No. Lo que subes se queda dentro de tu revisión y bajo tu control. No compartimos tus archivos con tu empresa desde esta pantalla y puedes borrarlos cuando quieras.",
   },
   {
     id: "sin-tecnicismos",
@@ -439,7 +447,7 @@ const heroCopyVariants = {
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube tu recibo de nómina y te mostramos qué conviene revisar primero. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.",
-    microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
     body: "Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -452,7 +460,7 @@ const heroCopyVariants = {
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube un solo recibo y recibe una señal inicial sobre lo que conviene revisar.",
-    microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio y sin guardar nada hasta que tú decidas.",
+    microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
     body: "",
     ctaPrimary: "Sube tu recibo y revisa gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -846,7 +854,7 @@ function SiteHeader() {
             <div className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(15,23,42,0.2)]">
               <div className="flex items-center justify-between gap-3">
                 <AuditaPatronLogoWordmark imageClassName="h-6 max-w-[184px]" />
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700">
                   Entrada rápida
                 </span>
               </div>
@@ -1201,7 +1209,7 @@ function HeroSection() {
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
-            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
@@ -1263,7 +1271,7 @@ function HeroSection() {
                     Un recibo reciente, una foto clara o el comprobante del mismo mes suele bastar para arrancar.
                   </p>
                 </div>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-emerald-800">
                   Un solo recibo basta
                 </span>
               </div>
@@ -1273,7 +1281,7 @@ function HeroSection() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                     Documento recomendado
                   </p>
-                  <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                  <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
                     Más útil para empezar
                   </span>
                 </div>
@@ -1308,7 +1316,7 @@ function HeroSection() {
                     "Tu empresa no lo ve",
                     "Borras tu archivo cuando quieras",
                   ].map((item) => (
-                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-teal-800 shadow-sm">
+                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800 shadow-sm">
                       {item}
                     </span>
                   ))}
@@ -1635,7 +1643,7 @@ function HeliosFirstEntrySection() {
     <section id="lectura-gratis" className="bg-white py-10 sm:py-12">
       <div className="container mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold tracking-tight text-teal-800">
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
             Primera lectura sin correo
           </div>
@@ -1685,11 +1693,11 @@ function HeliosFirstEntrySection() {
               <div className="mt-5 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
                 <div className="rounded-[1.35rem] border border-teal-100 bg-white p-4 shadow-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                    <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
                       {guestPreview.preview.classification.normalizedDocType}
                     </span>
                     {typeof guestPreview.heliosOpinion.confidenceScore === "number" ? (
-                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700">
                         Confianza {guestPreview.heliosOpinion.confidenceScore}%
                       </span>
                     ) : null}
@@ -1800,7 +1808,7 @@ function HeliosFirstEntrySection() {
           <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">Primero ves valor y luego decides</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">Primero ves valor y luego decides</span>
             </div>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
               {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, retomamos tu lectura y la guardas solo si te sirve."}
@@ -1856,7 +1864,7 @@ function QuickTrustSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="grid gap-4 rounded-[1.7rem] border border-teal-100 bg-white/96 p-4 shadow-[0_24px_60px_-46px_rgba(15,23,42,0.28)] sm:p-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
               <Lock className="h-4 w-4" strokeWidth={1.8} />
               Privacidad visible y verificable
             </div>
@@ -1864,13 +1872,13 @@ function QuickTrustSection() {
               Control visible desde el primer archivo.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              Tu empresa nunca ve lo que subes. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
+              No compartimos tu archivo con tu empresa. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Transparencia visible</p>
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
-                  <p className="font-semibold text-slate-950">Nada se guarda solo</p>
+                  <p className="font-semibold text-slate-950">Tú confirmas si se guarda</p>
                   <p className="mt-1.5 leading-6">Tu expediente solo cambia cuando tú confirmas.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
@@ -1902,7 +1910,7 @@ function QuickTrustSection() {
               <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/95 px-4 py-4 text-sm text-slate-700 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Registro visible de tu control</p>
-                  <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800">
                     3 señales claras
                   </span>
                 </div>
@@ -1922,7 +1930,7 @@ function QuickTrustSection() {
                             : "border-slate-200 bg-slate-50 hover:border-teal-200 hover:bg-white"
                         }`}
                       >
-                        <div className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                        <div className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-tight ${
                           isActive
                             ? "border border-teal-300 bg-white text-teal-900"
                             : "border border-teal-200 bg-white text-teal-800"
@@ -1940,7 +1948,7 @@ function QuickTrustSection() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Prueba tu control aquí</p>
                       <p className="mt-1 text-base font-semibold text-slate-950">{selectedControlMoment.title}</p>
                     </div>
-                    <span className="rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-900">
+                    <span className="rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-900">
                       {selectedControlMoment.badge}
                     </span>
                   </div>
@@ -2012,7 +2020,7 @@ function QuickTrustSection() {
           <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Respuestas rápidas</p>
-              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
                 Antes de abrir expediente
               </span>
             </div>
@@ -2684,7 +2692,7 @@ function PrivacySection() {
                     <a
                       key={document.slug}
                       href={document.route}
-                      className="rounded-full border border-white bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-teal-900 transition hover:border-teal-200 hover:bg-teal-100"
+                      className="rounded-full border border-white bg-white px-3 py-2 text-xs font-semibold tracking-tight text-teal-900 transition hover:border-teal-200 hover:bg-teal-100"
                     >
                       {document.shortTitle}
                     </a>
@@ -2738,7 +2746,7 @@ function MobilePriorityPathSection() {
       eyebrow: "Privacidad visible",
       title: "Tus documentos se resguardan para darte claridad, calma y control",
       description:
-        "Tu empresa no ve lo que subes. La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma progresiva para no saturarte antes de iniciar tu revisión.",
+        "No compartimos lo que subes con tu empresa. La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma progresiva para no saturarte antes de iniciar tu revisión.",
       bullets: [
         "Puedes volver a tu expediente cuando lo necesites.",
         "Las explicaciones priorizan tranquilidad y control.",
@@ -2906,7 +2914,7 @@ function AppDownloadSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="grid gap-5 rounded-[2rem] border border-teal-100 bg-white/96 p-6 shadow-[0_28px_70px_-52px_rgba(15,23,42,0.32)] sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
               App móvil en camino
             </div>
@@ -2922,7 +2930,7 @@ function AppDownloadSection() {
                   key={item}
                   className="rounded-[1.15rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm leading-6 text-slate-700 shadow-sm"
                 >
-                  <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 shadow-sm">
+                  <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold tracking-tight text-slate-500 shadow-sm">
                     0{index + 1}
                   </div>
                   <p className="mt-2">{item}</p>

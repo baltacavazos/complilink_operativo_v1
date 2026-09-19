@@ -47,5 +47,8 @@ describe("Auditar first visit", () => {
     expect(source).not.toContain("Recibes una revisión gratis en segundos.");
     expect(source).not.toContain("Sube y revisa en segundos");
     expect(source).toContain("La lectura puede tardar un momento");
+    expect(source).toContain(
+      "Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.",
+    );
   });
 });

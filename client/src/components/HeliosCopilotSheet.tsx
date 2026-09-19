@@ -1,4 +1,5 @@
 import { AIChatBox, type Message as AIChatMessage } from "@/components/AIChatBox";
+import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -101,7 +102,7 @@ export function HeliosCopilotSheet({
   onFocusSuggestedDocument,
   uiCopy,
 }: HeliosCopilotSheetProps) {
-  const copy = {
+  const mergedCopy = {
     eyebrow: "Asesor laboral",
     title: "Tu asesor laboral ya entendió lo visible de tu expediente",
     description:
@@ -129,9 +130,51 @@ export function HeliosCopilotSheet({
     closeLabel: "Volver al expediente",
     ...uiCopy,
   };
-  const visibleHistoryItems = historyItems.slice(0, 3);
-  const visibleSupportingDocuments = supportingDocuments.slice(0, 3);
-  const visibleSuggestedPrompts = suggestedPrompts.slice(0, 4);
+  const copy = {
+    ...mergedCopy,
+    eyebrow: sanitizeClientVisibleCopy(mergedCopy.eyebrow) ?? mergedCopy.eyebrow,
+    title: sanitizeClientVisibleCopy(mergedCopy.title) ?? mergedCopy.title,
+    description: sanitizeClientVisibleCopy(mergedCopy.description) ?? mergedCopy.description,
+    documentBadge: sanitizeClientVisibleCopy(mergedCopy.documentBadge) ?? mergedCopy.documentBadge,
+    capabilityBadge:
+      sanitizeClientVisibleCopy(mergedCopy.capabilityBadge) ?? mergedCopy.capabilityBadge,
+    promptsHeading:
+      sanitizeClientVisibleCopy(mergedCopy.promptsHeading) ?? mergedCopy.promptsHeading,
+    historyHeading:
+      sanitizeClientVisibleCopy(mergedCopy.historyHeading) ?? mergedCopy.historyHeading,
+    supportingHeading:
+      sanitizeClientVisibleCopy(mergedCopy.supportingHeading) ?? mergedCopy.supportingHeading,
+    placeholder: sanitizeClientVisibleCopy(mergedCopy.placeholder) ?? mergedCopy.placeholder,
+    emptyStateMessage:
+      sanitizeClientVisibleCopy(mergedCopy.emptyStateMessage) ?? mergedCopy.emptyStateMessage,
+    closeLabel: sanitizeClientVisibleCopy(mergedCopy.closeLabel) ?? mergedCopy.closeLabel,
+    quickHighlights: mergedCopy.quickHighlights.map(
+      (item) => sanitizeClientVisibleCopy(item) ?? item,
+    ),
+  };
+  const visibleHistoryItems = historyItems.slice(0, 3).map((item) => ({
+    ...item,
+    title: sanitizeClientVisibleCopy(item.title) ?? item.title,
+    detail: sanitizeClientVisibleCopy(item.detail) ?? item.detail,
+  }));
+  const visibleSupportingDocuments = supportingDocuments.slice(0, 3).map((document) => ({
+    ...document,
+    label: sanitizeClientVisibleCopy(document.label) ?? document.label,
+    detail: sanitizeClientVisibleCopy(document.detail) ?? document.detail,
+  }));
+  const visibleSuggestedPrompts = suggestedPrompts
+    .slice(0, 4)
+    .map((prompt) => sanitizeClientVisibleCopy(prompt) ?? prompt);
+  const visibleMessages = messages.map((message) => ({
+    ...message,
+    content: sanitizeClientVisibleCopy(message.content) ?? message.content,
+  }));
+  const visibleSummary = sanitizeClientVisibleCopy(summary) ?? summary;
+  const visibleDisclaimer = sanitizeClientVisibleCopy(disclaimer) ?? disclaimer;
+  const visibleCaseTitle = sanitizeClientVisibleCopy(caseTitle) ?? caseTitle;
+  const visiblePromptsContext =
+    sanitizeClientVisibleCopy(suggestedPromptsContext) ?? suggestedPromptsContext;
+  const visibleHistoryContext = sanitizeClientVisibleCopy(historyContext) ?? historyContext;
   const quickHighlights = copy.quickHighlights.slice(0, 3);
 
   return (
@@ -147,7 +190,7 @@ export function HeliosCopilotSheet({
                 <Sparkles className="h-5 w-5" strokeWidth={1.8} />
               </div>
               <div className="min-w-0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700 dark:text-teal-200">
+                <p className="text-[11px] font-semibold tracking-tight text-teal-700 dark:text-teal-200">
                   {copy.eyebrow}
                 </p>
                 <SheetTitle className="mt-1 text-lg tracking-[-0.02em] text-slate-950 dark:text-slate-50">
@@ -161,16 +204,16 @@ export function HeliosCopilotSheet({
 
             <div className="mt-4 space-y-3 rounded-[1.2rem] border border-teal-100 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-teal-400/25 dark:bg-slate-900/85">
               <p className="text-sm font-semibold text-slate-950 dark:text-slate-50">
-                {caseTitle ?? "Expediente activo"}
+                {visibleCaseTitle ?? "Expediente activo"}
                 {employeeName ? (
                   <span className="font-normal text-slate-600 dark:text-slate-300">
                     {" "}· {employeeName}
                   </span>
                 ) : null}
               </p>
-              {summary ? (
+              {visibleSummary ? (
                 <p className="text-sm leading-6 text-slate-700 dark:text-slate-200">
-                  {summary}
+                  {visibleSummary}
                 </p>
               ) : null}
               <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -241,9 +284,9 @@ export function HeliosCopilotSheet({
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">
                   {copy.promptsHeading}
                 </p>
-                {suggestedPromptsContext ? (
+                {visiblePromptsContext ? (
                   <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    {suggestedPromptsContext}
+                    {visiblePromptsContext}
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -275,9 +318,9 @@ export function HeliosCopilotSheet({
                     {copy.historyHeading}
                   </p>
                 </div>
-                {historyContext ? (
+                {visibleHistoryContext ? (
                   <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-                    {historyContext}
+                    {visibleHistoryContext}
                   </p>
                 ) : null}
                 <div className="mt-3 space-y-3">
@@ -406,7 +449,7 @@ export function HeliosCopilotSheet({
 
             <div className="min-h-[22rem]">
               <AIChatBox
-                messages={messages}
+                messages={visibleMessages}
                 onSendMessage={onSendMessage}
                 isLoading={isLoading}
                 className="h-full border-slate-200 shadow-none dark:border-white/10"
@@ -420,7 +463,7 @@ export function HeliosCopilotSheet({
 
           <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/90 sm:px-6">
             <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">
-              {disclaimer ??
+              {visibleDisclaimer ??
                 "Esta orientación se basa en los documentos visibles de tu expediente y en una lectura preliminar. No sustituye a un abogado ni constituye asesoría legal vinculante."}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">

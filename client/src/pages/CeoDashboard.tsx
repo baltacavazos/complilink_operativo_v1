@@ -731,7 +731,7 @@ export default function CeoDashboard() {
         {
           role: "assistant",
           content:
-            "Helios ya está en modo CEO. Conserva toda la lectura jurídica laboral del expediente y además puede ayudarte a traducir alertas, accesos, documentos y prioridades operativas del sistema visible. Si algo implica una acción sensible, primero te lo devolverá como propuesta sujeta a confirmación visible y, si falta permiso o trazabilidad, bajará a modo consulta.",
+            "Tu asesor laboral ya está en modo CEO. Conserva toda la lectura jurídica laboral del expediente y además puede ayudarte a traducir alertas, accesos, documentos y prioridades operativas del sistema visible. Si algo implica una acción sensible, primero te lo devolverá como propuesta sujeta a confirmación visible y, si falta permiso o trazabilidad, bajará a modo consulta.",
         },
       ];
     });
@@ -759,7 +759,7 @@ export default function CeoDashboard() {
         },
       ]);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "No pude abrir la capa ejecutiva de Helios en este momento.";
+      const message = error instanceof Error ? error.message : "No pude abrir la capa ejecutiva del asesor laboral en este momento.";
       setHeliosMessages((current) => [
         ...current,
         {
@@ -1066,7 +1066,7 @@ export default function CeoDashboard() {
       },
       {
         icon: GitBranch,
-        label: "Bridge",
+        label: "Puente",
         path: "/ceo/bridge",
         badge:
           bridgeOverview.summary.critical + bridgeOverview.summary.warning + bridgeOverview.summary.pending > 0
@@ -1930,6 +1930,34 @@ export default function CeoDashboard() {
     return null;
   }
 
+  if (!isAdmin) {
+    return (
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,103,177,0.10),_transparent_38%),linear-gradient(180deg,rgba(248,250,252,0.96),rgba(241,245,249,0.92))] px-4 py-10">
+        <div className="container mx-auto max-w-3xl">
+          <section className="rounded-[2rem] border border-amber-200 bg-amber-50/90 p-8 shadow-[0_24px_70px_-34px_rgba(146,64,14,0.18)]">
+            <div className="flex flex-wrap items-start gap-4">
+              <div className="rounded-2xl bg-white p-3 text-amber-700 shadow-sm">
+                <ShieldX className="h-6 w-6" />
+              </div>
+              <div className="max-w-3xl space-y-3">
+                <p className="text-sm font-semibold tracking-tight text-amber-700">Acceso restringido</p>
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+                  Este expediente privado sólo está disponible para el owner autorizado.
+                </h2>
+                <p className="text-base leading-7 text-slate-700">
+                  Tu sesión está activa, pero no tiene permiso para entrar aquí. Si este acceso debe revisarse, confirma primero la cuenta autorizada y luego valida los permisos internos.
+                </p>
+                <Button variant="outline" className="rounded-full bg-white" onClick={() => setLocation("/")}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Volver al sitio
+                </Button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <DashboardLayout
@@ -1940,7 +1968,7 @@ export default function CeoDashboard() {
         <>
           <Button className="rounded-full bg-slate-950 text-white hover:bg-slate-800" onClick={openHeliosForCeo}>
             <Sparkles className="mr-2 h-4 w-4" />
-            Preguntar a Helios
+            Preguntar al asesor laboral
           </Button>
           <Button
             variant="outline"
@@ -1995,14 +2023,14 @@ export default function CeoDashboard() {
         </>
       }
     >
-      {!isAdmin || (!baseSnapshotQuery.isLoading && !baseSnapshotQuery.isError && !isMasterUser) ? (
+      {!baseSnapshotQuery.isLoading && !baseSnapshotQuery.isError && !isMasterUser ? (
         <section className="rounded-[2rem] border border-amber-200 bg-amber-50/90 p-8 shadow-[0_24px_70px_-34px_rgba(146,64,14,0.18)]">
           <div className="flex flex-wrap items-start gap-4">
             <div className="rounded-2xl bg-white p-3 text-amber-700 shadow-sm">
               <ShieldX className="h-6 w-6" />
             </div>
             <div className="max-w-3xl space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Acceso restringido</p>
+              <p className="text-sm font-semibold tracking-tight text-amber-700">Acceso restringido</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                 Este expediente privado sólo está disponible para el owner autorizado.
               </h2>
@@ -2025,7 +2053,7 @@ export default function CeoDashboard() {
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div className="max-w-3xl space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-rose-700">Lectura no disponible</p>
+              <p className="text-sm font-semibold tracking-tight text-rose-700">Lectura no disponible</p>
               <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                 No fue posible cargar el snapshot ejecutivo del CEO.
               </h2>
@@ -3467,8 +3495,8 @@ export default function CeoDashboard() {
               <section className="rounded-[1.8rem] border border-white/70 bg-white/92 p-5 shadow-[0_24px_70px_-34px_rgba(15,23,42,0.18)]">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Observabilidad bridge</p>
-                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Snapshot operativo CompliLink ↔ AuditaPatron</h3>
+                    <p className="text-xs font-semibold tracking-tight text-slate-500">Observabilidad del puente</p>
+                    <h3 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Snapshot operativo del puente ↔ AuditaPatron</h3>
                   </div>
                   <Badge className="rounded-full border border-sky-200 bg-sky-50 text-sky-700">
                     {formatNumber(bridgeOverview.rows.length)} expedientes trazados
@@ -4208,7 +4236,7 @@ export default function CeoDashboard() {
                             </div>
                             <div className="w-full min-w-0 rounded-2xl bg-white px-4 py-3 text-sm text-slate-600 sm:min-w-[250px]">
                               <p><strong className="text-slate-950">Trace:</strong> {item.traceId || "Sin traza"}</p>
-                              <p><strong className="text-slate-950">CompliLink ID:</strong> {item.compliLinkId || "Pendiente"}</p>
+                              <p><strong className="text-slate-950">ID de integración:</strong> {item.compliLinkId || "Pendiente"}</p>
                               <p><strong className="text-slate-950">Dispatch:</strong> {formatDateTime(item.dispatchedAt)}</p>
                               <p><strong className="text-slate-950">Retorno:</strong> {formatDateTime(item.returnedAt)}</p>
                               <p><strong className="text-slate-950">HTTP:</strong> {item.httpStatusCode ?? "Sin respuesta"}</p>
@@ -4518,9 +4546,9 @@ export default function CeoDashboard() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar consulta sensible a Helios</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar consulta sensible al asesor laboral</AlertDialogTitle>
             <AlertDialogDescription>
-              Helios no ejecutará cambios desde esta respuesta. Primero devolverá una propuesta trazable, separando lo confirmado, lo inferido y lo pendiente. Si el pedido rebasa permisos o carril seguro, degradará a modo consulta.
+              El asesor laboral no ejecutará cambios desde esta respuesta. Primero devolverá una propuesta trazable, separando lo confirmado, lo inferido y lo pendiente. Si el pedido rebasa permisos o carril seguro, degradará a modo consulta.
             </AlertDialogDescription>
           </AlertDialogHeader>
           {pendingHeliosConfirmationPrompt ? (
@@ -4604,7 +4632,7 @@ export default function CeoDashboard() {
         messages={heliosMessages}
         isLoading={ceoHeliosMutation.isPending}
         suggestedPrompts={ceoHeliosSuggestedPrompts}
-        caseTitle="Helios · modo CEO"
+        caseTitle="Asesor laboral · modo CEO"
         employeeName={snapshotData?.summary.activeCases ? `${formatNumber(snapshotData.summary.activeCases)} expedientes activos` : undefined}
         confidenceScore={ceoHeliosMutation.data?.confidenceScore ?? 94}
         disclaimer={ceoHeliosMutation.data?.disclaimer}
@@ -4612,10 +4640,10 @@ export default function CeoDashboard() {
         historyItems={ceoHeliosMutation.data?.historyItems}
         supportingDocuments={ceoHeliosMutation.data?.supportingDocuments}
         uiCopy={{
-          eyebrow: "Helios · modo CEO activo",
-          title: "Dame una instrucción y Helios te responde separando lo confirmado, lo inferido y lo pendiente.",
+          eyebrow: "Asesor laboral · modo CEO activo",
+          title: "Dame una instrucción y el asesor laboral te responde separando lo confirmado, lo inferido y lo pendiente.",
           description:
-            "Aquí conservas la misma inteligencia laboral de Helios y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos y señales del sistema visibles en esta consola. Si una petición es sensible, Helios la deja primero como propuesta sujeta a confirmación.",
+            "Aquí conservas la misma inteligencia laboral y, como CEO, sumas contexto ejecutivo sobre alertas, accesos, documentos y señales del sistema visibles en esta consola. Si una petición es sensible, el asesor la deja primero como propuesta sujeta a confirmación.",
           documentBadge: "Basado en snapshot ejecutivo, alertas, permisos y documentos visibles",
           capabilityBadge: "Puede priorizar riesgos, explicar contexto legal, degradar por permisos y sugerir instrucciones operativas seguras",
           quickHighlights: [
@@ -4623,12 +4651,12 @@ export default function CeoDashboard() {
             "Qué riesgo patronal pesa más",
             "Qué instrucción requiere confirmación",
           ],
-          promptsHeading: "Atajos ejecutivos de Helios",
+          promptsHeading: "Atajos ejecutivos del asesor",
           historyHeading: "Contexto ejecutivo disponible",
-          supportingHeading: "Lo que Helios sí está leyendo",
-          placeholder: "Pide una prioridad, una lectura jurídica o una instrucción operativa; Helios te dirá qué requiere confirmación",
+          supportingHeading: "Lo que el asesor sí está leyendo",
+          placeholder: "Pide una prioridad, una lectura jurídica o una instrucción operativa; el asesor laboral te dirá qué requiere confirmación",
           emptyStateMessage:
-            "Helios ya está listo en modo CEO: conserva todo su criterio laboral, marca lo confirmado frente a lo pendiente y baja a modo consulta si algo no está autorizado o trazado.",
+            "Tu asesor laboral ya está listo en modo CEO: conserva todo su criterio laboral, marca lo confirmado frente a lo pendiente y baja a modo consulta si algo no está autorizado o trazado.",
           closeLabel: "Volver al modo CEO",
         }}
       />

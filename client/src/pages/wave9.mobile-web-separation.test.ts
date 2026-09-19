@@ -28,9 +28,9 @@ describe("novena ola móvil/web", () => {
 
     expect(source).toContain("const isNativeAppExperience = canUseNativeDocumentInput();");
     expect(source).toContain("Directo desde tu app");
-    expect(source).toContain("Sube y revisa en segundos");
+    expect(source).not.toContain("Sube y revisa en segundos");
     expect(source).toContain("Ruta corta dentro de la app");
-    expect(source).toContain("Sube foto o archivo. Ves la señal en segundos.");
+    expect(source).toContain("La lectura puede tardar un momento");
     expect(source).toContain("Subes foto o archivo desde tu celular.");
     expect(source).toContain("Ves la señal principal y el siguiente paso útil.");
     expect(source).toContain("Sube tu documento");

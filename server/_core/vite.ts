@@ -60,8 +60,14 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
+  const sendSpaIndex = (_req: express.Request, res: express.Response) => {
+    res.status(200).sendFile(path.resolve(distPath, "index.html"));
+  };
+
+  // Worker placeholder routes must never fall through to an English host 404.
+  app.get("/historial", sendSpaIndex);
+  app.get("/expediente", sendSpaIndex);
+
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+  app.use("*", sendSpaIndex);
 }

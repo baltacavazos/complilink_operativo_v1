@@ -15,6 +15,7 @@ const Auditar = lazy(() => import("@/pages/Auditar"));
 const Payments = lazy(() => import("@/pages/Payments"));
 const CeoDashboard = lazy(() => import("@/pages/CeoDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const PapersPlaceholder = lazy(() => import("./pages/PapersPlaceholder"));
 const LegalPrivacyPage = lazy(() =>
   import("./pages/LegalDocuments").then((module) => ({
     default: module.LegalPrivacyPage,
@@ -79,6 +80,8 @@ function Router() {
           <Route path={"/privacidad"} component={LegalPrivacyPage} />
           <Route path={"/legal/privacidad"} component={LegalPrivacyPage} />
           <Route path={"/legal/terminos"} component={LegalTermsPage} />
+          <Route path={"/historial"} component={PapersPlaceholder} />
+          <Route path={"/expediente"} component={PapersPlaceholder} />
           <Route path={"/404"} component={NotFound} />
           <Route component={NotFound} />
         </Switch>
