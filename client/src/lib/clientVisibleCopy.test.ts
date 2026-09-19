@@ -164,8 +164,20 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(sanitizeClientVisibleCopy("Database not available")).toBe(
       "No pudimos guardar esto ahora. Intenta de nuevo en un momento.",
     );
+    expect(sanitizeClientVisibleCopy("Table 'railway.labor_cases' doesn't exist")).toBe(
+      "No pudimos preparar tu expediente ahora. Intenta de nuevo en un momento.",
+    );
+    expect(sanitizeClientVisibleCopy("ER_NO_SUCH_TABLE: labor_cases")).toMatch(
+      /No pudimos preparar tu expediente ahora/,
+    );
+    expect(sanitizeClientVisibleCopy("Table 'railway.labor_cases' doesn't exist")).not.toMatch(
+      /labor_cases|SQL|ER_NO_SUCH_TABLE/i,
+    );
     expect(
       sanitizeClientVisibleCopy("This account is limited to a single personal case"),
     ).not.toMatch(/This account|personal case|Access denied/i);
+    expect(sanitizeClientVisibleCopy("No accessible tenant found")).toBe(
+      "No pudimos preparar tu espacio de revisión.",
+    );
   });
 });

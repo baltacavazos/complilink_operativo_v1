@@ -507,6 +507,8 @@ const AUDITAR_TECHNICAL_PREVIEW_PATTERNS = [
   /=>/,
   /\bconst\b|\blet\b|\bvar\b/i,
   /webpack|vite|react-dom|jsx-runtime/i,
+  /ER_NO_SUCH_TABLE|ER_BAD_FIELD_ERROR|SQLSTATE|Unknown column|doesn't exist/i,
+  /\blabor_cases\b|\bcase_access\b/i,
 ];
 
 type SanitizePreviewTextOptions = {
@@ -8909,7 +8911,10 @@ export default function Auditar() {
               No fue posible preparar tu espacio de revisión.
             </p>
             <p className="mt-2 text-sm leading-7">
-              {bootstrapMutation.error.message}
+              {toFriendlyAuditarRuntimeMessage(
+                bootstrapMutation.error,
+                "No pudimos preparar tu espacio de revisión. Intenta de nuevo en un momento."
+              )}
             </p>
             <Button
               className="mt-4 rounded-full bg-amber-500 text-slate-950 hover:bg-amber-400"

@@ -3,6 +3,8 @@ import type { TrpcContext } from "./_core/context";
 
 const dbMocks = vi.hoisted(() => ({
   ensureTenantForUser: vi.fn(),
+  ensurePersonalWorkspaceForUser: vi.fn(),
+  getPrimaryCaseIdForUser: vi.fn(),
   assertTenantAdminAccess: vi.fn(),
   createAuditLog: vi.fn(),
   buildTraceId: vi.fn(),

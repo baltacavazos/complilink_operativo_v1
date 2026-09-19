@@ -182,6 +182,22 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
     /Database not available\.?/gi,
     "No pudimos guardar esto ahora. Intenta de nuevo en un momento.",
   );
+  next = next.replace(
+    /Table ['`][^'`]+['`] doesn't exist\.?/gi,
+    "No pudimos preparar tu expediente ahora. Intenta de nuevo en un momento.",
+  );
+  next = next.replace(
+    /(?:ER_NO_SUCH_TABLE|ER_BAD_FIELD_ERROR|SQLSTATE\[[^\]]+\]|Unknown column '[^']+'|Unknown table '[^']+')[^.!]*/gi,
+    "No pudimos preparar tu expediente ahora. Intenta de nuevo en un momento.",
+  );
+  next = next.replace(
+    /(?:Failed query|sqlMessage|sqlState|errno\s*:?\s*\d+)[:\s].*/gi,
+    "No pudimos preparar tu expediente ahora. Intenta de nuevo en un momento.",
+  );
+  next = next.replace(
+    /No accessible tenant found\.?/gi,
+    "No pudimos preparar tu espacio de revisión.",
+  );
 
   next = collapseCopy(next);
   return next;

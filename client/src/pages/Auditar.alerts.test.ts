@@ -266,7 +266,9 @@ describe("origen honesto de la revisión", () => {
 describe("single-case blocking alert", () => {
   it("mantiene visible el patrón de alerta y el copy orientado a solución cuando un documento parece pertenecer a otra persona", () => {
     expect(auditarSource).toContain("No fue posible preparar tu espacio de revisión.");
-    expect(auditarSource).toContain("{bootstrapMutation.error.message}");
+    expect(auditarSource).toContain("toFriendlyAuditarRuntimeMessage(");
+    expect(auditarSource).toContain("bootstrapMutation.error");
+    expect(auditarSource).not.toContain("{bootstrapMutation.error.message}");
     expect(routersSource).toContain("Este expediente digital está vinculado a una sola persona.");
     expect(routersSource).toContain("parece pertenecer a alguien distinto al expediente actual.");
     expect(routersSource).toContain("entra con la cuenta correcta");

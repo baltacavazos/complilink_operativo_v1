@@ -19,7 +19,9 @@ const dbMocks = vi.hoisted(() => ({
   createAuditLogs: vi.fn(),
   createCaseRecord: vi.fn(),
   documentSeemsToBelongToAnotherPerson: vi.fn(),
+  ensurePersonalWorkspaceForUser: vi.fn(),
   ensureTenantForUser: vi.fn(),
+  getPrimaryCaseIdForUser: vi.fn(),
   findAuditLogEntry: vi.fn(),
   getAuditarDraftById: vi.fn(),
   getCaseDetailForUser: vi.fn(),
@@ -60,6 +62,9 @@ const engineMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./db", () => dbMocks);
+vi.mock("./mysqlBootstrap", () => ({
+  ensureMysqlTables: vi.fn().mockResolvedValue({ ensured: true, ran: false }),
+}));
 vi.mock("./storage", () => storageMocks);
 vi.mock("./_core/llm", () => llmMocks);
 vi.mock("./auditaPatronIntegrationService", () => engineMocks);
@@ -141,6 +146,12 @@ describe("appRouter case workflows", () => {
     resetAuditarRuntimeGuardsForTests();
 
     vi.mocked(db.ensureTenantForUser).mockResolvedValue({ tenantId: "balt-1" } as never);
+    vi.mocked(db.ensurePersonalWorkspaceForUser).mockResolvedValue({
+      tenant: { tenantId: "balt-1" },
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    } as never);
+    vi.mocked(db.getPrimaryCaseIdForUser).mockResolvedValue(null);
     vi.mocked(db.seedDemoCaseIfEmpty).mockResolvedValue(undefined);
     vi.mocked(db.getSystemSnapshot).mockResolvedValue({ tenants: [], cases: [] } as never);
     vi.mocked(db.listTenantsForUser).mockResolvedValue([]);
@@ -1175,6 +1186,111 @@ describe("appRouter case workflows", () => {
         entityId: "CASE-BALT-1-DEMO001",
       }),
     );
+  });
+
+  it("reuses the personal case for a new account instead of opening a second expediente", async () => {
+    vi.mocked(db.getPrimaryCaseIdForUser).mockResolvedValue("CASE-BALT-1-DEMO001");
+    vi.mocked(db.isCeoBypassUser).mockResolvedValue(false);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 24,
+        openId: "email:tester-24",
+        role: "user",
+        name: "Tester Inf 24",
+      }),
+    );
+
+    const result = await caller.cases.create({
+      tenantId: "balt-1",
+      title: "Revisión inicial · recibo",
+      status: "intake",
+      priority: "medium",
+    });
+
+    expect(db.getPrimaryCaseIdForUser).toHaveBeenCalledWith(24, "balt-1");
+    expect(db.createCaseRecord).not.toHaveBeenCalled();
+    expect(db.getCaseDetailForUser).toHaveBeenCalledWith({
+      userId: 24,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    });
+    expect(result.caseId).toBe("CASE-BALT-1-DEMO001");
+  });
+
+  it("gives a new account chat access on its personal case after first upload", async () => {
+    vi.mocked(db.ensurePersonalWorkspaceForUser).mockResolvedValue({
+      tenant: { tenantId: "ap-inf24-09191226-1249" },
+      tenantId: "ap-inf24-09191226-1249",
+      caseId: "CASE-AP-INF-PERSONAL",
+    } as never);
+    vi.mocked(db.isCeoBypassUser).mockResolvedValue(false);
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      ...demoCaseDetail,
+      case: {
+        ...demoCaseDetail.case,
+        tenantId: "ap-inf24-09191226-1249",
+        caseId: "CASE-AP-INF-PERSONAL",
+      },
+    } as never);
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-PAY-024",
+        originalName: "recibo.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 90,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-09-19T12:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-PAY-024",
+          caseId: "CASE-AP-INF-PERSONAL",
+          status: "completed",
+          mode: "mock",
+          summary: "El recibo muestra IMSS, ISR e Infonavit.",
+          legalOpinion: "Hay descuentos visibles, no un alta oficial.",
+          riskLevel: "medium",
+          recommendedNextStep: "Cruza IMSS, ISR e Infonavit con tus papeles.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: ["IMSS $120.50", "ISR $310.00", "Infonavit $80.00"],
+          uncertainties: [],
+          confidenceScore: 80,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-09-19T12:00:00.000Z",
+          rawPayload: {},
+        },
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 24,
+        openId: "email:tester-24",
+        role: "user",
+        name: "Tester Inf 24",
+      }),
+    );
+
+    const result = await caller.cases.heliosCopilotChat({
+      tenantId: "tenant-equivocado",
+      caseId: "CASE-AJENO",
+      prompt: "¿Me descontaron IMSS, impuestos o Infonavit?",
+    });
+
+    expect(db.ensurePersonalWorkspaceForUser).toHaveBeenCalledWith({
+      userId: 24,
+      userName: "Tester Inf 24",
+      userEmail: "owner@complilink.mx",
+    });
+    expect(db.getCaseDetailForUser).toHaveBeenCalledWith({
+      userId: 24,
+      tenantId: "ap-inf24-09191226-1249",
+      caseId: "CASE-AP-INF-PERSONAL",
+    });
+    expect(result.answer).toContain("Respuesta clara");
+    expect(result.answer).not.toMatch(/No tienes acceso a este espacio/i);
+    expect(result.answer).not.toMatch(/labor_cases|SQL|ER_NO_SUCH_TABLE/i);
   });
 
   it("creates a case with canonical contracts, access grants and audit trail", async () => {
