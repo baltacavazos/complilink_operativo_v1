@@ -158,6 +158,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(gate).not.toContain("Entra con tu correo y contraseña. La revisión pública por RFC sigue disponible sin cuenta.");
     expect(form).toContain("ap-access-note");
     expect(form).toContain("Entras con correo y contraseña para volver a tu revisión.");
+    expect(form).toContain("recibo, CFDI o PDF del IMSS");
     expect(form).not.toContain("La revisión pública por RFC sigue igual, sin cuenta.");
     expect(form).toContain("h-12 w-full rounded-full bg-slate-950");
     expect(form).toContain("border-0 bg-transparent text-base font-medium text-slate-600");
