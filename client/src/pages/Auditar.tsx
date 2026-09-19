@@ -8711,7 +8711,8 @@ export default function Auditar() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <a
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+                data-testid="auditar-page-back"
+                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 Volver
@@ -8830,14 +8831,15 @@ export default function Auditar() {
             {shouldCompactPostUploadExperience ? null : (
               <a
                 href="/"
-                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+                data-testid="auditar-page-back"
+                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 <span>Volver</span>
               </a>
             )}
             {shouldCompactPostUploadExperience ? null : (
-              <div className="mt-4 flex items-center justify-center sm:justify-start">
+              <div className="flex items-center justify-center sm:mt-4 sm:justify-start">
                 <AuditaPatronLogoWordmark
                   surface="dark"
                   className="inline-flex max-w-full"

@@ -33,6 +33,16 @@ describe("claridad residual AuditaPatrón", () => {
     expect(papers).toContain("hidden items-center justify-center gap-2 text-sm font-medium text-slate-600 sm:inline-flex");
     expect(auditar).toContain("Ver tu expediente");
     expect(auditar).not.toContain('"Volver al expediente"');
+    expect(auditar.match(/data-testid="auditar-page-back"/g)).toEqual([
+      'data-testid="auditar-page-back"',
+      'data-testid="auditar-page-back"',
+    ]);
+    expect(auditar).toContain(
+      'data-testid="auditar-page-back"\n                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"',
+    );
+    expect(auditar).not.toContain(
+      'className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"',
+    );
   });
 
   it("no muestra handles de smoke como chrome de producto", () => {
