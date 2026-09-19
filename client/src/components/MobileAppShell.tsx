@@ -1,5 +1,5 @@
 import { AuditaPatronLogoIcon } from "@/components/AuditaPatronLogo";
-import { Home, LogIn, SearchCheck } from "lucide-react";
+import { ArrowLeft, Home, LogIn, SearchCheck } from "lucide-react";
 
 type MobileAppShellSection = "home" | "auditar" | "acceso";
 
@@ -7,6 +7,8 @@ type MobileAppShellProps = {
   current: MobileAppShellSection;
   title: string;
   subtitle: string;
+  backHref?: string;
+  backLabel?: string;
 };
 
 const items: Array<{
@@ -35,10 +37,24 @@ const items: Array<{
   },
 ];
 
-export default function MobileAppShell({ current, title, subtitle }: MobileAppShellProps) {
+export default function MobileAppShell({
+  current,
+  title,
+  subtitle,
+  backHref = "/",
+  backLabel = "Volver",
+}: MobileAppShellProps) {
   return (
-    <div className="sticky top-3 z-40 mb-4 sm:hidden">
+    <div className="mb-4 sm:hidden">
       <div className="overflow-hidden rounded-[1.6rem] border border-slate-200/90 bg-white/96 p-3 shadow-[0_22px_45px_-30px_rgba(15,23,42,0.32)] backdrop-blur">
+        <a
+          href={backHref}
+          data-testid="mobile-header-back"
+          className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800"
+        >
+          <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
+          Volver
+        </a>
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] border border-slate-200 bg-slate-50 shadow-sm">
             <AuditaPatronLogoIcon imageClassName="h-7 w-7 object-contain" />
@@ -47,12 +63,6 @@ export default function MobileAppShell({ current, title, subtitle }: MobileAppSh
             <p className="truncate text-sm font-semibold text-slate-950">{title}</p>
             <p className="mt-0.5 truncate text-xs font-medium text-slate-700">{subtitle}</p>
           </div>
-          <a
-            href="/"
-            className="inline-flex shrink-0 items-center rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white"
-          >
-            Volver
-          </a>
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-2">

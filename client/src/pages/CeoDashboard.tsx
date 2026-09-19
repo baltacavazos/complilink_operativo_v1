@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { trackCeoConsoleViewed, trackCeoExport, trackCeoGuardrail, trackCeoMasterMetricsViewed, trackCeoRefresh } from "@/lib/analytics";
+import { formatWorkerAccountChrome } from "@/lib/clientVisibleCopy";
 import { trpc } from "@/lib/trpc";
 import { buildBridgeMonitoringPanel } from "@/pages/ceoBridgeMonitoring";
 import {
@@ -2108,7 +2109,7 @@ export default function CeoDashboard() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-100/80">Lectura actual</p>
                 <p className="mt-2 text-lg font-semibold">{formatDateTime(snapshotData.generatedAt)}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-100/80">
-                  Usuario actual: <strong>{user?.name || user?.email || "Administrador"}</strong>
+                  Usuario actual: <strong>{formatWorkerAccountChrome({ name: user?.name, email: user?.email }).title}</strong>
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-100/80">
                   Vista activa: <strong>{getSectionLabel(currentSection)}</strong>

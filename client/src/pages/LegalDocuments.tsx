@@ -169,8 +169,13 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
         <div className="rounded-[1.6rem] border border-slate-900 bg-slate-950 px-5 py-5 text-white shadow-[0_24px_70px_-42px_rgba(2,6,23,0.82)] sm:px-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <a href="/" className="inline-flex items-center text-sm font-medium text-slate-300 transition hover:text-white">
-                Volver al inicio
+              <a
+                href="/"
+                data-testid="mobile-header-back"
+                className="inline-flex items-center text-sm font-medium text-slate-300 transition hover:text-white"
+              >
+                <span className="sm:hidden">Volver</span>
+                <span className="hidden sm:inline">Volver al inicio</span>
               </a>
               <div className="mt-4">
                 <AuditaPatronLogoWordmark surface="dark" imageClassName="max-w-[250px] w-auto h-auto object-contain" />

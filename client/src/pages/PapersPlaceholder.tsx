@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { humanizeDossierProgressLabel } from "@/lib/clientVisibleCopy";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, FolderOpen, Home } from "lucide-react";
 import { useLocation } from "wouter";
@@ -17,6 +18,14 @@ export default function PapersPlaceholder() {
     <main className="audita-historial min-h-screen bg-[linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] px-4 py-8 text-slate-950 sm:px-6">
       <div className="mx-auto flex min-h-[80vh] w-full max-w-lg flex-col justify-center">
         <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_22px_56px_-40px_rgba(15,23,42,0.2)] sm:p-7">
+          <a
+            href="/auditar"
+            data-testid="mobile-header-back"
+            className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800 sm:hidden"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver
+          </a>
           <div className="mb-5 flex justify-center">
             <div className="rounded-full bg-teal-50 p-4">
               <FolderOpen className="h-12 w-12 text-teal-800" />
@@ -36,7 +45,7 @@ export default function PapersPlaceholder() {
             <div className="mt-5 rounded-[1.25rem] border border-slate-200 bg-slate-50 px-4 py-4 text-left">
               <p className="text-sm font-medium text-slate-700">Última revisión</p>
               <p className="mt-1 text-base font-semibold text-slate-950">
-                {latestCase.stageLabel ?? "Expediente en curso"}
+                {humanizeDossierProgressLabel(latestCase.stageLabel) || "Expediente en curso"}
               </p>
               {latestCase.summary ? (
                 <p className="mt-2 text-sm leading-6 text-slate-700">{latestCase.summary}</p>
@@ -76,7 +85,7 @@ export default function PapersPlaceholder() {
             <button
               type="button"
               onClick={() => setLocation("/auditar")}
-              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-slate-600"
+              className="hidden items-center justify-center gap-2 text-sm font-medium text-slate-600 sm:inline-flex"
             >
               <ArrowLeft className="h-4 w-4" />
               Volver al expediente

@@ -144,10 +144,11 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Lectura visible");
     expect(source).toContain("tu asesor laboral");
     expect(source).toContain("expediente laboral");
-    expect(source).toContain("Expediente en");
+    expect(source).toContain("0 de 5 documentos · Estás empezando");
+    expect(source).toContain("formatDossierProgressCopy");
     expect(source).toContain("mobileDossierStageLabel");
-    expect(source).toContain('.replace(/^Con\\s+/i, "")');
-    expect(source).toContain("Siguiente útil: ${effectiveRecommendedTarget.label}. Lo puedes subir justo debajo.");
+    expect(source).toContain("humanizeDossierProgressLabel");
+    expect(source).toContain("Siguiente útil: ${effectiveRecommendedTarget.label}. Súbelo abajo.");
     expect(source).toContain('hidden gap-3 sm:grid sm:grid-cols-3');
     expect(source).toContain('hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6');
     expect(source).toContain('mt-5 rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4 sm:p-5');

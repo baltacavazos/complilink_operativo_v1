@@ -216,3 +216,123 @@ export function hasForbiddenClientBrand(value?: string | null): boolean {
     value,
   );
 }
+
+const SMOKE_ACCOUNT_HANDLE = /^(ap\.)?wave\d+$/i;
+const INTERNAL_ACCOUNT_HANDLE =
+  /^(ap|cl|helios|complilink|smoke|e2e|harness|test)([._-][a-z0-9._-]*)?$/i;
+const TECHNICAL_HANDLE = /^[a-z0-9]+[._-][a-z0-9._-]+$/i;
+
+export function isSmokeOrInternalAccountHandle(value?: string | null): boolean {
+  if (!value) {
+    return false;
+  }
+
+  const text = value.replace(/\s+/g, " ").trim();
+  if (!text) {
+    return false;
+  }
+
+  const localPart = text.includes("@") ? text.slice(0, text.indexOf("@")) : text;
+  return SMOKE_ACCOUNT_HANDLE.test(localPart) || INTERNAL_ACCOUNT_HANDLE.test(localPart);
+}
+
+export function maskWorkerEmail(email?: string | null): string | null {
+  if (!email) {
+    return null;
+  }
+
+  const normalized = email.replace(/\s+/g, "").trim();
+  const separator = normalized.indexOf("@");
+  if (separator < 1 || separator === normalized.length - 1) {
+    return null;
+  }
+
+  const localPart = normalized.slice(0, separator);
+  const domain = normalized.slice(separator + 1);
+  if (!localPart || !domain) {
+    return null;
+  }
+
+  if (isSmokeOrInternalAccountHandle(localPart)) {
+    return null;
+  }
+
+  return `${localPart.slice(0, 1)}***@${domain}`;
+}
+
+export function formatWorkerVisibleAccountName(value?: string | null): string | null {
+  if (value == null) {
+    return null;
+  }
+
+  const text = value.replace(/\s+/g, " ").trim();
+  if (!text) {
+    return null;
+  }
+
+  if (isSmokeOrInternalAccountHandle(text)) {
+    return "Tu cuenta";
+  }
+
+  const cleaned = text
+    .replace(/\b(?:ap\.)?wave\d+\b/gi, "tu cuenta")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  return cleaned || "Tu cuenta";
+}
+
+export function formatWorkerAccountChrome(input: {
+  name?: string | null;
+  email?: string | null;
+}): { title: string; subtitle: string } {
+  const name = input.name?.replace(/\s+/g, " ").trim() || "";
+  const email = input.email?.replace(/\s+/g, "").trim() || "";
+  const nameIsInternal = isSmokeOrInternalAccountHandle(name);
+  const emailIsInternal = isSmokeOrInternalAccountHandle(email);
+  const nameLooksTechnical = Boolean(name) && !/\s/.test(name) && TECHNICAL_HANDLE.test(name);
+  const maskedEmail = maskWorkerEmail(email);
+
+  if (!name || nameIsInternal || emailIsInternal || nameLooksTechnical) {
+    return {
+      title: "Tu cuenta",
+      subtitle: maskedEmail || "Sesión protegida",
+    };
+  }
+
+  return {
+    title: formatWorkerVisibleAccountName(name) ?? "Tu cuenta",
+    subtitle: maskedEmail || "Sesión protegida",
+  };
+}
+
+const DOSSIER_PROGRESS_LABELS: Record<string, string> = {
+  "base inicial": "Estás empezando",
+  "listo para iniciar": "Estás empezando",
+  "respaldo en crecimiento": "Ya vas avanzando",
+  "respaldo sólido": "Ya tienes un buen respaldo",
+  analizando: "Estamos leyendo tu documento",
+  "con lectura activa": "Ya hay una lectura",
+  "lectura activa": "Ya hay una lectura",
+  cerrado: "Expediente cerrado",
+};
+
+export function humanizeDossierProgressLabel(label?: string | null): string {
+  const text = (label ?? "").replace(/\s+/g, " ").trim().replace(/^Con\s+/i, "");
+  if (!text) {
+    return "Estás empezando";
+  }
+
+  return DOSSIER_PROGRESS_LABELS[text.toLowerCase()] ?? text;
+}
+
+export function formatDossierProgressCopy(
+  completed: number,
+  total: number,
+  label?: string | null,
+): string {
+  const safeCompleted = Math.max(0, Number.isFinite(completed) ? completed : 0);
+  const safeTotal = Math.max(1, Number.isFinite(total) ? total : 1);
+  const noun = safeTotal === 1 ? "documento" : "documentos";
+  return `${safeCompleted} de ${safeTotal} ${noun} · ${humanizeDossierProgressLabel(label)}`;
+}

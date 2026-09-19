@@ -100,7 +100,13 @@ function MobileQuickExit() {
     path === "/auditar" ||
     path === "/historial" ||
     path === "/expediente" ||
-    path === "/pagos"
+    path === "/pagos" ||
+    path === "/aviso-de-privacidad" ||
+    path === "/privacidad" ||
+    path === "/legal/privacidad" ||
+    path === "/legal/terminos" ||
+    path === "/ceo" ||
+    path.startsWith("/ceo/")
   ) {
     return null;
   }

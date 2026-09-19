@@ -98,10 +98,12 @@ export default function Payments() {
         <section className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_22px_56px_-40px_rgba(15,23,42,0.2)] sm:p-6">
           <a
             href="/auditar"
+            data-testid="mobile-header-back"
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800"
           >
             <ArrowLeft className="h-4 w-4" />
-            Volver al expediente
+            <span className="sm:hidden">Volver</span>
+            <span className="hidden sm:inline">Volver al expediente</span>
           </a>
           <p className="mt-5 text-sm font-semibold text-teal-800">Tus pagos</p>
           <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-4xl">

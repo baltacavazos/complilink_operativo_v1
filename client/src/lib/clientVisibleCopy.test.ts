@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  formatDossierProgressCopy,
+  formatWorkerAccountChrome,
+  formatWorkerVisibleAccountName,
   hasForbiddenClientBrand,
   hasRawBooleanLeak,
+  humanizeDossierProgressLabel,
   humanizeWorkerVisibleScalar,
+  isSmokeOrInternalAccountHandle,
   isWorkerInternalFieldValue,
   isWorkerSystemFieldLabel,
+  maskWorkerEmail,
   sanitizeClientVisibleCopy,
 } from "./clientVisibleCopy";
 
@@ -187,6 +193,39 @@ describe("sanitizeClientVisibleCopy", () => {
     ).not.toMatch(/This account|personal case|Access denied/i);
     expect(sanitizeClientVisibleCopy("No accessible tenant found")).toBe(
       "No pudimos preparar tu espacio de revisión.",
+    );
+  });
+
+  it("oculta handles de smoke/prueba y muestra Tu cuenta o correo tapado", () => {
+    expect(isSmokeOrInternalAccountHandle("ap.wave2")).toBe(true);
+    expect(isSmokeOrInternalAccountHandle("wave2")).toBe(true);
+    expect(isSmokeOrInternalAccountHandle("ap.wave2@auditapatron.test")).toBe(true);
+    expect(isSmokeOrInternalAccountHandle("Ana Pérez")).toBe(false);
+    expect(formatWorkerVisibleAccountName("ap.wave2")).toBe("Tu cuenta");
+    expect(formatWorkerVisibleAccountName("Expediente laboral de ap.wave2")).toBe(
+      "Expediente laboral de tu cuenta",
+    );
+    expect(formatWorkerVisibleAccountName("Ana Pérez")).toBe("Ana Pérez");
+    expect(maskWorkerEmail("ap.wave2@auditapatron.test")).toBeNull();
+    expect(maskWorkerEmail("ana.perez@correo.com")).toBe("a***@correo.com");
+    expect(formatWorkerAccountChrome({ name: "ap.wave2", email: "ap.wave2@auditapatron.test" })).toEqual({
+      title: "Tu cuenta",
+      subtitle: "Sesión protegida",
+    });
+    expect(formatWorkerAccountChrome({ name: "Ana Pérez", email: "ana.perez@correo.com" })).toEqual({
+      title: "Ana Pérez",
+      subtitle: "a***@correo.com",
+    });
+  });
+
+  it("explica el avance del expediente en español llano", () => {
+    expect(humanizeDossierProgressLabel("Base inicial")).toBe("Estás empezando");
+    expect(humanizeDossierProgressLabel("Listo para iniciar")).toBe("Estás empezando");
+    expect(formatDossierProgressCopy(0, 5, "Base inicial")).toBe(
+      "0 de 5 documentos · Estás empezando",
+    );
+    expect(formatDossierProgressCopy(2, 5, "Respaldo en crecimiento")).toBe(
+      "2 de 5 documentos · Ya vas avanzando",
     );
   });
 });
