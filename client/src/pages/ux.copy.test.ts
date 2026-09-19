@@ -248,8 +248,8 @@ describe("copy visible de la experiencia", () => {
     expect(componentSource).toContain("Lo ya confirmado vs lo que este archivo aclararía");
     expect(componentSource).toContain("Ya confirmado");
     expect(componentSource).toContain("Lo que aclararía");
-    expect(componentSource).toContain("Cómo quieres que responda");
-    expect(componentSource).toContain("Más explicativo");
+    expect(componentSource).toContain("toneHeading");
+    expect(componentSource).toContain("toneExplainedLabel");
     expect(componentSource).toContain("nextSuggestedDocument.ctaLabel");
     expect(pageSource).toContain("Abrir cámara para subirlo");
     expect(pageSource).toContain("Elegir archivo ahora");
@@ -325,17 +325,21 @@ describe("copy visible de la experiencia", () => {
 
   it("mantiene el lenguaje cálido y comprensible en el panel conversacional", () => {
     const source = readComponent("components/HeliosCopilotSheet.tsx");
+    const helpers = fs.readFileSync(
+      path.resolve(import.meta.dirname, "../../../shared/workerChatUx.ts"),
+      "utf8",
+    );
 
-    expect(source).toContain("Tu asesor laboral ya entendió lo visible de tu expediente");
-    expect(source).toContain("Cuéntame qué pasó o qué te preocupa. Tu asesor laboral responde con base en tus documentos visibles");
-    expect(source).toContain("Tu asesor laboral ya tiene contexto para empezar");
-    expect(source).toContain("Continuidad reciente de tu caso");
-    expect(source).toContain("Evidencia de tu caso");
-    expect(source).toContain("Cómo quieres que responda");
-    expect(source).toContain("Breve");
-    expect(source).toContain("Más explicativo");
+    expect(source).toContain("WORKER_CHAT_SHEET_COPY");
+    expect(source).toContain("WORKER_CHAT_DISCLAIMER");
     expect(source).toContain("uiCopy");
     expect(source).not.toContain("Copiloto laboral de Helios");
+    expect(source).not.toContain("Tu asesor laboral ya entendió lo visible de tu expediente");
+    expect(helpers).toContain("Pregúntame en palabras simples");
+    expect(helpers).toContain("Empieza por aquí");
+    expect(helpers).toContain("No es un abogado");
+    expect(helpers).toContain("Qué hacer ahora");
+    expect(helpers).toMatch(/no es asesoría legal/i);
   });
 
   it("mantiene el marco legal visible sin referencias intimidantes", () => {

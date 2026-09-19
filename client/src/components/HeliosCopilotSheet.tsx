@@ -1,5 +1,6 @@
 import { AIChatBox, type Message as AIChatMessage } from "@/components/AIChatBox";
 import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { WORKER_CHAT_DISCLAIMER, WORKER_CHAT_SHEET_COPY } from "@shared/workerChatUx";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -103,31 +104,8 @@ export function HeliosCopilotSheet({
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const mergedCopy = {
-    eyebrow: "Asesor laboral",
-    title: "Tu asesor laboral ya entendió lo visible de tu expediente",
-    description:
-      "Cuéntale qué te preocupa y te responderá con una orientación clara, lo que ya se puede sostener, lo que falta confirmar y el siguiente paso más útil con base en tus documentos.",
-    documentBadge: "Basado en tus documentos visibles",
-    capabilityBadge: "Puede explicar, conectar y señalar el documento útil que falte",
-    quickHighlights: [
-      "Te traduce lo complejo a lenguaje claro",
-      "Retoma tu contexto reciente sin sacarte del flujo",
-      "Te dice qué documento puede destrabar mejor tu caso",
-    ],
-    promptsHeading: "Preguntas rápidas para seguir contigo",
-    historyHeading: "Continuidad reciente de tu caso",
-    supportingHeading: "Evidencia de tu caso",
-    toneHeading: "Cómo quieres que responda",
-    toneBriefLabel: "Breve",
-    toneExplainedLabel: "Más explicativo",
-    toneBriefHint: "Va al punto y resume lo esencial en menos líneas.",
-    toneExplainedHint:
-      "Da más contexto y baja a lenguaje simple lo importante del punto legal.",
-    placeholder:
-      "Cuéntame qué pasó o qué te preocupa. Tu asesor laboral responde con base en tus documentos visibles",
-    emptyStateMessage:
-      "Tu asesor laboral ya tiene contexto para empezar. Puede explicarte tu situación actual, decirte qué falta confirmar y señalar qué documento podría ayudarte más después.",
-    closeLabel: "Volver al expediente",
+    ...WORKER_CHAT_SHEET_COPY,
+    quickHighlights: [...WORKER_CHAT_SHEET_COPY.quickHighlights],
     ...uiCopy,
   };
   const copy = {
@@ -463,8 +441,7 @@ export function HeliosCopilotSheet({
 
           <div className="border-t border-slate-200 bg-slate-50 px-5 py-4 transition-colors duration-300 dark:border-white/10 dark:bg-slate-950/90 sm:px-6">
             <p className="text-xs leading-6 text-slate-500 dark:text-slate-400">
-              {visibleDisclaimer ??
-                "Esta orientación se basa en los documentos visibles de tu expediente y en una lectura preliminar. No sustituye a un abogado ni constituye asesoría legal vinculante."}
+              {visibleDisclaimer ?? WORKER_CHAT_DISCLAIMER}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button

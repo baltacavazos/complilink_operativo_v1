@@ -114,6 +114,12 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(isWorkerSystemFieldLabel("Periodo visible")).toBe(false);
   });
 
+  it("el chat del trabajador complementa el sanitizador y no reintroduce Helios", () => {
+    const dirty = "Helios y CompliLink ya leyeron tu recibo";
+    expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy(dirty))).toBe(false);
+    expect(sanitizeClientVisibleCopy(dirty)).not.toMatch(/\bHelios\b|CompliLink/);
+  });
+
   it("oculta Webhook y webhook_rejected con copy humano", () => {
     expect(sanitizeClientVisibleCopy("webhook_rejected")).toBe("No pudimos recibir el aviso.");
     expect(sanitizeClientVisibleCopy("compra detectada por webhook")).toBe(

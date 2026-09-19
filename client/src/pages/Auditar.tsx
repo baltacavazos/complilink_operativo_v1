@@ -25,6 +25,13 @@ import {
   isWorkerSystemFieldLabel,
   sanitizeClientVisibleCopy,
 } from "@/lib/clientVisibleCopy";
+import {
+  WORKER_CHAT_DISCLAIMER,
+  buildWorkerStarterQuestions,
+  extractWorkerClearAnswer,
+  extractWorkerWhatToDoNow,
+  sanitizeWorkerChatCopy,
+} from "@shared/workerChatUx";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
   platformStorageGetJSON,
@@ -1743,16 +1750,16 @@ function summarizeHeliosCopilotSnippet(content: string, maxLength = 120) {
 }
 
 function extractHeliosClearSnippet(content: string) {
-  const normalized = content.replace(/\r/g, "").trim();
-  const sectionMatch = normalized.match(
-    /(?:1\)\s*Respuesta clara:?|Respuesta clara:?)([\s\S]*?)(?:\n\s*(?:2\)\s*Lo que sí se sabe|Lo que sí se sabe:|3\)\s*Lo que falta confirmar|Lo que falta confirmar:|4\)\s*Siguiente paso útil|Siguiente paso útil:)|$)/i
-  );
-
-  if (sectionMatch?.[1]?.trim()) {
-    return summarizeHeliosCopilotSnippet(sectionMatch[1].trim());
+  const clearAnswer = extractWorkerClearAnswer(content);
+  if (clearAnswer) {
+    return summarizeHeliosCopilotSnippet(clearAnswer);
   }
 
-  return summarizeHeliosCopilotSnippet(normalized);
+  return summarizeHeliosCopilotSnippet(content);
+}
+
+function extractHeliosWhatToDoNow(content: string) {
+  return extractWorkerWhatToDoNow(content);
 }
 
 function buildHeliosCopilotConversationHistoryInput(params: {
@@ -1804,9 +1811,17 @@ function buildHeliosCopilotConversationHistoryItems(
     id: `copilot-pair-${index}`,
     title:
       index === 0
-        ? "Último intercambio con tu asesor laboral"
-        : "Intercambio reciente anterior",
-    detail: `Tú: ${summarizeHeliosCopilotSnippet(pair.question, 90)} · Asesor: ${extractHeliosClearSnippet(pair.answer)}`,
+        ? "Tu última pregunta"
+        : "Pregunta anterior",
+    detail: [
+      `Tú: ${summarizeHeliosCopilotSnippet(pair.question, 90)}`,
+      `Respuesta: ${extractHeliosClearSnippet(pair.answer)}`,
+      extractHeliosWhatToDoNow(pair.answer)
+        ? `Qué hacer ahora: ${summarizeHeliosCopilotSnippet(extractHeliosWhatToDoNow(pair.answer) ?? "", 90)}`
+        : null,
+    ]
+      .filter((item): item is string => Boolean(item))
+      .join(" · "),
     timestampLabel: "Ahora",
   }));
 }
@@ -5413,14 +5428,14 @@ export default function Auditar() {
     }
 
     if (visibleHeliosOpinion?.summary?.trim()) {
-      return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nSi quieres, puedo explicarte con palabras simples qué ya se entiende en tu expediente laboral, qué falta confirmar y cuál parece ser el siguiente paso más útil.`;
+      return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nPregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora.`;
     }
 
     if (heliosDocumentsCount === 0) {
-      return "Todavía no hay una lectura visible de tu expediente laboral. En cuanto subas o confirmes documentos, podré ayudarte a entender riesgos, documentos faltantes y siguientes pasos sin tecnicismos.";
+      return "Todavía no hay un documento para leer. Sube tu recibo, contrato o CFDI y te digo qué se ve y qué hacer ahora.";
     }
 
-    return `Ya hay contexto preliminar para ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} dentro de tu expediente laboral. Puedo ayudarte a traducir esa información en acciones concretas y fáciles de entender.`;
+    return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"}. Pregúntame qué se ve y qué hacer ahora.`;
   }, [
     heliosDocumentsCount,
     visibleHeliosOpinion?.resultCard?.assistantIntro,
@@ -5440,43 +5455,49 @@ export default function Auditar() {
     )
       .map(item => item.prompt)
       .filter((item): item is string => Boolean(item));
-    const localPrompts = [
-      "¿Qué riesgo principal ves en mi expediente?",
-      visibleHeliosOpinion?.resultCard?.nextStepSummary ||
-      visibleHeliosOpinion?.recommendedNextStep
-        ? "Explícame el siguiente paso sugerido con palabras simples."
-        : "¿Qué paso me conviene seguir ahora?",
-      visibleHeliosOpinion?.legalHighlights?.primaryConcern ||
-      visibleHeliosOpinion?.uncertainties?.length
-        ? "¿Qué puntos todavía faltan confirmar?"
-        : "¿Qué documento me conviene subir después?",
-      "Explícame esto como si me lo dijera un abogado laboral en corto.",
-    ];
+    const localPrompts = buildWorkerStarterQuestions({
+      documentType: heliosCopilotPromptContextDocumentType || null,
+      documentsCount: documents.length,
+      hasImssSignal: Boolean(
+        caseDetailQuery.data?.socialSecurityValidation?.hasImssSignal
+      ),
+      hasFiscalSignal: Boolean(
+        caseDetailQuery.data?.socialSecurityValidation?.hasFiscalSignal
+      ),
+      hasInfonavitSignal: Boolean(
+        caseDetailQuery.data?.socialSecurityValidation?.hasInfonavitSignal
+      ),
+      recommendedNextStep:
+        visibleHeliosOpinion?.resultCard?.nextStepSummary ||
+        visibleHeliosOpinion?.recommendedNextStep ||
+        null,
+    });
 
     return Array.from(
       new Set([
+        ...localPrompts,
         ...contextualPrompts,
         ...serverPrompts,
         ...cardPrompts,
-        ...localPrompts,
       ])
     ).slice(0, 4);
   }, [
+    caseDetailQuery.data?.socialSecurityValidation?.hasFiscalSignal,
+    caseDetailQuery.data?.socialSecurityValidation?.hasImssSignal,
+    caseDetailQuery.data?.socialSecurityValidation?.hasInfonavitSignal,
     documents,
     heliosCopilotMutation.data?.suggestedPrompts,
     heliosCopilotPromptContextDocumentType,
-    visibleHeliosOpinion?.legalHighlights?.primaryConcern,
     visibleHeliosOpinion?.recommendedNextStep,
     visibleHeliosOpinion?.resultCard?.nextStepSummary,
     visibleHeliosOpinion?.resultCard?.suggestedQuestions,
-    visibleHeliosOpinion?.uncertainties,
   ]);
   const heliosCopilotSuggestedPromptsContext = useMemo(() => {
     if (heliosCopilotPromptContextDocumentType) {
-      return `Atajos sugeridos con base en tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()} más reciente y en lo que ya está visible en este expediente.`;
+      return `Preguntas simples sobre tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()}.`;
     }
 
-    return "Atajos sugeridos con base en lo que ya se puede sostener hoy dentro de tu expediente.";
+    return "Preguntas simples para empezar. Elige una o escribe la tuya.";
   }, [heliosCopilotPromptContextDocumentType]);
   const heliosCopilotHistoryContext = useMemo(() => {
     if (heliosCopilotMessages.length > 0) {
@@ -5517,7 +5538,7 @@ export default function Auditar() {
         `Tipo: ${getSimpleDocumentTypeLabel(document.documentType)}.`,
         opinion?.summary ? `Lectura visible: ${opinion.summary}` : null,
         opinion?.recommendedNextStep
-          ? `Paso sugerido: ${opinion.recommendedNextStep}`
+          ? `Qué hacer ahora: ${opinion.recommendedNextStep}`
           : null,
         opinion?.uncertainties?.[0]
           ? `Por confirmar: ${opinion.uncertainties[0]}`
@@ -7391,7 +7412,10 @@ export default function Auditar() {
           setHeliosCopilotMessages(current =>
             appendHeliosCopilotMessage(current, {
               role: "assistant",
-              content: warmVisibleNamingCopy(response.answer) ?? response.answer,
+              content:
+                sanitizeWorkerChatCopy(
+                  warmVisibleNamingCopy(response.answer) ?? response.answer
+                ) ?? response.answer,
             })
           );
         },
@@ -12800,13 +12824,13 @@ Reforzar con otro documento
                             <div className="flex items-start justify-between gap-3">
                               <div>
                                 <p className="text-sm font-semibold text-sky-950">
-                                  Asistente laboral contextual
+                                  Preguntas sobre tu documento
                                 </p>
                                 <p className="mt-2 text-sm leading-7 text-sky-900">
                                   {warmVisibleNamingCopy(
                                     lastHeliosOpinion.resultCard?.assistantIntro
                                   ) ??
-                                    "Si quieres, ahora puedo explicarte este documento con palabras simples, decirte qué falta confirmar o ayudarte a elegir el siguiente archivo más útil."}
+                                    "Pregúntame en palabras simples. Te digo lo que sí se ve en tus papeles y qué hacer ahora."}
                                 </p>
                               </div>
                               <Sparkles
@@ -14066,9 +14090,8 @@ Reforzar con otro documento
                       </Button>
                     </div>
                     <p className="mt-3 text-xs leading-6 text-teal-900">
-                      Haz preguntas rápidas sobre riesgos, documentos faltantes
-                      o el siguiente paso útil con base en lo que ya se ve en tu
-                      expediente.
+                      Pregúntame en palabras simples. Te digo lo que sí se ve
+                      y qué hacer ahora. Esto no es asesoría legal.
                     </p>
                   </div>
                 </div>
@@ -14089,11 +14112,13 @@ Reforzar con otro documento
                   visibleHeliosOpinion?.confidenceScore ??
                   null
                 }
-                disclaimer={warmVisibleNamingCopy(
-                  heliosCopilotMutation.data?.disclaimer ??
-                    visibleHeliosOpinion?.disclaimer ??
-                    null
-                )}
+                disclaimer={
+                  warmVisibleNamingCopy(
+                    heliosCopilotMutation.data?.disclaimer ??
+                      visibleHeliosOpinion?.disclaimer ??
+                      WORKER_CHAT_DISCLAIMER
+                  ) ?? WORKER_CHAT_DISCLAIMER
+                }
                 summary={warmVisibleNamingCopy(
                   heliosCopilotMutation.data?.answer ??
                     visibleHeliosOpinion?.summary ??

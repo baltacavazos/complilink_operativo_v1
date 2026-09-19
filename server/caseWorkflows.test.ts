@@ -855,6 +855,17 @@ describe("appRouter case workflows", () => {
       },
     ] as never);
 
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content:
+              "Respuesta clara: Helios cita la tesis 2a./J. 45/2023 y ya validamos ante el IMSS.\nSiguiente paso útil: Sube el CFDI del mismo periodo.",
+          },
+        },
+      ],
+    } as never);
+
     const caller = appRouter.createCaller(createProtectedContext());
     const result = await caller.cases.heliosCopilotChat({
       tenantId: "balt-1",
@@ -875,7 +886,7 @@ describe("appRouter case workflows", () => {
     });
     expect(invokeLLM).toHaveBeenCalledTimes(1);
     expect(result).toMatchObject({
-      disclaimer: "Opinión preliminar asistida por sistema.",
+      disclaimer: "Esto no es asesoría legal. Solo lee lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.",
       confidenceScore: 74,
       sourceDocumentCount: 1,
       supportingDocuments: expect.arrayContaining([
@@ -890,8 +901,22 @@ describe("appRouter case workflows", () => {
       ]),
     });
     expect(result.answer).toContain("Respuesta clara");
-    expect(result.suggestedPrompts.length).toBeGreaterThan(0);
-    expect(result.supportingDocuments[0]?.detail).toContain("Lectura visible: Helios generó una lectura preliminar útil del contrato.");
+    expect(result.answer).toContain("Qué hacer ahora");
+    expect(result.answer).toMatch(/no es asesoría legal/i);
+    expect(result.answer).not.toMatch(/Helios|tesis|validamos ante el IMSS/i);
+    expect(invokeLLM).toHaveBeenCalledWith(
+      expect.objectContaining({
+        messages: expect.arrayContaining([
+          expect.objectContaining({
+            role: "system",
+            content: expect.stringMatching(/nunca inventes tesis/i),
+          }),
+        ]),
+      }),
+    );
+    expect(result.suggestedPrompts).toContain("¿Qué dice mi documento?");
+    expect(result.suggestedPrompts.join(" ")).not.toMatch(/Helios|CompliLink/i);
+    expect(result.supportingDocuments[0]?.detail).toMatch(/Lectura visible: esta lectura generó una lectura preliminar útil del contrato/);
     expect(result.supportingDocuments[1]?.detail).toContain("Soporte IMSS");
     expect(db.createAuditLog).toHaveBeenCalledWith(
       expect.objectContaining({
