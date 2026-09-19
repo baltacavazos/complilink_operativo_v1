@@ -136,7 +136,7 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replaceAll("Preguntar a Helios", "Preguntar al asesor");
   next = next.replace(
     /Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar[^.]*\.?/gi,
-    "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+    "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con alertas y siguientes pasos útiles.",
   );
   next = next.replace(/\bHelios ya\b/g, "El asesor laboral ya");
   next = next.replace(/\bHelios\b/g, "el asesor laboral");

@@ -126,7 +126,7 @@ function composeImssCrossStep(input: WorkerChatLaborGuidanceInput, altaEmphasis 
   if (altaEmphasis) {
     return facts.nss
       ? `El NSS ${facts.nss} se ve en el papel${period}, pero eso no confirma el alta oficial. Si puedes, sube otro recibo o un papel IMSS que tú tengas para comparar.`
-      : "En tus papeles puede verse una señal de IMSS, pero eso no confirma el alta oficial. Sube un papel IMSS o el siguiente recibo si lo tienes.";
+      : "En tus papeles puede verse una alerta de IMSS, pero eso no confirma el alta oficial. Sube un papel IMSS o el siguiente recibo si lo tienes.";
   }
 
   if (facts.imssWithheld) {
@@ -135,7 +135,7 @@ function composeImssCrossStep(input: WorkerChatLaborGuidanceInput, altaEmphasis 
   if (facts.nss) {
     return `El NSS ${facts.nss} se ve en el papel${period}. Compáralo con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial.`;
   }
-  return "Hay una señal de IMSS en tus papeles, pero no confirma alta. Sube otro recibo o un papel IMSS si lo tienes.";
+  return "Hay una alerta de IMSS en tus papeles, pero no confirma alta. Sube otro recibo o un papel IMSS si lo tienes.";
 }
 
 function composeFiscalCrossStep(input: WorkerChatLaborGuidanceInput): string {

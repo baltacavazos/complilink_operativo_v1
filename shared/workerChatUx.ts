@@ -191,19 +191,19 @@ export function stripLiveValidationClaims(value: string): string {
   next = next.replace(/validaci[oó]n en vivo/gi, "lectura de tus documentos");
   next = next.replace(
     /ya (?:consultamos|validamos|verificamos) (?:ante |en )?(?:el )?(IMSS|SAT|Infonavit)/gi,
-    "en tus papeles se ve una señal de $1, pero no es una consulta oficial",
+    "en tus papeles se ve una alerta de $1, pero no es una consulta oficial",
   );
   next = next.replace(
     /confirmamos (?:tu |el )?alta(?: ante el IMSS)?/gi,
-    "en tus papeles se ve una señal de IMSS, pero eso no confirma el alta oficial",
+    "en tus papeles se ve una alerta de IMSS, pero eso no confirma el alta oficial",
   );
   next = next.replace(
     /(?:confirmamos|validamos|verificamos|confirma(?:mos)? que|s[ií][,.]?\s+que)\s+(?:est[aá]s? )?(?:oficialmente )?(?:bien )?dado de alta(?: en el IMSS)?/gi,
-    "en tus papeles se ve una señal de IMSS, pero eso no confirma el alta oficial",
+    "en tus papeles se ve una alerta de IMSS, pero eso no confirma el alta oficial",
   );
   next = next.replace(
     /(?:^|[.]\s+)est[aá]s? (?:oficialmente )?(?:bien )?dado de alta(?: en el IMSS)?/gim,
-    "En tus papeles se ve una señal de IMSS, pero eso no confirma el alta oficial",
+    "En tus papeles se ve una alerta de IMSS, pero eso no confirma el alta oficial",
   );
   return next;
 }
