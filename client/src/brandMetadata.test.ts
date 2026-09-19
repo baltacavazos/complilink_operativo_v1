@@ -26,6 +26,7 @@ describe("brand metadata", () => {
     expect(indexHtml).toContain(`<meta property="og:image" content="${AUDITAPATRON_LOGO_ASSETS.full}" />`);
     expect(indexHtml).toContain(`<meta name="twitter:image" content="${AUDITAPATRON_LOGO_ASSETS.full}" />`);
     expect(indexHtml).toContain('<link rel="manifest" href="/site.webmanifest" />');
+    expect(indexHtml).toContain('href="/favicon.svg"');
     expect(indexHtml).toContain('apple-touch-icon');
     expect(indexHtml).toContain('href="/favicon.svg"');
     expect(indexHtml).toContain('href="/favicon-32.png"');
@@ -49,11 +50,13 @@ describe("brand metadata", () => {
     expect(manifest.display).toBe("standalone");
     expect(manifest.icons).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({ src: "/favicon.svg", type: "image/svg+xml" }),
         expect.objectContaining({ sizes: "32x32", type: "image/png", src: "/favicon-32.png" }),
         expect.objectContaining({ sizes: "192x192", type: "image/png", purpose: "any maskable", src: "/favicon-192.png" }),
         expect.objectContaining({ sizes: "180x180", type: "image/png", purpose: "any maskable", src: "/apple-touch-icon.png" }),
       ]),
     );
+    expect(manifest.icons.some((icon) => icon.src === "/favicon.svg")).toBe(true);
     expect(manifest.icons.every((icon) => icon.src.startsWith("/") && !icon.src.includes("manus-storage"))).toBe(true);
   });
 });

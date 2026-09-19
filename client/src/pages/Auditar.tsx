@@ -503,6 +503,17 @@ type SanitizePreviewTextOptions = {
   skipLeakedLabelCleanup?: boolean;
 };
 
+export function stripWorkerDebugIds(value: string) {
+  return value
+    .replace(/\bap\.pol[.\w-]*/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function isWorkerDebugId(value: string) {
+  return /^ap\.pol[.\w-]*$/i.test(value.trim());
+}
+
 function isLikelyTechnicalPreviewBlob(value: string) {
   if (!value) {
     return false;
@@ -543,18 +554,19 @@ export function sanitizePreviewText(
     return humanized;
   }
 
-  let normalized =
+  let normalized = stripWorkerDebugIds(
     typeof value === "number"
       ? String(value)
       : (humanized ?? String(value ?? ""))
           .replace(/\s+/g, " ")
-          .trim();
+          .trim(),
+  );
 
   if (/^(true|false)$/i.test(normalized)) {
     return normalized.toLowerCase() === "true" ? "Sí" : "No";
   }
 
-  if (!normalized) {
+  if (!normalized || isWorkerDebugId(normalized)) {
     return emptyFallback;
   }
 
@@ -2184,7 +2196,7 @@ function plainWorkerCopy(value?: string | null) {
   }
 
   const cleaned = sanitizeClientVisibleCopy(
-    value
+    stripWorkerDebugIds(value)
       .replace(/confirmedData|estimatedData|structuredExtraction|processingProfile|metadata/gi, "")
       .replace(/\b[a-z]+(?:_[a-z]+)+\b/gi, "")
       .replace(/["'“”‘’`]+/g, "")
@@ -2192,7 +2204,11 @@ function plainWorkerCopy(value?: string | null) {
       .trim(),
   );
 
-  return cleaned && cleaned.length >= 3 ? cleaned : null;
+  if (!cleaned || isWorkerDebugId(cleaned)) {
+    return null;
+  }
+
+  return cleaned.length >= 3 ? cleaned : null;
 }
 
 function toWorkerReviewItem(value?: string | null, kind: "missing" | "note" = "note") {
@@ -2200,6 +2216,9 @@ function toWorkerReviewItem(value?: string | null, kind: "missing" | "note" = "n
   const raw = value.trim();
   if (!raw) return null;
   if (/\b(?:confirmedData|estimatedData|structuredExtraction|processingProfile|metadata|payload|clasificaci[oó]n actual|metadatos)\b/i.test(raw)) {
+    return null;
+  }
+  if (isWorkerDebugId(raw)) {
     return null;
   }
 
@@ -3051,7 +3070,7 @@ function getReturnEventLabel(value?: string | null) {
     case "contract.analysis.detailed":
       return "Análisis profundo recibido";
     default:
-      return value
+      return value && !isWorkerDebugId(value) && !/\bap\.pol/i.test(value)
         ? sanitizeClientVisibleCopy(humanizeSnakeCase(value.replace(/\./g, "_"))) ??
           "Respuesta recibida"
         : "Respuesta recibida";
@@ -3065,6 +3084,10 @@ function getAnalysisFieldLabel(key: string) {
 }
 
 function isTechnicalAnalysisKey(key: string) {
+  if (/^ap\.?pol/i.test(key) || /^ap\./i.test(key)) {
+    return true;
+  }
+
   return /^(confirmed|estimated|analysis|metadata|processing|structured|internal|raw|debug|payload|profile)/i.test(
     key.replace(/[^a-z0-9]/gi, "")
   );
@@ -13426,9 +13449,8 @@ Reforzar con otro documento
                   {documents.length === 0 ? (
                     <div className="rounded-[1.3rem] border border-slate-200 bg-slate-50 p-5 text-sm leading-7 text-slate-600">
                       <p>
-                        Aún no tienes documentos en tu bóveda laboral. Empieza con el
-                        archivo que tengas más a la mano: un recibo, CFDI o foto
-                        clara basta para la primera lectura.
+                        Todavía no hay documentos resguardados. Cuando guardes el
+                        primero, quedará aquí para consultarlo con calma.
                       </p>
                       <Button
                         type="button"
