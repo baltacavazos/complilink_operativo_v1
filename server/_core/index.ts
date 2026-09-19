@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
 import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
 import { bootstrapLocalPasswordAuthOnBoot, registerLocalPasswordRoutes } from "../localPasswordRoutes";
+import { ensureMysqlTables } from "../mysqlBootstrap";
 import { startCeoBridgeScheduleWorker } from "../ceoBridgeAutomation";
 import { registerStripeWebhook } from "../stripeBilling";
 import { registerStorageProxy } from "./storageProxy";
@@ -66,6 +67,11 @@ async function startServer() {
     serveStatic(app);
   }
 
+  try {
+    await ensureMysqlTables();
+  } catch (error) {
+    console.error("[MysqlBootstrap] No se pudieron crear tablas al arrancar", error);
+  }
   await bootstrapLocalPasswordAuthOnBoot();
 
   const preferredPort = parseInt(process.env.PORT || "3000");

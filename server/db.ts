@@ -40,7 +40,9 @@ import {
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
+import { ensureMysqlTables } from "./mysqlBootstrap";
 import { deriveBridgeCallbackAlerts } from "./operationalSignals";
+import { toUserFacingDatabaseError } from "./userFacingDatabaseError";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _lockPool: Pool | null = null;
@@ -668,58 +670,63 @@ export async function ensureTenantForUser(params: {
   userName: string;
   userEmail?: string | null;
 }) {
-  const db = await getDb();
-  if (!db) {
-    throw new Error("Database not available");
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) {
+      throw new Error("Database not available");
+    }
+
+    const existingMembership = await db
+      .select({ tenantId: tenantMemberships.tenantId })
+      .from(tenantMemberships)
+      .where(and(eq(tenantMemberships.userId, params.userId), eq(tenantMemberships.status, "active")))
+      .limit(1);
+
+    if (existingMembership[0]?.tenantId) {
+      const tenant = await db.select().from(tenants).where(eq(tenants.tenantId, existingMembership[0].tenantId)).limit(1);
+      return tenant[0];
+    }
+
+    const displayName = params.userName?.trim() || params.userEmail?.split("@")[0] || "CompliLink Tenant";
+    const tenantId = buildTenantId(displayName, String(params.userId));
+    const traceId = buildTraceId(tenantId, undefined, String(params.userId));
+
+    const tenantPayload: InsertTenant = {
+      tenantId,
+      traceId,
+      legalName: `${displayName} Legal`,
+      displayName,
+      status: "pilot",
+    };
+
+    await db.insert(tenants).values(tenantPayload);
+
+    const membershipPayload: InsertTenantMembership = {
+      tenantId,
+      traceId,
+      userId: params.userId,
+      role: "tenant_admin",
+      accessScope: "tenant",
+      status: "active",
+    };
+
+    await db.insert(tenantMemberships).values(membershipPayload);
+    await createAuditLog({
+      tenantId,
+      traceId,
+      actorUserId: params.userId,
+      entityType: "tenant",
+      entityId: tenantId,
+      action: "tenant.bootstrap",
+      afterState: tenantPayload,
+    });
+
+    const createdTenant = await db.select().from(tenants).where(eq(tenants.tenantId, tenantId)).limit(1);
+    return createdTenant[0];
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
   }
-
-  const existingMembership = await db
-    .select({ tenantId: tenantMemberships.tenantId })
-    .from(tenantMemberships)
-    .where(and(eq(tenantMemberships.userId, params.userId), eq(tenantMemberships.status, "active")))
-    .limit(1);
-
-  if (existingMembership[0]?.tenantId) {
-    const tenant = await db.select().from(tenants).where(eq(tenants.tenantId, existingMembership[0].tenantId)).limit(1);
-    return tenant[0];
-  }
-
-  const displayName = params.userName?.trim() || params.userEmail?.split("@")[0] || "CompliLink Tenant";
-  const tenantId = buildTenantId(displayName, String(params.userId));
-  const traceId = buildTraceId(tenantId, undefined, String(params.userId));
-
-  const tenantPayload: InsertTenant = {
-    tenantId,
-    traceId,
-    legalName: `${displayName} Legal`,
-    displayName,
-    status: "pilot",
-  };
-
-  await db.insert(tenants).values(tenantPayload);
-
-  const membershipPayload: InsertTenantMembership = {
-    tenantId,
-    traceId,
-    userId: params.userId,
-    role: "tenant_admin",
-    accessScope: "tenant",
-    status: "active",
-  };
-
-  await db.insert(tenantMemberships).values(membershipPayload);
-  await createAuditLog({
-    tenantId,
-    traceId,
-    actorUserId: params.userId,
-    entityType: "tenant",
-    entityId: tenantId,
-    action: "tenant.bootstrap",
-    afterState: tenantPayload,
-  });
-
-  const createdTenant = await db.select().from(tenants).where(eq(tenants.tenantId, tenantId)).limit(1);
-  return createdTenant[0];
 }
 
 export async function getAccessibleTenantIds(userId: number) {
@@ -775,7 +782,7 @@ export async function isCeoBypassUser(userId: number) {
   return result[0]?.role === "admin" && result[0]?.openId === ENV.ownerOpenId;
 }
 
-async function getPrimaryCaseIdForUser(userId: number, tenantId?: string) {
+export async function getPrimaryCaseIdForUser(userId: number, tenantId?: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
 
@@ -837,85 +844,134 @@ export async function getAccessibleCaseIds(userId: number, tenantId?: string) {
 }
 
 export async function assertTenantAccess(userId: number, tenantId: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
 
-  const membership = await db
-    .select()
-    .from(tenantMemberships)
-    .where(
-      and(
-        eq(tenantMemberships.userId, userId),
-        eq(tenantMemberships.tenantId, tenantId),
-        eq(tenantMemberships.status, "active"),
-      ),
-    )
-    .limit(1);
+    const membership = await db
+      .select()
+      .from(tenantMemberships)
+      .where(
+        and(
+          eq(tenantMemberships.userId, userId),
+          eq(tenantMemberships.tenantId, tenantId),
+          eq(tenantMemberships.status, "active"),
+        ),
+      )
+      .limit(1);
 
-  if (!membership[0]) {
-    throw new Error("No tienes acceso a este espacio.");
+    if (!membership[0]) {
+      const repaired = await repairPersonalCaseAccess(userId, tenantId);
+      if (repaired) {
+        const healed = await db
+          .select()
+          .from(tenantMemberships)
+          .where(
+            and(
+              eq(tenantMemberships.userId, userId),
+              eq(tenantMemberships.tenantId, tenantId),
+              eq(tenantMemberships.status, "active"),
+            ),
+          )
+          .limit(1);
+        if (healed[0]) {
+          return healed[0];
+        }
+      }
+      throw new Error("No tienes acceso a este espacio.");
+    }
+
+    return membership[0];
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
   }
-
-  return membership[0];
 }
 
 export async function assertCaseAccess(userId: number, tenantId: string, caseId: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
 
-  const tenantMembership = await assertTenantAccess(userId, tenantId);
-  const ceoBypass = await isCeoBypassUser(userId);
+    const tenantMembership = await assertTenantAccess(userId, tenantId);
+    const ceoBypass = await isCeoBypassUser(userId);
 
-  if (!ceoBypass) {
-    const primaryCaseId = await getPrimaryCaseIdForUser(userId, tenantId);
-    if (!primaryCaseId) {
-      throw new Error("Esta cuenta aún no tiene un expediente personal.");
-    }
-
-    if (primaryCaseId !== caseId) {
-      throw new Error("Esta cuenta solo puede tener un expediente personal.");
-    }
-  }
-
-  const caseGrant = await db
-    .select()
-    .from(caseAccess)
-    .where(
-      and(
-        eq(caseAccess.userId, userId),
-        eq(caseAccess.tenantId, tenantId),
-        eq(caseAccess.caseId, caseId),
-        eq(caseAccess.status, "active"),
-      ),
-    )
-    .limit(1);
-
-  if (caseGrant[0]) {
-    return caseGrant[0];
-  }
-
-  const tenantWide = await db
-    .select()
-    .from(tenantMemberships)
-    .where(
-      and(
-        eq(tenantMemberships.userId, userId),
-        eq(tenantMemberships.tenantId, tenantId),
-        eq(tenantMemberships.status, "active"),
-        eq(tenantMemberships.accessScope, "tenant"),
-      ),
-    )
-    .limit(1);
-
-  if (!tenantWide[0]) {
     if (!ceoBypass) {
-      return tenantMembership;
+      let primaryCaseId = await getPrimaryCaseIdForUser(userId, tenantId);
+      if (!primaryCaseId) {
+        await repairPersonalCaseAccess(userId, tenantId, caseId);
+        primaryCaseId = await getPrimaryCaseIdForUser(userId, tenantId);
+      }
+      if (!primaryCaseId) {
+        throw new Error("Esta cuenta aún no tiene un expediente personal.");
+      }
+
+      if (primaryCaseId !== caseId) {
+        throw new Error("Esta cuenta solo puede tener un expediente personal.");
+      }
     }
 
-    throw new Error("No tienes acceso a este expediente.");
-  }
+    const caseGrant = await db
+      .select()
+      .from(caseAccess)
+      .where(
+        and(
+          eq(caseAccess.userId, userId),
+          eq(caseAccess.tenantId, tenantId),
+          eq(caseAccess.caseId, caseId),
+          eq(caseAccess.status, "active"),
+        ),
+      )
+      .limit(1);
 
-  return tenantWide[0];
+    if (caseGrant[0]) {
+      return caseGrant[0];
+    }
+
+    const tenantWide = await db
+      .select()
+      .from(tenantMemberships)
+      .where(
+        and(
+          eq(tenantMemberships.userId, userId),
+          eq(tenantMemberships.tenantId, tenantId),
+          eq(tenantMemberships.status, "active"),
+          eq(tenantMemberships.accessScope, "tenant"),
+        ),
+      )
+      .limit(1);
+
+    if (!tenantWide[0]) {
+      const repaired = await repairPersonalCaseAccess(userId, tenantId, caseId);
+      if (repaired) {
+        const healedGrant = await db
+          .select()
+          .from(caseAccess)
+          .where(
+            and(
+              eq(caseAccess.userId, userId),
+              eq(caseAccess.tenantId, tenantId),
+              eq(caseAccess.caseId, caseId),
+              eq(caseAccess.status, "active"),
+            ),
+          )
+          .limit(1);
+        if (healedGrant[0]) {
+          return healedGrant[0];
+        }
+      }
+      if (!ceoBypass) {
+        return tenantMembership;
+      }
+
+      throw new Error("No tienes acceso a este expediente.");
+    }
+
+    return tenantWide[0];
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
+  }
 }
 
 export async function assertActiveTenantMember(userId: number, tenantId: string) {
@@ -952,17 +1008,45 @@ export async function assertTenantAdminAccess(userId: number, tenantId: string) 
 }
 
 export async function createCaseRecord(input: InsertLaborCase) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.insert(laborCases).values(input);
-  const result = await db.select().from(laborCases).where(eq(laborCases.caseId, input.caseId)).limit(1);
-  return result[0];
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    await db.insert(laborCases).values(input);
+    const result = await db.select().from(laborCases).where(eq(laborCases.caseId, input.caseId)).limit(1);
+    return result[0];
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
+  }
 }
 
 export async function grantCaseAccess(input: InsertCaseAccess) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  await db.insert(caseAccess).values(input);
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+
+    const existing = await db
+      .select({ id: caseAccess.id })
+      .from(caseAccess)
+      .where(
+        and(
+          eq(caseAccess.userId, input.userId),
+          eq(caseAccess.tenantId, input.tenantId),
+          eq(caseAccess.caseId, input.caseId),
+          eq(caseAccess.status, "active"),
+        ),
+      )
+      .limit(1);
+
+    if (existing[0]) {
+      return;
+    }
+
+    await db.insert(caseAccess).values(input);
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
+  }
 }
 
 export async function addCaseEvent(input: InsertCaseEvent) {
@@ -2400,18 +2484,41 @@ export async function getVisibleDocumentForUser(params: {
 }
 
 export async function seedDemoCaseIfEmpty(userId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
 
-  const tenantIds = await getAccessibleTenantIds(userId);
-  if (tenantIds.length === 0) {
-    throw new Error("No accessible tenant found");
-  }
+    let tenantIds = await getAccessibleTenantIds(userId);
+    if (tenantIds.length === 0) {
+      const user = await getUserById(userId);
+      if (user) {
+        const tenant = await ensureTenantForUser({
+          userId,
+          userName: user.name ?? user.email ?? "AuditaPatron",
+          userEmail: user.email,
+        });
+        if (tenant?.tenantId) {
+          tenantIds = [tenant.tenantId];
+        }
+      }
+    }
 
-  const [caseCount] = await db.select({ value: count() }).from(laborCases).where(inArray(laborCases.tenantId, tenantIds));
-  if (Number(caseCount?.value ?? 0) > 0) {
-    return false;
-  }
+    if (tenantIds.length === 0) {
+      throw new Error("No pudimos preparar tu espacio de revisión.");
+    }
+
+    const existingPrimary = await getPrimaryCaseIdForUser(userId, tenantIds[0]);
+    if (existingPrimary) {
+      await repairPersonalCaseAccess(userId, tenantIds[0], existingPrimary);
+      return false;
+    }
+
+    const [caseCount] = await db.select({ value: count() }).from(laborCases).where(inArray(laborCases.tenantId, tenantIds));
+    if (Number(caseCount?.value ?? 0) > 0) {
+      await repairPersonalCaseAccess(userId, tenantIds[0]);
+      return false;
+    }
 
   const tenantId = tenantIds[0]!;
   const caseId = buildCaseId(tenantId, "demo001");
@@ -2517,7 +2624,123 @@ export async function seedDemoCaseIfEmpty(userId: number) {
     afterState: { tenantId, caseId, traceId },
   });
 
-  return true;
+    return true;
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
+  }
+}
+
+export async function repairPersonalCaseAccess(userId: number, tenantId: string, caseId?: string) {
+  try {
+    await ensureMysqlTables();
+    const db = await getDb();
+    if (!db) return false;
+
+    let caseRow:
+      | {
+          caseId: string;
+          tenantId: string;
+          traceId: string;
+          assignedUserId: number | null;
+        }
+      | undefined;
+
+    if (caseId) {
+      const requested = await db
+        .select({
+          caseId: laborCases.caseId,
+          tenantId: laborCases.tenantId,
+          traceId: laborCases.traceId,
+          assignedUserId: laborCases.assignedUserId,
+        })
+        .from(laborCases)
+        .where(and(eq(laborCases.tenantId, tenantId), eq(laborCases.caseId, caseId)))
+        .limit(1);
+      caseRow = requested[0];
+    }
+
+    if (!caseRow) {
+      const assigned = await db
+        .select({
+          caseId: laborCases.caseId,
+          tenantId: laborCases.tenantId,
+          traceId: laborCases.traceId,
+          assignedUserId: laborCases.assignedUserId,
+        })
+        .from(laborCases)
+        .where(and(eq(laborCases.tenantId, tenantId), eq(laborCases.assignedUserId, userId)))
+        .orderBy(asc(laborCases.createdAt))
+        .limit(1);
+      caseRow = assigned[0];
+    }
+
+    if (!caseRow) {
+      return false;
+    }
+
+    if (caseRow.assignedUserId != null && caseRow.assignedUserId !== userId) {
+      if (!(await isCeoBypassUser(userId))) {
+        return false;
+      }
+    }
+
+    const membership = await db
+      .select({ id: tenantMemberships.id })
+      .from(tenantMemberships)
+      .where(
+        and(
+          eq(tenantMemberships.userId, userId),
+          eq(tenantMemberships.tenantId, tenantId),
+          eq(tenantMemberships.status, "active"),
+        ),
+      )
+      .limit(1);
+
+    if (!membership[0]) {
+      await db.insert(tenantMemberships).values({
+        tenantId,
+        caseId: caseRow.caseId,
+        traceId: caseRow.traceId,
+        userId,
+        role: "tenant_admin",
+        accessScope: "tenant",
+        status: "active",
+      });
+    }
+
+    await grantCaseAccess({
+      tenantId,
+      caseId: caseRow.caseId,
+      traceId: caseRow.traceId,
+      userId,
+      grantedByUserId: userId,
+      accessLevel: "owner",
+      status: "active",
+    });
+
+    return true;
+  } catch (error) {
+    throw toUserFacingDatabaseError(error);
+  }
+}
+
+export async function ensurePersonalWorkspaceForUser(params: {
+  userId: number;
+  userName: string;
+  userEmail?: string | null;
+}) {
+  await ensureMysqlTables();
+  const tenant = await ensureTenantForUser(params);
+  await seedDemoCaseIfEmpty(params.userId);
+  const caseId = tenant?.tenantId ? await getPrimaryCaseIdForUser(params.userId, tenant.tenantId) : null;
+  if (tenant?.tenantId && caseId) {
+    await repairPersonalCaseAccess(params.userId, tenant.tenantId, caseId);
+  }
+  return {
+    tenant,
+    tenantId: tenant?.tenantId ?? null,
+    caseId,
+  };
 }
 
 export async function listCeoBridgePresets(params: { userId: number; tenantId?: string }) {

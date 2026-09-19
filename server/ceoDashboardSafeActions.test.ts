@@ -9,7 +9,9 @@ const dbMocks = vi.hoisted(() => ({
   updateCaseStatus: vi.fn(),
   updateOperationalAlertStatus: vi.fn(),
   updateTenantMembershipStatus: vi.fn(),
+  ensurePersonalWorkspaceForUser: vi.fn(),
   ensureTenantForUser: vi.fn(),
+  getPrimaryCaseIdForUser: vi.fn(),
   seedDemoCaseIfEmpty: vi.fn(),
   getSystemSnapshot: vi.fn(),
   listTenantsForUser: vi.fn(),
@@ -43,6 +45,9 @@ const dbMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./db", () => dbMocks);
+vi.mock("./mysqlBootstrap", () => ({
+  ensureMysqlTables: vi.fn().mockResolvedValue({ ensured: true, ran: false }),
+}));
 
 import * as db from "./db";
 import { appRouter } from "./routers";
@@ -171,6 +176,12 @@ describe("Dashboard CEO safe actions", () => {
     vi.clearAllMocks();
 
     vi.mocked(db.ensureTenantForUser).mockResolvedValue({ tenantId: "balt-1" } as never);
+    vi.mocked(db.ensurePersonalWorkspaceForUser).mockResolvedValue({
+      tenant: { tenantId: "balt-1" },
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    } as never);
+    vi.mocked(db.getPrimaryCaseIdForUser).mockResolvedValue(null);
     vi.mocked(db.seedDemoCaseIfEmpty).mockResolvedValue(undefined);
     vi.mocked(db.getSystemSnapshot).mockResolvedValue({ tenants: [], cases: [] } as never);
     vi.mocked(db.listTenantsForUser).mockResolvedValue([]);

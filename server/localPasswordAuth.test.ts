@@ -27,6 +27,7 @@ describe("local password auth", () => {
     const sql = MYSQL_BOOTSTRAP_STATEMENTS.join("\n");
     expect(sql).toContain("`users`");
     expect(sql).toContain("`local_logins`");
+    expect(sql).toContain("`labor_cases`");
     expect(sql).toContain("ENGINE=InnoDB");
     expect(sql).not.toContain("from 'users'");
   });

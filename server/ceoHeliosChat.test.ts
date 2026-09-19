@@ -9,7 +9,9 @@ const dbMocks = vi.hoisted(() => ({
   updateCaseStatus: vi.fn(),
   updateOperationalAlertStatus: vi.fn(),
   updateTenantMembershipStatus: vi.fn(),
+  ensurePersonalWorkspaceForUser: vi.fn(),
   ensureTenantForUser: vi.fn(),
+  getPrimaryCaseIdForUser: vi.fn(),
   seedDemoCaseIfEmpty: vi.fn(),
   getSystemSnapshot: vi.fn(),
   listTenantsForUser: vi.fn(),
@@ -52,6 +54,9 @@ const bridgeSmokeMonitoringMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("./db", () => dbMocks);
+vi.mock("./mysqlBootstrap", () => ({
+  ensureMysqlTables: vi.fn().mockResolvedValue({ ensured: true, ran: false }),
+}));
 vi.mock("./_core/llm", () => llmMocks);
 vi.mock("./bridgeSmokeMonitoring", () => bridgeSmokeMonitoringMocks);
 
@@ -202,6 +207,12 @@ describe("ceoHeliosChat", () => {
     vi.clearAllMocks();
 
     vi.mocked(dbMocks.ensureTenantForUser).mockResolvedValue({ tenantId: "balt-1" } as never);
+    vi.mocked(dbMocks.ensurePersonalWorkspaceForUser).mockResolvedValue({
+      tenant: { tenantId: "balt-1" },
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+    } as never);
+    vi.mocked(dbMocks.getPrimaryCaseIdForUser).mockResolvedValue(null);
     vi.mocked(dbMocks.seedDemoCaseIfEmpty).mockResolvedValue(undefined);
     vi.mocked(dbMocks.getSystemSnapshot).mockResolvedValue({ tenants: [], cases: [] } as never);
     vi.mocked(dbMocks.listTenantsForUser).mockResolvedValue([]);

@@ -23,8 +23,10 @@ import {
   deleteCeoBridgePreset,
   deleteCeoBridgeSchedule,
   documentSeemsToBelongToAnotherPerson,
+  ensurePersonalWorkspaceForUser,
   ensureTenantForUser,
   findAuditLogEntry,
+  getPrimaryCaseIdForUser,
   getCaseDetailForUser,
   getDashboardForUser,
   getCeoDashboardSnapshot,
@@ -42,7 +44,6 @@ import {
   listTenantsForUser,
   listVisibleDocuments,
   persistAuditarViewState,
-  seedDemoCaseIfEmpty,
   updateCaseStatus,
   updateCeoBridgePreset,
   updateCeoBridgeSchedule,
@@ -57,6 +58,8 @@ import {
   isDatabaseLockContentionError,
   withDatabaseLock,
 } from "./db";
+import { ensureMysqlTables } from "./mysqlBootstrap";
+import { toUserFacingDatabaseError } from "./userFacingDatabaseError";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import {
@@ -2351,12 +2354,14 @@ export const appRouter = router({
   }),
   workspace: router({
     bootstrap: protectedProcedure.mutation(async ({ ctx }) => {
-      const tenant = await ensureTenantForUser({
-        userId: ctx.user.id,
-        userName: ctx.user.name ?? ctx.user.email ?? "CompliLink",
-        userEmail: ctx.user.email,
-      });
-      await seedDemoCaseIfEmpty(ctx.user.id);
+      try {
+        await ensureMysqlTables();
+        const workspace = await ensurePersonalWorkspaceForUser({
+          userId: ctx.user.id,
+          userName: ctx.user.name ?? ctx.user.email ?? "CompliLink",
+          userEmail: ctx.user.email,
+        });
+        const tenant = workspace.tenant;
       const snapshot = await getSystemSnapshot(ctx.user.id);
       return {
         tenant,
@@ -2375,6 +2380,9 @@ export const appRouter = router({
           })),
         },
       };
+      } catch (error) {
+        throw toUserFacingDatabaseError(error);
+      }
     }),
     snapshot: protectedProcedure.query(async ({ ctx }) => {
       return getSystemSnapshot(ctx.user.id);
@@ -3434,15 +3442,27 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        await ensureMysqlTables();
+        const workspace = await ensurePersonalWorkspaceForUser({
+          userId: ctx.user.id,
+          userName: ctx.user.name ?? ctx.user.email ?? "AuditaPatron",
+          userEmail: ctx.user.email,
+        });
+        const ceoBypass = await isCeoBypassUser(ctx.user.id);
+        const tenantId =
+          !ceoBypass && workspace.tenantId ? workspace.tenantId : input.tenantId;
+        const caseId =
+          !ceoBypass && workspace.caseId ? workspace.caseId : input.caseId;
+
         const detail = await getCaseDetailForUser({
           userId: ctx.user.id,
-          tenantId: input.tenantId,
-          caseId: input.caseId,
+          tenantId,
+          caseId,
         });
         const documents = await listVisibleDocuments({
           userId: ctx.user.id,
-          tenantId: input.tenantId,
-          caseId: input.caseId,
+          tenantId,
+          caseId,
         });
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
@@ -3521,12 +3541,12 @@ export const appRouter = router({
         }
 
         await createAuditLog({
-          tenantId: input.tenantId,
-          caseId: input.caseId,
+          tenantId,
+          caseId,
           traceId: detail.case.traceId,
           actorUserId: ctx.user.id,
           entityType: "case",
-          entityId: input.caseId,
+          entityId: caseId,
           action: "case.helios_copilot_chat",
           afterState: {
             prompt: input.prompt,
@@ -3716,10 +3736,24 @@ export const appRouter = router({
         }),
       )
       .mutation(async ({ ctx, input }) => {
+        await ensureMysqlTables();
         await assertTenantAdminAccess(ctx.user.id, input.tenantId);
 
         if (input.assignToUserId) {
           await assertActiveTenantMember(input.assignToUserId, input.tenantId);
+        }
+
+        const ceoBypass = await isCeoBypassUser(ctx.user.id);
+        if (!ceoBypass) {
+          const existingCaseId = await getPrimaryCaseIdForUser(ctx.user.id, input.tenantId);
+          if (existingCaseId) {
+            const existing = await getCaseDetailForUser({
+              userId: ctx.user.id,
+              tenantId: input.tenantId,
+              caseId: existingCaseId,
+            });
+            return existing.case;
+          }
         }
 
         const caseId = buildCaseId(input.tenantId);
