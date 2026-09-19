@@ -1292,9 +1292,10 @@ function HeroSection() {
             </div>
 
           <div
-            className="motion-enter-soft order-2 mt-8 flex flex-col gap-4 sm:flex-row w-full max-w-sm max-[359px]:gap-3 sm:order-none sm:mt-5 sm:max-w-none sm:items-start"
+            className="motion-enter-soft order-2 mt-5 flex w-full max-w-sm flex-col gap-3 max-[359px]:gap-3 sm:order-none sm:mt-5 sm:max-w-xl"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
+            <div className="ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <Button
               className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto motion-hover-lift text-base font-semibold shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.99]"
               onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}
@@ -1304,11 +1305,12 @@ function HeroSection() {
             </Button>
             <Button
               variant="outline"
-              className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto"
+              className="motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto"
               onClick={() => scrollToId("lectura-gratis")}
             >
               Ver ejemplo
             </Button>
+            </div>
               <div className="space-y-1 max-[359px]:hidden max-[359px]:space-y-1">
                 <div className="flex flex-wrap gap-2">
                   {[

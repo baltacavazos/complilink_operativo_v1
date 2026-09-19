@@ -31,9 +31,9 @@ describe("responsive layout regression guards", () => {
     expect(homeSource).toContain('max-[359px]:text-[1.95rem]');
     expect(homeSource).toContain('max-[359px]:leading-[0.98]');
     expect(homeSource).toContain('max-[359px]:hidden');
-    expect(homeSource).toContain('mt-8 flex flex-col gap-4 sm:flex-row');
+    expect(homeSource).toContain('ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center');
     expect(homeSource).toContain('h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto');
-    expect(homeSource).toContain('motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto');
+    expect(homeSource).toContain('motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto');
   });
 
   it("keeps the quick exit action compact on mobile", () => {

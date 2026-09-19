@@ -31,6 +31,7 @@ import {
   sanitizePreviewText,
   sanitizeStructuredExtractionView,
   toHumanResultTitle,
+  stripWorkerDebugIds,
   shouldAutoAnalyzeSelectedFile,
   shouldHideUploadContextSelectors,
   validateDocumentUploadFile,
@@ -280,6 +281,9 @@ describe("digital archive round 8", () => {
     expect(auditarSource).toContain("Cualquier fecha");
     expect(auditarSource).toContain("Últimos 30 días");
     expect(auditarSource).toContain("No encontramos documentos con este filtro");
+    expect(auditarSource).toContain("Todavía no hay documentos resguardados. Cuando guardes el");
+    expect(auditarSource).toContain("primero, quedará aquí para consultarlo con calma.");
+    expect(auditarSource).not.toContain("Aún no tienes documentos en tu bóveda laboral. Puedes");
   });
 
   it("expone un retorno móvil fijo al expediente cuando ya hay documentos", () => {
@@ -947,6 +951,26 @@ describe("buildInlineLegalConsentState", () => {
 
 
 describe("preview sanitization", () => {
+  it("oculta identificadores de depuración ap.pol en la vista del trabajador", () => {
+    expect(stripWorkerDebugIds("Revisa este punto. ap.pol.contrast")).toBe("Revisa este punto.");
+    expect(stripWorkerDebugIds("ap.pol.cta-weight")).toBe("");
+    expect(
+      sanitizePreviewText("ap.pol.vault", {
+        emptyFallback: "",
+        technicalFallback: "omitido",
+      }),
+    ).toBe("");
+    expect(
+      sanitizePreviewText("La lectura ya está lista ap.pol.debug-id para continuar.", {
+        emptyFallback: "",
+        technicalFallback: "omitido",
+      }),
+    ).toBe("La lectura ya está lista para continuar");
+    expect(auditarSource).toContain("stripWorkerDebugIds");
+    expect(auditarSource).toContain("isWorkerDebugId");
+    expect(auditarSource).toContain("ap\\.pol");
+  });
+
   it("reemplaza blobs técnicos por un fallback corto y legible", () => {
     const technicalBlob = "TRPCClientError: Failed query at http://localhost:3000 node_modules react-dom jsx-runtime function App(){ return null; }";
 

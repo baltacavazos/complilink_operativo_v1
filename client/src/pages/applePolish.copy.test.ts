@@ -105,7 +105,7 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
 
   it("deja estados vacíos honestos con una acción clara en /auditar", () => {
     const auditar = readClientSource("pages/Auditar.tsx");
-    expect(auditar).toContain("Aún no tienes documentos en tu bóveda laboral");
+    expect(auditar).toContain("Todavía no hay documentos resguardados");
     expect(auditar).toContain("Subir mi primer documento");
     expect(auditar).toContain("Ver toda la bóveda");
     expect(auditar).toContain("focusRecommendedUpload()");

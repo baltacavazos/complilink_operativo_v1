@@ -53,6 +53,7 @@ describe("mobile native readiness", () => {
     expect(html).toContain('/favicon.svg');
     expect(html).toContain('/favicon-32.png');
     expect(html).toContain('/apple-touch-icon.png');
+    expect(webManifest).toContain('/favicon.svg');
     expect(webManifest).toContain('/favicon-32.png');
     expect(webManifest).toContain('/favicon-192.png');
     expect(webManifest).toContain('/apple-touch-icon.png');
