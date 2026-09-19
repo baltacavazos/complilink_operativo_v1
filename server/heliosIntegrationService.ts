@@ -1,4 +1,9 @@
 import { ENV } from "./_core/env";
+import { DOCUMENT_SIGNAL_DISCLAIMER, LOCAL_REVIEW_LABEL } from "./laborFiscalSignals";
+import {
+  humanizeStructuredFieldLabel,
+  isWorkerSystemStructuredField,
+} from "./workerVisibleExtraction";
 
 export type HeliosOpinionStatus =
   | "pending_dispatch"
@@ -105,6 +110,9 @@ export type HeliosOpinionContract = {
 const DEFAULT_DISCLAIMER =
   "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.";
 
+const LOCAL_REVIEW_DISCLAIMER =
+  "Esta es una revisión local de lo que ya se lee en tus papeles. Sirve para orientar y no sustituye asesoría profesional. No consulta IMSS, SAT ni Infonavit en vivo.";
+
 function asTextList(value: unknown) {
   if (!Array.isArray(value)) return [] as string[];
   return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
@@ -137,10 +145,14 @@ const VISIBLE_FIELD_LABELS: Array<{ key: string; label: string }> = [
   { key: "workerName", label: "nombre" },
   { key: "employerName", label: "empresa" },
   { key: "employerRfc", label: "RFC" },
+  { key: "workerRfc", label: "RFC de la persona trabajadora" },
   { key: "period", label: "periodo" },
+  { key: "payrollPeriod", label: "periodo" },
   { key: "apparentAmount", label: "monto" },
+  { key: "payrollNetAmount", label: "pago neto" },
   { key: "apparentEffectiveDate", label: "fecha" },
   { key: "jobTitle", label: "puesto" },
+  { key: "payrollNss", label: "NSS" },
 ];
 
 function collectVisibleFieldLabels(
@@ -451,6 +463,13 @@ function getKeyFindings(params: BuildHeliosOpinionParams) {
   if (params.documentType === "payroll_receipt" || params.documentType === "cfdi") {
     pushFinding(findings, "Monto visible", amountConfirmed, "confirmed", "support");
     pushFinding(findings, "Monto visible", amountEstimated, "estimated", "support");
+    pushFinding(findings, "Periodo visible", getBestVisibleValue(params, "payrollPeriod"), "confirmed");
+    pushFinding(findings, "Pago neto visible", getBestVisibleValue(params, "payrollNetAmount"), "confirmed", "support");
+    pushFinding(findings, "RFC visible", getBestVisibleValue(params, "employerRfc") ?? employerRfcConfirmed ?? employerRfcEstimated, "confirmed");
+    pushFinding(findings, "NSS visible", getBestVisibleValue(params, "payrollNss"), "confirmed");
+    pushFinding(findings, "Retención ISR visible", getBestVisibleValue(params, "isrWithheld"), "confirmed");
+    pushFinding(findings, "Retención IMSS visible", getBestVisibleValue(params, "imssWithheld"), "confirmed");
+    pushFinding(findings, "Descuento Infonavit visible", getBestVisibleValue(params, "infonavitWithheld"), "confirmed");
   }
 
   if (params.documentType === "contract") {
@@ -514,6 +533,7 @@ function getLead(params: BuildHeliosOpinionParams, findings: HeliosResultFinding
 
 function getSignalsChecked(params: BuildHeliosOpinionParams) {
   const signals = [
+    LOCAL_REVIEW_LABEL.toLowerCase(),
     "tipo de documento detectado",
     "campos visibles del archivo",
     "reglas básicas de consistencia",
@@ -526,6 +546,7 @@ function getSignalsChecked(params: BuildHeliosOpinionParams) {
 
   if (params.documentType === "payroll_receipt" || params.documentType === "cfdi") {
     signals.push("montos, pagos y descuentos visibles");
+    signals.push("revisión local de recibo o CFDI");
   } else if (params.documentType === "contract") {
     signals.push("puesto, fecha y condiciones visibles");
   } else if (params.documentType === "imss") {
@@ -797,7 +818,7 @@ export function buildHeliosOpinion(params: BuildHeliosOpinionParams): HeliosOpin
     keyFactsUsed: getKeyFactsUsed(params),
     uncertainties,
     confidenceScore,
-    disclaimer: DEFAULT_DISCLAIMER,
+    disclaimer: LOCAL_REVIEW_DISCLAIMER,
     generatedAt,
     resultCard: buildResultCard(params, uncertainties),
     legalHighlights: buildLegalHighlights(summary, uncertainties, recommendedNextStep),
@@ -1092,10 +1113,16 @@ export function buildRemoteHeliosOpinionContract(params: {
           : "medium";
   const keyFindings: HeliosResultFinding[] = [];
 
-  const topFieldEntries = Object.entries(extractedFields ?? {}).filter(([, value]) => toOptionalText(value)).slice(0, 2);
+  const topFieldEntries = Object.entries(extractedFields ?? {})
+    .filter(([label, value]) => {
+      const text = toOptionalText(value);
+      if (!text) return false;
+      return !isWorkerSystemStructuredField({ key: label, label, value: text });
+    })
+    .slice(0, 4);
   topFieldEntries.forEach(([label, value]) => {
     keyFindings.push({
-      label: label.replace(/[_-]+/g, " "),
+      label: humanizeStructuredFieldLabel(label),
       value: String(value),
       source: "confirmed",
       tone: "support",
@@ -1164,7 +1191,7 @@ export function buildRemoteHeliosOpinionContract(params: {
         ? guardrails
         : ["La lectura final debe contrastarse con el resto del expediente para construir una estrategia laboral completa."],
     confidenceScore,
-    disclaimer: DEFAULT_DISCLAIMER,
+    disclaimer: `${DEFAULT_DISCLAIMER} ${DOCUMENT_SIGNAL_DISCLAIMER}`,
     generatedAt: toOptionalText(payload.timestamp) ?? new Date().toISOString(),
     resultCard: {
       headline: "El asesor laboral ya terminó esta lectura",

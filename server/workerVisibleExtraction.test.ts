@@ -33,6 +33,7 @@ describe("workerVisibleExtraction", () => {
   });
 
   it("humaniza campos laborales y fiscales del recibo para la vista del trabajador", () => {
+    expect(humanizeStructuredFieldLabel("workerRfc")).toBe("RFC de la persona trabajadora");
     expect(humanizeStructuredFieldLabel("payrollNss")).toBe("NSS visible en el comprobante");
     expect(humanizeStructuredFieldLabel("imssWithheld")).toBe("Retención de IMSS visible");
     expect(humanizeStructuredFieldLabel("isrWithheld")).toBe("Retención de ISR visible");

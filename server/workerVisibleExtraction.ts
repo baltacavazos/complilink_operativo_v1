@@ -37,6 +37,7 @@ const WORKER_INTERNAL_VALUE =
 
 const WORKER_FIELD_LABELS: Record<string, string> = {
   employerRfc: "RFC visible",
+  workerRfc: "RFC de la persona trabajadora",
   period: "Periodo visible",
   apparentAmount: "Monto visible",
   apparentEffectiveDate: "Fecha visible",

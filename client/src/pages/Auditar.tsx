@@ -1320,6 +1320,23 @@ type ConfirmedUploadResultView = {
     disclaimer?: string | null;
     liveImssValidation?: boolean;
     validationMode?: string | null;
+    facts?: {
+      period?: string | null;
+      netAmount?: string | null;
+      perceptions?: string | null;
+      deductions?: string | null;
+      employerRfc?: string | null;
+      workerRfc?: string | null;
+      nss?: string | null;
+      employerRegistration?: string | null;
+      isrWithheld?: string | null;
+      imssWithheld?: string | null;
+      infonavitWithheld?: string | null;
+    };
+    explanations?: Array<{ label: string; summary: string }>;
+    reviewSource?: string | null;
+    reviewSourceLabel?: string | null;
+    reviewSourceExplanation?: string | null;
     actionLabel?: string | null;
     revalidationHistory?: Array<{
       recordedAt: string;
@@ -2056,6 +2073,7 @@ const analysisFieldLabels: Record<string, string> = {
   structuredExtractionReady: "Puede leer detalles",
   benefitEstimationReady: "Puede estimar prestaciones",
   employerRfc: "RFC visible",
+  workerRfc: "RFC de la persona trabajadora",
   period: "Periodo visible",
   apparentAmount: "Monto visible",
   apparentEffectiveDate: "Fecha visible",
@@ -2322,6 +2340,7 @@ export function buildPayrollFactSignal(params: {
     "payrollemployername",
   ]);
   const employerRfc = readValue(["employerrfc", "rfcpayrollissuer", "rfcpayrollpayer", "rfcemisor"]);
+  const workerRfc = readValue(["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker"]);
   const period = readValue([
     "period",
     "periodo",
@@ -2382,6 +2401,7 @@ export function buildPayrollFactSignal(params: {
         ? `No se alcanzó a leer con claridad la razón social; sí aparece este RFC: ${employerRfc}.`
         : "No se alcanzó a leer con claridad la empresa o razón social que aparece en el recibo.",
     period ? `Periodo identificado: ${period}.` : "El periodo de pago no se alcanzó a leer completo.",
+    workerRfc ? `RFC de la persona trabajadora: ${workerRfc}.` : null,
     payment ? `Pago que se alcanza a leer: ${payment}.` : "El monto pagado no se alcanzó a leer completo.",
     deductions
       ? deductionsAreZero
@@ -2707,14 +2727,45 @@ function getExplanationVariantCopy(
 }
 
 
-function getHeliosModeLabel(value?: string | null) {
-  return value === "remote" ? "Revisión ampliada" : "Revisión inicial";
+export function getHeliosModeLabel(value?: string | null, status?: string | null) {
+  if (value === "remote" && (status === "processing" || status === "sent")) {
+    return "Revisión avanzada en curso";
+  }
+  if (value === "remote" && status === "error") {
+    return "Revisión avanzada incompleta";
+  }
+  if (value === "remote") {
+    return "Revisión avanzada";
+  }
+  return "Revisión local";
 }
 
-function getHeliosActivationCopy(value?: string | null) {
-  return value === "remote"
-    ? "La revisión ya volvió con más contexto y la experiencia sigue viéndose igual de simple para ti."
-    : "La experiencia está lista para darte una primera lectura ahora y una revisión más completa después, sin cambiar la forma de uso.";
+export function getHeliosActivationCopy(value?: string | null, status?: string | null) {
+  if (value === "remote" && (status === "completed" || status === "partial" || !status)) {
+    return "Esta lectura ya viene de la revisión avanzada del documento. No consulta IMSS, SAT ni Infonavit en vivo.";
+  }
+  if (value === "remote" && (status === "processing" || status === "sent")) {
+    return "Tu archivo sí quedó guardado. La revisión avanzada todavía no termina. No inventamos un dictamen.";
+  }
+  if (value === "remote") {
+    return "El archivo sí quedó guardado, pero la revisión avanzada no se completó. No hay un dictamen inventado.";
+  }
+  return "Esta es una revisión local de lo que ya se lee en tus papeles. No consulta IMSS, SAT ni Infonavit en vivo.";
+}
+
+export function pickPreferredWorkerOpinionView(
+  opinions: Array<HeliosOpinionView | null | undefined>,
+): HeliosOpinionView | null {
+  const present = opinions.filter((item): item is HeliosOpinionView => Boolean(item));
+  return (
+    present.find((item) => {
+      if (item.mode !== "remote") return false;
+      if (item.status && item.status !== "completed" && item.status !== "partial") return false;
+      return Boolean(item.legalOpinion?.trim() || item.summary?.trim() || item.resultCard);
+    }) ??
+    present[0] ??
+    null
+  );
 }
 
 function getHeliosStageCopy(params: {
@@ -3129,6 +3180,7 @@ export function isHumanMeaningfulAnalysisKey(key: string) {
     analysisFieldLabels[key] &&
     [
       "employerRfc",
+      "workerRfc",
       "period",
       "apparentAmount",
       "apparentEffectiveDate",
@@ -5328,6 +5380,10 @@ export default function Auditar() {
   );
   const latestHeliosDocument = useMemo(
     () =>
+      documents.find(item => {
+        const opinion = asHeliosOpinion(item.heliosOpinion);
+        return Boolean(opinion && (opinion.mode === "remote" ? opinion.status === "completed" || opinion.status === "partial" || !opinion.status : true));
+      }) ??
       documents.find(item => Boolean(asHeliosOpinion(item.heliosOpinion))) ??
       null,
     [documents]
@@ -5335,8 +5391,11 @@ export default function Auditar() {
   const latestPersistedHeliosOpinion = asHeliosOpinion(
     latestHeliosDocument?.heliosOpinion
   );
-  const visibleHeliosOpinion =
-    lastHeliosOpinion ?? latestPersistedHeliosOpinion;
+  const visibleHeliosOpinion = pickPreferredWorkerOpinionView([
+    lastHeliosOpinion,
+    latestPersistedHeliosOpinion,
+    ...documents.map(item => asHeliosOpinion(item.heliosOpinion)),
+  ]);
   const heliosStage = getHeliosStageCopy({
     opinion: visibleHeliosOpinion,
     engineStatus: lastUpload?.engineDispatch?.status ?? undefined,
@@ -9334,6 +9393,23 @@ export default function Auditar() {
                     {effectiveSocialSecurityValidation?.disclaimer ??
                       "Esto no consulta IMSS, SAT ni Infonavit en vivo. Solo lee lo que ya aparece en tus documentos."}
                   </p>
+                  {effectiveSocialSecurityValidation?.reviewSourceLabel ? (
+                    <p className="mt-2 text-xs font-semibold leading-5 text-teal-950">
+                      {effectiveSocialSecurityValidation.reviewSourceLabel}
+                      {effectiveSocialSecurityValidation.reviewSourceExplanation
+                        ? `. ${effectiveSocialSecurityValidation.reviewSourceExplanation}`
+                        : ""}
+                    </p>
+                  ) : null}
+                  {effectiveSocialSecurityValidation?.explanations?.length ? (
+                    <ul className="mt-3 space-y-1.5 text-xs leading-5 text-teal-950">
+                      {effectiveSocialSecurityValidation.explanations.slice(0, 4).map(item => (
+                        <li key={item.label}>
+                          <span className="font-semibold">{item.label}:</span> {item.summary}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </div>
               </div>
 
@@ -9742,11 +9818,11 @@ export default function Auditar() {
                         </p>
                         <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                           {visibleHeliosOpinion
-                            ? getHeliosModeLabel(visibleHeliosOpinion.mode)
-                            : "Modo inicial preparado"}
+                            ? getHeliosModeLabel(visibleHeliosOpinion.mode, visibleHeliosOpinion.status)
+                            : "Revisión local"}
                         </p>
                         <p className="mt-1.5 text-sm leading-5 text-slate-700">
-                          {getHeliosActivationCopy(visibleHeliosOpinion?.mode)}
+                          {getHeliosActivationCopy(visibleHeliosOpinion?.mode, visibleHeliosOpinion?.status)}
                         </p>
                       </div>
                     </div>
@@ -12576,7 +12652,7 @@ Reforzar con otro documento
                             </span>
                           ) : null}
                           <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                            {getHeliosModeLabel(lastHeliosOpinion.mode)}
+                            {getHeliosModeLabel(lastHeliosOpinion.mode, lastHeliosOpinion.status)}
                           </span>
                         </div>
                       </div>
@@ -13751,7 +13827,7 @@ Reforzar con otro documento
                                     {heliosRisk.action}
                                   </span>
                                   <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                                    {getHeliosModeLabel(heliosOpinion.mode)}
+                                    {getHeliosModeLabel(heliosOpinion.mode, heliosOpinion.status)}
                                   </span>
                                 </div>
                               </summary>
