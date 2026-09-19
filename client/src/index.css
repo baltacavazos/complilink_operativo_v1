@@ -571,3 +571,179 @@
     color: rgb(226 232 240) !important;
   }
 }
+
+@layer components {
+  /**
+   * Apple extraordinary #4 — visual only, no structural redesign.
+   * Premium hero rhythm, quieter worker fields, flatter /acceso, readable dark/light.
+   */
+  .audita-home,
+  .audita-access,
+  .audita-auditar {
+    --ap-radius-chip: 999px;
+    --ap-radius-field: 1rem;
+    --ap-radius-panel: 1.25rem;
+    --ap-radius-card: 1.5rem;
+    --ap-shadow-soft: 0 22px 56px -40px rgba(15, 23, 42, 0.2);
+    --ap-shadow-lift: 0 28px 70px -46px rgba(15, 23, 42, 0.28);
+  }
+
+  .audita-home h1,
+  .audita-home h2,
+  .audita-home h3,
+  .audita-access h1,
+  .audita-access h2,
+  .audita-auditar h1,
+  .audita-auditar h2,
+  .audita-auditar h3 {
+    overflow: visible;
+    text-wrap: balance;
+    padding-block-end: 0.06em;
+  }
+
+  .audita-home .ap-status-chip,
+  .audita-access .ap-status-chip,
+  .audita-auditar .ap-status-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--ap-radius-chip);
+    letter-spacing: 0.01em;
+    line-height: 1.25;
+    text-transform: none;
+    overflow: visible;
+  }
+
+  /* Home hero: premium spacing, type rhythm, column alignment */
+  .audita-home .ap-hero {
+    padding-top: clamp(1.15rem, 3.2vw, 3.15rem);
+    padding-bottom: clamp(1.35rem, 3.6vw, 3.4rem);
+  }
+
+  .audita-home .ap-hero-copy {
+    gap: 0;
+  }
+
+  .audita-home .ap-hero-headline {
+    overflow: visible;
+    padding-bottom: 0.08em;
+  }
+
+  @media (min-width: 640px) {
+    .audita-home .ap-hero-headline {
+      margin-top: 1.15rem !important;
+    }
+
+    .audita-home .ap-hero-support {
+      margin-top: 1rem !important;
+    }
+  }
+
+  .audita-home .ap-hero-cta-row > :last-child {
+    box-shadow: none;
+  }
+
+  @media (min-width: 1024px) {
+    .audita-home .ap-hero .container {
+      align-items: start;
+    }
+  }
+
+  /* /auditar: privacy bar contrast + quieter worker fields */
+  .audita-auditar [data-ap-privacy-bar] {
+    border-color: rgb(13 148 136 / 0.38);
+    background-color: rgb(240 253 250);
+    box-shadow: var(--ap-shadow-soft);
+  }
+
+  .audita-auditar [data-ap-privacy-bar] [class*="text-slate-700"],
+  .audita-auditar [data-ap-privacy-bar] [class*="text-slate-600"] {
+    color: rgb(30 41 59);
+  }
+
+  .audita-auditar [data-ap-privacy-bar] [class*="text-slate-950"],
+  .audita-auditar [data-ap-privacy-bar] [class*="text-slate-900"] {
+    color: rgb(15 23 42);
+  }
+
+  .audita-auditar .ap-worker-field {
+    border: 1px solid rgb(15 23 42 / 0.06);
+    background-color: rgb(248 250 252);
+    box-shadow: none;
+  }
+
+  .audita-auditar .ap-worker-field [class*="uppercase"] {
+    letter-spacing: 0.01em;
+    text-transform: none;
+    font-weight: 600;
+  }
+
+  .audita-auditar [data-testid="auditar-verdict-panel"],
+  .audita-auditar [data-testid="auditar-result-reveal"],
+  .audita-auditar [data-testid="auditar-severity-summary"],
+  .audita-auditar [data-testid="auditar-simple-explanation"] {
+    box-shadow: var(--ap-shadow-soft);
+  }
+
+  /* /acceso: flatten nested boxes, Apple-clean form */
+  .audita-access .ap-access-surface {
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+  }
+
+  .audita-access .ap-access-mark img {
+    border-color: transparent;
+    box-shadow: none;
+    background-color: transparent;
+  }
+
+  .audita-access .ap-access-note {
+    border: none;
+    background: transparent;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .audita-access input[type="email"],
+  .audita-access input[type="password"],
+  .audita-access input[type="text"] {
+    border-radius: 1rem;
+    background-color: rgb(244 246 248);
+    box-shadow: none;
+  }
+
+  .audita-access input[type="email"]:focus,
+  .audita-access input[type="password"]:focus,
+  .audita-access input[type="text"]:focus {
+    background-color: rgb(255 255 255);
+  }
+
+  /* Dark / light readability — /auditar already remaps surfaces; keep Home/Access
+     text on their light canvases and only lift result/privacy/worker contrast. */
+  .dark .audita-auditar [data-ap-privacy-bar] {
+    background-color: rgba(2, 6, 23, 0.88) !important;
+    border-color: rgba(45, 212, 191, 0.34) !important;
+    color: rgb(226 232 240);
+  }
+
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-950"],
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-900"] {
+    color: rgb(248 250 252) !important;
+  }
+
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-700"],
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-600"] {
+    color: rgb(203 213 225) !important;
+  }
+
+  .dark .audita-auditar .ap-worker-field {
+    background-color: rgba(30, 41, 59, 0.46) !important;
+    border-color: rgba(148, 163, 184, 0.16) !important;
+    box-shadow: none !important;
+  }
+
+  .dark .audita-auditar .ap-worker-field [class*="text-slate-800"],
+  .dark .audita-auditar .ap-worker-field [class*="text-slate-700"] {
+    color: rgb(226 232 240) !important;
+  }
+}

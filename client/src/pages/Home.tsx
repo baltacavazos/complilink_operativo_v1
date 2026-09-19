@@ -1203,13 +1203,13 @@ function HeroSection() {
     <section
       ref={heroSectionRef}
       id="top"
-      className="relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-3 pt-3 sm:pb-8 sm:pt-8 lg:pt-10"
+      className="ap-hero relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-3 pt-3 sm:pb-8 sm:pt-8 lg:pt-10"
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
-      <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
-        <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
+      <div className="container relative z-10 mx-auto grid max-w-6xl items-start gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
+        <div className="ap-hero-copy mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
-            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+            className="ap-status-chip motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
@@ -1218,21 +1218,21 @@ function HeroSection() {
           </div>
 
             <h1
-              className="motion-enter-soft mt-2.5 max-w-[14ch] text-balance text-[2.12rem] font-bold leading-[0.95] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-4 sm:max-w-[13ch] sm:text-[3.05rem] lg:max-w-[12ch] lg:text-[3.75rem]"
+              className="ap-hero-headline motion-enter-soft mt-2.5 max-w-[14ch] text-balance text-[2.12rem] font-bold leading-[0.95] tracking-[-0.06em] text-slate-950 max-[359px]:max-w-[13ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[0.98] sm:mt-4 sm:max-w-[13ch] sm:text-[3.05rem] lg:max-w-[12ch] lg:text-[3.75rem]"
               style={{ ["--motion-delay" as string]: "120ms" }}
             >
               {activeHeroVariant.headline}
             </h1>
 
             <p
-              className="motion-enter-soft mt-2.5 max-w-xl text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:hidden"
+              className="ap-hero-support motion-enter-soft mt-2.5 max-w-xl text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:hidden"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
               {`${activeHeroVariant.supportLine} ${activeHeroVariant.microDescription}`}
             </p>
 
             <p
-              className="motion-enter-soft mt-2.5 hidden max-w-xl text-[0.98rem] leading-6 text-slate-700 sm:block sm:text-[1rem] sm:leading-6"
+              className="ap-hero-support motion-enter-soft mt-2.5 hidden max-w-xl text-[0.98rem] leading-6 text-slate-700 sm:block sm:text-[1rem] sm:leading-6"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
               {`${activeHeroVariant.supportLine} ${activeHeroVariant.microDescription}`}
@@ -1240,7 +1240,7 @@ function HeroSection() {
 
             {activeHeroVariant.body ? (
               <p
-                className="motion-enter-soft mt-2 max-w-xl text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
+                className="ap-hero-support motion-enter-soft mt-2 max-w-xl text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
                 style={{ ["--motion-delay" as string]: "210ms" }}
               >
                 {activeHeroVariant.body}
@@ -1318,7 +1318,7 @@ function HeroSection() {
                     "Tu empresa no lo ve",
                     "Borras tu archivo cuando quieras",
                   ].map((item) => (
-                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800 shadow-sm">
+                    <span key={item} className="ap-status-chip rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800 shadow-sm">
                       {item}
                     </span>
                   ))}
@@ -1357,7 +1357,7 @@ function HeroSection() {
                         : "Te decimos qué revisar primero."}
                   </p>
                 </div>
-                <div className="rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
+                <div className="ap-status-chip rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
                   1 señal por vista
                 </div>
               </div>

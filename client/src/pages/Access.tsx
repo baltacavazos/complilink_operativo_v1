@@ -40,11 +40,11 @@ type AccessMode = "signup" | "signin";
 
 function BrandedAuthTransition({ intent }: { intent: PortalAuthIntent }) {
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
-      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center px-6 py-10">
-        <div className="w-full max-w-sm rounded-[2rem] border border-slate-200 bg-white/95 p-7 text-center shadow-[0_28px_80px_-42px_rgba(15,23,42,0.34)]">
-          <div className="flex justify-center">
-            <AuditaPatronLogoIcon imageClassName="h-14 w-14 rounded-2xl border border-slate-200 bg-white object-contain p-2 shadow-sm" />
+    <main className="audita-access min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.14),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
+      <div className="mx-auto flex min-h-screen w-full max-w-xl items-center justify-center px-6 py-16">
+        <div className="ap-access-surface w-full max-w-sm p-4 text-center">
+          <div className="ap-access-mark flex justify-center">
+            <AuditaPatronLogoIcon imageClassName="h-14 w-14 object-contain" />
           </div>
           <AuditaPatronLogoWordmark className="mt-4 justify-center" imageClassName="max-w-[220px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
           <Loader2 className="mx-auto mt-7 h-6 w-6 animate-spin text-teal-600" aria-hidden="true" />
@@ -379,7 +379,7 @@ export default function Access() {
 
   if (auth.canToggleUserView && auth.isAuthenticated) {
     return (
-      <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
+      <main className="audita-access min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
         <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-4 sm:px-5 sm:py-6">
           <div className="sr-only">Acceso base con salida CEO</div>
           <div className="mx-auto flex w-full max-w-md flex-col gap-3">
@@ -393,9 +393,9 @@ export default function Access() {
           </div>
 
           <section className="mx-auto mt-4 flex w-full max-w-md flex-1 flex-col justify-center">
-            <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.22)] sm:p-6">
+            <div className="ap-access-surface min-w-0 overflow-visible p-5 sm:p-6">
               <div className="flex min-w-0 items-center gap-3">
-                <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
+                <AuditaPatronLogoIcon imageClassName="ap-access-mark h-11 w-11 object-contain" />
                 <div className="min-w-0">
                   <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
                   <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Todo listo</p>
@@ -450,7 +450,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
   }
 
   return (
-    <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
+    <main className="audita-access min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_24%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_52%,#f8fafc_100%)] text-slate-950">
       <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col px-4 py-4 sm:px-5 sm:py-6">
         <div className="mx-auto w-full max-w-md">
           <MobileAppShell
@@ -470,9 +470,9 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
         </div>
 
         <section className="mx-auto mt-4 flex w-full max-w-md flex-1 flex-col justify-center">
-          <div className="min-w-0 overflow-hidden rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-[0_24px_80px_-38px_rgba(15,23,42,0.22)] sm:p-6">
+          <div className="ap-access-surface min-w-0 overflow-visible p-5 sm:p-6">
             <div className="flex min-w-0 items-center gap-3">
-              <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
+              <AuditaPatronLogoIcon imageClassName="ap-access-mark h-11 w-11 object-contain" />
               <div className="min-w-0">
                 <AuditaPatronLogoWordmark imageClassName="max-w-[180px] sm:max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
                 <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
