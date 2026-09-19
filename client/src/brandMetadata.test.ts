@@ -17,11 +17,12 @@ describe("brand metadata", () => {
   it("expone metadatos sociales y mobile web app alineados con el logo definitivo", () => {
     const indexHtml = readClientFile("index.html");
 
-    expect(indexHtml).toContain('<meta name="application-name" content="AuditaPatron" />');
+    expect(indexHtml).toContain('<html lang="es">');
+    expect(indexHtml).toContain('<meta name="application-name" content="AuditaPatrón" />');
     expect(indexHtml).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
-    expect(indexHtml).toContain('<meta name="apple-mobile-web-app-title" content="AuditaPatron" />');
-    expect(indexHtml).toContain('<meta property="og:site_name" content="AuditaPatron" />');
-    expect(indexHtml).toContain('<meta property="og:title" content="AuditaPatron · Conoce tus derechos" />');
+    expect(indexHtml).toContain('<meta name="apple-mobile-web-app-title" content="AuditaPatrón" />');
+    expect(indexHtml).toContain('<meta property="og:site_name" content="AuditaPatrón" />');
+    expect(indexHtml).toContain('<meta property="og:title" content="AuditaPatrón · Conoce tus derechos" />');
     expect(indexHtml).toContain(`<meta property="og:image" content="${AUDITAPATRON_LOGO_ASSETS.full}" />`);
     expect(indexHtml).toContain(`<meta name="twitter:image" content="${AUDITAPATRON_LOGO_ASSETS.full}" />`);
     expect(indexHtml).toContain('<link rel="manifest" href="/site.webmanifest" />');
@@ -41,8 +42,8 @@ describe("brand metadata", () => {
       icons: Array<{ src: string; sizes: string; type: string; purpose?: string }>;
     };
 
-    expect(manifest.name).toBe("AuditaPatron");
-    expect(manifest.short_name).toBe("AuditaPatron");
+    expect(manifest.name).toBe("AuditaPatrón");
+    expect(manifest.short_name).toBe("AuditaPatrón");
     expect(manifest.theme_color).toBe("#143c86");
     expect(manifest.background_color).toBe("#142c52");
     expect(manifest.display).toBe("standalone");

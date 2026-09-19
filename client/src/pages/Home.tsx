@@ -849,7 +849,7 @@ function SiteHeader() {
             <div className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(15,23,42,0.2)]">
               <div className="flex items-center justify-between gap-3">
                 <AuditaPatronLogoWordmark imageClassName="h-6 max-w-[184px]" />
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700">
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700">
                   Entrada rápida
                 </span>
               </div>
@@ -1204,7 +1204,7 @@ function HeroSection() {
       <div className="container relative z-10 mx-auto grid max-w-6xl items-center gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
-            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+            className="motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
@@ -1266,7 +1266,7 @@ function HeroSection() {
                     Un recibo reciente, una foto clara o el comprobante del mismo mes suele bastar para arrancar.
                   </p>
                 </div>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-emerald-800">
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-emerald-800">
                   Un solo recibo basta
                 </span>
               </div>
@@ -1276,7 +1276,7 @@ function HeroSection() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                     Documento recomendado
                   </p>
-                  <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                  <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
                     Más útil para empezar
                   </span>
                 </div>
@@ -1311,7 +1311,7 @@ function HeroSection() {
                     "Tu empresa no lo ve",
                     "Borras tu archivo cuando quieras",
                   ].map((item) => (
-                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-teal-800 shadow-sm">
+                    <span key={item} className="rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800 shadow-sm">
                       {item}
                     </span>
                   ))}
@@ -1638,7 +1638,7 @@ function HeliosFirstEntrySection() {
     <section id="lectura-gratis" className="bg-white py-10 sm:py-12">
       <div className="container mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold tracking-tight text-teal-800">
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
             Primera lectura sin correo
           </div>
@@ -1688,11 +1688,11 @@ function HeliosFirstEntrySection() {
               <div className="mt-5 grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
                 <div className="rounded-[1.35rem] border border-teal-100 bg-white p-4 shadow-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                    <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
                       {guestPreview.preview.classification.normalizedDocType}
                     </span>
                     {typeof guestPreview.heliosOpinion.confidenceScore === "number" ? (
-                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700">
                         Confianza {guestPreview.heliosOpinion.confidenceScore}%
                       </span>
                     ) : null}
@@ -1803,7 +1803,7 @@ function HeliosFirstEntrySection() {
           <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Si ya entraste</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">Primero ves valor y luego decides</span>
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">Primero ves valor y luego decides</span>
             </div>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
               {latestCase?.stageLabel ? `Tu bóveda va en ${latestCase.stageLabel}.` : "Si ya entraste antes, retomamos tu lectura y la guardas solo si te sirve."}
@@ -1859,7 +1859,7 @@ function QuickTrustSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="grid gap-4 rounded-[1.7rem] border border-teal-100 bg-white/96 p-4 shadow-[0_24px_60px_-46px_rgba(15,23,42,0.28)] sm:p-5 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
               <Lock className="h-4 w-4" strokeWidth={1.8} />
               Privacidad visible y verificable
             </div>
@@ -1905,7 +1905,7 @@ function QuickTrustSection() {
               <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/95 px-4 py-4 text-sm text-slate-700 shadow-sm">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Registro visible de tu control</p>
-                  <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800">
                     3 señales claras
                   </span>
                 </div>
@@ -1925,7 +1925,7 @@ function QuickTrustSection() {
                             : "border-slate-200 bg-slate-50 hover:border-teal-200 hover:bg-white"
                         }`}
                       >
-                        <div className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                        <div className={`mt-0.5 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-tight ${
                           isActive
                             ? "border border-teal-300 bg-white text-teal-900"
                             : "border border-teal-200 bg-white text-teal-800"
@@ -1943,7 +1943,7 @@ function QuickTrustSection() {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Prueba tu control aquí</p>
                       <p className="mt-1 text-base font-semibold text-slate-950">{selectedControlMoment.title}</p>
                     </div>
-                    <span className="rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-teal-900">
+                    <span className="rounded-full border border-teal-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-900">
                       {selectedControlMoment.badge}
                     </span>
                   </div>
@@ -2015,7 +2015,7 @@ function QuickTrustSection() {
           <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm text-slate-700 shadow-sm lg:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Respuestas rápidas</p>
-              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
                 Antes de abrir expediente
               </span>
             </div>
@@ -2687,7 +2687,7 @@ function PrivacySection() {
                     <a
                       key={document.slug}
                       href={document.route}
-                      className="rounded-full border border-white bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-teal-900 transition hover:border-teal-200 hover:bg-teal-100"
+                      className="rounded-full border border-white bg-white px-3 py-2 text-xs font-semibold tracking-tight text-teal-900 transition hover:border-teal-200 hover:bg-teal-100"
                     >
                       {document.shortTitle}
                     </a>
@@ -2909,7 +2909,7 @@ function AppDownloadSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="grid gap-5 rounded-[2rem] border border-teal-100 bg-white/96 p-6 shadow-[0_28px_70px_-52px_rgba(15,23,42,0.32)] sm:p-8 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
               <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
               App móvil en camino
             </div>
@@ -2925,7 +2925,7 @@ function AppDownloadSection() {
                   key={item}
                   className="rounded-[1.15rem] border border-slate-200 bg-slate-50/90 px-4 py-3 text-sm leading-6 text-slate-700 shadow-sm"
                 >
-                  <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500 shadow-sm">
+                  <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold tracking-tight text-slate-500 shadow-sm">
                     0{index + 1}
                   </div>
                   <p className="mt-2">{item}</p>

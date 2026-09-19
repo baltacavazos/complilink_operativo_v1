@@ -7,7 +7,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 
 describe("Access local password wiring", () => {
   it("includes LocalPasswordForm and local status endpoint", () => {
-    const source = readFileSync(join(here, "Access.tsx"), "utf8");
+    const source = readFileSync(join(here, "AccessGate.tsx"), "utf8");
     expect(source).toContain("LocalPasswordForm");
     expect(source).toContain("/api/auth/local/status");
   });

@@ -95,7 +95,8 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     const dashboard = readClientSource("components/DashboardLayout.tsx");
     const app = readClientSource("App.tsx");
 
-    expect(indexHtml).toContain("AuditaPatron · Conoce tus derechos");
+    expect(indexHtml).toContain("AuditaPatrón · Conoce tus derechos");
+    expect(indexHtml).toContain('<html lang="es">');
     expect(indexHtml).not.toContain("CompliLink");
     expect(dashboard).toContain("AuditaPatron");
     expect(dashboard).not.toContain("CompliLink Operativo");
@@ -147,6 +148,33 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(ceo).toContain("Preguntar al asesor laboral");
     expect(ceo).not.toContain("Preguntar a Helios");
     expect(ceo).not.toContain("Helios · modo CEO");
+  });
+
+  it("limpia /acceso, NotFound y el sandbox de /auditar para el trabajador", () => {
+    const access = readClientSource("pages/AccessGate.tsx");
+    const password = readClientSource("pages/LocalPasswordForm.tsx");
+    const notFound = readClientSource("pages/NotFound.tsx");
+    const auditar = readClientSource("pages/Auditar.tsx");
+    const home = readClientSource("pages/Home.tsx");
+
+    expect(access).not.toContain("Copia temporal para pruebas");
+    expect(access).not.toContain("otra plataforma");
+    expect(password).not.toContain("otra plataforma");
+    expect(password).not.toContain("En esta copia");
+    expect(notFound).toContain("Página no encontrada");
+    expect(notFound).toContain("Ir al inicio");
+    expect(notFound).not.toContain("Page Not Found");
+    expect(notFound).not.toContain("Go Home");
+    expect(auditar).toContain("{auth.canToggleUserView ? (\n              <article");
+    expect(auditar).toContain("Conversión de esta sesión");
+    expect(auditar).toContain("{auth.canToggleUserView ? (\n            <article");
+    expect(auditar).toContain("Validación sandbox");
+    expect(home).toContain(
+      "rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700",
+    );
+    expect(home).not.toContain(
+      "rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-700",
+    );
   });
 
   it("usa el sanitizador central en Home, Auditar y el panel conversacional", () => {

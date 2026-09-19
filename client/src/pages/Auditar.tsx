@@ -4967,8 +4967,10 @@ export default function Auditar() {
         source: "stripe_return",
       });
       setCommercePromptContext({
-        title: "Pago detectado en sandbox",
-        body: `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este expediente.`,
+        title: auth.canToggleUserView ? "Pago detectado en sandbox" : "Pago detectado",
+        body: auth.canToggleUserView
+          ? `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este expediente.`
+          : `${planName} ya quedó registrado. Si el pago se confirmó, tu acceso debería verse en este expediente.`,
         targetPlan: billingReturnState.productKey,
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
@@ -4981,7 +4983,9 @@ export default function Auditar() {
       });
       setCommercePromptContext({
         title: "Pago puntual detectado",
-        body: `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu expediente.`,
+        body: auth.canToggleUserView
+          ? `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu expediente.`
+          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu expediente.`,
         targetPlan: activeCommercePlanKey,
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
@@ -14661,7 +14665,7 @@ Reforzar con otro documento
                   <p className="font-semibold text-slate-950">Operación comercial</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.hasStripe
-                      ? commerceStatusQuery.data?.environment?.isSandbox
+                      ? auth.canToggleUserView && commerceStatusQuery.data?.environment?.isSandbox
                         ? "Checkout listo en sandbox para validación."
                         : "Checkout y cobro listos para operar."
                       : "La activación de cobro todavía está pendiente."}
@@ -14689,6 +14693,7 @@ Reforzar con otro documento
                 </div>
               </article>
 
+              {auth.canToggleUserView ? (
               <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                   Conversión de esta sesión
@@ -14712,8 +14717,10 @@ Reforzar con otro documento
                   </div>
                 </div>
               </article>
+              ) : null}
             </div>
 
+            {auth.canToggleUserView ? (
             <article className="rounded-[1.1rem] border border-slate-200 bg-white p-4 text-sm leading-6 text-slate-700">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-700">
@@ -14750,6 +14757,7 @@ Reforzar con otro documento
                 </span>
               </div>
             </article>
+            ) : null}
 
             <div className="space-y-3">
               <div>

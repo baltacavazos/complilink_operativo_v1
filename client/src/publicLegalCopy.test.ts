@@ -20,7 +20,8 @@ describe("copy público y aviso de privacidad", () => {
     expect(home).not.toContain("señal real");
     expect(home).not.toContain("valor probatorio");
     expect(home).toContain('alt="AuditaPatron - Conoce tus derechos"');
-    expect(html).toContain("AuditaPatron · Conoce tus derechos");
+    expect(html).toContain("AuditaPatrón · Conoce tus derechos");
+    expect(html).toContain('<html lang="es">');
     expect(html).toContain("No es asesoría legal ni validación oficial.");
     expect(html).toContain("Logotipo oficial de AuditaPatron con el lema Conoce tus derechos");
   });
