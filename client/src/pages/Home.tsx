@@ -29,7 +29,7 @@ import { trackEvent, trackFunnelStep } from "@/lib/analytics";
 
 /*
 Public home compatibility markers retained for scope tests:
-tabLabel: "Pago y señales"
+tabLabel: "Pago y resultado"
 tabLabel: "Revisar primero"
 Sube una foto o PDF y revisa tu pago
 Tu recibo puede mostrar si te pagan de menos.
@@ -88,7 +88,7 @@ Empieza por un solo recibo
 Resultado realista, no promesa vacía
 Recibo detectado: ya vimos el periodo y los conceptos clave
 selectedReportDemoState === "hallazgo-preliminar"
-Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.
+Primero ves lo esencial: documento detectado, resultado encontrado, qué significa y siguiente paso sugerido.
 posible diferencia entre recibo y CFDI
 SectionDivider
 bg-[#e7f2f0]
@@ -378,7 +378,7 @@ const mobileOnboardingCards: MobileOnboardingCard[] = [
   {
     step: "02",
     title: "Primero ves la lectura y después decides",
-    description: "Después de subirlo, ves qué documento detectamos, qué señal apareció y cuál es el siguiente paso útil sin abrir cuenta antes de tiempo.",
+    description: "Después de subirlo, ves qué documento detectamos, qué resultado apareció y cuál es el siguiente paso útil sin abrir cuenta antes de tiempo.",
   },
   {
     step: "03",
@@ -448,7 +448,7 @@ const heroCopyVariants = {
     headline: "Sube tu recibo y te decimos qué revisar.",
     supportLine: "Sube tu recibo de nómina y te mostramos qué conviene revisar primero. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.",
     microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
-    body: "Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
+    body: "Primero ves un resultado claro, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
   },
@@ -459,7 +459,7 @@ const heroCopyVariants = {
     titleLead: "Sube tu recibo",
     titleAccent: "y te decimos qué revisar.",
     headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube un solo recibo y recibe una señal inicial sobre lo que conviene revisar.",
+    supportLine: "Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.",
     microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
     body: "",
     ctaPrimary: "Sube tu recibo y revisa gratis",
@@ -473,7 +473,7 @@ const heroCopyVariants = {
     titleAccent: "y entiende rápido qué revisar.",
     headline: "Sube tu recibo y entiende rápido qué revisar.",
     supportLine: "Empieza con un solo recibo y recibe una lectura orientativa sobre si tu pago merece una revisión más seria.",
-    microDescription: "Si aparece una señal, te mostramos qué revisar primero y cómo seguir sin enredarte.",
+    microDescription: "Si aparece un resultado, te mostramos qué revisar primero y cómo seguir sin enredarte.",
     body: "Ves una primera lectura útil antes de decidir si guardas, comparas o sigues con más contexto.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -485,8 +485,8 @@ const heroCopyVariants = {
     titleLead: "Revisa tu pago",
     titleAccent: "con una primera lectura útil.",
     headline: "Revisa tu pago con una primera lectura útil.",
-    supportLine: "Sube un recibo y recibe una señal inicial sobre lo que conviene revisar en tu pago.",
-    microDescription: "Si aparece una señal, te mostramos qué revisar primero y cuál sería el siguiente documento útil.",
+    supportLine: "Sube un recibo y recibe una primera lectura sobre lo que conviene revisar en tu pago.",
+    microDescription: "Si aparece un resultado, te mostramos qué revisar primero y cuál sería el siguiente documento útil.",
     body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues o lo guardas.",
     ctaPrimary: "Revisar mi recibo gratis",
     ctaSecondary: "Ver un ejemplo",
@@ -559,15 +559,15 @@ const reportDemoStates: ReportDemoState[] = [
   },
   {
     id: "hallazgo-preliminar",
-    label: "Señal encontrada",
+    label: "Resultado encontrado",
     badge: "Algo podría no cuadrar",
-    summary: "Aparece una señal inicial y te la mostramos con palabras simples para que sepas qué revisar.",
+    summary: "Aparece una primera lectura y te la mostramos con palabras simples para que sepas qué revisar.",
   },
   {
     id: "siguiente-paso",
     label: "Qué revisar",
     badge: "Lo primero que conviene comparar",
-    summary: "Te mostramos el siguiente documento útil para revisar si la señal inicial necesita más contexto.",
+    summary: "Te mostramos el siguiente documento útil para revisar si la primera lectura necesita más contexto.",
   },
 ];
 
@@ -580,9 +580,9 @@ const heroMicroDemoScenes: HeroMicroDemoScene[] = [
   },
   {
     step: "Paso 2",
-    title: "Ves una señal clara",
+    title: "Ves un resultado claro",
     detail: "Te mostramos solo lo importante para que no te pierdas.",
-    accent: "Señal clara",
+    accent: "Resultado claro",
   },
   {
     step: "Paso 3",
@@ -619,7 +619,7 @@ const socialProofItems: SocialProofItem[] = [
     supportingDetail:
       "La primera lectura no se quedó en la alerta: también ordenó cuál documento subir después para confirmar si el pago estaba incompleto.",
     verification:
-      "Caso anonimizado: el valor percibido subió cuando el resultado devolvió acción práctica y no solo una señal interesante.",
+      "Caso anonimizado: el valor percibido subió cuando el resultado devolvió acción práctica y no solo un dato interesante.",
   },
   {
     caseId: "Caso anónimo 03",
@@ -971,8 +971,8 @@ function HeroSection() {
     }
 
     return {
-      title: "Señal encontrada: algo podría no cuadrar",
-      description: "Vemos una señal inicial y te la mostramos con palabras simples.",
+      title: "Resultado encontrado: algo podría no cuadrar",
+      description: "Vemos una primera lectura y te la mostramos con palabras simples.",
       focusLabel: "Qué significa",
       focusValue: "El monto, el periodo o algún concepto podría verse distinto entre tus papeles.",
       focusClass: "border-amber-200 bg-amber-50/80 text-amber-950",
@@ -1351,14 +1351,14 @@ function HeroSection() {
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
                     {selectedReportDemoState === "hallazgo-preliminar"
-                      ? "Una señal clara."
+                      ? "Un resultado claro."
                       : selectedReportDemoState === "documento-recibido"
                         ? "Primero vemos tu recibo."
                         : "Te decimos qué revisar primero."}
                   </p>
                 </div>
                 <div className="ap-status-chip rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
-                  1 señal por vista
+                  1 resultado por vista
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
@@ -1387,7 +1387,7 @@ function HeroSection() {
                 })}
               </div>
               <p className="mt-2 hidden text-[11px] leading-5 text-slate-500 sm:block">
-                Tres vistas simples para ubicar rápido la señal.
+                Tres vistas simples para ubicar rápido el resultado.
               </p>
 
               <div className="mt-4 rounded-[1.2rem] border border-white/90 bg-white/92 p-3.5 shadow-sm">
@@ -1405,7 +1405,7 @@ function HeroSection() {
                 </div>
 
                 <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm leading-5 text-slate-700">
-                  <span className="font-semibold text-slate-900">Lo primero que verás:</span> una señal clara, una explicación breve y el siguiente paso útil.
+                  <span className="font-semibold text-slate-900">Lo primero que verás:</span> un resultado claro, una explicación breve y el siguiente paso útil.
                 </div>
               </div>
             </div>
@@ -1676,10 +1676,10 @@ function HeliosFirstEntrySection() {
             Primera lectura sin correo
           </div>
           <h2 className="mt-3 max-w-[14ch] text-[1.9rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:mt-4 sm:text-[2.5rem]">
-            Sube un archivo y mira una señal inicial antes de decidir.
+            Sube un archivo y mira una primera lectura antes de decidir.
           </h2>
           <p className="mt-3 max-w-2xl text-[0.98rem] leading-7 text-slate-600 sm:text-[1.02rem] sm:leading-7">
-            Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil. Solo si sí te sirve te pedimos tu correo para guardarlo.
+            Aquí ves qué documento llegó, qué resultado apareció y cuál es el siguiente paso útil. Solo si sí te sirve te pedimos tu correo para guardarlo.
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
@@ -1735,9 +1735,9 @@ function HeliosFirstEntrySection() {
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700">{sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.summary) ?? "Ya hay una primera lectura útil para revisar este documento con más claridad."}</p>
                   <div className="mt-4 rounded-[1.1rem] border border-amber-200 bg-amber-50 px-4 py-3">
-                    <p className="text-[11px] font-semibold tracking-tight text-amber-800">Señal encontrada</p>
+                    <p className="text-[11px] font-semibold tracking-tight text-amber-800">Resultado encontrado</p>
                     <p className="mt-2 text-sm leading-6 text-amber-950">
-                      {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.legalHighlights?.primaryConcern) ?? "Ya detectamos una señal principal útil para empezar a revisar este documento."}
+                      {sanitizeHomeVisibleCopy(guestPreview.heliosOpinion.legalHighlights?.primaryConcern) ?? "Ya detectamos un resultado principal útil para empezar a revisar este documento."}
                     </p>
                   </div>
                   <div className="mt-4 rounded-[1.1rem] border border-emerald-200 bg-emerald-50 px-4 py-3">
@@ -1783,10 +1783,10 @@ function HeliosFirstEntrySection() {
                     id: "fallback-payroll",
                     badge: "Ejemplo de primera lectura · recibo de nómina",
                     documentLabel: "Recibo de nómina",
-                    title: "Un recibo ya puede revelar una señal clara de pago o deducción.",
+                    title: "Un recibo ya puede revelar un resultado claro de pago o deducción.",
                     summary: "Con un solo documento puedes obtener una lectura breve y útil para empezar.",
                     nextStep: "Después te sugerimos el archivo que mejor la complementa.",
-                    primaryConcern: "Señal inicial lista para revisarse con palabras simples.",
+                    primaryConcern: "Primera lectura lista para revisarse con palabras simples.",
                   },
                 ]).slice(0, 3).map((example) => (
                   <article key={example.id} className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-4 shadow-sm">
@@ -1814,12 +1814,12 @@ function HeliosFirstEntrySection() {
               {featuredExample?.title ?? "Así se ve una primera lectura real antes de guardar nada."}
             </h3>
             <p className="mt-2 text-sm leading-5 text-slate-700">
-              {featuredExample?.summary ?? "Aquí verás el resumen, la señal principal y el siguiente paso desde el primer documento."}
+              {featuredExample?.summary ?? "Aquí verás el resumen, el resultado principal y el siguiente paso desde el primer documento."}
             </p>
 
             <div className="mt-3 grid gap-2">
               <div className="rounded-[1rem] border border-amber-200 bg-amber-50 px-3.5 py-3">
-                <p className="text-[10px] font-semibold tracking-tight text-amber-800">Señal visible</p>
+                <p className="text-[10px] font-semibold tracking-tight text-amber-800">Lo que se ve</p>
                 <p className="mt-1.5 text-sm leading-5 text-amber-950">
                   {featuredExample?.primaryConcern ?? "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
                 </p>
@@ -1858,7 +1858,7 @@ function QuickTrustSection() {
       detail: "Ves una lectura preliminar sin integrar nada a tu expediente.",
       title: "Borrador preliminar activo",
       badge: "Sin guardado",
-      visibleForYou: "Documento recibido, señal preliminar y siguiente paso sugerido.",
+      visibleForYou: "Documento recibido, lectura preliminar y siguiente paso sugerido.",
       hiddenFromCompany: "Tus archivos y esta lectura no se comparten con tu empresa.",
       trace: "Todavía no se integra nada a tu expediente.",
       next: "Tú decides si borrar, salir o resguardar.",
@@ -1900,7 +1900,7 @@ function QuickTrustSection() {
               Control visible desde el primer archivo.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-              No compartimos tu archivo con tu empresa. Primero revisas la señal y después decides si la guardas. La primera lectura aparece sin cuenta y el control sigue visible.
+              No compartimos tu archivo con tu empresa. Primero revisas el resultado y después decides si lo guardas. La primera lectura aparece sin cuenta y el control sigue visible.
             </p>
             <div className="mt-4 rounded-[1.2rem] border border-slate-200 bg-slate-50/90 p-4 text-sm text-slate-700 shadow-sm">
               <p className="text-[11px] font-semibold tracking-tight text-slate-500">Transparencia visible</p>
@@ -1924,7 +1924,7 @@ function QuickTrustSection() {
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Subes y revisas</p>
-                  <p className="mt-1.5 leading-6">Primero ves una señal clara. Todavía no guardas nada.</p>
+                  <p className="mt-1.5 leading-6">Primero ves un resultado claro. Todavía no guardas nada.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Si guardas, lo verás</p>
@@ -1939,10 +1939,10 @@ function QuickTrustSection() {
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-[11px] font-semibold tracking-tight text-slate-500">Registro visible de tu control</p>
                   <span className="rounded-full border border-teal-100 bg-teal-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800">
-                    3 señales claras
+                    3 indicios claros
                   </span>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-600 sm:text-sm">Toca una señal y mira qué quedaría visible para ti antes de abrir expediente.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-600 sm:text-sm">Toca un indicio y mira qué quedaría visible para ti antes de abrir expediente.</p>
                 <div className="mt-3 grid gap-2">
                   {controlMoments.map((item, index) => {
                     const isActive = index === activeControlMoment;
@@ -2225,7 +2225,7 @@ function CopilotPreviewSection() {
               <div className="mt-3 space-y-3 text-sm leading-6 text-teal-950">
                 <div>
                   <p className="text-[11px] font-semibold tracking-tight text-teal-800">Respuesta clara</p>
-                  <p className="mt-1">Ya hay señales útiles para revisar pagos y condiciones.</p>
+                  <p className="mt-1">Ya hay datos útiles para revisar pagos y condiciones.</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold tracking-tight text-teal-800">Lo que sí se sabe</p>
@@ -2273,7 +2273,7 @@ function HowItWorksSection() {
                 Tres pasos. Una lectura clara.
               </h2>
               <p className="text-sm leading-6 text-slate-600">
-                Subes, entiendes la señal y decides si lo guardas.
+                Subes, entiendes el resultado y decides si lo guardas.
               </p>
             </div>
           </div>
@@ -2287,7 +2287,7 @@ function HowItWorksSection() {
               },
               {
                 number: "02",
-                title: "Mira la señal",
+                title: "Mira el resultado",
                 description: "Te decimos qué revisar primero.",
               },
               {
@@ -2436,7 +2436,7 @@ function PriorityDocumentsSection() {
         </div>
 
         <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
-          En cuanto abras tu <span className="font-semibold">expediente</span>, estas sugerencias dejan de ser generales y se conectan con los documentos y señales que AuditaPatron todavía necesita para decirte qué te conviene subir primero.
+          En cuanto abras tu <span className="font-semibold">expediente</span>, estas sugerencias dejan de ser generales y se conectan con los documentos y datos que AuditaPatron todavía necesita para decirte qué te conviene subir primero.
         </div>
       </div>
     </section>
@@ -2627,7 +2627,7 @@ function FindingsExamplesSection() {
             Algunos patrones se entienden mejor cuando tu expediente tiene más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Varios documentos juntos ayudan a ver diferencias y señales que un solo archivo puede dejar ocultas, y además fortalecen tu expediente digital.
+            Varios documentos juntos ayudan a ver diferencias y datos que un solo archivo puede dejar ocultas, y además fortalecen tu expediente digital.
           </p>
         </div>
 

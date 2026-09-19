@@ -221,7 +221,7 @@ describe("ceoDashboardMonitoring", () => {
       priorityStage: "preview_confirmation",
       priorityLabel: "Se enfría antes de confirmar",
       narrative: "La pérdida visible principal ocurre entre preview y confirmación: 1 expediente(s) no terminan de validarse tras el análisis inicial.",
-      nextAction: "Revisar claridad del preview, naming del documento y señales de confianza antes del clic de confirmar.",
+      nextAction: "Revisar claridad del preview, naming del documento e indicios de confianza antes del clic de confirmar.",
       dataSourceNote: "Lectura derivada del audit trail visible: preview, confirmación, carga y gate legal. Los eventos cliente a cliente del primer expediente todavía no están consolidados aquí.",
     });
   });

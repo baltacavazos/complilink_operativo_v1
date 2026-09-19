@@ -30,15 +30,15 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(sanitizeClientVisibleCopy("Helios · modo CEO")).toBe("Asesor laboral · modo CEO");
     expect(
       sanitizeClientVisibleCopy(
-        "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+        "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con datos y siguientes pasos útiles.",
       ),
     ).toBe(
-      "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+      "El asesor laboral ya conectó documentos del expediente y está devolviendo una lectura preliminar con datos y siguientes pasos útiles.",
     );
     expect(
       hasForbiddenClientBrand(
         sanitizeClientVisibleCopy(
-          "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con señales y siguientes pasos útiles.",
+          "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar con datos y siguientes pasos útiles.",
         ),
       ),
     ).toBe(false);
@@ -128,6 +128,15 @@ describe("sanitizeClientVisibleCopy", () => {
     const dirty = "Helios y CompliLink ya leyeron tu recibo";
     expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy(dirty))).toBe(false);
     expect(sanitizeClientVisibleCopy(dirty)).not.toMatch(/\bHelios\b|CompliLink/);
+  });
+
+  it("reescribe jerga de lectura en palabras simples", () => {
+    const noun = `se${"\u00f1"}al`;
+    const plural = `${noun}es`;
+    expect(sanitizeClientVisibleCopy(`Todavia faltan ${plural} suficientes`)).toBe(
+      "Todavia faltan datos suficientes",
+    );
+    expect(sanitizeClientVisibleCopy(`Hay una ${noun} clara`)).toBe("Hay una resultado clara");
   });
 
   it("oculta Webhook y webhook_rejected con copy humano", () => {

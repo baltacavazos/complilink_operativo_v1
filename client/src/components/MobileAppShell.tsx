@@ -43,10 +43,16 @@ export default function MobileAppShell({ current, title, subtitle }: MobileAppSh
           <div className="flex h-11 w-11 items-center justify-center rounded-[1rem] border border-slate-200 bg-slate-50 shadow-sm">
             <AuditaPatronLogoIcon imageClassName="h-7 w-7 object-contain" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-slate-950">{title}</p>
             <p className="mt-0.5 truncate text-xs font-medium text-slate-700">{subtitle}</p>
           </div>
+          <a
+            href="/"
+            className="inline-flex shrink-0 items-center rounded-full bg-slate-950 px-3 py-1.5 text-xs font-semibold text-white"
+          >
+            Volver
+          </a>
         </div>
 
         <div className="mt-3 grid grid-cols-3 gap-2">

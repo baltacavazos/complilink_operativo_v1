@@ -20,7 +20,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Helios ordena tu expediente y fortalece tu respaldo");
     expect(source).not.toContain("CompliLink");
     expect(source).not.toContain("ThemeToggle");
-    expect(source).toContain('tabLabel: "Pago y señales"');
+    expect(source).toContain('tabLabel: "Pago y resultado"');
     expect(source).toContain('tabLabel: "Revisar primero"');
     expect(source).toContain("Sube una foto o PDF y revisa tu pago");
     expect(source).toContain("Tu recibo puede mostrar si te pagan de menos.");
@@ -90,7 +90,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Resultado realista, no promesa vacía");
     expect(source).toContain("Recibo detectado: ya vimos el periodo y los conceptos clave");
     expect(source).toContain('selectedReportDemoState === "hallazgo-preliminar"');
-    expect(source).toContain("Primero ves lo esencial: documento detectado, señal encontrada, qué significa y siguiente paso sugerido.");
+    expect(source).toContain("Primero ves lo esencial: documento detectado, resultado encontrado, qué significa y siguiente paso sugerido.");
     expect(source).toContain("posible diferencia entre recibo y CFDI");
     expect(source).toContain("SectionDivider");
     expect(source).toContain('bg-[#e7f2f0]');
@@ -101,7 +101,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
     expect(source).toContain('const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("control")');
-    expect(source).toContain('Sube un solo recibo y recibe una señal inicial sobre lo que conviene revisar.');
+    expect(source).toContain('Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.');
     expect(source).toContain('id="app"');
     expect(source).toContain('App móvil en camino');
     expect(source).toContain('Empieza hoy aquí. La app viene después.');

@@ -779,7 +779,7 @@ function buildManualCommercePromptContext(activePlanKey: CommercePlanKey): Comme
     body:
       targetPlan === "essential"
         ? `Si ya vas a seguir armando tu expediente, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`
-        : `Si ya necesitas memoria histórica, revisión de señales documentales y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
+        : `Si ya necesitas memoria histórica, revisión de lo que se ve en el papel y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
     targetPlan,
     triggerPoint: "manual_drawer_open",
     productKey: targetPlan,
@@ -821,8 +821,8 @@ function buildCommercePromptContext(params: {
 
   if (/Revalidaciones IMSS e Infonavit/i.test(params.message)) {
     return {
-      title: "Activa revisión avanzada de señales",
-      body: `La revisión de señales visibles de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommercePriceMx(199)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu expediente.`,
+      title: "Activa revisión avanzada de lo que se ve en el papel",
+      body: `La revisión de lo que se ve de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommercePriceMx(199)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu expediente.`,
       targetPlan: "pro",
       triggerPoint: "revalidation_blocked",
       productKey: "pro",
@@ -1491,7 +1491,7 @@ const priorityUploadGuides: PriorityUploadGuide[] = [
     type: "imss",
     title: "Alta, baja o semanas cotizadas del IMSS",
     summary:
-      "Aportan fechas y señales de seguridad social que fortalecen la historia laboral del expediente.",
+      "Aportan fechas y datos de seguridad social que fortalecen la historia laboral del expediente.",
     value:
       "Suman contexto útil cuando quieres respaldarte mejor, aclarar periodos o entender huecos importantes dentro del caso.",
   },
@@ -2558,7 +2558,7 @@ function getDocumentReadiness(confidence?: number | null) {
       label: "Lectura clara",
       classes: "bg-emerald-100 text-emerald-800",
       description:
-        "Este documento ya deja una señal bastante clara para empezar a usarlo en el expediente.",
+        "Este documento ya deja un resultado bastante claro para empezar a usarlo en el expediente.",
     } as const;
   }
 
@@ -2567,7 +2567,7 @@ function getDocumentReadiness(confidence?: number | null) {
       label: "Lectura útil con revisión",
       classes: "bg-amber-100 text-amber-800",
       description:
-        "Ya hay una señal útil, aunque todavía conviene revisar algunos detalles antes de cerrar criterio.",
+        "Ya hay un resultado útil, aunque todavía conviene revisar algunos detalles antes de cerrar criterio.",
     } as const;
   }
 
@@ -2586,7 +2586,7 @@ function getDocumentVerdictState(confidence?: number | null) {
       shortLabel: "Bien",
       classes: "bg-emerald-100 text-emerald-800 border border-emerald-200",
       panelClasses: "border-emerald-100 bg-emerald-50",
-      description: "Ya funciona como una señal fuerte dentro del expediente.",
+      description: "Ya funciona como un resultado fuerte dentro del expediente.",
     } as const;
   }
 
@@ -2681,7 +2681,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
         eyebrow: "Crítico",
         title: "Aquí sí vemos algo que conviene revisar hoy",
         description:
-          "Hay señales que no se ven normales y vale la pena actuar rápido para evitar que el caso crezca.",
+          "Hay indicios claros que no se ven normales y vale la pena actuar rápido para evitar que el caso crezca.",
         panelClasses: "border-rose-200 bg-rose-50",
         eyebrowClasses: "text-rose-700",
       } as const;
@@ -2690,7 +2690,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
         eyebrow: "Atención",
         title: "Aquí sí hay algo importante por revisar",
         description:
-          "Ya encontramos señales suficientes para tratar este punto como relevante, aunque todavía puede requerir contraste adicional.",
+          "Ya encontramos datos suficientes para tratar este punto como relevante, aunque todavía puede requerir contraste adicional.",
         panelClasses: "border-amber-200 bg-amber-50",
         eyebrowClasses: "text-amber-800",
       } as const;
@@ -2706,7 +2706,7 @@ function getHeliosSeverityNarrative(value?: string | null) {
     case "low":
       return {
         eyebrow: "Bien",
-        title: "Por ahora no vemos una señal grave",
+        title: "Por ahora no vemos un resultado grave",
         description:
           "Con lo que la inteligencia laboral ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
         panelClasses: "border-emerald-200 bg-emerald-50",
@@ -2856,7 +2856,7 @@ function getHeliosStageCopy(params: {
     badge: "Listo para empezar",
     title: "Tu expediente está listo para empezar a darte claridad",
     description:
-      "En cuanto subas un documento útil, la revisión empezará a ordenar señales y a sugerir el siguiente paso más útil.",
+      "En cuanto subas un documento útil, la revisión empezará a ordenar lo que se ve en el papel y a sugerir el siguiente paso más útil.",
     detail:
       "La interfaz ya está preparada para mostrar una lectura inicial ahora y una revisión más completa después, sin cambiar la forma de usar AuditaPatron.",
     tone: "neutral" as const,
@@ -2934,10 +2934,10 @@ function getDocumentContextualShortcuts(
           id: "payroll-ask-deductions",
           label: "Explicar deducciones clave",
           description:
-            "Tu asesor laboral te resume descuentos, pagos y señales llamativas en palabras simples.",
+            "Tu asesor laboral te resume descuentos, pagos y datos llamativos en palabras simples.",
           action: "assistant",
           prompt:
-            "Explícame las deducciones, pagos y señales más importantes que ves en esta nómina con palabras simples.",
+            "Explícame las deducciones, pagos y datos más importantes que ves en esta nómina con palabras simples.",
         },
       ];
     case "cfdi":
@@ -2974,7 +2974,7 @@ function getDocumentContextualShortcuts(
           id: "contract-ask-clauses",
           label: "Resumir cláusulas importantes",
           description:
-            "Tu asesor laboral te señala lo que vale la pena contrastar después con nómina o CFDI.",
+            "Tu asesor laboral te indica lo que vale la pena contrastar después con nómina o CFDI.",
           action: "assistant",
           prompt:
             "Resume las cláusulas o condiciones más importantes de este contrato y qué conviene comparar después.",
@@ -3615,7 +3615,7 @@ function getContextualNextDocumentPreset(
 
   if (nextTarget.type === "payroll_receipt" && has("imss")) {
     return {
-      headline: "Sigue con tu nómina para comparar mejor tu señal de IMSS",
+      headline: "Sigue con tu nómina para comparar mejor tu dato de IMSS",
       intro:
         "Como ya tienes un soporte IMSS, los recibos de nómina ayudan a revisar si pagos, periodos y seguridad social cuentan la misma historia.",
       reasonTitle: "Por qué conviene hacer este cruce ahora",
@@ -3729,9 +3729,9 @@ function getPersonalizedNextDocumentCopy(params: {
       coverage:
         contextualPreset?.coverage ??
         (presentSummary
-          ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional da más contexto para conectar señales con menos partes preliminares.`
+          ? `Tu expediente ya se apoya en ${presentSummary}. Cada archivo adicional da más contexto para conectar datos con menos partes preliminares.`
           : "Tu expediente apenas está empezando. Cada documento útil que subas da más contexto para orientarte mejor."),
-      cta: contextualPreset?.cta ?? "Subir este documento ahora",
+      cta: contextualPreset?.cta ?? "Continuar con este archivo",
     } as const;
   }
 
@@ -3780,7 +3780,7 @@ function getComparisonFocus(leftType: string, rightType: string) {
     case "cfdi:contract":
       return "las condiciones iniciales frente a los comprobantes fiscales";
     default:
-      return "fechas, montos y señales útiles entre ambos archivos";
+      return "fechas, montos y datos útiles entre ambos archivos";
   }
 }
 
@@ -3869,7 +3869,7 @@ function buildHeliosComparisonCopy(params: {
         },
         {
           title: "Lo que se está contrastando",
-          body: "Cuando tengas dos documentos útiles, podrás revisar fechas, montos, condiciones y señales que hoy aún no se pueden cruzar.",
+          body: "Cuando tengas dos documentos útiles, podrás revisar fechas, montos, condiciones y datos que hoy aún no se pueden cruzar.",
         },
         {
           title: "Qué puede ayudarte a aclararlo más",
@@ -3879,7 +3879,7 @@ function buildHeliosComparisonCopy(params: {
         },
       ],
       guardrail:
-        "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
+        "Verás datos y diferencias útiles, siempre como una lectura preliminar y entendible.",
       coverage:
         "Mientras más documentos útiles subas, más contexto habrá para distinguir cambios reales de simples huecos de información.",
       cta: params.nextTarget
@@ -3894,7 +3894,7 @@ function buildHeliosComparisonCopy(params: {
       badge: "Falta una segunda pieza",
       headline:
         "Ya tienes una base, pero hace falta otro documento para comparar mejor",
-      supportingText: `Por ahora solo está ${onlyDocument.originalName}. Si subes otro archivo relacionado, será más fácil señalar cambios con claridad y menos partes preliminares.`,
+      supportingText: `Por ahora solo está ${onlyDocument.originalName}. Si subes otro archivo relacionado, será más fácil marcar cambios con claridad y menos partes preliminares.`,
       cards: [
         {
           title: "Documentos comparados",
@@ -3912,7 +3912,7 @@ function buildHeliosComparisonCopy(params: {
         },
       ],
       guardrail:
-        "Verás señales y diferencias útiles, siempre como una lectura preliminar y entendible.",
+        "Verás datos y diferencias útiles, siempre como una lectura preliminar y entendible.",
       coverage:
         "Dos documentos bien conectados suelen darle a tu expediente una base mucho más útil que un archivo aislado.",
       cta: params.nextTarget
@@ -3947,7 +3947,7 @@ function buildHeliosComparisonCopy(params: {
         },
       ],
       guardrail:
-        "Verás diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+        "Verás diferencias y datos útiles, pero esta sigue siendo una lectura preliminar.",
       coverage:
         "Mientras más documentos conectados tenga tu expediente, más fácil será separar cambios reales de simples huecos de información.",
       cta: params.nextTarget
@@ -4003,7 +4003,7 @@ function buildHeliosComparisonCopy(params: {
       },
     ],
     guardrail:
-      "Te mostramos diferencias y señales útiles, pero esta sigue siendo una lectura preliminar.",
+      "Te mostramos diferencias y datos útiles, pero esta sigue siendo una lectura preliminar.",
     coverage:
       "Mientras más documentos conectados tenga tu expediente, más fácil será distinguir cambios reales de partes que todavía necesitan contexto.",
     cta: params.nextTarget
@@ -4053,8 +4053,8 @@ export function buildHeliosPriorityAlerts(params: {
       title: "Hay movimientos del seguimiento que conviene revisar pronto",
       body:
         params.attentionCount === 1
-          ? "Se detectó un documento en seguimiento con una señal que merece atención para que el expediente no pierda ritmo."
-          : `Se detectaron ${params.attentionCount} documentos en seguimiento con señales que conviene revisar pronto para no dejar cabos sueltos.`,
+          ? "Se detectó un documento en seguimiento con un resultado que merece atención para que el expediente no pierda ritmo."
+          : `Se detectaron ${params.attentionCount} documentos en seguimiento con datos que conviene revisar pronto para no dejar cabos sueltos.`,
       toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
       icon: "alert",
       timestampLabel: latestAttentionDocument
@@ -4178,7 +4178,7 @@ export function buildHeliosPriorityAlerts(params: {
       id: "foundation",
       eyebrow: "Base activa",
       title: "Tu expediente ya tiene una base útil para seguir ordenándose",
-      body: "Cada documento adicional aporta más contexto para convertir diferencias aisladas en señales más fáciles de priorizar.",
+      body: "Cada documento adicional aporta más contexto para convertir diferencias aisladas en datos más fáciles de priorizar.",
       toneClasses: "border-slate-200 bg-slate-50 text-slate-900",
       icon: "sparkles",
       reasonLabel:
@@ -4424,7 +4424,7 @@ export default function Auditar() {
       },
       preliminaryAnalysis: {
         summary:
-          "Este recibo ya sirve como una señal fuerte dentro del expediente y conviene contrastarlo con el CFDI del mismo periodo.",
+          "Este recibo ya sirve como un resultado fuerte dentro del expediente y conviene contrastarlo con el CFDI del mismo periodo.",
         processingProfile: "mobile_harness_demo",
         confirmedData: {
           periodo: "Primera quincena de marzo de 2026",
@@ -5625,14 +5625,14 @@ export default function Auditar() {
     effectiveSocialSecurityValidation?.statusLabel ?? "Cruce pendiente";
   const socialSecuritySummary =
     effectiveSocialSecurityValidation?.summary ??
-    "Todavía faltan señales suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
+    "Todavía faltan datos suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
   const socialSecurityRecommendedNextStep =
     effectiveSocialSecurityValidation?.recommendedNextStep ??
     "Empieza por un soporte IMSS o un estado relacionado con Infonavit para abrir este cruce dentro del expediente.";
   const socialSecurityLastCheckLabel =
     effectiveSocialSecurityValidation?.lastRevalidatedAt
-      ? `Última revisión de señales: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
-      : "Aún no has vuelto a revisar estas señales desde tu expediente.";
+      ? `Última revisión de lo que se ve: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
+      : "Aún no has vuelto a revisar estos datos desde tu expediente.";
   const socialSecurityRevalidationHistory =
     effectiveSocialSecurityValidation?.revalidationHistory ?? [];
   const socialSecurityRecommendedDocument = lastUpload?.nextSuggestedDocument
@@ -5657,13 +5657,13 @@ export default function Auditar() {
 
     if ((effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0) > 0) {
       extraSignals.push(
-        `${effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0} señal${(effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0) === 1 ? "" : "es"} IMSS`
+        `${effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0} dato${(effectiveSocialSecurityValidation?.imssDocumentsCount ?? 0) === 1 ? "" : "s"} IMSS`
       );
     }
 
     if ((effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0) > 0) {
       extraSignals.push(
-        `${effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0} señal${(effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0) === 1 ? "" : "es"} Infonavit`
+        `${effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0} dato${(effectiveSocialSecurityValidation?.infonavitSignalsCount ?? 0) === 1 ? "" : "s"} Infonavit`
       );
     }
 
@@ -6411,7 +6411,7 @@ export default function Auditar() {
                 action: "Revisa esto primero",
                 headline: "Hay una diferencia visible que conviene aclarar",
                 supportingText:
-                  "No implica por sí sola un incumplimiento definitivo, pero sí una señal suficiente para comparar conceptos y dejar registro de la aclaración.",
+                  "No implica por sí sola un incumplimiento definitivo, pero sí un indicio claro para comparar conceptos y dejar registro de la aclaración.",
                 progress: 51,
                 toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
                 barClasses: "bg-amber-500",
@@ -6424,7 +6424,7 @@ export default function Auditar() {
             : {
                 badge: "Semáforo laboral: atención",
                 action: "Revisa esto primero",
-                headline: "La diferencia luce pequeña, pero ya deja una señal útil",
+                headline: "La diferencia luce pequeña, pero ya deja un resultado útil",
                 supportingText:
                   "Puede bastar una aclaración simple, sobre todo si el concepto o la fecha no coinciden exactamente con el periodo revisado.",
                 progress: 66,
@@ -7364,7 +7364,7 @@ export default function Auditar() {
   const handleRevalidateSocialSecurity = async () => {
     if (!caseDetailInput) {
       setSubmitError(
-        "Primero elige un expediente para revisar las señales visibles de IMSS e Infonavit."
+        "Primero elige un expediente para revisar lo que se ve de IMSS e Infonavit."
       );
       return;
     }
@@ -7372,7 +7372,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       setLegalGateError(
         buildLegalGateErrorState(
-          "Antes de revisar las señales visibles de IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
+          "Antes de revisar lo que se ve de IMSS e Infonavit, acepta el Aviso de Privacidad y los Términos vigentes del expediente.",
           "validation"
         )
       );
@@ -7391,7 +7391,7 @@ export default function Auditar() {
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
-          "No fue posible revisar las señales visibles de IMSS e Infonavit en este momento."
+          "No fue posible revisar lo que se ve de IMSS e Infonavit en este momento."
         )
       );
     }
@@ -8563,7 +8563,7 @@ export default function Auditar() {
             title: "Para ver más claro",
             label: "CFDI del mismo periodo",
             reason: "Sirve para comparar lo timbrado con lo que te pagaron.",
-            ctaLabel: "Subir este documento ahora",
+            ctaLabel: "Continuar con este archivo",
           }}
           officialTitles={
             new URLSearchParams(window.location.search).get("legalHarness") === "1"
@@ -8702,10 +8702,10 @@ export default function Auditar() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <a
                 href="/"
-                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
-                Volver al inicio
+                Volver
               </a>
               <span className="rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-white">
                 Revisión guiada
@@ -8804,7 +8804,7 @@ export default function Auditar() {
   };
 
   return (
-    <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-28 text-slate-950 sm:py-8 sm:pb-10">
+    <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-10 text-slate-950 sm:py-8">
       <div className="container mx-auto max-w-6xl">
         <MobileAppShell
           current="auditar"
@@ -8821,10 +8821,10 @@ export default function Auditar() {
             {shouldCompactPostUploadExperience ? null : (
               <a
                 href="/"
-                className="hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex"
+                className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
-                <span>Volver al inicio</span>
+                <span>Volver</span>
               </a>
             )}
             {shouldCompactPostUploadExperience ? null : (
@@ -9479,7 +9479,7 @@ export default function Auditar() {
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                     {shouldCompactPostUploadExperience
                       ? `Ya cargaste ${documents.length} documento${documents.length === 1 ? "" : "s"}. Tu avance ya quedó listo para retomarlo y, si quieres seguir hoy, conviene priorizar ${uploadPrimaryActionLabel.toLowerCase()}.`
-                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con señales reales del expediente. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${warmVisibleNamingCopy(heliosExpediente?.summary) ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
+                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con lo que se ve en el papel. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${warmVisibleNamingCopy(heliosExpediente?.summary) ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
                   </p>
                 </div>
 
@@ -9495,19 +9495,19 @@ export default function Auditar() {
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900">
                     <span className="rounded-full bg-white px-3 py-1">
-                      {socialSecurityValidation?.imssDocumentsCount ?? 0} señal
+                      {socialSecurityValidation?.imssDocumentsCount ?? 0} dato
                       {(socialSecurityValidation?.imssDocumentsCount ?? 0) === 1
                         ? ""
-                        : "es"}{" "}
+                        : "s"}{" "}
                       IMSS
                     </span>
                     <span className="rounded-full bg-white px-3 py-1">
                       {socialSecurityValidation?.infonavitSignalsCount ?? 0}{" "}
-                      señal
+                      dato
                       {(socialSecurityValidation?.infonavitSignalsCount ??
                         0) === 1
                         ? ""
-                        : "es"}{" "}
+                        : "s"}{" "}
                       Infonavit
                     </span>
                   </div>
@@ -9624,14 +9624,6 @@ export default function Auditar() {
                         <p className="mt-3 text-sm leading-6 text-slate-700">
                           {condensedPriorityUploadGuides[0].summary}
                         </p>
-                        <Button
-                          variant="outline"
-                          className="mt-4 h-11 rounded-full border-teal-200 bg-white text-teal-900 hover:bg-teal-100"
-                          onClick={() => focusRecommendedUpload(condensedPriorityUploadGuides[0].type)}
-                        >
-                          Subir este documento
-                          <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-                        </Button>
                       </article>
                     ) : null}
 
@@ -9834,17 +9826,6 @@ export default function Auditar() {
                         <div className="mt-2 rounded-[0.95rem] border border-slate-200 bg-slate-50 p-2.5 text-sm leading-5 text-slate-700">
                           {item.value}
                         </div>
-                        <Button
-                          variant="outline"
-                          className="mt-3 h-10 w-full rounded-full border-teal-200 bg-teal-50 text-sm text-teal-900 hover:bg-teal-100"
-                          onClick={() => focusRecommendedUpload(item.type)}
-                        >
-                          Subir este documento
-                          <ArrowRight
-                            className="ml-2 h-4 w-4"
-                            strokeWidth={1.8}
-                          />
-                        </Button>
                       </article>
                     );
                   })}
@@ -10019,12 +10000,12 @@ export default function Auditar() {
                     <div className="flex items-center justify-between gap-2.5">
                       <div>
                         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Historial de revisiones de señales
+                          Historial de revisiones de lo que se ve
                         </p>
                         <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                           {socialSecurityRevalidationHistory.length
-                            ? `${socialSecurityRevalidationHistory.length} revisión${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} de señales visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
-                            : "Todavía no hay revisiones de señales guardadas"}
+                            ? `${socialSecurityRevalidationHistory.length} revisión${socialSecurityRevalidationHistory.length === 1 ? "" : "es"} de lo que se ve visible${socialSecurityRevalidationHistory.length === 1 ? "" : "s"}`
+                            : "Todavía no hay revisiones de lo que se ve guardadas"}
                         </p>
                       </div>
                       {effectiveSocialSecurityValidation?.clarityChangeLabel ? (
@@ -10066,7 +10047,7 @@ export default function Auditar() {
                                 <p className="mt-1.5 text-xs leading-4 text-slate-500">
                                   {entry.coverageScore
                                     ? `Cobertura estimada: ${entry.coverageScore}%`
-                                    : "Cobertura registrada en esta revisión de señales."}
+                                    : "Cobertura registrada en esta revisión de lo que se ve en el papel."}
                                   {entry.recommendedNextStep
                                     ? ` · ${entry.recommendedNextStep}`
                                     : ""}
@@ -10077,7 +10058,7 @@ export default function Auditar() {
                         </details>
                       ) : (
                         <div className="rounded-[0.95rem] border border-dashed border-slate-200 bg-slate-50 p-2.5 text-sm leading-5 text-slate-600">
-                          Cuando vuelvas a revisar las señales visibles de IMSS e Infonavit, aquí verás fecha, estado y cambios. Esto no consulta esos institutos en vivo.
+                          Cuando vuelvas a revisar lo que se ve de IMSS e Infonavit, aquí verás fecha, estado y cambios. Esto no consulta esos institutos en vivo.
                         </div>
                       )}
                     </div>
@@ -12735,7 +12716,7 @@ Reforzar con otro documento
                                   {engineStatus.description}
                                 </p>
                                 <div className="mt-3 rounded-[1rem] border border-white/80 bg-white/85 px-3 py-3 text-sm leading-6 text-slate-700">
-                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Señal visible de control</p>
+                                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Control visible</p>
                                   <p className="mt-1.5">Aquí mismo te confirmamos si el documento quedó resguardado, si sigue en análisis o si hace falta retomar algo. No tienes que adivinar qué pasó con tu archivo.</p>
                                 </div>
                               </div>
@@ -13330,7 +13311,7 @@ Reforzar con otro documento
                     </h2>
                     <p className="mt-2 max-w-3xl text-sm leading-7 text-slate-600">
                       Documento por documento, aquí ves cómo se fueron
-                      conectando señales para darte más claridad sobre tu caso.
+                      conectando datos para darte más claridad sobre tu caso.
                     </p>
                     {timelineEntries.length > timelinePreviewLimit ? (
                       <p className="mt-3 text-xs leading-6 text-slate-500 sm:hidden">
@@ -14455,8 +14436,8 @@ Reforzar con otro documento
                   </p>
                   <p className="mt-2 text-sm leading-6 text-teal-950">
                     {heliosDocumentsCount === 0
-                      ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar, incluyendo señales útiles de IMSS e Infonavit cuando existan en tu expediente."
-                      : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar señales, diferencias y siguientes pasos útiles.`}
+                      ? "En cuanto haya lectura visible, empezaremos a decirte qué ya se entendió y qué conviene reforzar, incluyendo datos útiles de IMSS e Infonavit cuando existan en tu expediente."
+                      : `Ya se conectaron ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} para encontrar datos, diferencias y siguientes pasos útiles.`}
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-sky-100 bg-sky-50 p-4">
@@ -14877,7 +14858,7 @@ Reforzar con otro documento
                   </p>
                 </div>
                 <p className="mt-1 text-sm leading-7 text-slate-600">
-                  Convertimos señales repetidas y puntos sensibles en alertas
+                  Convertimos datos repetidos y puntos sensibles en alertas
                   más fáciles de priorizar dentro de un expediente claro,
                   ordenado y siempre disponible para ti.
                 </p>
@@ -14914,7 +14895,7 @@ Reforzar con otro documento
                               <p className="font-semibold">Motivo</p>
                               <p>
                                 {alert.reasonLabel ??
-                                  "Señal útil detectada en tu expediente"}
+                                  "Dato útil detectado en tu expediente"}
                               </p>
                             </div>
                             <div className="rounded-[0.9rem] bg-white/60 px-3 py-2">

@@ -423,7 +423,7 @@ export function HeliosCopilotSheet({
                       className="mt-3 w-full rounded-full border-emerald-200 bg-white text-emerald-900 hover:bg-emerald-100"
                       onClick={onFocusSuggestedDocument}
                     >
-                      {nextSuggestedDocument.ctaLabel ?? "Subir este documento ahora"}
+                      {nextSuggestedDocument.ctaLabel ?? "Continuar con este archivo"}
                       <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
                     </Button>
                   ) : null}

@@ -140,6 +140,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(auditar).not.toContain("Sube tu recibo o comprobante");
     expect(auditar).not.toContain("Sube tu recibo y revisa lo importante");
     expect(auditar).not.toContain(": \"Elegir documento\"");
+    expect(auditar).not.toContain("Subir este documento");
     expect(auditar).toContain(
       'className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start"',
     );
