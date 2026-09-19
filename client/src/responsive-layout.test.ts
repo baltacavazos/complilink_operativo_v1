@@ -49,5 +49,14 @@ describe("responsive layout regression guards", () => {
     expect(shellSource).toContain('data-testid="mobile-header-back"');
     expect(shellSource).not.toContain("sticky top-3 z-40");
     expect(shellSource).not.toContain("inline-flex shrink-0 items-center rounded-full bg-slate-950 px-3 py-1.5");
+
+    const auditarSource = readProjectFile("client", "src", "pages", "Auditar.tsx");
+    expect(auditarSource).toContain('data-testid="auditar-page-back"');
+    expect(auditarSource).toContain(
+      "hidden items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white sm:inline-flex",
+    );
+    expect(auditarSource).not.toContain(
+      'className="inline-flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"',
+    );
   });
 });
