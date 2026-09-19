@@ -22,8 +22,8 @@ describe("Apple tip #3 — pulido visual", () => {
     expect(css).toContain("background-color: var(--ap-panel-bg-strong) !important");
     expect(css).toContain("--ap-text-muted: rgb(203 213 225)");
     expect(css).toContain("color: rgb(51 65 85)");
-    expect(css).toContain('[data-testid="auditar-legal-confirmation"]');
-    expect(css).toContain(".dark .audita-auditar [data-testid=\"auditar-legal-confirmation\"][class*=\"bg-white\"]");
+    expect(css).toContain(".ap-legal-confirmation");
+    expect(css).toContain(".dark .audita-auditar section.ap-legal-confirmation");
     expect(css).toContain("color: rgb(226 232 240) !important");
   });
 

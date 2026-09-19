@@ -1075,33 +1075,28 @@
     color: rgb(51 65 85);
   }
 
-  .audita-auditar [data-testid="auditar-legal-confirmation"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"][class*="bg-white"] {
+  .ap-legal-confirmation,
+  .dark .audita-auditar .ap-legal-confirmation,
+  .dark .audita-auditar section.ap-legal-confirmation {
     background-color: #ffffff !important;
-    border-color: rgb(203 213 225) !important;
+    border: 1px solid rgb(203 213 225) !important;
     color: rgb(15 23 42) !important;
   }
 
-  .audita-auditar [data-testid="auditar-legal-confirmation"] h2,
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-950"],
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-900"],
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-800"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] h2,
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-950"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-900"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-800"] {
+  .ap-legal-confirmation h2,
+  .ap-legal-confirmation p,
+  .ap-legal-confirmation span,
+  .ap-legal-confirmation button,
+  .dark .audita-auditar .ap-legal-confirmation h2,
+  .dark .audita-auditar .ap-legal-confirmation p,
+  .dark .audita-auditar .ap-legal-confirmation span,
+  .dark .audita-auditar .ap-legal-confirmation button,
+  .dark .audita-auditar .ap-legal-confirmation [class*="text-slate-"] {
     color: rgb(15 23 42) !important;
   }
 
-  .audita-auditar [data-testid="auditar-legal-confirmation"] p,
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-700"],
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-600"],
-  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-500"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] p,
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-700"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-600"],
-  .dark .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-500"] {
+  .ap-legal-confirmation p,
+  .dark .audita-auditar .ap-legal-confirmation p {
     color: rgb(51 65 85) !important;
   }
 

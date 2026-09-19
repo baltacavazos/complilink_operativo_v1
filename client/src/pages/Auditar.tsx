@@ -9007,7 +9007,7 @@ export default function Auditar() {
 
         {!auth.canToggleUserView && (legalGateRequired || legalGateHarnessMode) ? (
           <section
-            className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"
+            className="ap-legal-confirmation mt-6 rounded-[1.5rem] border p-5 shadow-sm"
             data-testid="auditar-legal-confirmation"
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
