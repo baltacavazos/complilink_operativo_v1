@@ -9006,10 +9006,13 @@ export default function Auditar() {
         ) : null}
 
         {!auth.canToggleUserView && (legalGateRequired || legalGateHarnessMode) ? (
-          <section className="mt-6 rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-br from-amber-50 via-white to-white p-5 shadow-sm">
+          <section
+            className="mt-6 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm"
+            data-testid="auditar-legal-confirmation"
+          >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div className="max-w-3xl">
-                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-amber-900">
+                <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold tracking-tight text-amber-950">
                   <Lock className="h-4 w-4" strokeWidth={1.8} />
                   Autorización legal pendiente
                 </div>
@@ -9024,13 +9027,13 @@ export default function Auditar() {
                 <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 font-semibold text-slate-900 underline decoration-slate-300 underline-offset-4 transition hover:text-slate-700"
+                    className="inline-flex items-center gap-2 font-semibold text-slate-900 underline decoration-slate-400 underline-offset-4 transition hover:text-slate-700"
                     onClick={() => setLegalDocumentsDrawerOpen(true)}
                   >
                     Revisar aviso y términos vigentes
                     <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
                   </button>
-                  <span className="text-slate-500">
+                  <span className="font-medium text-slate-700">
                     Versión vigente{" "}
                     {legalAcceptance?.legalVersion ?? LEGAL_VERSION}
                   </span>

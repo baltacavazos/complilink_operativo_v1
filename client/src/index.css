@@ -1075,6 +1075,11 @@
     color: rgb(51 65 85);
   }
 
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-500"],
+  .audita-auditar [data-testid="auditar-legal-confirmation"] [class*="text-slate-600"] {
+    color: rgb(51 65 85);
+  }
+
   @media (max-width: 390px) {
     .ap-worker-chat {
       inset: 0 !important;
