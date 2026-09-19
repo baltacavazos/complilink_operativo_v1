@@ -4,6 +4,8 @@ import {
   hasForbiddenClientBrand,
   hasRawBooleanLeak,
   humanizeWorkerVisibleScalar,
+  isWorkerInternalFieldValue,
+  isWorkerSystemFieldLabel,
   sanitizeClientVisibleCopy,
 } from "./clientVisibleCopy";
 
@@ -96,6 +98,20 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(hasRawBooleanLeak("true")).toBe(true);
     expect(hasRawBooleanLeak("Sí")).toBe(false);
     expect(hasRawBooleanLeak("Confirmado")).toBe(false);
+  });
+
+  it("reconoce MIME, enums internos y etiquetas de sistema para ocultarlos al trabajador", () => {
+    expect(isWorkerInternalFieldValue("application/pdf")).toBe(true);
+    expect(isWorkerInternalFieldValue("other")).toBe(true);
+    expect(isWorkerInternalFieldValue("expanded")).toBe(true);
+    expect(isWorkerInternalFieldValue("standard")).toBe(true);
+    expect(isWorkerInternalFieldValue("ECC190605VA1")).toBe(false);
+    expect(isWorkerInternalFieldValue("$4,725.60")).toBe(false);
+    expect(isWorkerInternalFieldValue("Ana Pérez")).toBe(false);
+    expect(isWorkerSystemFieldLabel("Formato")).toBe(true);
+    expect(isWorkerSystemFieldLabel("Nivel de revisión")).toBe(true);
+    expect(isWorkerSystemFieldLabel("RFC visible")).toBe(false);
+    expect(isWorkerSystemFieldLabel("Periodo visible")).toBe(false);
   });
 
   it("oculta Webhook y webhook_rejected con copy humano", () => {

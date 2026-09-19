@@ -167,6 +167,43 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(access).not.toMatch(/\bWebhook\b/);
   });
 
+  it("HOTFIX LIVE: hace legible «Qué sigue ahora» y oculta MIME/enums del trabajador", () => {
+    const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
+    const css = readRepoFile("client", "src", "index.css");
+
+    expect(auditar).toContain('data-ap-next-step');
+    expect(auditar).toContain("ap-next-step-card");
+    expect(auditar).toContain("isWorkerVisibleAnalysisField");
+    expect(auditar).toContain("isWorkerInternalFieldValue");
+    expect(auditar).toContain(': "Sube tu recibo"');
+    expect(css).toContain(".audita-auditar [data-ap-next-step]");
+    expect(css).toContain(".dark .audita-auditar article[data-ap-next-step]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)");
+    expect(css).toContain(".dark .audita-auditar [data-ap-status-cluster] article:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)");
+    expect(css).toContain("background-color: rgb(255 255 255) !important");
+    expect(css).toContain("color: rgb(51 65 85) !important");
+    expect(css).toContain("color: rgb(15 23 42) !important");
+    expect(auditar).not.toContain("CompliLink");
+    expect(auditar).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);
+
+    const relativeLuminance = (r: number, g: number, b: number) => {
+      const toLinear = (channel: number) => {
+        const next = channel / 255;
+        return next <= 0.03928 ? next / 12.92 : ((next + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+    };
+    const contrastRatio = (left: [number, number, number], right: [number, number, number]) => {
+      const first = relativeLuminance(...left);
+      const second = relativeLuminance(...right);
+      const lighter = Math.max(first, second);
+      const darker = Math.min(first, second);
+      return (lighter + 0.05) / (darker + 0.05);
+    };
+
+    expect(contrastRatio([255, 255, 255], [15, 23, 42])).toBeGreaterThan(12);
+    expect(contrastRatio([255, 255, 255], [51, 65, 85])).toBeGreaterThan(7);
+  });
+
   it("unifica radios, sombras suaves y evita texto recortado", () => {
     const css = readRepoFile("client", "src", "index.css");
 

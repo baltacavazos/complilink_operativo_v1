@@ -949,6 +949,7 @@ function sanitizeStructuredExtractionResult(result: StructuredExtractionResult, 
       }),
     }))
     .filter((field) => field.key.length > 0 && field.label.length > 0 && field.value.length > 0)
+    .filter((field) => !isWorkerSystemStructuredField(field))
     .slice(0, 12);
 
   return {
@@ -962,7 +963,10 @@ function sanitizeStructuredExtractionResult(result: StructuredExtractionResult, 
       emptyFallback: fallback.summary,
       technicalFallback: fallback.summary,
     }),
-    fields: sanitizedFields.length > 0 ? sanitizedFields : fallback.fields.slice(0, 10),
+    fields:
+      sanitizedFields.length > 0
+        ? sanitizedFields
+        : fallback.fields.filter((field) => !isWorkerSystemStructuredField(field)).slice(0, 10),
     missingFields: result.missingFields
       .map((item) =>
         sanitizeStructuredPreviewText(item, {
@@ -1017,6 +1021,31 @@ function readLlmMessageText(messageContent: unknown) {
   }
 
   return "";
+}
+
+function isWorkerSystemStructuredField(params: { key?: string; label?: string; value?: unknown }) {
+  const compactKey = (params.key ?? "").replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (
+    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready|hasinfonavitsignal|infonavitdeductiontype)$/.test(
+      compactKey,
+    )
+  ) {
+    return true;
+  }
+
+  const label = (params.label ?? "").replace(/\s+/g, " ").trim();
+  if (
+    /^(archivo|formato|tipo de documento|detalle detectado|nivel de revisi[oó]n|puede leer detalles|puede estimar prestaciones)$/i.test(
+      label,
+    )
+  ) {
+    return true;
+  }
+
+  const value = String(params.value ?? "").replace(/\s+/g, " ").trim();
+  return /^(application\/[a-z0-9.+-]+|image\/[a-z0-9.+-]+|text\/[a-z0-9.+-]+|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+|multipart\/[a-z0-9.+-]+|other|expanded|standard|contract[_-]?deep[_-]?dive|payroll[_-]?receipt|cfdi|imss|contract|settlement|evidence)$/i.test(
+    value,
+  );
 }
 
 function humanizeStructuredFieldLabel(key: string) {
@@ -1078,7 +1107,8 @@ function buildStructuredExtractionFallback(params: {
       value: String(value),
       status: "confirmed" as const,
       confidence: "high" as const,
-    }));
+    }))
+    .filter((field) => !isWorkerSystemStructuredField(field));
 
   const estimatedFields = Object.entries(params.preliminaryAnalysis.estimatedData)
     .filter(([, value]) => value !== null && value !== undefined && value !== "")
@@ -1088,7 +1118,8 @@ function buildStructuredExtractionFallback(params: {
       value: String(value),
       status: "estimated" as const,
       confidence: "medium" as const,
-    }));
+    }))
+    .filter((field) => !isWorkerSystemStructuredField(field));
 
   const fields = [...confirmedFields, ...estimatedFields].slice(0, 10);
   const normalizedFieldIndex = new Set(fields.map((field) => `${field.key}|${field.label}`.toLowerCase()));
