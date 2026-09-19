@@ -19,9 +19,15 @@ describe("sanitizeClientVisibleCopy", () => {
 
   it("oculta Helios, Manus y jerga de score/ONLINE", () => {
     expect(sanitizeClientVisibleCopy("Preguntar a Helios")).toBe("Preguntar al asesor laboral");
+    expect(sanitizeClientVisibleCopy("Modo Helios")).toBe("Modo asesor");
+    expect(sanitizeClientVisibleCopy("Helios básico")).toBe("asesor laboral básico");
+    expect(sanitizeClientVisibleCopy("Helios multi-documento")).toBe("lectura de varios documentos");
+    expect(sanitizeClientVisibleCopy("motor Helios")).toBe("inteligencia laboral");
+    expect(sanitizeClientVisibleCopy("Helios · modo CEO")).toBe("Asesor laboral · modo CEO");
     expect(sanitizeClientVisibleCopy("El copiloto Helios ya leyó tu expediente")).toBe(
       "El asesor laboral ya leyó tu expediente",
     );
+    expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy("Modo Helios"))).toBe(false);
     expect(sanitizeClientVisibleCopy("Inicia sesión con Manus, Google o un código")).toBe(
       "Inicia sesión con Google o un código",
     );
@@ -40,5 +46,14 @@ describe("sanitizeClientVisibleCopy", () => {
       "Tu recibo ya tiene una lectura útil",
     );
     expect(hasForbiddenClientBrand("Tu recibo ya tiene una lectura útil")).toBe(false);
+  });
+
+  it("oculta Webhook y webhook_rejected con copy humano", () => {
+    expect(sanitizeClientVisibleCopy("webhook_rejected")).toBe("No pudimos recibir el aviso.");
+    expect(sanitizeClientVisibleCopy("compra detectada por webhook")).toBe(
+      "compra detectada automáticamente",
+    );
+    expect(sanitizeClientVisibleCopy("Webhook listo")).toBe("Aviso listo");
+    expect(hasForbiddenClientBrand(sanitizeClientVisibleCopy("Webhook pendiente"))).toBe(false);
   });
 });

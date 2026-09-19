@@ -218,7 +218,7 @@ export default function Payments() {
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Historial persistido</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Pagos y compras registradas</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                Cada fila muestra la compra detectada por webhook y las referencias mínimas guardadas localmente para trazabilidad.
+                Cada fila muestra la compra detectada automáticamente y las referencias mínimas guardadas localmente para trazabilidad.
               </p>
             </div>
           </div>
@@ -230,7 +230,7 @@ export default function Payments() {
             </div>
           ) : payments.length === 0 ? (
             <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-sm leading-6 text-slate-600">
-              Aún no hay pagos persistidos para esta cuenta. Cuando completes un checkout y Stripe envíe el webhook, aquí se
+              Aún no hay pagos persistidos para esta cuenta. Cuando completes un checkout y Stripe confirme el pago, aquí se
               reflejarán el producto, el importe y los identificadores mínimos guardados localmente.
             </div>
           ) : (

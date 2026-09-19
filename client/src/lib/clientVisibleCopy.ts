@@ -38,6 +38,17 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replace(/\bForge\b/g, "la plataforma");
   next = next.replace(/\bForensic\b/gi, "revisión documental");
 
+  next = next.replace(/Modo Helios/gi, "Modo asesor");
+  next = next.replace(/Helios · modo CEO/gi, "Asesor laboral · modo CEO");
+  next = next.replace(/Helios · /g, "Asesor laboral · ");
+  next = next.replace(/Helios básico/gi, "asesor laboral básico");
+  next = next.replace(/Helios multi-documento/gi, "lectura de varios documentos");
+  next = next.replace(/Helios con memoria histórica/gi, "asesor laboral con memoria histórica");
+  next = next.replace(/Helios con lectura/gi, "asesor laboral con lectura");
+  next = next.replace(/capa ejecutiva de Helios/gi, "capa ejecutiva del asesor laboral");
+  next = next.replace(/consulta sensible a Helios/gi, "consulta sensible al asesor laboral");
+  next = next.replace(/Atajos ejecutivos de Helios/gi, "Atajos ejecutivos del asesor");
+  next = next.replace(/Lo que Helios sí está leyendo/gi, "Lo que el asesor sí está leyendo");
   next = next.replaceAll("copiloto Helios", "asesor laboral");
   next = next.replaceAll("Copiloto Helios", "Asesor laboral");
   next = next.replaceAll("copiloto laboral", "asesor laboral");
@@ -56,6 +67,14 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replace(/\bHelios\b/g, "la inteligencia laboral");
   next = next.replace(/\bhelios\b/gi, "la inteligencia laboral");
 
+  next = next.replace(/webhook_rejected/gi, "No pudimos recibir el aviso.");
+  next = next.replace(/detectada por webhook/gi, "detectada automáticamente");
+  next = next.replace(/envíe el webhook/gi, "confirme el pago");
+  next = next.replace(/Webhook listo/gi, "Aviso listo");
+  next = next.replace(/Webhook pendiente/gi, "Aviso pendiente");
+  next = next.replace(/\bWebhook\b/g, "aviso");
+  next = next.replace(/\bwebhook\b/g, "aviso");
+
   next = next.replace(/\bconfidence score\b/gi, "confianza orientativa");
   next = next.replace(/\bscore\b/gi, "indicador");
   next = next.replace(/\bONLINE\b/g, "en línea");
@@ -69,7 +88,7 @@ export function hasForbiddenClientBrand(value?: string | null): boolean {
     return false;
   }
 
-  return /CompliLink|complilink|\bManus\b|\bForge\b|\bHelios\b|\bhelios\b|APIMarket|\bForensic\b|\bONLINE\b/.test(
+  return /CompliLink|complilink|\bManus\b|\bForge\b|\bHelios\b|\bhelios\b|APIMarket|\bForensic\b|\bONLINE\b|\bWebhook\b|\bwebhook\b/.test(
     value,
   );
 }

@@ -2462,26 +2462,31 @@ function getHeliosRiskCopy(value?: string | null) {
     case "critical":
       return {
         label: "Crítico",
+        action: "Revisa esto primero",
         classes: "bg-rose-100 text-rose-800",
       } as const;
     case "high":
       return {
         label: "Atención",
+        action: "Revisa esto primero",
         classes: "bg-red-100 text-red-800",
       } as const;
     case "medium":
       return {
         label: "Atención",
+        action: "Revisa esto primero",
         classes: "bg-amber-100 text-amber-800",
       } as const;
     case "low":
       return {
         label: "Bien",
+        action: "Todo en orden por ahora",
         classes: "bg-emerald-100 text-emerald-800",
       } as const;
     default:
       return {
         label: "Revisión inicial",
+        action: "Revisa esto primero",
         classes: "bg-slate-200 text-slate-700",
       } as const;
   }
@@ -2626,7 +2631,7 @@ function getHeliosStageCopy(params: {
         "Hace falta reintentar una parte de la revisión, pero tu expediente sigue intacto",
       description:
         params.engineReason === "webhook_rejected"
-          ? "La etapa automática necesita revisión, aunque el documento sí quedó guardado y protegido dentro del expediente."
+          ? "No pudimos recibir el aviso. El documento sí quedó guardado y protegido dentro del expediente."
           : "Hubo una pausa temporal en la etapa automática, pero el documento quedó resguardado y listo para retomar la lectura.",
       detail:
         "La experiencia mantiene el archivo disponible y deja lista la base para reanudar la revisión sin rehacer pasos.",
@@ -2887,7 +2892,7 @@ function getEngineStatusCopy(status?: string, reason?: string | null) {
       title: "Tu documento sí quedó protegido",
       description:
         reason === "webhook_rejected"
-          ? "Tu archivo sí se guardó bien. La siguiente etapa automática necesita revisión, pero tu documento no se perdió."
+          ? "No pudimos recibir el aviso. Tu archivo sí se guardó y no se perdió."
           : "Tu archivo sí se guardó bien. La siguiente etapa automática quedó pendiente por un tema temporal y puede revisarse después.",
       tone: "warning",
     } as const;
@@ -2937,6 +2942,10 @@ function getMonitoringStatusCopy(status?: string | null) {
 }
 
 function getReturnEventLabel(value?: string | null) {
+  if (value && /webhook_rejected|webhook\.rejected/i.test(value)) {
+    return "No pudimos recibir el aviso.";
+  }
+
   switch (value) {
     case "document.processing.started":
       return "Procesamiento iniciado";
@@ -2947,7 +2956,8 @@ function getReturnEventLabel(value?: string | null) {
       return "Análisis profundo recibido";
     default:
       return value
-        ? humanizeSnakeCase(value.replace(/\./g, "_"))
+        ? sanitizeClientVisibleCopy(humanizeSnakeCase(value.replace(/\./g, "_"))) ??
+          "Respuesta recibida"
         : "Respuesta recibida";
   }
 }
@@ -5978,6 +5988,7 @@ export default function Auditar() {
     quickDifferenceAmount === null || quickDifferenceAbsolute === null
       ? {
           badge: "Semáforo en preparación",
+          action: "Revisa esto primero",
           headline: "Faltan dos montos para medir el riesgo visible",
           supportingText:
             "En cuanto tengas nómina y CFDI del mismo periodo, te diremos si el cruce se ve sano, si requiere atención o si ya amerita revisión prioritaria.",
@@ -5993,6 +6004,7 @@ export default function Auditar() {
       : quickDifferenceAmount === 0
         ? {
             badge: "Semáforo laboral: bajo",
+            action: "Todo en orden por ahora",
             headline: "Por monto no se ve una diferencia inmediata",
             supportingText:
               "La lectura inicial luce estable en este periodo, pero todavía conviene revisar conceptos, fechas y deducciones para cerrar bien la comparación.",
@@ -6008,6 +6020,7 @@ export default function Auditar() {
         : quickDifferenceRelative !== null && quickDifferenceRelative >= 0.15
           ? {
               badge: "Semáforo laboral: alto",
+              action: "Revisa esto primero",
               headline: "La diferencia ya merece revisión prioritaria",
               supportingText:
                 "La separación entre nómina y CFDI ya es suficientemente visible como para pedir contexto, conservar evidencia y preparar una aclaración con calma.",
@@ -6023,6 +6036,7 @@ export default function Auditar() {
           : quickDifferenceRelative !== null && quickDifferenceRelative >= 0.05
             ? {
                 badge: "Semáforo laboral: medio",
+                action: "Revisa esto primero",
                 headline: "Hay una diferencia visible que conviene aclarar",
                 supportingText:
                   "No implica por sí sola un incumplimiento definitivo, pero sí una señal suficiente para comparar conceptos y dejar registro de la aclaración.",
@@ -6037,6 +6051,7 @@ export default function Auditar() {
               }
             : {
                 badge: "Semáforo laboral: atención",
+                action: "Revisa esto primero",
                 headline: "La diferencia luce pequeña, pero ya deja una señal útil",
                 supportingText:
                   "Puede bastar una aclaración simple, sobre todo si el concepto o la fecha no coinciden exactamente con el periodo revisado.",
@@ -8146,7 +8161,7 @@ export default function Auditar() {
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
                 <p className="text-xs font-semibold tracking-tight text-emerald-800">Señal inicial</p>
-                <p className="mt-1 text-sm text-slate-600">Lectura orientativa; no es validación oficial ni asesoría legal.</p>
+                <p className="mt-1 text-sm text-slate-600">Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
             <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
@@ -8238,7 +8253,7 @@ export default function Auditar() {
               <p className="mt-4 max-w-full text-base leading-7 text-slate-600 sm:max-w-2xl sm:text-lg sm:leading-8">
                 {isNativeAppExperience
                   ? "Sube foto o archivo. Te mostramos una lectura inicial cuando termine de procesarse."
-                  : "Sube un PDF o una foto. La lectura puede tardar un momento; te mostraremos una señal inicial y el siguiente paso útil."}
+                  : "Sube un PDF o una foto. La lectura puede tardar un momento; te mostraremos una señal inicial y el siguiente paso útil. Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar."}
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
@@ -11617,6 +11632,9 @@ export default function Auditar() {
                                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">
                                     {quickLaborHealthSignal.badge}
                                   </p>
+                                  <p className="mt-1 text-sm font-medium text-slate-800">
+                                    {quickLaborHealthSignal.action}
+                                  </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
                                     {quickLaborHealthSignal.headline}
                                   </p>
@@ -12268,6 +12286,9 @@ Reforzar con otro documento
                             className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}
                           >
                             {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).label}
+                          </span>
+                          <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).action}
                           </span>
                           {typeof lastHeliosOpinion.confidenceScore === "number" ? (
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
@@ -13447,6 +13468,9 @@ Reforzar con otro documento
                                   >
                                     {heliosRisk.label}
                                   </span>
+                                  <span className="rounded-full bg-white px-3 py-1 text-slate-700">
+                                    {heliosRisk.action}
+                                  </span>
                                   <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                                     {getHeliosModeLabel(heliosOpinion.mode)}
                                   </span>
@@ -14624,7 +14648,7 @@ Reforzar con otro documento
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
-                  <p className="font-semibold text-slate-950">Modo del asesor</p>
+                  <p className="font-semibold text-slate-950">Modo asesor</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
                       ? "Memoria histórica de expediente"
@@ -14703,7 +14727,9 @@ Reforzar con otro documento
                       : "Sin Stripe"}
                 </span>
                 <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-                  Webhook {commerceStatusQuery.data?.environment?.webhookReady ? "listo" : "pendiente"}
+                  {commerceStatusQuery.data?.environment?.webhookReady
+                    ? "Aviso de cobro listo"
+                    : "Aviso de cobro pendiente"}
                 </span>
               </div>
               <p className="mt-3 text-base font-semibold text-slate-950">

@@ -19,6 +19,14 @@ function visibleCopySurface(source: string) {
     .replace(/["'][^"']*complilink[^"']*["']/gi, " ");
 }
 
+function auditarClientFacingRenderPaths(source: string) {
+  const withoutComments = visibleCopySurface(source);
+  return [...withoutComments.matchAll(/(["'])([^"'`\n]{3,220})\1/g)]
+    .map((match) => match[2])
+    .filter((text) => /\s/.test(text) && /[A-ZÁÉÍÓÚÑáéíóúñ]/.test(text))
+    .join("\n");
+}
+
 const KEY_CLIENT_PAGES = [
   "pages/Home.tsx",
   "pages/Auditar.tsx",
@@ -110,6 +118,26 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain('label: "Crítico"');
     expect(auditar).not.toContain('label: "Riesgo crítico"');
     expect(auditar).not.toContain("complilinkMonitoring");
+    expect(auditar).toContain("Revisa esto primero");
+    expect(auditar).toContain("Todo en orden por ahora");
+    expect(auditar).toContain("Una señal es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.");
+    expect(auditar).toContain("Modo asesor");
+    expect(auditar).toContain("No pudimos recibir el aviso.");
+    expect(auditar).not.toContain("Modo Helios");
+    expect(auditar).not.toContain("Modo del asesor");
+  });
+
+  it("deja /auditar sin Helios, CompliLink ni Webhook en copy que se renderiza", () => {
+    const auditar = readClientSource("pages/Auditar.tsx");
+    const renderPaths = auditarClientFacingRenderPaths(auditar);
+
+    expect(renderPaths).not.toMatch(/\bHelios\b/);
+    expect(renderPaths).not.toMatch(/CompliLink|complilink/);
+    expect(renderPaths).not.toMatch(/\bWebhook\b/);
+    expect(renderPaths).not.toMatch(/\bwebhook\b/);
+    expect(auditar).not.toMatch(/>\s*Webhook\b/);
+    expect(auditar).not.toContain("Webhook ");
+    expect(auditar).not.toMatch(/["'`][^"'`]*\bWebhook\b[^"'`]*["'`]/);
   });
 
   it("oculta el chrome CEO cuando la sesión no es admin", () => {
@@ -118,6 +146,7 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(ceo.indexOf("if (!isAdmin) {\n    return (")).toBeLessThan(ceo.indexOf("<DashboardLayout"));
     expect(ceo).toContain("Preguntar al asesor laboral");
     expect(ceo).not.toContain("Preguntar a Helios");
+    expect(ceo).not.toContain("Helios · modo CEO");
   });
 
   it("usa el sanitizador central en Home, Auditar y el panel conversacional", () => {
