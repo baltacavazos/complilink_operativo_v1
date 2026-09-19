@@ -21,6 +21,8 @@ import {
 } from "@/lib/platformDocumentInput";
 import {
   humanizeWorkerVisibleScalar,
+  isWorkerInternalFieldValue,
+  isWorkerSystemFieldLabel,
   sanitizeClientVisibleCopy,
 } from "@/lib/clientVisibleCopy";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
@@ -3083,14 +3085,14 @@ function getAnalysisFieldLabel(key: string) {
   return "Dato visible en el documento";
 }
 
-function isTechnicalAnalysisKey(key: string) {
+export function isTechnicalAnalysisKey(key: string) {
   if (/^ap\.?pol/i.test(key) || /^ap\./i.test(key)) {
     return true;
   }
 
   const compact = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
   if (
-    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready)$/.test(
+    /^(filename|mimetype|internaldocumenttype|normalizeddoctype|processingprofile|structuredextractionready|benefittestimationready|hasinfonavitsignal|infonavitdeductiontype)$/.test(
       compact
     )
   ) {
@@ -3102,7 +3104,7 @@ function isTechnicalAnalysisKey(key: string) {
   );
 }
 
-function isHumanMeaningfulAnalysisKey(key: string) {
+export function isHumanMeaningfulAnalysisKey(key: string) {
   if (isTechnicalAnalysisKey(key)) {
     return false;
   }
@@ -3125,6 +3127,29 @@ function isHumanMeaningfulAnalysisKey(key: string) {
   return /rfc|periodo|period|monto|amount|fecha|date|nombre|name|puesto|job|neto|deducc|empresa|employer/i.test(
     key
   );
+}
+
+export function isWorkerVisibleAnalysisField(params: {
+  key?: string | null;
+  label?: string | null;
+  value?: unknown;
+}) {
+  const key = params.key?.trim() ?? "";
+  const label = params.label?.replace(/\s+/g, " ").trim() ?? "";
+
+  if (key && isTechnicalAnalysisKey(key)) {
+    return false;
+  }
+
+  if (label && isWorkerSystemFieldLabel(label)) {
+    return false;
+  }
+
+  if (isWorkerInternalFieldValue(params.value)) {
+    return false;
+  }
+
+  return true;
 }
 
 function formatAnalysisValue(key: string, value: unknown) {
@@ -3178,6 +3203,7 @@ function getVisibleAnalysisEntries(record?: Record<string, unknown> | null) {
       ([key, value]) =>
         value.length > 0 &&
         isHumanMeaningfulAnalysisKey(key) &&
+        isWorkerVisibleAnalysisField({ key, value }) &&
         !/^(true|false)$/i.test(value) &&
         !/^sin dato visible$/i.test(value)
     )
@@ -3206,6 +3232,13 @@ export function sanitizeStructuredExtractionView(
         "La lectura previa quedó demasiado técnica o extensa. Conviene repetir la captura o revisar el archivo original.",
     }),
     fields: view.fields
+      .filter(field =>
+        isWorkerVisibleAnalysisField({
+          key: field.key,
+          label: field.label,
+          value: field.value,
+        })
+      )
       .map(field => ({
         ...field,
         label: sanitizePreviewText(field.label, {
@@ -3220,7 +3253,15 @@ export function sanitizeStructuredExtractionView(
             "Contenido técnico omitido para mantener la vista previa clara.",
         }),
       }))
-      .filter(field => field.value.length > 0)
+      .filter(
+        field =>
+          field.value.length > 0 &&
+          isWorkerVisibleAnalysisField({
+            key: field.key,
+            label: field.label,
+            value: field.value,
+          })
+      )
       .slice(0, 12),
     missingFields: view.missingFields
       .map(item =>
@@ -9189,7 +9230,10 @@ export default function Auditar() {
                   data-ap-status-cluster
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
-                  <article className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm">
+                  <article
+                    data-ap-next-step
+                    className="rounded-[1.25rem] border border-white bg-white/90 p-4 shadow-sm"
+                  >
                     <p className="text-sm font-semibold text-slate-950">
                       Qué sigue ahora
                     </p>

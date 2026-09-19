@@ -38,6 +38,33 @@ export function hasRawBooleanLeak(value?: string | null): boolean {
   return RAW_BOOLEAN_VALUE.test(value.trim());
 }
 
+const WORKER_SYSTEM_LABEL =
+  /^(archivo|formato|tipo de documento|detalle detectado|nivel de revisi[oó]n|puede leer detalles|puede estimar prestaciones)$/i;
+
+const WORKER_INTERNAL_VALUE =
+  /^(application\/[a-z0-9.+-]+|image\/[a-z0-9.+-]+|text\/[a-z0-9.+-]+|audio\/[a-z0-9.+-]+|video\/[a-z0-9.+-]+|multipart\/[a-z0-9.+-]+|other|expanded|standard|contract[_-]?deep[_-]?dive|payroll[_-]?receipt|cfdi|imss|contract|settlement|evidence)$/i;
+
+export function isWorkerInternalFieldValue(value?: unknown): boolean {
+  if (value == null) {
+    return false;
+  }
+
+  const text = String(value).replace(/\s+/g, " ").trim();
+  if (!text) {
+    return false;
+  }
+
+  return WORKER_INTERNAL_VALUE.test(text);
+}
+
+export function isWorkerSystemFieldLabel(label?: string | null): boolean {
+  if (!label) {
+    return false;
+  }
+
+  return WORKER_SYSTEM_LABEL.test(label.replace(/\s+/g, " ").trim());
+}
+
 function collapseCopy(value: string) {
   return value.replace(EMPTY_QUOTES, "").replace(EXTRA_SPACE, " ").trim();
 }

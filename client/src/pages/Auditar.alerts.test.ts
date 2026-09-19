@@ -30,6 +30,9 @@ import {
   formatHumanStatusWord,
   sanitizePreviewText,
   sanitizeStructuredExtractionView,
+  isHumanMeaningfulAnalysisKey,
+  isTechnicalAnalysisKey,
+  isWorkerVisibleAnalysisField,
   toHumanResultTitle,
   stripWorkerDebugIds,
   shouldAutoAnalyzeSelectedFile,
@@ -1053,6 +1056,110 @@ describe("preview sanitization", () => {
         technicalFallback: "no-aplica",
       }),
     ).toBe("Este resumen mantiene lenguaje humano y claro para la persona usuaria, pero nec…");
+  });
+
+  it("oculta MIME, enums internos y claves de sistema de la vista del trabajador", () => {
+    const view = sanitizeStructuredExtractionView({
+      headline: "Esto es lo más importante que alcanzamos a leer en tu documento",
+      summary: "El documento parece laboralmente relevante.",
+      fields: [
+        {
+          key: "mimeType",
+          label: "Formato",
+          value: "application/pdf",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "internalDocumentType",
+          label: "Tipo de documento",
+          value: "other",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "processingProfile",
+          label: "Nivel de revisión",
+          value: "expanded",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "fileName",
+          label: "Archivo",
+          value: "retest.pdf",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "normalizedDocType",
+          label: "Detalle detectado",
+          value: "retest",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "structuredExtractionReady",
+          label: "Puede leer detalles",
+          value: "true",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "employerRfc",
+          label: "RFC visible",
+          value: "ECC190605VA1",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "period",
+          label: "Periodo visible",
+          value: "2026-05-01 al 2026-05-15",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "apparentAmount",
+          label: "Monto visible",
+          value: "$4,725.60",
+          status: "confirmed",
+          confidence: "high",
+        },
+        {
+          key: "workerName",
+          label: "Nombre visible de la persona trabajadora",
+          value: "Ana Pérez",
+          status: "confirmed",
+          confidence: "high",
+        },
+      ],
+      missingFields: [],
+      reviewNotes: [],
+    });
+
+    const rendered = (view?.fields ?? []).map(field => `${field.label}: ${field.value}`).join(" | ");
+    expect(rendered).not.toMatch(/application\/pdf|other|expanded|retest\.pdf/i);
+    expect(rendered).not.toContain("Formato");
+    expect(rendered).not.toContain("Nivel de revisión");
+    expect(rendered).not.toContain("Tipo de documento");
+    expect(view?.fields.map(field => field.key)).toEqual([
+      "employerRfc",
+      "period",
+      "apparentAmount",
+      "workerName",
+    ]);
+    expect(isTechnicalAnalysisKey("mimeType")).toBe(true);
+    expect(isHumanMeaningfulAnalysisKey("employerRfc")).toBe(true);
+    expect(
+      isWorkerVisibleAnalysisField({
+        key: "processingProfile",
+        label: "Nivel de revisión",
+        value: "expanded",
+      }),
+    ).toBe(false);
+    expect(routersSource).toContain("isWorkerSystemStructuredField");
+    expect(routersSource).toContain(".filter((field) => !isWorkerSystemStructuredField(field))");
   });
 
   it("sanea la structuredExtraction para que el preview no imprima dumps visibles", () => {

@@ -706,6 +706,46 @@
     color: rgb(51 65 85) !important;
   }
 
+  /* HOTFIX LIVE: «Qué sigue ahora» and other /auditar bodies were navy+slate
+     (dark remap of bg-white beat the white-card rule; article text stayed dark).
+     Keep a light panel with dark body so the card stays readable. */
+  .audita-auditar [data-ap-next-step],
+  .dark .audita-auditar [data-ap-next-step],
+  .audita-auditar [data-ap-status-cluster] article[class*="bg-white"],
+  .dark .audita-auditar [data-ap-status-cluster] article[class*="bg-white"],
+  .audita-auditar [data-ap-upload-copy] [class*="bg-white"],
+  .dark .audita-auditar [data-ap-upload-copy] [class*="bg-white"] {
+    background-color: rgb(255 255 255) !important;
+    border-color: rgb(226 232 240) !important;
+    color: rgb(30 41 59) !important;
+  }
+
+  .audita-auditar [data-ap-next-step] [class*="text-slate-950"],
+  .audita-auditar [data-ap-next-step] [class*="text-slate-900"],
+  .dark .audita-auditar [data-ap-next-step] [class*="text-slate-950"],
+  .dark .audita-auditar [data-ap-next-step] [class*="text-slate-900"],
+  .dark .audita-auditar [data-ap-status-cluster] article [class*="text-slate-950"],
+  .dark .audita-auditar [data-ap-status-cluster] article [class*="text-slate-900"],
+  .dark .audita-auditar [data-ap-upload-copy] [class*="text-slate-950"],
+  .dark .audita-auditar [data-ap-upload-copy] [class*="text-slate-900"],
+  .dark .audita-auditar [data-ap-upload-copy] h2 {
+    color: rgb(15 23 42) !important;
+  }
+
+  .audita-auditar [data-ap-next-step] [class*="text-slate-700"],
+  .audita-auditar [data-ap-next-step] [class*="text-slate-600"],
+  .audita-auditar [data-ap-next-step] [class*="text-slate-500"],
+  .dark .audita-auditar [data-ap-next-step] [class*="text-slate-700"],
+  .dark .audita-auditar [data-ap-next-step] [class*="text-slate-600"],
+  .dark .audita-auditar [data-ap-next-step] [class*="text-slate-500"],
+  .dark .audita-auditar [data-ap-status-cluster] article [class*="text-slate-700"],
+  .dark .audita-auditar [data-ap-status-cluster] article [class*="text-slate-600"],
+  .dark .audita-auditar [data-ap-upload-copy] [class*="text-slate-700"],
+  .dark .audita-auditar [data-ap-upload-copy] [class*="text-slate-600"],
+  .dark .audita-auditar [data-ap-upload-copy] [class*="text-slate-500"] {
+    color: rgb(51 65 85) !important;
+  }
+
   .audita-auditar [data-ap-review-panel] {
     background-color: rgb(255 251 235) !important;
     border-color: rgb(217 119 6) !important;

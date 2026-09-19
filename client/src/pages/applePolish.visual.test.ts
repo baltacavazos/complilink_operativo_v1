@@ -167,6 +167,24 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
     expect(access).not.toMatch(/\bWebhook\b/);
   });
 
+  it("HOTFIX LIVE: hace legible «Qué sigue ahora» y oculta MIME/enums del trabajador", () => {
+    const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
+    const css = readRepoFile("client", "src", "index.css");
+
+    expect(auditar).toContain('data-ap-next-step');
+    expect(auditar).toContain("isWorkerVisibleAnalysisField");
+    expect(auditar).toContain("isWorkerInternalFieldValue");
+    expect(auditar).toContain(': "Sube tu recibo"');
+    expect(css).toContain(".audita-auditar [data-ap-next-step]");
+    expect(css).toContain(".dark .audita-auditar [data-ap-next-step]");
+    expect(css).toContain(".dark .audita-auditar [data-ap-status-cluster] article[class*=\"bg-white\"]");
+    expect(css).toContain("background-color: rgb(255 255 255) !important");
+    expect(css).toContain("color: rgb(51 65 85) !important");
+    expect(css).toContain("color: rgb(15 23 42) !important");
+    expect(auditar).not.toContain("CompliLink");
+    expect(auditar).not.toMatch(/["'`][^"'`]*\bHelios\b[^"'`]*["'`]/);
+  });
+
   it("unifica radios, sombras suaves y evita texto recortado", () => {
     const css = readRepoFile("client", "src", "index.css");
 
