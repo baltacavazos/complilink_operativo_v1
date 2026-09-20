@@ -96,6 +96,24 @@ describe("workerChatLaborGuidance", () => {
     expect(inferWorkerChatPromptFocus("¿Qué hago ahora?")).toBe("general");
   });
 
+  it("ancla la respuesta clara en la persona trabajadora y el patrón de ESTE expediente", () => {
+    const guidance = buildLaborFiscalChatGuidance(
+      {
+        ...localInput,
+        workerName: "María López",
+        employerName: "Compañía Norte",
+      },
+      "¿Qué es el IMSS?",
+    );
+
+    expect(guidance.clearAnswer).toMatch(/María López/);
+    expect(guidance.clearAnswer).toMatch(/Compañía Norte/);
+    expect(guidance.clearAnswer).toMatch(/IMSS|\$120\.50|NSS/);
+    expect(`${guidance.clearAnswer} ${guidance.nextStep}`).not.toMatch(
+      /Cavazos|de la Cueva|de Buen|Helios|AES-256|JWT/i,
+    );
+  });
+
   it("en la ruta local profundiza el siguiente paso con periodo, montos y base ya presente", () => {
     const guidance = buildLaborFiscalChatGuidance(localInput, "¿Qué hago ahora?");
 

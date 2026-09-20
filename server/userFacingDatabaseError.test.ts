@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  isDuplicateKeyError,
   isRawDatabaseError,
   toUserFacingDatabaseError,
   USER_FACING_DATABASE_ERROR,
@@ -25,5 +26,11 @@ describe("errores de base nunca llegan crudos", () => {
     expect(
       toUserFacingDatabaseError(new Error("Esta cuenta aún no tiene un expediente personal.")).message,
     ).toBe("Esta cuenta aún no tiene un expediente personal.");
+  });
+
+  it("reconoce Duplicate entry para reutilizar el expediente", () => {
+    expect(isDuplicateKeyError(Object.assign(new Error("Duplicate entry"), { code: "ER_DUP_ENTRY" }))).toBe(
+      true,
+    );
   });
 });

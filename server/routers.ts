@@ -59,7 +59,7 @@ import {
   withDatabaseLock,
 } from "./db";
 import { ensureMysqlTables } from "./mysqlBootstrap";
-import { toUserFacingDatabaseError } from "./userFacingDatabaseError";
+import { logActionableDatabaseFailure, toUserFacingDatabaseError } from "./userFacingDatabaseError";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import {
@@ -136,6 +136,7 @@ import { resolveOfficialDigest } from "./officialDigest";
 import {
   capWorkerChatConversationHistory,
   sanitizeWorkerChatCopy,
+  WORKER_ADVISOR_VOICE_NOTE,
   WORKER_CHAT_DISCLAIMER,
 } from "@shared/workerChatUx";
 import {
@@ -2126,7 +2127,7 @@ function buildHeliosCopilotContext(params: {
       recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
       missingDocuments: params.missingDocuments,
       guidance:
-        "Responde solo con las señales del documento, las bases legales ya listadas y los títulos oficiales del digest. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
+        "Habla como un abogado laboral cercano de ESTE expediente. Ancla cada respuesta en la persona trabajadora, el patrón, los documentos, lo que falta y el riesgo visible. Si preguntan algo conceptual, aplícalo a este caso. Sin tecnicismos, sin citar autores, sin Helios. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
       pedagogyMode: hasComplexSignals ? "high" : "standard",
     },
     null,
@@ -2351,13 +2352,23 @@ export const appRouter = router({
         await ensureMysqlTables();
         const workspace = await ensurePersonalWorkspaceForUser({
           userId: ctx.user.id,
-          userName: ctx.user.name ?? ctx.user.email ?? "CompliLink",
+          userName: ctx.user.name ?? ctx.user.email ?? "AuditaPatron",
           userEmail: ctx.user.email,
         });
         const tenant = workspace.tenant;
+        if (!tenant?.tenantId || !workspace.caseId) {
+          console.error("[workspace.bootstrap] El espacio quedó incompleto", {
+            userId: ctx.user.id,
+            tenantId: tenant?.tenantId ?? null,
+            caseId: workspace.caseId ?? null,
+            databaseUrlConfigured: Boolean(process.env.DATABASE_URL?.trim()),
+          });
+          throw new Error("No pudimos preparar tu espacio de revisión.");
+        }
       const snapshot = await getSystemSnapshot(ctx.user.id);
       return {
         tenant,
+        caseId: workspace.caseId,
         snapshot,
         legal: {
           acceptanceVersion: LEGAL_ACCEPTANCE_VERSION,
@@ -2374,6 +2385,9 @@ export const appRouter = router({
         },
       };
       } catch (error) {
+        logActionableDatabaseFailure("workspace.bootstrap", error, {
+          userId: ctx.user.id,
+        });
         throw toUserFacingDatabaseError(error);
       }
     }),
@@ -3444,6 +3458,14 @@ export const appRouter = router({
           userName: ctx.user.name ?? ctx.user.email ?? "AuditaPatron",
           userEmail: ctx.user.email,
         });
+        if (!workspace.tenantId || !workspace.caseId) {
+          logActionableDatabaseFailure(
+            "cases.heliosCopilotChat",
+            new Error("workspace incompleto para el asesor laboral"),
+            { userId: ctx.user.id, tenantId: workspace.tenantId, caseId: workspace.caseId },
+          );
+          throw new Error("No pudimos preparar tu espacio de revisión.");
+        }
         const ceoBypass = await isCeoBypassUser(ctx.user.id);
         const tenantId =
           !ceoBypass && workspace.tenantId ? workspace.tenantId : input.tenantId;
@@ -3491,6 +3513,10 @@ export const appRouter = router({
           missingDocument: missingDocuments[0] ?? null,
           multiDocUpsell: scopedChat.upsell,
           officialDigest,
+          workerName: detail.case.employeeName,
+          employerName: detail.case.employerEntity,
+          caseTitle: detail.case.title,
+          riskLevel: getOptionalString(latestOpinion?.riskLevel),
         });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
@@ -3528,7 +3554,7 @@ export const appRouter = router({
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nMarco operativo:\n${ADVISOR_CONTEXT_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`

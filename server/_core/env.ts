@@ -6,10 +6,12 @@ export const ENV = {
   ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
   ownerBackupEmail: process.env.OWNER_BACKUP_EMAIL ?? "",
   isProduction: process.env.NODE_ENV === "production",
-  /** @deprecated Manus Forge — not used for Railway storage. Prefer S3_* / STORAGE_* below. */
+  /** @deprecated Manus Forge — fallback only. Prefer OPENAI_API_KEY / GEMINI_API_KEY. */
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
-  /** @deprecated Manus Forge — not used for Railway storage. */
+  /** @deprecated Manus Forge — fallback only. Prefer OPENAI_API_KEY / GEMINI_API_KEY. */
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  geminiApiKey: process.env.GEMINI_API_KEY ?? "",
   /**
    * Own storage (Railway S3-compatible). Official: S3_* / STORAGE_*.
    * Also accepts Railway inject (BUCKET/ACCESS_KEY_ID/…) and AWS_* presets.

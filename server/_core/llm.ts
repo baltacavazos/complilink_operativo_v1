@@ -1,5 +1,3 @@
-import { ENV } from "./env";
-
 export type Role = "system" | "user" | "assistant" | "tool" | "function";
 
 export type TextContent = {
@@ -209,15 +207,63 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
+const resolveForgeApiUrl = (forgeApiUrl?: string) =>
+  forgeApiUrl && forgeApiUrl.trim().length > 0
+    ? `${forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
 
-const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+export type LlmTransport = {
+  provider: "openai" | "gemini" | "forge";
+  apiKey: string;
+  url: string;
+  model: string;
+  extraPayload: Record<string, unknown>;
+};
+
+export function resolveLlmTransport(env: NodeJS.ProcessEnv = process.env): LlmTransport | null {
+  const openai = env.OPENAI_API_KEY?.trim() ?? "";
+  const gemini = env.GEMINI_API_KEY?.trim() ?? "";
+  const forge = env.BUILT_IN_FORGE_API_KEY?.trim() ?? "";
+  const forgeUrl = env.BUILT_IN_FORGE_API_URL?.trim() ?? "";
+
+  if (openai) {
+    return {
+      provider: "openai",
+      apiKey: openai,
+      url: "https://api.openai.com/v1/chat/completions",
+      model: "gpt-4o-mini",
+      extraPayload: {},
+    };
   }
+  if (gemini) {
+    return {
+      provider: "gemini",
+      apiKey: gemini,
+      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+      model: "gemini-2.0-flash",
+      extraPayload: {},
+    };
+  }
+  if (forge) {
+    return {
+      provider: "forge",
+      apiKey: forge,
+      url: resolveForgeApiUrl(forgeUrl),
+      model: "gemini-2.5-flash",
+      extraPayload: { thinking: { budget_tokens: 128 } },
+    };
+  }
+  return null;
+}
+
+const assertApiKey = (transport: LlmTransport | null): LlmTransport => {
+  if (!transport) {
+    console.error(
+      "[invokeLLM] Falta una llave de modelo. Configura OPENAI_API_KEY o GEMINI_API_KEY en este servicio.",
+    );
+    throw new Error("No hay un modelo configurado para el asesor laboral.");
+  }
+  return transport;
 };
 
 const normalizeResponseFormat = ({
@@ -266,7 +312,7 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+  const transport = assertApiKey(resolveLlmTransport());
 
   const {
     messages,
@@ -280,8 +326,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: transport.model,
     messages: messages.map(normalizeMessage),
+    ...transport.extraPayload,
   };
 
   if (tools && tools.length > 0) {
@@ -296,10 +343,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
-  }
+  payload.max_tokens = 32768;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -312,11 +356,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  const response = await fetch(transport.url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${transport.apiKey}`,
     },
     body: JSON.stringify(payload),
   });

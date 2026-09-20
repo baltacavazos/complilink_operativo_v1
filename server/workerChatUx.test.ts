@@ -197,6 +197,37 @@ describe("workerChatUx grounding", () => {
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
+  it("nombra a la persona y al patrón de ESTE expediente en fallback e instrucciones", () => {
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+      workerName: "María López",
+      employerName: "Compañía Norte",
+      caseTitle: "Revisión de recibo mayo",
+      riskLevel: "medium",
+    });
+    const emptyGrounding = buildWorkerChatGrounding({
+      documents: [],
+      workerName: "María López",
+      employerName: "Compañía Norte",
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué es el IMSS?" });
+    const emptyAnswer = buildWorkerChatFallbackAnswer(emptyGrounding);
+    const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué es el IMSS?" });
+
+    expect(answer).toMatch(/María López/);
+    expect(answer).toMatch(/Compañía Norte/);
+    expect(emptyAnswer).toMatch(/María López/);
+    expect(emptyAnswer).toMatch(/Compañía Norte/);
+    expect(instructions).toMatch(/persona trabajadora: María López/);
+    expect(instructions).toMatch(/patrón: Compañía Norte/);
+    expect(instructions).toMatch(/aplica todo a los papeles|caso concreto/i);
+    expect(instructions).toMatch(/explícalo aplicado a ESTE expediente/);
+    expect(instructions).not.toMatch(/Cavazos|de la Cueva|de Buen|AES-256|JWT/i);
+    expect(instructions).toMatch(/NUNCA escribas Helios/);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
   it("limpia una respuesta del modelo que inventa tesis y alta IMSS", () => {
     const grounding = buildWorkerChatGrounding({
       documents: [payrollDocument],
@@ -223,8 +254,10 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/nunca digas que consultaste IMSS/i);
     expect(instructions).toMatch(/Acreditación de pagos y deducciones/);
     expect(instructions).toContain(WORKER_CHAT_DISCLAIMER);
-    expect(instructions).toMatch(/Internamente puedes razonar como Helios/);
+    expect(instructions).toMatch(/abogado laboral cercano/i);
+    expect(instructions).toMatch(/este expediente/i);
     expect(instructions).toMatch(/NUNCA escribas Helios/);
+    expect(instructions).not.toMatch(/Internamente puedes razonar como Helios/);
     expect(instructions).toMatch(/Respuesta clara/);
     expect(instructions).toMatch(/Lo que s[ií] se sabe/);
     expect(instructions).toMatch(/Lo que falta/);
