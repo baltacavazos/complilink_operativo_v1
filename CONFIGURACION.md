@@ -37,7 +37,8 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | `VITE_FRONTEND_FORGE_API_KEY` | APIs integradas | Sí | Token frontend para APIs integradas | Frontend |
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Integración externa | Sí | Destino del bridge/motor externo | Backend |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Integración externa | Sí | Firma HMAC para tráfico del bridge | Backend |
-| `OPENAI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y validación con OpenAI | Herramientas/servicios auxiliares |
+| `OPENAI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y validación con OpenAI; cerebro del asesor | Herramientas/servicios auxiliares |
+| `OPENAI_CHAT_MODEL` | IA | No | Override del modelo OpenAI. Default `gpt-6-astra`. Fallback `gpt-5.6-sol` → `gpt-5.6-terra` si Astra no está habilitado | Backend |
 | `GEMINI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y validación con Gemini | Herramientas/servicios auxiliares |
 | `DROPBOX_API_KEY` | Respaldo | Sí para backup | Respaldo obligatorio en Dropbox | Validación y backup |
 | `RESEND_API_KEY` | Correo | Sí si hay notificaciones | Envío de correo | Backend |

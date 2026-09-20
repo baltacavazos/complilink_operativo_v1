@@ -1,5 +1,11 @@
 import { sanitizeClientVisibleCopy } from "../client/src/lib/clientVisibleCopy";
 import {
+  isOpenAiModelUnavailableError,
+  mapResponsesApiToInvokeResult,
+  OPENAI_RESPONSES_URL,
+  resolveOpenAiModelChain,
+} from "./_core/llm";
+import {
   DOCUMENT_SIGNAL_DISCLAIMER,
   extractStructuredLaborFiscalFacts,
   isPreferredRemoteWorkerOpinion,
@@ -236,40 +242,55 @@ function buildFactsPrompt(facts: LaborFiscalStructuredFacts, documentType?: stri
   ].join("\n");
 }
 
+function readOpenAiNarrativeText(payload: unknown): string {
+  const mapped = mapResponsesApiToInvokeResult(payload, resolveOpenAiModelChain()[0] ?? "");
+  const content = mapped.choices[0]?.message.content;
+  return typeof content === "string" ? content : "";
+}
+
 async function requestOpenAiNarrative(params: {
   apiKey: string;
   prompt: string;
   fetchImpl: typeof fetch;
   timeoutMs: number;
+  env?: NodeJS.ProcessEnv;
 }) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), params.timeoutMs);
+  const models = resolveOpenAiModelChain(params.env ?? process.env);
   try {
-    const response = await params.fetchImpl("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${params.apiKey}`,
-        "content-type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        temperature: 0.2,
-        max_tokens: LABOR_FISCAL_NARRATIVE_MAX_TOKENS,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: NARRATIVE_SYSTEM_PROMPT },
-          { role: "user", content: params.prompt },
-        ],
-      }),
-    });
-    if (!response.ok) {
-      throw new Error(`openai_narrative_${response.status}`);
+    let lastError: Error | null = null;
+    for (let index = 0; index < models.length; index += 1) {
+      const model = models[index];
+      const response = await params.fetchImpl(OPENAI_RESPONSES_URL, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${params.apiKey}`,
+          "content-type": "application/json",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model,
+          store: false,
+          instructions: NARRATIVE_SYSTEM_PROMPT,
+          input: params.prompt,
+          max_output_tokens: LABOR_FISCAL_NARRATIVE_MAX_TOKENS,
+          text: { format: { type: "json_object" } },
+        }),
+      });
+      if (response.ok) {
+        const payload = await response.json();
+        return acceptAiNarrative(parseNarrativeJson(readOpenAiNarrativeText(payload)));
+      }
+      const errorText = await response.text();
+      lastError = new Error(`openai_narrative_${response.status}`);
+      const canFallback =
+        index < models.length - 1 && isOpenAiModelUnavailableError(response.status, errorText);
+      if (!canFallback) {
+        throw lastError;
+      }
     }
-    const payload = (await response.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-    };
-    return acceptAiNarrative(parseNarrativeJson(payload.choices?.[0]?.message?.content ?? ""));
+    throw lastError ?? new Error("openai_narrative_unavailable");
   } finally {
     clearTimeout(timer);
   }
@@ -393,6 +414,7 @@ export async function resolveLaborFiscalNarrative(
             prompt,
             fetchImpl,
             timeoutMs,
+            env,
           })
         : await requestGeminiNarrative({
             apiKey: env.GEMINI_API_KEY!.trim(),

@@ -212,13 +212,46 @@ const resolveForgeApiUrl = (forgeApiUrl?: string) =>
     ? `${forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
 
+/**
+ * REGLA PERMANENTE DEL DUEÑO: siempre el modelo OpenAI más potente disponible.
+ * Hoy (sept 2026): gpt-6-astra. Nunca gpt-4o-mini ni otros mini por defecto.
+ * Fallback SOLO si Astra no está habilitado en la cuenta.
+ */
+export const OPENAI_FLAGSHIP_MODEL = "gpt-6-astra";
+export const OPENAI_FALLBACK_MODELS = ["gpt-5.6-sol", "gpt-5.6-terra"] as const;
+export const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+
 export type LlmTransport = {
   provider: "openai" | "gemini" | "forge";
   apiKey: string;
   url: string;
   model: string;
+  models?: string[];
   extraPayload: Record<string, unknown>;
 };
+
+export type InvokeLlmOptions = {
+  fetchImpl?: typeof fetch;
+  env?: NodeJS.ProcessEnv;
+};
+
+export function normalizeOpenAiModelId(model: string): string {
+  const trimmed = model.trim();
+  if (trimmed === "gpt-5.6") return "gpt-5.6-sol";
+  return trimmed;
+}
+
+export function resolveOpenAiPrimaryModel(env: NodeJS.ProcessEnv = process.env): string {
+  const override = env.OPENAI_CHAT_MODEL?.trim();
+  if (override) return normalizeOpenAiModelId(override);
+  return OPENAI_FLAGSHIP_MODEL;
+}
+
+export function resolveOpenAiModelChain(env: NodeJS.ProcessEnv = process.env): string[] {
+  const primary = resolveOpenAiPrimaryModel(env);
+  const chain = [primary, ...OPENAI_FALLBACK_MODELS];
+  return [...new Set(chain.map(normalizeOpenAiModelId).filter(Boolean))];
+}
 
 export function resolveLlmTransport(env: NodeJS.ProcessEnv = process.env): LlmTransport | null {
   const openai = env.OPENAI_API_KEY?.trim() ?? "";
@@ -227,12 +260,17 @@ export function resolveLlmTransport(env: NodeJS.ProcessEnv = process.env): LlmTr
   const forgeUrl = env.BUILT_IN_FORGE_API_URL?.trim() ?? "";
 
   if (openai) {
+    const models = resolveOpenAiModelChain(env);
     return {
       provider: "openai",
       apiKey: openai,
-      url: "https://api.openai.com/v1/chat/completions",
-      model: "gpt-4o-mini",
-      extraPayload: {},
+      url: OPENAI_RESPONSES_URL,
+      model: models[0] ?? OPENAI_FLAGSHIP_MODEL,
+      models,
+      extraPayload: {
+        store: false,
+        reasoning: { effort: "high" },
+      },
     };
   }
   if (gemini) {
@@ -265,6 +303,231 @@ const assertApiKey = (transport: LlmTransport | null): LlmTransport => {
   }
   return transport;
 };
+
+const flattenMessageText = (content: MessageContent | MessageContent[]): string =>
+  ensureArray(content)
+    .map((part) => (typeof part === "string" ? part : part.type === "text" ? part.text : JSON.stringify(part)))
+    .join("\n");
+
+const toResponsesContent = (content: MessageContent | MessageContent[]): unknown => {
+  const parts = ensureArray(content).map(normalizeContentPart);
+  if (parts.length === 1 && parts[0].type === "text") {
+    return parts[0].text;
+  }
+  return parts.map((part) => {
+    if (part.type === "text") {
+      return { type: "input_text", text: part.text };
+    }
+    if (part.type === "image_url") {
+      return { type: "input_image", image_url: part.image_url.url };
+    }
+    return {
+      type: "input_file",
+      file_url: part.file_url.url,
+      ...(part.file_url.mime_type ? { mime_type: part.file_url.mime_type } : {}),
+    };
+  });
+};
+
+export function toResponsesInput(messages: Message[]): {
+  instructions?: string;
+  input: unknown[];
+} {
+  const instructions: string[] = [];
+  const input: unknown[] = [];
+
+  for (const message of messages) {
+    if (message.role === "system") {
+      const text = flattenMessageText(message.content);
+      if (text) instructions.push(text);
+      continue;
+    }
+
+    if (message.role === "tool" || message.role === "function") {
+      input.push({
+        type: "function_call_output",
+        call_id: message.tool_call_id || message.name || "",
+        output: flattenMessageText(message.content),
+      });
+      continue;
+    }
+
+    input.push({
+      role: message.role,
+      content: toResponsesContent(message.content),
+    });
+  }
+
+  if (input.length === 0) {
+    input.push({
+      role: "user",
+      content: instructions.join("\n\n") || "Responde.",
+    });
+  }
+
+  return {
+    ...(instructions.length ? { instructions: instructions.join("\n\n") } : {}),
+    input,
+  };
+}
+
+const toResponsesTools = (tools: Tool[]): unknown[] =>
+  tools.map((tool) => ({
+    type: "function",
+    name: tool.function.name,
+    ...(tool.function.description ? { description: tool.function.description } : {}),
+    ...(tool.function.parameters ? { parameters: tool.function.parameters } : {}),
+  }));
+
+const toResponsesToolChoice = (
+  toolChoice: ReturnType<typeof normalizeToolChoice>,
+): unknown => {
+  if (!toolChoice) return undefined;
+  if (toolChoice === "none" || toolChoice === "auto") return toolChoice;
+  return {
+    type: "function",
+    name: toolChoice.function.name,
+  };
+};
+
+const toResponsesTextFormat = (
+  format: ReturnType<typeof normalizeResponseFormat>,
+): Record<string, unknown> | undefined => {
+  if (!format) return undefined;
+  if (format.type === "text" || format.type === "json_object") {
+    return { format: { type: format.type } };
+  }
+  return {
+    format: {
+      type: "json_schema",
+      name: format.json_schema.name,
+      schema: format.json_schema.schema,
+      ...(typeof format.json_schema.strict === "boolean"
+        ? { strict: format.json_schema.strict }
+        : {}),
+    },
+  };
+};
+
+export function isOpenAiModelUnavailableError(status: number, body: string): boolean {
+  if (status === 404 || status === 403) return true;
+  const haystack = body.toLowerCase();
+  return (
+    haystack.includes("model_not_found") ||
+    haystack.includes("does not exist") ||
+    haystack.includes("not have access") ||
+    haystack.includes("model not found")
+  );
+}
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+
+const extractResponsesText = (payload: Record<string, unknown>): string => {
+  if (typeof payload.output_text === "string" && payload.output_text.trim()) {
+    return payload.output_text;
+  }
+  const texts: string[] = [];
+  const output = Array.isArray(payload.output) ? payload.output : [];
+  for (const item of output) {
+    const rec = asRecord(item);
+    if (!rec || rec.type !== "message") continue;
+    const content = Array.isArray(rec.content) ? rec.content : [];
+    for (const part of content) {
+      const piece = asRecord(part);
+      if (!piece) continue;
+      if (
+        (piece.type === "output_text" || piece.type === "text") &&
+        typeof piece.text === "string"
+      ) {
+        texts.push(piece.text);
+      }
+    }
+  }
+  return texts.join("\n");
+};
+
+const extractResponsesToolCalls = (payload: Record<string, unknown>): ToolCall[] => {
+  const output = Array.isArray(payload.output) ? payload.output : [];
+  return output.flatMap((item) => {
+    const rec = asRecord(item);
+    if (!rec || rec.type !== "function_call") return [];
+    return [
+      {
+        id: String(rec.call_id || rec.id || ""),
+        type: "function" as const,
+        function: {
+          name: String(rec.name || ""),
+          arguments: typeof rec.arguments === "string" ? rec.arguments : JSON.stringify(rec.arguments ?? {}),
+        },
+      },
+    ];
+  });
+};
+
+export function mapResponsesApiToInvokeResult(
+  payload: unknown,
+  fallbackModel: string,
+): InvokeResult {
+  const rec = asRecord(payload);
+  if (!rec) {
+    return {
+      id: `resp-${Date.now()}`,
+      created: Math.floor(Date.now() / 1000),
+      model: fallbackModel,
+      choices: [
+        {
+          index: 0,
+          message: { role: "assistant", content: "" },
+          finish_reason: "stop",
+        },
+      ],
+    };
+  }
+
+  if (Array.isArray(rec.choices)) {
+    return rec as unknown as InvokeResult;
+  }
+
+  const toolCalls = extractResponsesToolCalls(rec);
+  const status = typeof rec.status === "string" ? rec.status : "";
+  const finishReason =
+    status === "incomplete" ? "length" : status === "failed" ? "error" : "stop";
+  const usage = asRecord(rec.usage);
+
+  return {
+    id: typeof rec.id === "string" ? rec.id : `resp-${Date.now()}`,
+    created:
+      typeof rec.created_at === "number"
+        ? rec.created_at
+        : typeof rec.created === "number"
+          ? rec.created
+          : Math.floor(Date.now() / 1000),
+    model: typeof rec.model === "string" ? rec.model : fallbackModel,
+    choices: [
+      {
+        index: 0,
+        message: {
+          role: "assistant",
+          content: extractResponsesText(rec),
+          ...(toolCalls.length ? { tool_calls: toolCalls } : {}),
+        },
+        finish_reason: finishReason,
+      },
+    ],
+    ...(usage
+      ? {
+          usage: {
+            prompt_tokens: Number(usage.input_tokens ?? usage.prompt_tokens ?? 0),
+            completion_tokens: Number(usage.output_tokens ?? usage.completion_tokens ?? 0),
+            total_tokens: Number(usage.total_tokens ?? 0),
+          },
+        }
+      : {}),
+  };
+}
 
 const normalizeResponseFormat = ({
   responseFormat,
@@ -311,9 +574,10 @@ const normalizeResponseFormat = ({
   };
 };
 
-export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
-  const transport = assertApiKey(resolveLlmTransport());
-
+const buildChatCompletionsPayload = (
+  transport: LlmTransport,
+  params: InvokeParams,
+): Record<string, unknown> => {
   const {
     messages,
     tools,
@@ -323,27 +587,25 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     output_schema,
     responseFormat,
     response_format,
+    maxTokens,
+    max_tokens,
   } = params;
 
   const payload: Record<string, unknown> = {
     model: transport.model,
     messages: messages.map(normalizeMessage),
     ...transport.extraPayload,
+    max_tokens: maxTokens ?? max_tokens ?? 32768,
   };
 
   if (tools && tools.length > 0) {
     payload.tools = tools;
   }
 
-  const normalizedToolChoice = normalizeToolChoice(
-    toolChoice || tool_choice,
-    tools
-  );
+  const normalizedToolChoice = normalizeToolChoice(toolChoice || tool_choice, tools);
   if (normalizedToolChoice) {
     payload.tool_choice = normalizedToolChoice;
   }
-
-  payload.max_tokens = 32768;
 
   const normalizedResponseFormat = normalizeResponseFormat({
     responseFormat,
@@ -351,12 +613,117 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     outputSchema,
     output_schema,
   });
-
   if (normalizedResponseFormat) {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(transport.url, {
+  return payload;
+};
+
+const buildOpenAiResponsesPayload = (
+  model: string,
+  transport: LlmTransport,
+  params: InvokeParams,
+): Record<string, unknown> => {
+  const {
+    messages,
+    tools,
+    toolChoice,
+    tool_choice,
+    outputSchema,
+    output_schema,
+    responseFormat,
+    response_format,
+    maxTokens,
+    max_tokens,
+  } = params;
+
+  const payload: Record<string, unknown> = {
+    model,
+    ...toResponsesInput(messages),
+    ...transport.extraPayload,
+    max_output_tokens: maxTokens ?? max_tokens ?? 32768,
+  };
+
+  if (tools && tools.length > 0) {
+    payload.tools = toResponsesTools(tools);
+  }
+
+  const responsesToolChoice = toResponsesToolChoice(
+    normalizeToolChoice(toolChoice || tool_choice, tools),
+  );
+  if (responsesToolChoice) {
+    payload.tool_choice = responsesToolChoice;
+  }
+
+  const textFormat = toResponsesTextFormat(
+    normalizeResponseFormat({
+      responseFormat,
+      response_format,
+      outputSchema,
+      output_schema,
+    }),
+  );
+  if (textFormat) {
+    payload.text = textFormat;
+  }
+
+  return payload;
+};
+
+async function invokeOpenAiResponses(
+  transport: LlmTransport,
+  params: InvokeParams,
+  fetchImpl: typeof fetch,
+): Promise<InvokeResult> {
+  const models = transport.models?.length ? transport.models : [transport.model];
+  let lastError: Error | null = null;
+
+  for (let index = 0; index < models.length; index += 1) {
+    const model = models[index];
+    const response = await fetchImpl(transport.url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${transport.apiKey}`,
+      },
+      body: JSON.stringify(buildOpenAiResponsesPayload(model, transport, params)),
+    });
+
+    if (response.ok) {
+      return mapResponsesApiToInvokeResult(await response.json(), model);
+    }
+
+    const errorText = await response.text();
+    lastError = new Error(
+      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`,
+    );
+
+    const canFallback =
+      index < models.length - 1 &&
+      isOpenAiModelUnavailableError(response.status, errorText);
+    if (!canFallback) {
+      throw lastError;
+    }
+  }
+
+  throw lastError ?? new Error("LLM invoke failed: OpenAI no devolvió un modelo usable.");
+}
+
+export async function invokeLLM(
+  params: InvokeParams,
+  options: InvokeLlmOptions = {},
+): Promise<InvokeResult> {
+  const env = options.env ?? process.env;
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const transport = assertApiKey(resolveLlmTransport(env));
+
+  if (transport.provider === "openai") {
+    return invokeOpenAiResponses(transport, params, fetchImpl);
+  }
+
+  const payload = buildChatCompletionsPayload(transport, params);
+  const response = await fetchImpl(transport.url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -368,7 +735,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
+      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`,
     );
   }
 
