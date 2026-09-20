@@ -48,6 +48,13 @@ export type CommerceEntitlements = {
   canGenerateLawyerPacket: boolean;
 };
 
+export function formatCommerceDocumentLimitBullet(maxDocumentsPerCase: number) {
+  return `Hasta ${maxDocumentsPerCase} documentos por expediente.`;
+}
+
+const ESSENTIAL_MAX_DOCUMENTS_PER_CASE = 15;
+const PRO_MAX_DOCUMENTS_PER_CASE = 50;
+
 export const COMMERCE_PLANS: CommercePlanDefinition[] = [
   {
     key: "free",
@@ -82,13 +89,13 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
       "Desbloquea más documentos por expediente, comparativas más claras y continuidad útil del asesor laboral para llevar mejor tu caso.",
     highlighted: true,
     limits: {
-      maxDocumentsPerCase: 15,
+      maxDocumentsPerCase: ESSENTIAL_MAX_DOCUMENTS_PER_CASE,
       heliosConversationMode: "multi_document",
       includedRevalidations: false,
       includedProactiveAlerts: false,
     },
     featureBullets: [
-      "Hasta 15 documentos por expediente.",
+      formatCommerceDocumentLimitBullet(ESSENTIAL_MAX_DOCUMENTS_PER_CASE),
       "Lectura de varios documentos y memoria corta dentro del expediente.",
       "Comparativas visibles y continuidad conversacional extendida.",
     ],
@@ -104,13 +111,13 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
       "Suma memoria histórica, revalidaciones, alertas proactivas y la capa más completa del copiloto laboral.",
     highlighted: false,
     limits: {
-      maxDocumentsPerCase: 50,
+      maxDocumentsPerCase: PRO_MAX_DOCUMENTS_PER_CASE,
       heliosConversationMode: "historical",
       includedRevalidations: true,
       includedProactiveAlerts: true,
     },
     featureBullets: [
-      "Hasta 50 documentos por expediente.",
+      formatCommerceDocumentLimitBullet(PRO_MAX_DOCUMENTS_PER_CASE),
       "Asesor laboral con memoria histórica del expediente.",
       "Revalidaciones IMSS/Infonavit y alertas proactivas.",
     ],
