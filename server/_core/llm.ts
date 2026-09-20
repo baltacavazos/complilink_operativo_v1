@@ -250,7 +250,7 @@ export function resolveOpenAiPrimaryModel(env: NodeJS.ProcessEnv = process.env):
 export function resolveOpenAiModelChain(env: NodeJS.ProcessEnv = process.env): string[] {
   const primary = resolveOpenAiPrimaryModel(env);
   const chain = [primary, ...OPENAI_FALLBACK_MODELS];
-  return [...new Set(chain.map(normalizeOpenAiModelId).filter(Boolean))];
+  return Array.from(new Set(chain.map(normalizeOpenAiModelId).filter(Boolean)));
 }
 
 export function resolveLlmTransport(env: NodeJS.ProcessEnv = process.env): LlmTransport | null {
