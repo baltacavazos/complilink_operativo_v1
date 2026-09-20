@@ -11,6 +11,8 @@ export const ENV = {
   /** @deprecated Manus Forge — fallback only. Prefer OPENAI_API_KEY / GEMINI_API_KEY. */
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
   openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  /** Override del modelo OpenAI. Por defecto gpt-6-astra; nunca mini. */
+  openaiChatModel: process.env.OPENAI_CHAT_MODEL ?? "",
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
   /**
    * Own storage (Railway S3-compatible). Official: S3_* / STORAGE_*.

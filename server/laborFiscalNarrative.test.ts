@@ -108,6 +108,10 @@ describe("laborFiscalNarrative", () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("/v1/responses");
+    const openaiBody = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
+    expect(openaiBody.model).toBe("gpt-6-astra");
+    expect(openaiBody.model).not.toMatch(/mini/i);
     expect(narrative).toMatchObject({
       source: "ai",
       provider: "openai",

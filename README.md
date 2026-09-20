@@ -71,7 +71,8 @@ El proyecto recibe varias variables desde la plataforma. Para una instalación e
 | `BUILT_IN_FORGE_API_KEY` | Token servidor para APIs integradas |
 | `VITE_FRONTEND_FORGE_API_URL` | URL frontend para APIs integradas |
 | `VITE_FRONTEND_FORGE_API_KEY` | Token frontend para APIs integradas |
-| `OPENAI_API_KEY` | Consultas LLM auxiliares del proyecto |
+| `OPENAI_API_KEY` | Consultas LLM auxiliares y cerebro del asesor |
+| `OPENAI_CHAT_MODEL` | Opcional. Default `gpt-6-astra`; fallback `gpt-5.6-sol` → `gpt-5.6-terra` |
 | `GEMINI_API_KEY` | Consultas Gemini y validaciones multimodelo |
 | `RESEND_API_KEY` | Envío de correos |
 | `RESEND_FROM_EMAIL` | Remitente configurado para correo |

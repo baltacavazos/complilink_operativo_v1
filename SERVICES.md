@@ -10,7 +10,7 @@
 | Manus OAuth | Dependiente | Live en Manus | DNS no cortado |
 | Forge storage | Legacy Manus | **No usar en Railway** | `BUILT_IN_FORGE_*` vacías OK; storage propio vía S3 |
 | Dropbox | Dependiente | Era Manus (scripts README) | Independencia: dumps + off-platform |
-| OpenAI | Dependiente | Según vars | `OPENAI_API_KEY` |
+| OpenAI | Dependiente | Según vars | `OPENAI_API_KEY`; modelo default `gpt-6-astra` (`OPENAI_CHAT_MODEL`) |
 | Gemini | Dependiente | Según vars | `GEMINI_API_KEY` |
 | xAI / Grok | Dependiente | Contraste multi-IA | |
 | Resend | Dependiente | Correo OTP live | Sin `RESEND_API_KEY` en Railway ⇒ modo contraseña auto |
