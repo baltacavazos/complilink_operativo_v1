@@ -1757,6 +1757,18 @@ export function sanitizePersistedHeliosCopilotMessages(
     .slice(-6);
 }
 
+export function resolveAdvisorMessagesOnRemount(params: {
+  storedValue: unknown;
+  remoteTurns?: unknown;
+}): HeliosCopilotMessage[] {
+  const stored = sanitizePersistedHeliosCopilotMessages(params.storedValue);
+  if (stored.length > 0) {
+    return stored;
+  }
+
+  return sanitizePersistedHeliosCopilotMessages(params.remoteTurns);
+}
+
 function appendHeliosCopilotMessage(
   current: HeliosCopilotMessage[],
   next: HeliosCopilotMessage
@@ -4893,6 +4905,19 @@ export default function Auditar() {
   const currentCaseScopeKey = caseDetailInput
     ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}`
     : null;
+  // Initialize queries before hook dependency arrays that read them (TDZ on remount).
+  const caseDetailQuery = trpc.cases.detail.useQuery(
+    caseDetailInput as { tenantId: string; caseId: string },
+    {
+      enabled: auth.isAuthenticated && Boolean(caseDetailInput),
+      refetchOnWindowFocus: false,
+    }
+  );
+  const commerceStatusQuery = trpc.commerce.status.useQuery(undefined, {
+    enabled: auth.isAuthenticated,
+    refetchOnWindowFocus: false,
+  });
+  const remoteAdvisorMemory = caseDetailQuery.data?.advisorMemory;
   const heliosCopilotHistoryStorageKey = useMemo(() => {
     if (!auditarPersistenceKey || !currentCaseScopeKey) {
       return null;
@@ -4945,14 +4970,19 @@ export default function Auditar() {
       return;
     }
 
-    const remoteTurns = caseDetailQuery.data?.advisorMemory?.recentTurns;
+    const remoteTurns = remoteAdvisorMemory?.recentTurns;
     if (!remoteTurns?.length) {
       return;
     }
 
-    setHeliosCopilotMessages(sanitizePersistedHeliosCopilotMessages(remoteTurns));
+    setHeliosCopilotMessages(
+      resolveAdvisorMessagesOnRemount({
+        storedValue: heliosCopilotMessages,
+        remoteTurns,
+      })
+    );
   }, [
-    caseDetailQuery.data?.advisorMemory?.recentTurns,
+    remoteAdvisorMemory?.recentTurns,
     heliosCopilotHistoryStorageKey,
     heliosCopilotMessages.length,
   ]);
@@ -4974,18 +5004,6 @@ export default function Auditar() {
       )
     );
   }, [heliosCopilotHistoryStorageKey, heliosCopilotMessages]);
-
-  const caseDetailQuery = trpc.cases.detail.useQuery(
-    caseDetailInput as { tenantId: string; caseId: string },
-    {
-      enabled: auth.isAuthenticated && Boolean(caseDetailInput),
-      refetchOnWindowFocus: false,
-    }
-  );
-  const commerceStatusQuery = trpc.commerce.status.useQuery(undefined, {
-    enabled: auth.isAuthenticated,
-    refetchOnWindowFocus: false,
-  });
 
   useEffect(() => {
     setRemoteViewStateReadyKey(null);
@@ -5514,7 +5532,7 @@ export default function Auditar() {
     const intro = buildAsesorContinuityIntro({
       memoryGreeting:
         heliosCopilotMutation.data?.advisorMemory?.greeting ??
-        caseDetailQuery.data?.advisorMemory?.greeting,
+        remoteAdvisorMemory?.greeting,
       opinionIntro: visibleHeliosOpinion?.resultCard?.assistantIntro,
       opinionSummary: visibleHeliosOpinion?.summary,
       employeeName: caseDetailQuery.data?.case.employeeName,
@@ -5523,7 +5541,7 @@ export default function Auditar() {
     });
     return warmVisibleNamingCopy(intro) ?? intro;
   }, [
-    caseDetailQuery.data?.advisorMemory?.greeting,
+    remoteAdvisorMemory?.greeting,
     caseDetailQuery.data?.case.employeeName,
     caseDetailQuery.data?.case.employerEntity,
     heliosCopilotMutation.data?.advisorMemory?.greeting,
@@ -5591,12 +5609,12 @@ export default function Auditar() {
     return "Preguntas simples para empezar. Elige una o escribe la tuya.";
   }, [heliosCopilotPromptContextDocumentType]);
   const heliosCopilotHistoryContext = useMemo(() => {
-    if (caseDetailQuery.data?.advisorMemory?.greeting || heliosCopilotMessages.length > 0) {
+    if (remoteAdvisorMemory?.greeting || heliosCopilotMessages.length > 0) {
       return "Retomo lo que ya platicamos de este expediente, aunque abras el chat en otro momento. Sigo con esta persona, este patrón y estos papeles.";
     }
 
     return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu expediente.";
-  }, [caseDetailQuery.data?.advisorMemory?.greeting, heliosCopilotMessages.length]);
+  }, [remoteAdvisorMemory?.greeting, heliosCopilotMessages.length]);
 
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
     () => [

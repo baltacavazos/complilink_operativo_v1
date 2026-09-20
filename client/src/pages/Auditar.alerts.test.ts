@@ -513,9 +513,9 @@ describe("sanitizePersistedAuditarViewState", () => {
 describe("memoria durable del asesor", () => {
   it("retoma el saludo y los turnos guardados del expediente, no solo el localStorage", () => {
     expect(auditarSource).toContain("buildAsesorContinuityIntro");
-    expect(auditarSource).toContain("advisorMemory?.greeting");
-    expect(auditarSource).toContain("advisorMemory?.recentTurns");
-    expect(auditarSource).toContain("sanitizePersistedHeliosCopilotMessages(remoteTurns)");
+    expect(auditarSource).toContain("remoteAdvisorMemory?.greeting");
+    expect(auditarSource).toContain("remoteAdvisorMemory?.recentTurns");
+    expect(auditarSource).toContain("resolveAdvisorMessagesOnRemount");
   });
 });
 
