@@ -1,12 +1,16 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  GEMINI_FALLBACK_MODELS,
+  GEMINI_FLAGSHIP_MODEL,
   invokeLLM,
   isOpenAiModelUnavailableError,
   mapResponsesApiToInvokeResult,
   OPENAI_FALLBACK_MODELS,
   OPENAI_FLAGSHIP_MODEL,
+  OPENAI_REASONING_EFFORT,
   OPENAI_RESPONSES_URL,
+  resolveGeminiModelChain,
   resolveLlmTransport,
   resolveOpenAiModelChain,
   resolveOpenAiPrimaryModel,
@@ -16,6 +20,7 @@ const KEYS = [
   "OPENAI_API_KEY",
   "OPENAI_CHAT_MODEL",
   "GEMINI_API_KEY",
+  "GEMINI_CHAT_MODEL",
   "BUILT_IN_FORGE_API_KEY",
   "BUILT_IN_FORGE_API_URL",
 ] as const;
@@ -79,6 +84,7 @@ describe("resolveLlmTransport", () => {
       expect(transport?.url).toBe(OPENAI_RESPONSES_URL);
       expect(transport?.model).toBe("gpt-6-astra");
       expect(transport?.models).toEqual(["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra"]);
+      expect(transport?.extraPayload).toMatchObject({ reasoning: { effort: "max" } });
       expect(transport?.model).not.toMatch(/mini/i);
       expect(JSON.stringify(transport)).not.toMatch(/forge-test/);
       expect(JSON.stringify(transport)).not.toMatch(/gpt-4o-mini/);
@@ -87,30 +93,49 @@ describe("resolveLlmTransport", () => {
     }
   });
 
-  it("honra OPENAI_CHAT_MODEL si está definido", () => {
+  it("no deja que OPENAI_CHAT_MODEL baje de Astra a un modelo más débil", () => {
     const transport = resolveLlmTransport({
       OPENAI_API_KEY: "sk-test",
       OPENAI_CHAT_MODEL: "gpt-5.6-sol",
     });
-    expect(transport?.model).toBe("gpt-5.6-sol");
-    expect(transport?.models).toEqual(["gpt-5.6-sol", "gpt-5.6-terra"]);
+    expect(transport?.model).toBe("gpt-6-astra");
+    expect(transport?.models?.[0]).toBe("gpt-6-astra");
+    expect(transport?.models).toEqual(["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra"]);
   });
 
-  it("normaliza el alias gpt-5.6 a gpt-5.6-sol", () => {
-    expect(resolveOpenAiPrimaryModel({ OPENAI_CHAT_MODEL: "gpt-5.6" })).toBe("gpt-5.6-sol");
+  it("ignora un override mini y se queda en gpt-6-astra", () => {
+    expect(resolveOpenAiPrimaryModel({ OPENAI_CHAT_MODEL: "gpt-4o-mini" })).toBe("gpt-6-astra");
+    expect(resolveOpenAiModelChain({ OPENAI_CHAT_MODEL: "gpt-4o-mini" })[0]).toBe("gpt-6-astra");
+    expect(resolveOpenAiModelChain({ OPENAI_CHAT_MODEL: "gpt-4o-mini" }).join(" ")).not.toMatch(/mini/i);
+  });
+
+  it("normaliza el alias gpt-5.6 pero Astra sigue primero", () => {
+    expect(resolveOpenAiPrimaryModel({ OPENAI_CHAT_MODEL: "gpt-5.6" })).toBe("gpt-6-astra");
     expect(resolveOpenAiModelChain({ OPENAI_CHAT_MODEL: "gpt-5.6" })).toEqual([
+      "gpt-6-astra",
       "gpt-5.6-sol",
       "gpt-5.6-terra",
     ]);
   });
 
-  it("usa GEMINI_API_KEY si no hay OpenAI", () => {
+  it("usa GEMINI_API_KEY si no hay OpenAI y elige Gemini 3.1 Pro, no flash/lite", () => {
     const transport = resolveLlmTransport({
       GEMINI_API_KEY: "gemini-test",
       BUILT_IN_FORGE_API_KEY: "forge-test",
     });
     expect(transport?.provider).toBe("gemini");
     expect(transport?.url).toContain("generativelanguage.googleapis.com");
+    expect(transport?.model).toBe("gemini-3.1-pro-preview");
+    expect(transport?.models).toEqual(["gemini-3.1-pro-preview", "gemini-2.5-pro"]);
+    expect(transport?.model).not.toMatch(/flash|lite/i);
+  });
+
+  it("ignora GEMINI_CHAT_MODEL flash/lite", () => {
+    const transport = resolveLlmTransport({
+      GEMINI_API_KEY: "gemini-test",
+      GEMINI_CHAT_MODEL: "gemini-2.0-flash",
+    });
+    expect(transport?.model).toBe("gemini-3.1-pro-preview");
   });
 
   it("cae a Forge solo si no hay OPENAI ni GEMINI", () => {
@@ -137,6 +162,11 @@ describe("OpenAI flagship y fallbacks", () => {
       "gpt-5.6-terra",
     ]);
     expect(resolveOpenAiModelChain({}).join(" ")).not.toMatch(/mini/i);
+    expect(OPENAI_REASONING_EFFORT).toBe("max");
+    expect(GEMINI_FLAGSHIP_MODEL).toBe("gemini-3.1-pro-preview");
+    expect(GEMINI_FALLBACK_MODELS).toEqual(["gemini-2.5-pro"]);
+    expect(resolveGeminiModelChain({})).toEqual(["gemini-3.1-pro-preview", "gemini-2.5-pro"]);
+    expect(resolveGeminiModelChain({}).join(" ")).not.toMatch(/flash|lite/i);
   });
 
   it("reconoce 404, 403 y model_not_found como Astra no habilitado", () => {
@@ -260,6 +290,7 @@ describe("invokeLLM OpenAI Responses", () => {
     expect(body.input).toBeTruthy();
     expect(body.max_output_tokens).toBe(32768);
     expect(body.temperature).toBeUndefined();
+    expect(body.reasoning).toEqual({ effort: "max" });
   });
 
   it("cae a gpt-5.6-sol si Astra responde 404/model_not_found", async () => {
@@ -340,12 +371,12 @@ describe("invokeLLM OpenAI Responses", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
-  it("mantiene Gemini en chat completions si no hay OpenAI", async () => {
+  it("mantiene Gemini Pro en chat completions si no hay OpenAI", async () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse({
         id: "chat_gemini",
         created: 1,
-        model: "gemini-2.0-flash",
+        model: "gemini-3.1-pro-preview",
         choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finish_reason: "stop" }],
       }),
     );
@@ -362,6 +393,7 @@ describe("invokeLLM OpenAI Responses", () => {
     expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("generativelanguage.googleapis.com");
     const body = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
     expect(body.messages).toBeTruthy();
-    expect(body.model).toBe("gemini-2.0-flash");
+    expect(body.model).toBe("gemini-3.1-pro-preview");
+    expect(body.model).not.toMatch(/flash|lite/i);
   });
 });

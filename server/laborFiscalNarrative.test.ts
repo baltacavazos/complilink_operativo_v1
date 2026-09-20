@@ -112,6 +112,7 @@ describe("laborFiscalNarrative", () => {
     const openaiBody = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
     expect(openaiBody.model).toBe("gpt-6-astra");
     expect(openaiBody.model).not.toMatch(/mini/i);
+    expect(openaiBody.reasoning).toEqual({ effort: "max" });
     expect(narrative).toMatchObject({
       source: "ai",
       provider: "openai",
@@ -154,6 +155,8 @@ describe("laborFiscalNarrative", () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("gemini-3.1-pro-preview");
+    expect(String(fetchImpl.mock.calls[0]?.[0])).not.toMatch(/flash|lite/i);
     expect(narrative.provider).toBe("gemini");
     expect(narrative.source).toBe("ai");
     expect(narrative.nextStep).toMatch(/recibo de mayo/i);
