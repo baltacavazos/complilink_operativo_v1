@@ -60,6 +60,7 @@ export type InvokeParams = {
   tool_choice?: ToolChoice;
   maxTokens?: number;
   max_tokens?: number;
+  model?: string;
   outputSchema?: OutputSchema;
   output_schema?: OutputSchema;
   responseFormat?: ResponseFormat;
@@ -319,6 +320,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     tools,
     toolChoice,
     tool_choice,
+    model,
     outputSchema,
     output_schema,
     responseFormat,
@@ -326,7 +328,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: transport.model,
+    model: model?.trim() || transport.model,
     messages: messages.map(normalizeMessage),
     ...transport.extraPayload,
   };

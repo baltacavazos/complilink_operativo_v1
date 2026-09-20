@@ -43,7 +43,9 @@ import {
   listCeoBridgeSchedules,
   listTenantsForUser,
   listVisibleDocuments,
+  getAdvisorMemoryForUser,
   persistAuditarViewState,
+  upsertAdvisorMemory,
   updateCaseStatus,
   updateCeoBridgePreset,
   updateCeoBridgeSchedule,
@@ -165,6 +167,12 @@ import {
   type LegalConsentType,
 } from "@shared/legal";
 import { buildUpgradeMessage, type CommercePlanKey } from "@shared/commerce";
+import {
+  formatAdvisorMemoryForPrompt,
+  toPublicAdvisorMemory,
+  type AdvisorMemoryRecord,
+} from "@shared/advisorMemory";
+import { summarizeAdvisorCaseMemory } from "./advisorMemory";
 import {
   buildCommercialSnapshot,
   createCommerceBillingPortalSession,
@@ -2083,6 +2091,7 @@ function buildHeliosCopilotContext(params: {
   detail: Awaited<ReturnType<typeof getCaseDetailForUser>>;
   documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
   conversationHistory?: HeliosCopilotConversationTurn[];
+  durableMemory?: AdvisorMemoryRecord | null;
   missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
 }) {
   const caseSummary = {
@@ -2125,6 +2134,7 @@ function buildHeliosCopilotContext(params: {
       case: caseSummary,
       documents,
       recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
+      durableMemory: formatAdvisorMemoryForPrompt(params.durableMemory),
       missingDocuments: params.missingDocuments,
       guidance:
         "Habla como un abogado laboral cercano de ESTE expediente. Ancla cada respuesta en la persona trabajadora, el patrón, los documentos, lo que falta y el riesgo visible. Si preguntan algo conceptual, aplícalo a este caso. Sin tecnicismos, sin citar autores, sin Helios. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
@@ -3403,8 +3413,16 @@ export const appRouter = router({
         });
         const complilinkMonitoring = buildCompliLinkMonitoring(documents, detail.events);
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
+        const advisorMemory = toPublicAdvisorMemory(
+          await getAdvisorMemoryForUser({
+            userId: ctx.user.id,
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+          }),
+        );
         return {
           ...detail,
+          advisorMemory,
           documents,
           complilinkMonitoring,
           legalAcceptance,
@@ -3484,6 +3502,11 @@ export const appRouter = router({
         });
         const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
+        const durableMemory = await getAdvisorMemoryForUser({
+          userId: ctx.user.id,
+          tenantId,
+          caseId,
+        });
         const responseTone = input.responseTone === "explained" ? "explained" : "brief";
         const commerceStatus = await getUserCommerceStatus(ctx.user);
         const scopedChat = scopeWorkerChatDocumentsForPlan({
@@ -3554,7 +3577,7 @@ export const appRouter = router({
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, durableMemory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
@@ -3573,6 +3596,30 @@ export const appRouter = router({
           } catch {
             answer = fallbackAnswer;
           }
+        }
+
+        let advisorMemory = toPublicAdvisorMemory(durableMemory);
+        try {
+          const nextMemory = await summarizeAdvisorCaseMemory({
+            previous: durableMemory,
+            scope: { tenantId, caseId, userId: ctx.user.id },
+            employeeName: detail.case.employeeName,
+            employerEntity: detail.case.employerEntity,
+            caseTitle: detail.case.title,
+            prompt: input.prompt,
+            answer,
+            visibleDocuments: chatDocuments,
+          });
+          const persisted = await upsertAdvisorMemory({
+            userId: ctx.user.id,
+            tenantId,
+            caseId,
+            traceId: detail.case.traceId,
+            memory: nextMemory,
+          });
+          advisorMemory = toPublicAdvisorMemory(persisted);
+        } catch {
+          advisorMemory = toPublicAdvisorMemory(durableMemory);
         }
 
         await createAuditLog({
@@ -3595,6 +3642,7 @@ export const appRouter = router({
             suggestedPrompts,
             supportingDocuments,
             commercePlanKey: commerceStatus.activePlanKey,
+            advisorMemory,
             officialDigest: {
               freshness: officialDigest.freshness,
               liveBlocked: officialDigest.liveBlocked,
@@ -3609,6 +3657,7 @@ export const appRouter = router({
           confidenceScore,
           suggestedPrompts,
           supportingDocuments,
+          advisorMemory,
           officialTitles: officialDigest.citations.slice(0, 3).map((item) => ({
             title: item.title,
             url: item.url,

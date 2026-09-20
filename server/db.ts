@@ -6,6 +6,7 @@ import {
   auditLogs,
   canonicalContracts,
   caseAccess,
+  caseAdvisorMemories,
   ceoBridgePresets,
   ceoBridgeSchedules,
   caseDocuments,
@@ -18,6 +19,7 @@ import {
   InsertAuditLog,
   InsertCanonicalContract,
   InsertCaseAccess,
+  InsertCaseAdvisorMemory,
   InsertCeoBridgePreset,
   InsertCeoBridgeSchedule,
   InsertCaseDocument,
@@ -38,6 +40,10 @@ import {
   tenants,
   users,
 } from "../drizzle/schema";
+import {
+  normalizeAdvisorMemoryRecord,
+  type AdvisorMemoryRecord,
+} from "@shared/advisorMemory";
 import { ENV } from "./_core/env";
 import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
 import { ensureMysqlTables } from "./mysqlBootstrap";
@@ -1489,6 +1495,148 @@ export async function createAuditLogs(inputs: AuditLogPayload[]) {
   });
 
   await db.insert(auditLogs).values(payloads);
+}
+
+function serializeAdvisorMemoryList(value: string[]): string {
+  return JSON.stringify(value);
+}
+
+function deserializeAdvisorMemoryRow(
+  row: typeof caseAdvisorMemories.$inferSelect,
+): AdvisorMemoryRecord | null {
+  const summary = row.summaryJson ? parseJsonSafely<Record<string, unknown>>(row.summaryJson) : null;
+  return normalizeAdvisorMemoryRecord({
+    tenantId: row.tenantId,
+    caseId: row.caseId,
+    userId: row.userId,
+    employeeName: summary?.employeeName ?? null,
+    employerEntity: summary?.employerEntity ?? null,
+    caseTitle: summary?.caseTitle ?? null,
+    greeting: row.greeting,
+    highlights: row.highlightsJson ? parseJsonSafely<string[]>(row.highlightsJson) : [],
+    documentsDiscussed: row.documentsDiscussedJson
+      ? parseJsonSafely<string[]>(row.documentsDiscussedJson)
+      : [],
+    risksFlagged: row.risksFlaggedJson ? parseJsonSafely<string[]>(row.risksFlaggedJson) : [],
+    nextSteps: row.nextStepsJson ? parseJsonSafely<string[]>(row.nextStepsJson) : [],
+    recentTurns: row.recentTurnsJson ? parseJsonSafely<unknown[]>(row.recentTurnsJson) : [],
+    lastPrompt: row.lastPrompt,
+    lastAnswer: row.lastAnswer,
+    modelUsed: row.modelUsed,
+    updatedAt: row.updatedAt?.toISOString?.() ?? new Date().toISOString(),
+  });
+}
+
+export async function getAdvisorMemoryForUser(params: {
+  userId: number;
+  tenantId: string;
+  caseId: string;
+}): Promise<AdvisorMemoryRecord | null> {
+  await assertCaseAccess(params.userId, params.tenantId, params.caseId);
+
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const [row] = await db
+    .select()
+    .from(caseAdvisorMemories)
+    .where(
+      and(
+        eq(caseAdvisorMemories.tenantId, params.tenantId),
+        eq(caseAdvisorMemories.caseId, params.caseId),
+        eq(caseAdvisorMemories.userId, params.userId),
+      ),
+    )
+    .limit(1);
+
+  return row ? deserializeAdvisorMemoryRow(row) : null;
+}
+
+export async function upsertAdvisorMemory(params: {
+  userId: number;
+  tenantId: string;
+  caseId: string;
+  traceId: string;
+  memory: AdvisorMemoryRecord;
+}): Promise<AdvisorMemoryRecord> {
+  await assertCaseAccess(params.userId, params.tenantId, params.caseId);
+
+  if (
+    params.memory.tenantId !== params.tenantId ||
+    params.memory.caseId !== params.caseId ||
+    params.memory.userId !== params.userId
+  ) {
+    throw new Error("La memoria del asesor no puede cruzar de expediente.");
+  }
+
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const normalized =
+    normalizeAdvisorMemoryRecord(params.memory, {
+      tenantId: params.tenantId,
+      caseId: params.caseId,
+      userId: params.userId,
+    }) ?? params.memory;
+
+  const values: InsertCaseAdvisorMemory = {
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    userId: params.userId,
+    traceId: params.traceId,
+    greeting: normalized.greeting,
+    highlightsJson: serializeAdvisorMemoryList(normalized.highlights),
+    documentsDiscussedJson: serializeAdvisorMemoryList(normalized.documentsDiscussed),
+    risksFlaggedJson: serializeAdvisorMemoryList(normalized.risksFlagged),
+    nextStepsJson: serializeAdvisorMemoryList(normalized.nextSteps),
+    recentTurnsJson: JSON.stringify(normalized.recentTurns),
+    lastPrompt: normalized.lastPrompt,
+    lastAnswer: normalized.lastAnswer,
+    summaryJson: JSON.stringify({
+      employeeName: normalized.employeeName,
+      employerEntity: normalized.employerEntity,
+      caseTitle: normalized.caseTitle,
+    }),
+    modelUsed: normalized.modelUsed,
+  };
+
+  await db.insert(caseAdvisorMemories).values(values).onDuplicateKeyUpdate({
+    set: {
+      traceId: values.traceId,
+      greeting: values.greeting,
+      highlightsJson: values.highlightsJson,
+      documentsDiscussedJson: values.documentsDiscussedJson,
+      risksFlaggedJson: values.risksFlaggedJson,
+      nextStepsJson: values.nextStepsJson,
+      recentTurnsJson: values.recentTurnsJson,
+      lastPrompt: values.lastPrompt,
+      lastAnswer: values.lastAnswer,
+      summaryJson: values.summaryJson,
+      modelUsed: values.modelUsed,
+      updatedAt: new Date(),
+    },
+  });
+
+  await createAuditLog({
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+    traceId: params.traceId,
+    actorUserId: params.userId,
+    entityType: "case",
+    entityId: `advisor_memory:${params.userId}`,
+    action: "case.advisor_memory.upsert",
+    afterState: {
+      greeting: normalized.greeting,
+      highlights: normalized.highlights,
+      documentsDiscussed: normalized.documentsDiscussed,
+      risksFlagged: normalized.risksFlagged,
+      nextSteps: normalized.nextSteps,
+      modelUsed: normalized.modelUsed,
+      persistedAt: new Date().toISOString(),
+    },
+  });
+
+  return normalized;
 }
 
 export async function persistAuditarViewState(params: {

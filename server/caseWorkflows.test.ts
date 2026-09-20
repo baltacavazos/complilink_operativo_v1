@@ -41,6 +41,8 @@ const dbMocks = vi.hoisted(() => ({
   listTenantsForUser: vi.fn(),
   listVisibleDocuments: vi.fn(),
   persistAuditarViewState: vi.fn(),
+  getAdvisorMemoryForUser: vi.fn(),
+  upsertAdvisorMemory: vi.fn(),
   seedDemoCaseIfEmpty: vi.fn(),
   updateCaseStatus: vi.fn(),
   updateDocumentPostProcessing: vi.fn(),
@@ -61,6 +63,10 @@ const engineMocks = vi.hoisted(() => ({
   sendDocumentToAuditaPatronEngine: vi.fn(),
 }));
 
+const advisorMemoryMocks = vi.hoisted(() => ({
+  summarizeAdvisorCaseMemory: vi.fn(),
+}));
+
 vi.mock("./db", () => dbMocks);
 vi.mock("./mysqlBootstrap", () => ({
   ensureMysqlTables: vi.fn().mockResolvedValue({ ensured: true, ran: false }),
@@ -68,10 +74,18 @@ vi.mock("./mysqlBootstrap", () => ({
 vi.mock("./storage", () => storageMocks);
 vi.mock("./_core/llm", () => llmMocks);
 vi.mock("./auditaPatronIntegrationService", () => engineMocks);
+vi.mock("./advisorMemory", async () => {
+  const actual = await vi.importActual<typeof import("./advisorMemory")>("./advisorMemory");
+  return {
+    ...actual,
+    summarizeAdvisorCaseMemory: advisorMemoryMocks.summarizeAdvisorCaseMemory,
+  };
+});
 
 import * as db from "./db";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
 import { invokeLLM } from "./_core/llm";
+import { buildFallbackAdvisorMemory } from "./advisorMemory";
 import { listLastGoodOfficialCitations } from "@shared/officialDigest";
 import {
   formatWorkerChatAnswer,
@@ -281,6 +295,11 @@ describe("appRouter case workflows", () => {
     vi.mocked(db.upsertCanonicalContracts).mockResolvedValue(undefined);
     vi.mocked(db.createAuditLog).mockResolvedValue(undefined);
     vi.mocked(db.createAuditLogs).mockResolvedValue(undefined);
+    vi.mocked(db.getAdvisorMemoryForUser).mockResolvedValue(null);
+    vi.mocked(db.upsertAdvisorMemory).mockImplementation(async ({ memory }) => memory);
+    advisorMemoryMocks.summarizeAdvisorCaseMemory.mockImplementation(async (params) =>
+      buildFallbackAdvisorMemory(params),
+    );
     vi.mocked(db.findAuditLogEntry).mockResolvedValue(null);
     vi.mocked(db.listCanonicalContractsByType).mockResolvedValue([]);
     vi.mocked(db.updateDocumentPostProcessing).mockResolvedValue(undefined);
@@ -1456,6 +1475,132 @@ describe("appRouter case workflows", () => {
     expect(result.officialTitles).toEqual([]);
     expect(result.officialSourcesNote).toBeNull();
     expect(invokeLLM).toHaveBeenCalledTimes(1);
+  });
+
+  it("injects durable per-case memory, isolates case A from case B, and reloads the prior memory", async () => {
+    const memoryStore = new Map<string, ReturnType<typeof buildFallbackAdvisorMemory>>();
+    const scopeKey = (tenantId: string, caseId: string, userId: number) =>
+      `${tenantId}::${caseId}::${userId}`;
+
+    vi.mocked(db.isCeoBypassUser).mockResolvedValue(true);
+    vi.mocked(db.getAdvisorMemoryForUser).mockImplementation(async ({ tenantId, caseId, userId }) => {
+      return memoryStore.get(scopeKey(tenantId, caseId, userId)) ?? null;
+    });
+    vi.mocked(db.upsertAdvisorMemory).mockImplementation(async ({ tenantId, caseId, userId, memory }) => {
+      const persisted = { ...memory, tenantId, caseId, userId };
+      memoryStore.set(scopeKey(tenantId, caseId, userId), persisted);
+      return persisted;
+    });
+
+    const documentFor = (documentId: string, name: string) =>
+      ({
+        documentId,
+        originalName: name,
+        documentType: "contract",
+        classificationConfidence: 88,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-04-05T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId,
+          status: "completed",
+          mode: "mock",
+          summary: `Lectura de ${name}`,
+          recommendedNextStep: "Subir el recibo del mismo periodo.",
+          riskLevel: "medium",
+          confidenceScore: 74,
+        },
+      }) as never;
+
+    vi.mocked(db.getCaseDetailForUser).mockImplementation(async ({ tenantId, caseId }) => {
+      const isCaseA = caseId === "CASE-A";
+      return {
+        ...demoCaseDetail,
+        case: {
+          ...demoCaseDetail.case,
+          tenantId,
+          caseId,
+          employeeName: isCaseA ? "María López" : "Juan Pérez",
+          employerEntity: isCaseA ? "Empresa Norte" : "Taller Sur",
+          title: isCaseA ? "Caso María" : "Caso Juan",
+        },
+      } as never;
+    });
+    vi.mocked(db.listVisibleDocuments).mockImplementation(async ({ caseId }) => {
+      return [
+        documentFor(
+          caseId === "CASE-A" ? "DOC-A" : "DOC-B",
+          caseId === "CASE-A" ? "contrato_maria.pdf" : "recibo_juan.pdf",
+        ),
+      ];
+    });
+
+    const caller = appRouter.createCaller(createProtectedContext());
+    const firstA = await caller.cases.heliosCopilotChat({
+      tenantId: "tenant-a",
+      caseId: "CASE-A",
+      prompt: "¿Qué riesgo ves en mi contrato con Empresa Norte?",
+    });
+
+    const firstAMessage = (
+      vi.mocked(invokeLLM).mock.calls.at(-1)?.[0] as {
+        messages?: Array<{ role?: string; content?: string }>;
+      }
+    ).messages?.find((item) => item.role === "user")?.content ?? "";
+    expect(firstAMessage).toContain("durableMemory");
+    expect(firstA.advisorMemory?.greeting).toMatch(/María|Empresa Norte/i);
+    expect(db.upsertAdvisorMemory).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "tenant-a",
+        caseId: "CASE-A",
+        userId: 7,
+      }),
+    );
+
+    vi.mocked(invokeLLM).mockClear();
+    const firstB = await caller.cases.heliosCopilotChat({
+      tenantId: "tenant-b",
+      caseId: "CASE-B",
+      prompt: "¿Qué dice mi recibo de Taller Sur?",
+    });
+
+    const firstBMessage = (
+      vi.mocked(invokeLLM).mock.calls.at(-1)?.[0] as {
+        messages?: Array<{ role?: string; content?: string }>;
+      }
+    ).messages?.find((item) => item.role === "user")?.content ?? "";
+    expect(firstBMessage).toContain("durableMemory");
+    expect(firstBMessage).not.toMatch(/Empresa Norte|contrato_maria|CASE-A/i);
+    expect(firstB.advisorMemory?.greeting).toMatch(/Juan|Taller Sur/i);
+    expect(firstB.advisorMemory?.greeting).not.toMatch(/María|Empresa Norte/i);
+
+    const reloadedA = await caller.cases.detail({
+      tenantId: "tenant-a",
+      caseId: "CASE-A",
+    });
+    const reloadedB = await caller.cases.detail({
+      tenantId: "tenant-b",
+      caseId: "CASE-B",
+    });
+
+    expect(reloadedA.advisorMemory?.recentTurns?.some((turn) => turn.content.includes("Empresa Norte"))).toBe(
+      true,
+    );
+    expect(JSON.stringify(reloadedA.advisorMemory)).not.toMatch(/Taller Sur|recibo_juan|CASE-B/i);
+    expect(reloadedB.advisorMemory?.recentTurns?.some((turn) => turn.content.includes("Taller Sur"))).toBe(
+      true,
+    );
+    expect(JSON.stringify(reloadedB.advisorMemory)).not.toMatch(/Empresa Norte|contrato_maria|CASE-A/i);
+    expect(db.getAdvisorMemoryForUser).toHaveBeenCalledWith({
+      userId: 7,
+      tenantId: "tenant-a",
+      caseId: "CASE-A",
+    });
+    expect(db.getAdvisorMemoryForUser).toHaveBeenCalledWith({
+      userId: 7,
+      tenantId: "tenant-b",
+      caseId: "CASE-B",
+    });
   });
 
   it("creates a case with canonical contracts, access grants and audit trail", async () => {

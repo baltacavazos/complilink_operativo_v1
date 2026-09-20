@@ -22,6 +22,8 @@ describe("ensureMysqlTables labor_cases", () => {
     expect(mysqlBootstrapCreatesLaborCases()).toBe(true);
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `labor_cases`");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `case_access`");
+    expect(sql).toContain("CREATE TABLE IF NOT EXISTS `case_advisor_memories`");
+    expect(sql).toContain("`case_advisor_memories_scope_uq`");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `tenant_memberships`");
     expect(sql).toContain("`caseId`");
     expect(sql).toContain("`assignedUserId`");
@@ -52,5 +54,8 @@ describe("ensureMysqlTables labor_cases", () => {
     expect(dbSource).toContain("export async function createCaseRecord");
     expect(dbSource).toContain("export async function ensurePersonalWorkspaceForUser");
     expect(dbSource).toContain("export async function repairPersonalCaseAccess");
+    expect(dbSource).toContain("export async function getAdvisorMemoryForUser");
+    expect(dbSource).toContain("export async function upsertAdvisorMemory");
+    expect(dbSource).toContain("caseAdvisorMemories");
   });
 });
