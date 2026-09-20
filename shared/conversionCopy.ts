@@ -1,7 +1,11 @@
 import { COMMERCE_PLANS, formatCommercePriceMx } from "./commerce";
 
+/**
+ * Anecdote concreta y anónima, al estilo CompliLink (compras/REPSE).
+ * Sin logos, nombres, razones sociales ni cifras inventadas.
+ */
 export const SOCIAL_PROOF_LINE =
-  "Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.";
+  "Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.";
 
 export const GUARANTEE_LINE =
   "Te garantizamos claridad del análisis. No prometemos que ganes un juicio.";

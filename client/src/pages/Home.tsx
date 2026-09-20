@@ -1319,7 +1319,7 @@ function HeroSection() {
             </Button>
             </div>
               <div className="space-y-1.5">
-                <p className="text-sm leading-5 text-slate-700">Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+                <p className="text-sm leading-5 text-slate-700">Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
                 <p className="text-sm leading-5 text-slate-700">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
                 <div className="flex flex-wrap gap-2 max-[359px]:hidden">
                   {[
@@ -3082,7 +3082,7 @@ function HomePlansStrip() {
             ))}
           </div>
           <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
-            <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+            <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
             <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
           </div>
         </div>
@@ -3128,7 +3128,7 @@ function FinalCtaSection() {
               </Button>
             </div>
             <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
-              <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+              <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
               <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
             </div>
 

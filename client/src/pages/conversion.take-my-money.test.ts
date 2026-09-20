@@ -91,4 +91,27 @@ describe("Claridad — take my money without live charge", () => {
     expect(home).toContain("Qué hacer");
     expect(auditar).toContain("formatWorkerVisibleAccountName(tenant.displayName)");
   });
+
+  it("usa una anécdota concreta y honesta, sin logos ni «trabajadores y abogados»", () => {
+    const home = readPage("Home");
+    const plansPage = readPage("Plans");
+    const payments = readPage("Payments");
+    const auditar = readPage("Auditar");
+
+    expect(SOCIAL_PROOF_LINE).toMatch(/recibo/i);
+    expect(SOCIAL_PROOF_LINE).toMatch(/IMSS/i);
+    expect(SOCIAL_PROOF_LINE).toMatch(/retenciones/i);
+    expect(SOCIAL_PROOF_LINE).not.toMatch(/trabajadores y abogados/i);
+    expect(SOCIAL_PROOF_LINE).not.toMatch(/S\.A\.|SA de CV|Acme|logo|abogados/i);
+    expect(SOCIAL_PROOF_LINE).not.toMatch(/\d{2,}/);
+    expect(GUARANTEE_LINE).toBe(
+      "Te garantizamos claridad del análisis. No prometemos que ganes un juicio.",
+    );
+
+    for (const source of [home, plansPage, payments, auditar]) {
+      expect(source).not.toContain("Trabajadores y abogados usan esto");
+      expect(source).toContain(SOCIAL_PROOF_LINE);
+      expect(source).toContain(GUARANTEE_LINE);
+    }
+  });
 });

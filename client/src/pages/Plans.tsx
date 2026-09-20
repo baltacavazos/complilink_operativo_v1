@@ -69,7 +69,7 @@ export default function Plans() {
         </section>
 
         <section className="rounded-[1.5rem] border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700">
-          <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+          <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
           <p className="mt-2">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
         </section>
       </div>

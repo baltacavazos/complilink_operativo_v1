@@ -8782,7 +8782,7 @@ export default function Auditar() {
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                 <p className="text-sm leading-5 text-slate-700">
-                  Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.
+                  Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.
                 </p>
                 <p className="text-sm leading-5 text-slate-700">
                   Te garantizamos claridad del análisis. No prometemos que ganes un juicio.
