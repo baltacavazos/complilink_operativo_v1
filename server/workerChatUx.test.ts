@@ -223,7 +223,8 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/patrón: Compañía Norte/);
     expect(instructions).toMatch(/aplica todo a los papeles|caso concreto/i);
     expect(instructions).toMatch(/explícalo aplicado a ESTE expediente/);
-    expect(instructions).not.toMatch(/Cavazos|de la Cueva|de Buen|AES-256|JWT|Helios/i);
+    expect(instructions).not.toMatch(/Cavazos|de la Cueva|de Buen|AES-256|JWT/i);
+    expect(instructions).toMatch(/NUNCA escribas Helios/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
