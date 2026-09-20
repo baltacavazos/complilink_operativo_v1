@@ -60,6 +60,7 @@ export type InvokeParams = {
   tool_choice?: ToolChoice;
   maxTokens?: number;
   max_tokens?: number;
+  model?: string;
   outputSchema?: OutputSchema;
   output_schema?: OutputSchema;
   responseFormat?: ResponseFormat;
@@ -628,6 +629,7 @@ const buildChatCompletionsPayload = (
     tools,
     toolChoice,
     tool_choice,
+    model,
     outputSchema,
     output_schema,
     responseFormat,
@@ -637,7 +639,7 @@ const buildChatCompletionsPayload = (
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: transport.model,
+    model: model?.trim() || transport.model,
     messages: messages.map(normalizeMessage),
     ...transport.extraPayload,
     max_tokens: maxTokens ?? max_tokens ?? 32768,

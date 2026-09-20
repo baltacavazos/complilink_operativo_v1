@@ -34,6 +34,8 @@ const dbMocks = vi.hoisted(() => ({
   findAuditLogEntry: vi.fn(),
   listCanonicalContractsByType: vi.fn(),
   persistAuditarViewState: vi.fn(),
+  getAdvisorMemoryForUser: vi.fn(),
+  upsertAdvisorMemory: vi.fn(),
   updateDocumentPostProcessing: vi.fn(),
   upsertCanonicalContract: vi.fn(),
   addDocumentRecord: vi.fn(),
@@ -234,6 +236,8 @@ describe("ceoHeliosChat", () => {
     vi.mocked(dbMocks.findAuditLogEntry).mockResolvedValue(null);
     vi.mocked(dbMocks.listCanonicalContractsByType).mockResolvedValue([]);
     vi.mocked(dbMocks.persistAuditarViewState).mockResolvedValue(undefined);
+    vi.mocked(dbMocks.getAdvisorMemoryForUser).mockResolvedValue(null);
+    vi.mocked(dbMocks.upsertAdvisorMemory).mockResolvedValue(null as never);
     vi.mocked(dbMocks.updateDocumentPostProcessing).mockResolvedValue(undefined);
     vi.mocked(dbMocks.upsertCanonicalContract).mockResolvedValue(undefined);
     vi.mocked(dbMocks.addDocumentRecord).mockResolvedValue({} as never);

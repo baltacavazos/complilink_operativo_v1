@@ -51,6 +51,9 @@ describe("workspace bootstrap para cuentas smoke", () => {
       routersSource.indexOf("heliosCopilotChat:") + 8000,
     );
     expect(workerChatSlice).toContain("WORKER_ADVISOR_VOICE_NOTE");
+    expect(routersSource).toContain("durableMemory");
+    expect(routersSource).toContain("getAdvisorMemoryForUser");
+    expect(routersSource).toContain("summarizeAdvisorCaseMemory");
     expect(workerChatSlice).not.toContain("ADVISOR_CONTEXT_NOTE");
     expect(workerChatSlice).not.toContain("Cavazos");
   });

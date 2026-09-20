@@ -470,6 +470,40 @@ export const canonicalContracts = mysqlTable(
   ],
 );
 
+export const caseAdvisorMemories = mysqlTable(
+  "case_advisor_memories",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    tenantId: varchar("tenantId", { length: 64 })
+      .notNull()
+      .references(() => tenants.tenantId),
+    caseId: varchar("caseId", { length: 64 })
+      .notNull()
+      .references(() => laborCases.caseId),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id),
+    traceId: varchar("traceId", { length: 96 }).notNull(),
+    greeting: text("greeting"),
+    highlightsJson: text("highlightsJson"),
+    documentsDiscussedJson: text("documentsDiscussedJson"),
+    risksFlaggedJson: text("risksFlaggedJson"),
+    nextStepsJson: text("nextStepsJson"),
+    recentTurnsJson: text("recentTurnsJson"),
+    lastPrompt: text("lastPrompt"),
+    lastAnswer: text("lastAnswer"),
+    summaryJson: text("summaryJson"),
+    modelUsed: varchar("modelUsed", { length: 64 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("case_advisor_memories_scope_uq").on(table.tenantId, table.caseId, table.userId),
+    index("case_advisor_memories_case_idx").on(table.caseId, table.userId),
+    index("case_advisor_memories_tenant_idx").on(table.tenantId),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Tenant = typeof tenants.$inferSelect;
@@ -504,3 +538,5 @@ export type CommercePayment = typeof commercePayments.$inferSelect;
 export type InsertCommercePayment = typeof commercePayments.$inferInsert;
 export type CanonicalContract = typeof canonicalContracts.$inferSelect;
 export type InsertCanonicalContract = typeof canonicalContracts.$inferInsert;
+export type CaseAdvisorMemory = typeof caseAdvisorMemories.$inferSelect;
+export type InsertCaseAdvisorMemory = typeof caseAdvisorMemories.$inferInsert;

@@ -41,6 +41,7 @@ import {
   sanitizeWorkerChatCopy,
   toFriendlyWorkerChatError,
 } from "@shared/workerChatUx";
+import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
   platformStorageGetJSON,
@@ -4940,6 +4941,23 @@ export default function Auditar() {
   }, [heliosCopilotHistoryStorageKey]);
 
   useEffect(() => {
+    if (!heliosCopilotHistoryStorageKey || heliosCopilotMessages.length > 0) {
+      return;
+    }
+
+    const remoteTurns = caseDetailQuery.data?.advisorMemory?.recentTurns;
+    if (!remoteTurns?.length) {
+      return;
+    }
+
+    setHeliosCopilotMessages(sanitizePersistedHeliosCopilotMessages(remoteTurns));
+  }, [
+    caseDetailQuery.data?.advisorMemory?.recentTurns,
+    heliosCopilotHistoryStorageKey,
+    heliosCopilotMessages.length,
+  ]);
+
+  useEffect(() => {
     if (typeof window === "undefined" || !heliosCopilotHistoryStorageKey) {
       return;
     }
@@ -5493,34 +5511,22 @@ export default function Auditar() {
     documentsWithOpinion: heliosDocumentsCount,
   });
   const heliosCopilotIntro = useMemo(() => {
-    if (visibleHeliosOpinion?.resultCard?.assistantIntro?.trim()) {
-      return (
-        warmVisibleNamingCopy(visibleHeliosOpinion.resultCard.assistantIntro) ??
-        visibleHeliosOpinion.resultCard.assistantIntro
-      );
-    }
-
-    if (visibleHeliosOpinion?.summary?.trim()) {
-      return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nPregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.`;
-    }
-
-    const workerName = caseDetailQuery.data?.case.employeeName?.trim();
-    const employerName = caseDetailQuery.data?.case.employerEntity?.trim();
-    const casePeople =
-      workerName && employerName
-        ? `el expediente de ${workerName} con ${employerName}`
-        : workerName
-          ? `el expediente de ${workerName}`
-          : "este expediente";
-
-    if (heliosDocumentsCount === 0) {
-      return `Todavía no hay un documento para leer en ${casePeople}. Sube tu recibo, CFDI o PDF del IMSS y te digo, de este caso, qué se ve, qué falta y el siguiente paso.`;
-    }
-
-    return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} en ${casePeople}. Pregúntame qué se ve aquí, qué falta y el siguiente paso.`;
+    const intro = buildAsesorContinuityIntro({
+      memoryGreeting:
+        heliosCopilotMutation.data?.advisorMemory?.greeting ??
+        caseDetailQuery.data?.advisorMemory?.greeting,
+      opinionIntro: visibleHeliosOpinion?.resultCard?.assistantIntro,
+      opinionSummary: visibleHeliosOpinion?.summary,
+      employeeName: caseDetailQuery.data?.case.employeeName,
+      employerEntity: caseDetailQuery.data?.case.employerEntity,
+      documentsCount: heliosDocumentsCount,
+    });
+    return warmVisibleNamingCopy(intro) ?? intro;
   }, [
+    caseDetailQuery.data?.advisorMemory?.greeting,
     caseDetailQuery.data?.case.employeeName,
     caseDetailQuery.data?.case.employerEntity,
+    heliosCopilotMutation.data?.advisorMemory?.greeting,
     heliosDocumentsCount,
     visibleHeliosOpinion?.resultCard?.assistantIntro,
     visibleHeliosOpinion?.summary,
@@ -5585,12 +5591,12 @@ export default function Auditar() {
     return "Preguntas simples para empezar. Elige una o escribe la tuya.";
   }, [heliosCopilotPromptContextDocumentType]);
   const heliosCopilotHistoryContext = useMemo(() => {
-    if (heliosCopilotMessages.length > 0) {
-      return "Retomamos la última conversación guardada en este equipo para este expediente, así no empiezas de cero cuando vuelves.";
+    if (caseDetailQuery.data?.advisorMemory?.greeting || heliosCopilotMessages.length > 0) {
+      return "Retomo lo que ya platicamos de este expediente, aunque abras el chat en otro momento. Sigo con esta persona, este patrón y estos papeles.";
     }
 
     return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu expediente.";
-  }, [heliosCopilotMessages.length]);
+  }, [caseDetailQuery.data?.advisorMemory?.greeting, heliosCopilotMessages.length]);
 
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
     () => [
