@@ -1,12 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  BILLING_SOFT_NOTE,
-  FIRST_WIN_PROMISE,
-  GUARANTEE_LINE,
-  PLAN_PRIMARY_CTA,
-  SOCIAL_PROOF_LINE,
-  getVisiblePaidPlans,
-} from "@shared/conversionCopy";
+import { getVisiblePaidPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const visiblePaidPlans = getVisiblePaidPlans();
@@ -27,12 +20,12 @@ export default function Plans() {
           </a>
           <p className="mt-5 text-sm font-semibold text-teal-800">Planes</p>
           <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-4xl">
-            Elige un plan, con precio en MXN
+            Elige un plan, con precio en MXN al mes
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base">
-            {FIRST_WIN_PROMISE} La primera lectura es gratis. Si quieres más documentos o un entregable, aquí ves qué incluye cada plan.
+            Sube tu documento y en minutos ves el resultado y qué hacer. La primera lectura es gratis. Si quieres más documentos o un entregable, aquí ves qué incluye cada plan.
           </p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{BILLING_SOFT_NOTE}</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
         </section>
 
         <section data-testid="planes-plan-cards" className="grid gap-3 sm:grid-cols-2">
@@ -69,15 +62,15 @@ export default function Plans() {
                   window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
                 }}
               >
-                {PLAN_PRIMARY_CTA}
+                Elegir plan y empezar
               </Button>
             </article>
           ))}
         </section>
 
         <section className="rounded-[1.5rem] border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700">
-          <p>{SOCIAL_PROOF_LINE}</p>
-          <p className="mt-2">{GUARANTEE_LINE}</p>
+          <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+          <p className="mt-2">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
         </section>
       </div>
     </main>

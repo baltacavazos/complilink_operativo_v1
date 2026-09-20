@@ -101,13 +101,8 @@ Guárdalo en tu bóveda y sigue con más contexto
 */
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
-  BILLING_SOFT_NOTE,
   FIRST_WIN_STEPS,
-  GUARANTEE_LINE,
-  PLAN_NAV_CTA,
-  PLAN_PRIMARY_CTA,
   PLANS_PATH,
-  SOCIAL_PROOF_LINE,
   getVisiblePaidPlans,
 } from "@shared/conversionCopy";
 import {
@@ -1320,12 +1315,12 @@ function HeroSection() {
                 window.location.href = PLANS_PATH;
               }}
             >
-              {PLAN_NAV_CTA}
+              Ver planes y activar
             </Button>
             </div>
               <div className="space-y-1.5">
-                <p className="text-sm leading-5 text-slate-700">{SOCIAL_PROOF_LINE}</p>
-                <p className="text-sm leading-5 text-slate-700">{GUARANTEE_LINE}</p>
+                <p className="text-sm leading-5 text-slate-700">Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+                <p className="text-sm leading-5 text-slate-700">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
                 <div className="flex flex-wrap gap-2 max-[359px]:hidden">
                   {[
                     "Gratis para empezar",
@@ -2293,7 +2288,20 @@ function HowItWorksSection() {
           </div>
 
           <div className="mt-3 grid gap-2 md:grid-cols-3">
-            {FIRST_WIN_STEPS.map((item, index) => (
+            {[
+              {
+                title: "Sube tu documento",
+                detail: FIRST_WIN_STEPS[0].detail,
+              },
+              {
+                title: "Mira el resultado",
+                detail: FIRST_WIN_STEPS[1].detail,
+              },
+              {
+                title: "Qué hacer",
+                detail: FIRST_WIN_STEPS[2].detail,
+              },
+            ].map((item, index) => (
               <article
                 key={item.title}
                 className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-3.5 py-3"
@@ -3041,9 +3049,9 @@ function HomePlansStrip() {
         <div className="mx-auto max-w-3xl rounded-[1.8rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
           <p className="text-xs font-semibold tracking-tight text-teal-700">Planes</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
-            Elige un plan, con precio en MXN
+            Elige un plan, con precio en MXN al mes
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{BILLING_SOFT_NOTE}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {plans.map((plan) => (
               <article
@@ -3068,14 +3076,14 @@ function HomePlansStrip() {
                     window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
                   }}
                 >
-                  {PLAN_PRIMARY_CTA}
+                  Elegir plan y empezar
                 </Button>
               </article>
             ))}
           </div>
           <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
-            <p>{SOCIAL_PROOF_LINE}</p>
-            <p>{GUARANTEE_LINE}</p>
+            <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+            <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
           </div>
         </div>
       </div>
@@ -3116,12 +3124,12 @@ function FinalCtaSection() {
                   window.location.href = PLANS_PATH;
                 }}
               >
-                {PLAN_NAV_CTA}
+                Ver planes y activar
               </Button>
             </div>
             <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
-              <p>{SOCIAL_PROOF_LINE}</p>
-              <p>{GUARANTEE_LINE}</p>
+              <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+              <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
             </div>
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">

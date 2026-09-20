@@ -8764,7 +8764,7 @@ export default function Auditar() {
                   : "La lectura puede tardar un momento. Te mostramos el resultado (semáforo) y el siguiente paso útil: qué ya se entiende y qué conviene revisar."}
               </p>
               <p className="mt-3 max-w-full text-sm font-medium leading-6 text-slate-700">
-                Sube tu documento y en minutos ves el resultado y qué hacer.
+                Sube tu documento y en minutos ves qué hacer.
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">

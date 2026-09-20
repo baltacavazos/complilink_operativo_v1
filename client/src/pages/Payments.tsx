@@ -1,14 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import {
-  BILLING_SOFT_NOTE,
-  FIRST_WIN_PROMISE,
-  GUARANTEE_LINE,
-  PLAN_PRIMARY_CTA,
-  SOCIAL_PROOF_LINE,
-  getVisiblePaidPlans,
-} from "@shared/conversionCopy";
+import { getVisiblePaidPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2, Loader2, ReceiptText } from "lucide-react";
 
 function formatCurrency(amountTotal: number, currency: string) {
@@ -124,7 +117,7 @@ export default function Payments() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base">
             La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
           </p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">{BILLING_SOFT_NOTE}</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
         </section>
 
         <section
@@ -133,7 +126,7 @@ export default function Payments() {
         >
           <p className="text-sm font-semibold text-teal-800">Planes</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-            Elige cómo seguir, con precio en MXN
+            Elige cómo seguir, con precio en MXN al mes
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
             Ves qué incluye cada plan. Activaremos el cobro cuando esté listo.
@@ -171,15 +164,15 @@ export default function Payments() {
                   className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                   onClick={() => goToFirstWin(plan.key)}
                 >
-                  {PLAN_PRIMARY_CTA}
+                  Elegir plan y empezar
                 </Button>
               </article>
             ))}
           </div>
 
           <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
-            <p>{SOCIAL_PROOF_LINE}</p>
-            <p>{GUARANTEE_LINE}</p>
+            <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+            <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
           </div>
         </section>
 
@@ -196,7 +189,7 @@ export default function Payments() {
           <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
             <p className="text-sm font-medium text-slate-600">Cobro</p>
             <p className="mt-2 text-2xl font-semibold leading-tight text-slate-950">Sin cargo</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{BILLING_SOFT_NOTE}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">Activaremos el cobro cuando esté listo.</p>
           </article>
           <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
             <p className="text-sm font-medium text-slate-600">Pagos registrados</p>
@@ -241,7 +234,7 @@ export default function Payments() {
             </div>
           ) : payments.length === 0 ? (
             <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm leading-6 text-slate-700">
-              Aún no hay pagos en esta cuenta. {FIRST_WIN_PROMISE}
+              Aún no hay pagos en esta cuenta. Sube tu documento y en minutos ves el resultado y qué hacer.
             </div>
           ) : (
             <div className="mt-5 grid gap-3">
