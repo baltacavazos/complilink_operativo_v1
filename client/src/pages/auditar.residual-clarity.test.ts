@@ -109,8 +109,10 @@ describe("MICRO residual clarity — /auditar", () => {
     expect(app).toMatch(/>\s*Volver\s*</);
     expect(shell).toMatch(/>\s*Volver\s*</);
     expect(auditar).toContain('const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento"');
-    expect(auditar).toContain("Esto es una demostración. No se cobra nada.");
-    expect(payments).toContain("Esto es una demostración. No se cobra nada.");
+    expect(auditar).toContain("Activaremos el cobro cuando esté listo.");
+    expect(payments).toContain("Activaremos el cobro cuando esté listo.");
+    expect(auditar).not.toContain("Esto es una demostración. No se cobra nada.");
+    expect(payments).not.toContain("Esto es una demostración. No se cobra nada.");
     expect(auditar).not.toMatch(/se\u00f1al/i);
     expect(payments).not.toMatch(/se\u00f1al/i);
   });

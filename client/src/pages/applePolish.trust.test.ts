@@ -71,7 +71,8 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
 
     expect(payments).toContain(primarySentence);
     expect(primarySentence).not.toMatch(/Stripe|webhook|checkout/i);
-    expect(payments).toContain("Esto es una demostración. No se cobra nada.");
+    expect(payments).toContain("Activaremos el cobro cuando esté listo.");
+    expect(payments).not.toContain("Esto es una demostración. No se cobra nada.");
     expect(payments).not.toContain("Referencia de cobro");
     expect(payments).not.toContain("persistencia local mínima de Stripe");
     expect(payments).not.toContain("Cliente en Stripe");

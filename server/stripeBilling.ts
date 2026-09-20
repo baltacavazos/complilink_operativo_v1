@@ -135,7 +135,7 @@ function buildCommerceEnvironmentStatus() {
     webhookReady: false,
     checkoutReady: false,
     recommendedTestCard: null,
-    validationHint: COMMERCE_DEMO_NO_CHARGE_COPY,
+    validationHint: "Activaremos el cobro cuando esté listo.",
   };
 }
 

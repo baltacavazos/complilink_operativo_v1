@@ -53,8 +53,7 @@ export default function PapersPlaceholder() {
             </div>
           ) : (
             <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white px-4 py-4 text-center text-sm leading-6 text-slate-700">
-              Sube un recibo, CFDI o PDF del IMSS en Auditar. Cuando confirmes esa primera
-              revisión, este historial mostrará el documento y su resultado.
+              Sube tu documento y en minutos ves el resultado y qué hacer.
             </div>
           )}
 

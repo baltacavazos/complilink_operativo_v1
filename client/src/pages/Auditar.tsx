@@ -5218,7 +5218,7 @@ export default function Auditar() {
     }
 
     if (commerceStatusQuery.data?.environment?.checkoutReady === false) {
-      sonnerToast("Esto es una demostración. No se cobra nada.");
+      sonnerToast("Activaremos el cobro cuando esté listo.");
       return;
     }
 
@@ -8763,6 +8763,9 @@ export default function Auditar() {
                   ? "Sube foto o archivo. Te mostramos una lectura inicial cuando termine de procesarse."
                   : "La lectura puede tardar un momento. Te mostramos el resultado (semáforo) y el siguiente paso útil: qué ya se entiende y qué conviene revisar."}
               </p>
+              <p className="mt-3 max-w-full text-sm font-medium leading-6 text-slate-700">
+                Sube tu documento y en minutos ves el resultado y qué hacer.
+              </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
                 <Button
@@ -8778,6 +8781,12 @@ export default function Auditar() {
                   {guestAnalyzeMutation.isPending ? "Leyendo tu documento…" : UPLOAD_PRIMARY_EMPTY_LABEL}
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
+                <p className="text-sm leading-5 text-slate-700">
+                  Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.
+                </p>
+                <p className="text-sm leading-5 text-slate-700">
+                  Te garantizamos claridad del análisis. No prometemos que ganes un juicio.
+                </p>
                 <p className="text-sm font-medium leading-5 text-slate-700">
                   {UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Gratis, sin cuenta.
                 </p>
@@ -8807,7 +8816,8 @@ export default function Auditar() {
                       "Ves el resultado (semáforo) y el siguiente paso útil.",
                     ]
                   : [
-                      "Subes un solo archivo desde tu celular o computadora.",
+                      "Sube tu documento: un solo archivo desde tu celular o computadora.",
+                      "Mira el resultado: IMSS, recibo y retenciones en palabras simples.",
                       "Después decides si lo guardas o sigues con otro documento.",
                     ]).map(item => (
                   <div
@@ -10583,7 +10593,7 @@ export default function Auditar() {
                       <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-700">
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento se está analizando."
-                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Un solo botón para subir.`}
+                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Sube tu documento y en minutos ves el resultado y qué hacer.`}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
                         <div className="rounded-[0.95rem] border border-teal-200 bg-teal-50/80 px-3.5 py-2.5 text-teal-950 shadow-sm">
@@ -13811,6 +13821,7 @@ Reforzar con otro documento
                       <p>
                         Todavía no hay documentos resguardados. Cuando guardes el
                         primero, quedará aquí para consultarlo con calma.
+                        Sube tu documento y en minutos ves el resultado y qué hacer.
                       </p>
                       <Button
                         type="button"
@@ -14318,7 +14329,7 @@ Reforzar con otro documento
                 {filteredDossierHistoryEntries.length === 0 ? (
                   <div className="rounded-[1.2rem] border border-slate-200 bg-slate-50 p-4 text-sm leading-7 text-slate-600">
                     {historyFilter === "all"
-                      ? "Tu historial aparecerá en cuanto guardes el primer documento. Aquí verás lo más reciente sin salir del expediente."
+                      ? "Sube tu documento y en minutos ves el resultado y qué hacer."
                       : "Todavía no hay movimientos con este filtro. Cámbialo o sube otro documento para seguir construyendo el historial."}
                   </div>
                 ) : (
@@ -15151,8 +15162,8 @@ Reforzar con otro documento
           <div className="space-y-4 px-4 pb-2">
             <div className="rounded-[1.2rem] border border-teal-100 bg-teal-50/80 p-4">
               <div className="mb-3 rounded-[1rem] border border-teal-200 bg-white px-3 py-2.5 text-sm leading-6 text-teal-950">
-                <p className="font-semibold">Esto es una demostración. No se cobra nada.</p>
-                <p className="mt-1 text-teal-900">Puedes ver los planes. Hoy no se abre un cobro real.</p>
+                <p className="font-semibold">Activaremos el cobro cuando esté listo.</p>
+                <p className="mt-1 text-teal-900">Puedes ver los planes y elegir uno. Hoy no se abre un cargo.</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
@@ -15192,7 +15203,7 @@ Reforzar con otro documento
                       ? auth.canToggleUserView && commerceStatusQuery.data?.environment?.isSandbox
                         ? "Checkout listo en sandbox para validación."
                         : "Checkout y cobro listos para operar."
-                      : "Esto es una demostración. No se cobra nada."}
+                      : "Activaremos el cobro cuando esté listo."}
                   </p>
                 </div>
               </div>
@@ -15332,35 +15343,32 @@ Reforzar con otro documento
                           </li>
                         ))}
                       </ul>
-                      <div className="mt-4 flex flex-wrap gap-2">
+                      <div className="mt-4">
                         <Button
                           className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
                           disabled={
-                            isCurrentPlan ||
-                            createCommerceCheckoutMutation.isPending ||
-                            commerceStatusQuery.data?.environment?.checkoutReady === false
+                            isCurrentPlan || createCommerceCheckoutMutation.isPending
                           }
-                          onClick={() => handleCommerceCheckout(plan.key)}
+                          onClick={() => {
+                            if (plan.key === "free") {
+                              focusRecommendedUpload(
+                                effectiveRecommendedTarget?.type ?? null
+                              );
+                              return;
+                            }
+                            if (commerceStatusQuery.data?.environment?.checkoutReady === false) {
+                              sonnerToast("Activaremos el cobro cuando esté listo.");
+                              return;
+                            }
+                            void handleCommerceCheckout(plan.key);
+                          }}
                         >
                           {isCurrentPlan
                             ? "Ya estás en este plan"
-                            : commerceStatusQuery.data?.environment?.checkoutReady === false
-                              ? "Ver plan (sin cobro)"
-                              : plan.ctaLabel}
+                            : plan.key === "free"
+                              ? "Empezar"
+                              : "Elegir plan y empezar"}
                         </Button>
-                        {plan.key === "free" ? (
-                          <Button
-                            variant="outline"
-                            className="rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-                            onClick={() =>
-                              focusRecommendedUpload(
-                                effectiveRecommendedTarget?.type ?? null
-                              )
-                            }
-                          >
-                            Seguir gratis en mi expediente
-                          </Button>
-                        ) : null}
                       </div>
                     </article>
                   );
@@ -15411,11 +15419,7 @@ Reforzar con otro documento
                         }
                         onClick={() => handleCommerceCheckout(product.key)}
                       >
-                        {commerceStatusQuery.data?.environment?.checkoutReady === false
-                          ? "Ver producto (sin cobro)"
-                          : alreadyPurchased
-                            ? "Comprar otra vez"
-                            : product.ctaLabel}
+                        {alreadyPurchased ? "Comprar otra vez" : "Elegir plan y empezar"}
                       </Button>
                     </article>
                   );
@@ -15424,6 +15428,13 @@ Reforzar con otro documento
             </div>
           </div>
           <DrawerFooter>
+            <a href="/planes" className="w-full">
+              <Button
+                className="w-full rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
+              >
+                Ver planes y activar
+              </Button>
+            </a>
             <a href="/pagos" className="w-full">
               <Button
                 variant="outline"

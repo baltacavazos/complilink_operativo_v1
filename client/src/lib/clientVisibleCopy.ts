@@ -145,6 +145,10 @@ export function sanitizeClientVisibleCopy(value?: string | null): string | null 
   next = next.replace(/se[nñ]alar/gi, "indicar");
   next = next.replace(/se[nñ]ala(?=\s|\b)/gi, "indica");
   next = next.replace(/se[nñ]al(?!es)/gi, "resultado");
+  next = next.replace(
+    /Esto es una demostraci[oó]n\.?\s*No se cobra nada\.?/gi,
+    "Activaremos el cobro cuando esté listo.",
+  );
 
   next = next.replace(/webhook_rejected/gi, "No pudimos recibir el aviso.");
   next = next.replace(/detectada por webhook/gi, "detectada automáticamente");
