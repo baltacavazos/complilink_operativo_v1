@@ -154,6 +154,8 @@ describe("laborFiscalNarrative", () => {
     });
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("gemini-3.1-pro-preview");
+    expect(String(fetchImpl.mock.calls[0]?.[0])).not.toMatch(/flash|lite/i);
     expect(narrative.provider).toBe("gemini");
     expect(narrative.source).toBe("ai");
     expect(narrative.nextStep).toMatch(/recibo de mayo/i);

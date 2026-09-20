@@ -14,6 +14,8 @@ export const ENV = {
   /** Override del modelo OpenAI. Por defecto gpt-6-astra; nunca mini. */
   openaiChatModel: process.env.OPENAI_CHAT_MODEL ?? "",
   geminiApiKey: process.env.GEMINI_API_KEY ?? "",
+  /** Override del modelo Gemini. Por defecto gemini-3.1-pro-preview; nunca flash/lite. */
+  geminiChatModel: process.env.GEMINI_CHAT_MODEL ?? "",
   /**
    * Own storage (Railway S3-compatible). Official: S3_* / STORAGE_*.
    * Also accepts Railway inject (BUCKET/ACCESS_KEY_ID/…) and AWS_* presets.

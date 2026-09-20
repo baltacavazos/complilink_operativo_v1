@@ -1,12 +1,15 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  GEMINI_FALLBACK_MODELS,
+  GEMINI_FLAGSHIP_MODEL,
   invokeLLM,
   isOpenAiModelUnavailableError,
   mapResponsesApiToInvokeResult,
   OPENAI_FALLBACK_MODELS,
   OPENAI_FLAGSHIP_MODEL,
   OPENAI_RESPONSES_URL,
+  resolveGeminiModelChain,
   resolveLlmTransport,
   resolveOpenAiModelChain,
   resolveOpenAiPrimaryModel,
@@ -16,6 +19,7 @@ const KEYS = [
   "OPENAI_API_KEY",
   "OPENAI_CHAT_MODEL",
   "GEMINI_API_KEY",
+  "GEMINI_CHAT_MODEL",
   "BUILT_IN_FORGE_API_KEY",
   "BUILT_IN_FORGE_API_URL",
 ] as const;
@@ -104,13 +108,25 @@ describe("resolveLlmTransport", () => {
     ]);
   });
 
-  it("usa GEMINI_API_KEY si no hay OpenAI", () => {
+  it("usa GEMINI_API_KEY si no hay OpenAI y elige Gemini 3.1 Pro, no flash/lite", () => {
     const transport = resolveLlmTransport({
       GEMINI_API_KEY: "gemini-test",
       BUILT_IN_FORGE_API_KEY: "forge-test",
     });
     expect(transport?.provider).toBe("gemini");
     expect(transport?.url).toContain("generativelanguage.googleapis.com");
+    expect(transport?.model).toBe("gemini-3.1-pro-preview");
+    expect(transport?.models).toEqual(["gemini-3.1-pro-preview", "gemini-2.5-pro"]);
+    expect(transport?.model).not.toMatch(/flash|lite/i);
+    expect(JSON.stringify(transport)).not.toMatch(/gemini-2\.0-flash/);
+  });
+
+  it("honra GEMINI_CHAT_MODEL si está definido", () => {
+    const transport = resolveLlmTransport({
+      GEMINI_API_KEY: "gemini-test",
+      GEMINI_CHAT_MODEL: "gemini-2.5-pro",
+    });
+    expect(transport?.model).toBe("gemini-2.5-pro");
   });
 
   it("cae a Forge solo si no hay OPENAI ni GEMINI", () => {
@@ -137,6 +153,10 @@ describe("OpenAI flagship y fallbacks", () => {
       "gpt-5.6-terra",
     ]);
     expect(resolveOpenAiModelChain({}).join(" ")).not.toMatch(/mini/i);
+    expect(GEMINI_FLAGSHIP_MODEL).toBe("gemini-3.1-pro-preview");
+    expect(GEMINI_FALLBACK_MODELS).toEqual(["gemini-2.5-pro"]);
+    expect(resolveGeminiModelChain({})).toEqual(["gemini-3.1-pro-preview", "gemini-2.5-pro"]);
+    expect(resolveGeminiModelChain({}).join(" ")).not.toMatch(/flash|lite/i);
   });
 
   it("reconoce 404, 403 y model_not_found como Astra no habilitado", () => {
@@ -340,12 +360,12 @@ describe("invokeLLM OpenAI Responses", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 
-  it("mantiene Gemini en chat completions si no hay OpenAI", async () => {
+  it("mantiene Gemini Pro en chat completions si no hay OpenAI", async () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse({
         id: "chat_gemini",
         created: 1,
-        model: "gemini-2.0-flash",
+        model: "gemini-3.1-pro-preview",
         choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finish_reason: "stop" }],
       }),
     );
@@ -362,6 +382,35 @@ describe("invokeLLM OpenAI Responses", () => {
     expect(String(fetchImpl.mock.calls[0]?.[0])).toContain("generativelanguage.googleapis.com");
     const body = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
     expect(body.messages).toBeTruthy();
-    expect(body.model).toBe("gemini-2.0-flash");
+    expect(body.model).toBe("gemini-3.1-pro-preview");
+    expect(body.model).not.toMatch(/flash|lite/i);
+  });
+
+  it("cae a gemini-2.5-pro si 3.1 Pro no está habilitado", async () => {
+    const fetchImpl = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      if (body.model === "gemini-3.1-pro-preview") {
+        return errorResponse(404, "model_not_found", "Not Found");
+      }
+      return jsonResponse({
+        id: "chat_gemini_25",
+        created: 1,
+        model: "gemini-2.5-pro",
+        choices: [{ index: 0, message: { role: "assistant", content: "pro estable" }, finish_reason: "stop" }],
+      });
+    });
+
+    const result = await invokeLLM(
+      { messages: [{ role: "user", content: "hola" }] },
+      {
+        env: { GEMINI_API_KEY: "gemini-test" },
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      },
+    );
+
+    expect(result.choices[0]?.message.content).toBe("pro estable");
+    const models = fetchImpl.mock.calls.map((call) => JSON.parse(String(call[1]?.body)).model);
+    expect(models).toEqual(["gemini-3.1-pro-preview", "gemini-2.5-pro"]);
+    expect(models.join(" ")).not.toMatch(/flash|lite/i);
   });
 });

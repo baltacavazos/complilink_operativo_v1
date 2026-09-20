@@ -213,13 +213,18 @@ const resolveForgeApiUrl = (forgeApiUrl?: string) =>
     : "https://forge.manus.im/v1/chat/completions";
 
 /**
- * REGLA PERMANENTE DEL DUEÑO: siempre el modelo OpenAI más potente disponible.
- * Hoy (sept 2026): gpt-6-astra. Nunca gpt-4o-mini ni otros mini por defecto.
- * Fallback SOLO si Astra no está habilitado en la cuenta.
+ * REGLA PERMANENTE DEL DUEÑO (AuditaPatrón = CompliLink):
+ * siempre los modelos más potentes. No se prioriza costo.
+ * OpenAI hoy: gpt-6-astra. Nunca mini por defecto.
+ * Gemini (secundario): Gemini 3.1 Pro. Nunca flash/lite por defecto.
  */
 export const OPENAI_FLAGSHIP_MODEL = "gpt-6-astra";
 export const OPENAI_FALLBACK_MODELS = ["gpt-5.6-sol", "gpt-5.6-terra"] as const;
 export const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+export const GEMINI_FLAGSHIP_MODEL = "gemini-3.1-pro-preview";
+export const GEMINI_FALLBACK_MODELS = ["gemini-2.5-pro"] as const;
+export const GEMINI_OPENAI_COMPAT_URL =
+  "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
 export type LlmTransport = {
   provider: "openai" | "gemini" | "forge";
@@ -253,6 +258,22 @@ export function resolveOpenAiModelChain(env: NodeJS.ProcessEnv = process.env): s
   return Array.from(new Set(chain.map(normalizeOpenAiModelId).filter(Boolean)));
 }
 
+export function resolveGeminiPrimaryModel(env: NodeJS.ProcessEnv = process.env): string {
+  const override = env.GEMINI_CHAT_MODEL?.trim();
+  if (override) return override;
+  return GEMINI_FLAGSHIP_MODEL;
+}
+
+export function resolveGeminiModelChain(env: NodeJS.ProcessEnv = process.env): string[] {
+  const primary = resolveGeminiPrimaryModel(env);
+  const chain = [primary, ...GEMINI_FALLBACK_MODELS];
+  return Array.from(new Set(chain.filter(Boolean)));
+}
+
+export function geminiGenerateContentUrl(model: string, apiKey: string): string {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+}
+
 export function resolveLlmTransport(env: NodeJS.ProcessEnv = process.env): LlmTransport | null {
   const openai = env.OPENAI_API_KEY?.trim() ?? "";
   const gemini = env.GEMINI_API_KEY?.trim() ?? "";
@@ -274,11 +295,13 @@ export function resolveLlmTransport(env: NodeJS.ProcessEnv = process.env): LlmTr
     };
   }
   if (gemini) {
+    const models = resolveGeminiModelChain(env);
     return {
       provider: "gemini",
       apiKey: gemini,
-      url: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-      model: "gemini-2.0-flash",
+      url: GEMINI_OPENAI_COMPAT_URL,
+      model: models[0] ?? GEMINI_FLAGSHIP_MODEL,
+      models,
       extraPayload: {},
     };
   }
@@ -710,6 +733,48 @@ async function invokeOpenAiResponses(
   throw lastError ?? new Error("LLM invoke failed: OpenAI no devolvió un modelo usable.");
 }
 
+async function invokeChatCompletions(
+  transport: LlmTransport,
+  params: InvokeParams,
+  fetchImpl: typeof fetch,
+): Promise<InvokeResult> {
+  const models = transport.models?.length ? transport.models : [transport.model];
+  let lastError: Error | null = null;
+
+  for (let index = 0; index < models.length; index += 1) {
+    const payload = {
+      ...buildChatCompletionsPayload(transport, params),
+      model: models[index],
+    };
+    const response = await fetchImpl(transport.url, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${transport.apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      return (await response.json()) as InvokeResult;
+    }
+
+    const errorText = await response.text();
+    lastError = new Error(
+      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`,
+    );
+
+    const canFallback =
+      index < models.length - 1 &&
+      isOpenAiModelUnavailableError(response.status, errorText);
+    if (!canFallback) {
+      throw lastError;
+    }
+  }
+
+  throw lastError ?? new Error("LLM invoke failed: no hay un modelo usable en este proveedor.");
+}
+
 export async function invokeLLM(
   params: InvokeParams,
   options: InvokeLlmOptions = {},
@@ -722,22 +787,5 @@ export async function invokeLLM(
     return invokeOpenAiResponses(transport, params, fetchImpl);
   }
 
-  const payload = buildChatCompletionsPayload(transport, params);
-  const response = await fetchImpl(transport.url, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${transport.apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`,
-    );
-  }
-
-  return (await response.json()) as InvokeResult;
+  return invokeChatCompletions(transport, params, fetchImpl);
 }

@@ -39,7 +39,8 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Integración externa | Sí | Firma HMAC para tráfico del bridge | Backend |
 | `OPENAI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y validación con OpenAI; cerebro del asesor | Herramientas/servicios auxiliares |
 | `OPENAI_CHAT_MODEL` | IA | No | Override del modelo OpenAI. Default `gpt-6-astra`. Fallback `gpt-5.6-sol` → `gpt-5.6-terra` si Astra no está habilitado | Backend |
-| `GEMINI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y validación con Gemini | Herramientas/servicios auxiliares |
+| `GEMINI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y cerebro secundario si no hay OpenAI | Herramientas/servicios auxiliares |
+| `GEMINI_CHAT_MODEL` | IA | No | Override Gemini. Default `gemini-3.1-pro-preview`. Fallback `gemini-2.5-pro`. Nunca flash/lite por defecto | Backend |
 | `DROPBOX_API_KEY` | Respaldo | Sí para backup | Respaldo obligatorio en Dropbox | Validación y backup |
 | `RESEND_API_KEY` | Correo | Sí si hay notificaciones | Envío de correo | Backend |
 | `RESEND_FROM_EMAIL` | Correo | Sí si hay notificaciones | Remitente operativo | Backend |

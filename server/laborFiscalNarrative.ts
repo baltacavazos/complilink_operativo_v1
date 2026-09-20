@@ -1,8 +1,10 @@
 import { sanitizeClientVisibleCopy } from "../client/src/lib/clientVisibleCopy";
 import {
+  geminiGenerateContentUrl,
   isOpenAiModelUnavailableError,
   mapResponsesApiToInvokeResult,
   OPENAI_RESPONSES_URL,
+  resolveGeminiModelChain,
   resolveOpenAiModelChain,
 } from "./_core/llm";
 import {
@@ -301,35 +303,47 @@ async function requestGeminiNarrative(params: {
   prompt: string;
   fetchImpl: typeof fetch;
   timeoutMs: number;
+  env?: NodeJS.ProcessEnv;
 }) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), params.timeoutMs);
+  const models = resolveGeminiModelChain(params.env ?? process.env);
   try {
-    const response = await params.fetchImpl(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(params.apiKey)}`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: NARRATIVE_SYSTEM_PROMPT }] },
-          contents: [{ role: "user", parts: [{ text: params.prompt }] }],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: LABOR_FISCAL_NARRATIVE_MAX_TOKENS,
-            responseMimeType: "application/json",
-          },
-        }),
-      },
-    );
-    if (!response.ok) {
-      throw new Error(`gemini_narrative_${response.status}`);
+    let lastError: Error | null = null;
+    for (let index = 0; index < models.length; index += 1) {
+      const response = await params.fetchImpl(
+        geminiGenerateContentUrl(models[index], params.apiKey),
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: NARRATIVE_SYSTEM_PROMPT }] },
+            contents: [{ role: "user", parts: [{ text: params.prompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: LABOR_FISCAL_NARRATIVE_MAX_TOKENS,
+              responseMimeType: "application/json",
+            },
+          }),
+        },
+      );
+      if (response.ok) {
+        const payload = (await response.json()) as {
+          candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        };
+        const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n") ?? "";
+        return acceptAiNarrative(parseNarrativeJson(text));
+      }
+      const errorText = await response.text();
+      lastError = new Error(`gemini_narrative_${response.status}`);
+      const canFallback =
+        index < models.length - 1 && isOpenAiModelUnavailableError(response.status, errorText);
+      if (!canFallback) {
+        throw lastError;
+      }
     }
-    const payload = (await response.json()) as {
-      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-    };
-    const text = payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n") ?? "";
-    return acceptAiNarrative(parseNarrativeJson(text));
+    throw lastError ?? new Error("gemini_narrative_unavailable");
   } finally {
     clearTimeout(timer);
   }
@@ -421,6 +435,7 @@ export async function resolveLaborFiscalNarrative(
             prompt,
             fetchImpl,
             timeoutMs,
+            env,
           });
     if (!accepted) return fallback;
     return {

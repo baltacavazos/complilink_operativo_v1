@@ -64,7 +64,8 @@ Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FO
 | --- | --- |
 | `OPENAI_API_KEY` | Consenso multi-IA y cerebro del asesor |
 | `OPENAI_CHAT_MODEL` | Opcional. Por defecto `gpt-6-astra` (flagship). Fallback solo si Astra no está habilitado: `gpt-5.6-sol`, luego `gpt-5.6-terra`. Nunca mini por defecto. |
-| `GEMINI_API_KEY` | Consenso multi-IA |
+| `GEMINI_API_KEY` | Consenso multi-IA; cerebro secundario si no hay OpenAI |
+| `GEMINI_CHAT_MODEL` | Opcional. Por defecto `gemini-3.1-pro-preview` (más potente, no flash/lite). Fallback `gemini-2.5-pro` si Pro preview no está habilitado. |
 
 ## Correo
 

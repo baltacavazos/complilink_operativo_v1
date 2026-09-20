@@ -73,7 +73,8 @@ El proyecto recibe varias variables desde la plataforma. Para una instalación e
 | `VITE_FRONTEND_FORGE_API_KEY` | Token frontend para APIs integradas |
 | `OPENAI_API_KEY` | Consultas LLM auxiliares y cerebro del asesor |
 | `OPENAI_CHAT_MODEL` | Opcional. Default `gpt-6-astra`; fallback `gpt-5.6-sol` → `gpt-5.6-terra` |
-| `GEMINI_API_KEY` | Consultas Gemini y validaciones multimodelo |
+| `GEMINI_API_KEY` | Consultas Gemini y cerebro secundario |
+| `GEMINI_CHAT_MODEL` | Opcional. Default `gemini-3.1-pro-preview`; fallback `gemini-2.5-pro` |
 | `RESEND_API_KEY` | Envío de correos |
 | `RESEND_FROM_EMAIL` | Remitente configurado para correo |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma para integración con motor externo |
