@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
+  COMMERCE_PLANS,
+  formatCommerceDocumentLimitBullet,
+} from "../../../shared/commerce";
+import {
   BILLING_SOFT_NOTE,
   FIRST_WIN_PROMISE,
   GUARANTEE_LINE,
@@ -113,5 +117,39 @@ describe("Claridad — take my money without live charge", () => {
       expect(source).toContain(SOCIAL_PROOF_LINE);
       expect(source).toContain(GUARANTEE_LINE);
     }
+  });
+
+  it("unifica el tope de documentos de Esencial con el plan real", () => {
+    const home = readPage("Home");
+    const plansPage = readPage("Plans");
+    const payments = readPage("Payments");
+    const essential = COMMERCE_PLANS.find((plan) => plan.key === "essential");
+    const visibleEssential = getVisiblePaidPlans().find((plan) => plan.key === "essential");
+    const essentialLimit = essential?.limits.maxDocumentsPerCase;
+    const essentialLimitCopy = formatCommerceDocumentLimitBullet(essentialLimit ?? 0);
+
+    expect(essentialLimit).toBe(15);
+    expect(essential?.featureBullets).toContain(essentialLimitCopy);
+    expect(visibleEssential?.includes).toContain(essentialLimitCopy);
+    expect(visibleEssential?.includes.some((item) => /hasta 10 documentos/i.test(item))).toBe(false);
+
+    for (const source of [home, plansPage, payments]) {
+      expect(source).toContain("getVisiblePaidPlans");
+      expect(source).not.toMatch(/hasta 10 documentos/i);
+      expect(source).not.toContain("Hasta 10 documentos");
+    }
+  });
+
+  it("deja la anécdota de recibo/IMSS como máximo dos veces en Home", () => {
+    const home = readPage("Home");
+    const plansStripStart = home.indexOf("function HomePlansStrip");
+    const finalCtaStart = home.indexOf("function FinalCtaSection");
+    const occurrences = home.split(SOCIAL_PROOF_LINE).length - 1;
+
+    expect(occurrences).toBeLessThanOrEqual(2);
+    expect(occurrences).toBe(2);
+    expect(home.slice(0, plansStripStart)).toContain(SOCIAL_PROOF_LINE);
+    expect(home.slice(plansStripStart, finalCtaStart)).toContain(SOCIAL_PROOF_LINE);
+    expect(home.slice(finalCtaStart)).not.toContain(SOCIAL_PROOF_LINE);
   });
 });

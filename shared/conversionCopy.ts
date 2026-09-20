@@ -1,9 +1,10 @@
-import { COMMERCE_PLANS, formatCommercePriceMx } from "./commerce";
+import {
+  COMMERCE_PLANS,
+  formatCommerceDocumentLimitBullet,
+  formatCommercePriceMx,
+} from "./commerce";
 
-/**
- * Anecdote concreta y anónima, al estilo CompliLink (compras/REPSE).
- * Sin logos, nombres, razones sociales ni cifras inventadas.
- */
+/** Anecdota concreta y anónima. Sin logos, nombres, razones sociales ni cifras inventadas. */
 export const SOCIAL_PROOF_LINE =
   "Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.";
 
@@ -48,6 +49,10 @@ export function getVisiblePaidPlans() {
     monthlyPriceMx: plan.monthlyPriceMx,
     ctaLabel: "Elegir plan",
     highlighted: plan.highlighted,
-    includes: plan.featureBullets,
+    includes: plan.featureBullets.map((bullet) =>
+      /^Hasta \d+ documentos por expediente\.?$/i.test(bullet)
+        ? formatCommerceDocumentLimitBullet(plan.limits.maxDocumentsPerCase)
+        : bullet,
+    ),
   }));
 }
