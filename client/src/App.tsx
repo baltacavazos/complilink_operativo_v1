@@ -13,6 +13,7 @@ const Home = lazy(() => import("./pages/Home"));
 const Access = lazy(() => import("@/pages/AccessGate"));
 const Auditar = lazy(() => import("@/pages/Auditar"));
 const Payments = lazy(() => import("@/pages/Payments"));
+const Plans = lazy(() => import("@/pages/Plans"));
 const CeoDashboard = lazy(() => import("@/pages/CeoDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PapersPlaceholder = lazy(() => import("./pages/PapersPlaceholder"));
@@ -71,6 +72,8 @@ function Router() {
           <Route path={"/acceso"} component={Access} />
           <Route path={"/auditar"} component={Auditar} />
           <Route path={"/pagos"} component={Payments} />
+          <Route path={"/planes"} component={Plans} />
+          <Route path={"/precios"} component={Plans} />
           <Route path={"/ceo"} component={CeoDashboard} />
           <Route path={"/ceo/bridge"} component={CeoDashboard} />
           <Route path={"/ceo/alertas"} component={CeoDashboard} />
@@ -101,6 +104,8 @@ function MobileQuickExit() {
     path === "/historial" ||
     path === "/expediente" ||
     path === "/pagos" ||
+    path === "/planes" ||
+    path === "/precios" ||
     path === "/aviso-de-privacidad" ||
     path === "/privacidad" ||
     path === "/legal/privacidad" ||

@@ -1,9 +1,8 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { ArrowLeft, Loader2, ReceiptText } from "lucide-react";
-
-const DEMO_NO_CHARGE = "Esto es una demostración. No se cobra nada.";
+import { getVisiblePaidPlans } from "@shared/conversionCopy";
+import { ArrowLeft, CheckCircle2, Loader2, ReceiptText } from "lucide-react";
 
 function formatCurrency(amountTotal: number, currency: string) {
   return new Intl.NumberFormat("es-MX", {
@@ -59,6 +58,8 @@ function translateSubscriptionStatus(status: string) {
   }
 }
 
+const visiblePaidPlans = getVisiblePaidPlans();
+
 export default function Payments() {
   const auth = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/pagos" });
   const historyQuery = trpc.commerce.history.useQuery(undefined, {
@@ -76,6 +77,10 @@ export default function Payments() {
   const paidCount = payments.filter((payment) => payment.paymentStatus === "paid").length;
   const planName =
     activeSubscription?.planName ?? commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis";
+
+  const goToFirstWin = (planKey: string) => {
+    window.location.href = `/auditar?plan=${encodeURIComponent(planKey)}`;
+  };
 
   if (auth.loading) {
     return (
@@ -112,26 +117,62 @@ export default function Payments() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base">
             La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
           </p>
-          <div className="mt-4 rounded-[1.25rem] border border-teal-200 bg-teal-50 px-4 py-3 text-sm leading-6 text-teal-950">
-            <p className="font-semibold">{DEMO_NO_CHARGE}</p>
-            <p className="mt-1 text-teal-900">
-              Puedes ver tu plan y esta pantalla con calma. Hoy no hay cobro real ni cargo a tarjeta.
-            </p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
+        </section>
+
+        <section
+          data-testid="pagos-plan-cards"
+          className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-[0_22px_56px_-40px_rgba(15,23,42,0.2)] sm:p-6"
+        >
+          <p className="text-sm font-semibold text-teal-800">Planes</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Elige cómo seguir, con precio en MXN al mes
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+            Ves qué incluye cada plan. Activaremos el cobro cuando esté listo.
+          </p>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {visiblePaidPlans.map((plan) => (
+              <article
+                key={plan.key}
+                className={`rounded-[1.35rem] border p-4 ${
+                  plan.highlighted
+                    ? "border-teal-300 bg-teal-50/80"
+                    : "border-slate-200 bg-slate-50/80"
+                }`}
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-base font-semibold text-slate-950">{plan.name}</p>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                    {plan.badge}
+                  </span>
+                </div>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                  {plan.priceLabel}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{plan.headline}</p>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                  {plan.includes.map((feature) => (
+                    <li key={feature} className="flex gap-2">
+                      <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                  onClick={() => goToFirstWin(plan.key)}
+                >
+                  Elegir plan y empezar
+                </Button>
+              </article>
+            ))}
           </div>
-          <div className="mt-4">
-            <Button
-              variant="outline"
-              className="h-11 w-full rounded-full border-slate-200 bg-white text-slate-800 hover:bg-slate-50 sm:w-auto"
-              onClick={() => void historyQuery.refetch()}
-              disabled={historyQuery.isFetching}
-            >
-              {historyQuery.isFetching ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <ReceiptText className="mr-2 h-4 w-4" />
-              )}
-              Actualizar pagos
-            </Button>
+
+          <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
+            <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+            <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
           </div>
         </section>
 
@@ -148,9 +189,7 @@ export default function Payments() {
           <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
             <p className="text-sm font-medium text-slate-600">Cobro</p>
             <p className="mt-2 text-2xl font-semibold leading-tight text-slate-950">Sin cargo</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">
-              Esta cuenta está en demostración. No se abre un cobro en vivo.
-            </p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">Activaremos el cobro cuando esté listo.</p>
           </article>
           <article className="rounded-[1.5rem] border border-slate-200 bg-white p-5">
             <p className="text-sm font-medium text-slate-600">Pagos registrados</p>
@@ -169,8 +208,24 @@ export default function Payments() {
             Pagos y compras registradas
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
-            Si algún día pagas de verdad, aquí verás el producto, el importe y la fecha. Hoy no hay cargo.
+            Si algún día pagas de verdad, aquí verás el producto, el importe y la fecha.
           </p>
+
+          <div className="mt-4">
+            <Button
+              variant="outline"
+              className="h-11 w-full rounded-full border-slate-200 bg-white text-slate-800 hover:bg-slate-50 sm:w-auto"
+              onClick={() => void historyQuery.refetch()}
+              disabled={historyQuery.isFetching}
+            >
+              {historyQuery.isFetching ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <ReceiptText className="mr-2 h-4 w-4" />
+              )}
+              Actualizar pagos
+            </Button>
+          </div>
 
           {historyQuery.isLoading ? (
             <div className="flex items-center gap-3 py-8 text-sm text-slate-600">
@@ -179,7 +234,7 @@ export default function Payments() {
             </div>
           ) : payments.length === 0 ? (
             <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm leading-6 text-slate-700">
-              Aún no hay pagos en esta cuenta. Mientras tanto puedes seguir usando la lectura gratis.
+              Aún no hay pagos en esta cuenta. Sube tu documento y en minutos ves el resultado y qué hacer.
             </div>
           ) : (
             <div className="mt-5 grid gap-3">

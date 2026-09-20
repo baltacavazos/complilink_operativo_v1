@@ -101,6 +101,11 @@ Guárdalo en tu bóveda y sigue con más contexto
 */
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
+  FIRST_WIN_STEPS,
+  PLANS_PATH,
+  getVisiblePaidPlans,
+} from "@shared/conversionCopy";
+import {
   getStableUserIdentifier,
   readPersistedCeoPanelState,
   writePersistedCeoPanelState,
@@ -1306,13 +1311,17 @@ function HeroSection() {
             <Button
               variant="outline"
               className="motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto"
-              onClick={() => scrollToId("lectura-gratis")}
+              onClick={() => {
+                window.location.href = PLANS_PATH;
+              }}
             >
-              Ver ejemplo
+              Ver planes y activar
             </Button>
             </div>
-              <div className="space-y-1 max-[359px]:hidden max-[359px]:space-y-1">
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-1.5">
+                <p className="text-sm leading-5 text-slate-700">Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+                <p className="text-sm leading-5 text-slate-700">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
+                <div className="flex flex-wrap gap-2 max-[359px]:hidden">
                   {[
                     "Gratis para empezar",
                     "Tu empresa no lo ve",
@@ -1323,7 +1332,7 @@ function HeroSection() {
                     </span>
                   ))}
                 </div>
-                <p className="text-sm leading-5 text-slate-700">
+                <p className="text-sm leading-5 text-slate-700 max-[359px]:hidden">
                   Empieza con una foto o PDF y ves si tu pago merece una revisión más a fondo, sin cuenta al inicio. No es un cruce en vivo con SAT/IMSS.
                 </p>
               </div>
@@ -2281,32 +2290,29 @@ function HowItWorksSection() {
           <div className="mt-3 grid gap-2 md:grid-cols-3">
             {[
               {
-                number: "01",
-                title: "Sube un archivo",
-                description: "Empieza con un recibo, foto o contrato.",
+                title: "Sube tu documento",
+                detail: FIRST_WIN_STEPS[0].detail,
               },
               {
-                number: "02",
                 title: "Mira el resultado",
-                description: "Te decimos qué revisar primero.",
+                detail: FIRST_WIN_STEPS[1].detail,
               },
               {
-                number: "03",
-                title: "Guárdalo si sirve",
-                description: "Solo pasa al expediente si te aporta valor.",
+                title: "Qué hacer",
+                detail: FIRST_WIN_STEPS[2].detail,
               },
-            ].map((item) => (
+            ].map((item, index) => (
               <article
-                key={item.number}
+                key={item.title}
                 className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-3.5 py-3"
               >
                 <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm">
-                  {item.number}
+                  {String(index + 1).padStart(2, "0")}
                 </div>
                 <h3 className="mt-2 text-[0.98rem] font-semibold tracking-[-0.02em] text-slate-950">
                   {item.title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-5 text-slate-600">{item.description}</p>
+                <p className="mt-1.5 text-sm leading-5 text-slate-600">{item.detail}</p>
               </article>
             ))}
           </div>
@@ -3034,6 +3040,57 @@ function AppDownloadSection() {
   );
 }
 
+function HomePlansStrip() {
+  const plans = getVisiblePaidPlans();
+
+  return (
+    <section id="planes" className="bg-white py-8 sm:py-10">
+      <div className="container">
+        <div className="mx-auto max-w-3xl rounded-[1.8rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+          <p className="text-xs font-semibold tracking-tight text-teal-700">Planes</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
+            Elige un plan, con precio en MXN al mes
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {plans.map((plan) => (
+              <article
+                key={plan.key}
+                className={`rounded-[1.2rem] border bg-white p-4 ${
+                  plan.highlighted ? "border-teal-300" : "border-slate-200"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-semibold text-slate-950">{plan.name}</p>
+                  <span className="text-[11px] font-semibold text-teal-800">{plan.badge}</span>
+                </div>
+                <p className="mt-2 text-xl font-semibold text-slate-950">{plan.priceLabel}</p>
+                <ul className="mt-3 space-y-1.5 text-sm leading-5 text-slate-700">
+                  {plan.includes.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+                <Button
+                  className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                  onClick={() => {
+                    window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
+                  }}
+                >
+                  Elegir plan y empezar
+                </Button>
+              </article>
+            ))}
+          </div>
+          <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
+            <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+            <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FinalCtaSection() {
   const pricingExperience = getAuditapatronPricingExperience(0);
 
@@ -3063,10 +3120,16 @@ function FinalCtaSection() {
               <Button
                 variant="outline"
                 className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-6 text-sm text-slate-700 hover:bg-slate-50 sm:w-auto"
-                onClick={() => scrollToId("privacidad")}
+                onClick={() => {
+                  window.location.href = PLANS_PATH;
+                }}
               >
-                Ver privacidad
+                Ver planes y activar
               </Button>
+            </div>
+            <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
+              <p>Trabajadores y abogados usan esto para ver con claridad IMSS, recibo y retenciones.</p>
+              <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
             </div>
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
@@ -3157,6 +3220,7 @@ export default function Home() {
       <HeroSection />
       <HeliosFirstEntrySection />
       <HowItWorksSection />
+      <HomePlansStrip />
       <FinalCtaSection />
       <SiteFooter />
       <MobileStickyCta />

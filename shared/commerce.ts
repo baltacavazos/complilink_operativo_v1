@@ -52,10 +52,10 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
   {
     key: "free",
     name: "Audita Gratis",
-    headline: "Para validar tu primer señal sin pagar.",
+    headline: "Para validar tu primer resultado sin pagar.",
     monthlyPriceMx: 0,
     badge: "Freemium",
-    ctaLabel: "Empezar gratis",
+    ctaLabel: "Empezar",
     description:
       "Incluye tu primera lectura, expediente básico de hasta 3 documentos y asesor laboral básico sobre el contexto visible inicial.",
     highlighted: false,
@@ -77,7 +77,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     headline: "Para ordenar mejor tu expediente y comparar más contexto.",
     monthlyPriceMx: 79,
     badge: "Más vendido",
-    ctaLabel: "Activar Esencial",
+    ctaLabel: "Elegir plan",
     description:
       "Desbloquea más documentos por expediente, comparativas más claras y continuidad útil del asesor laboral para llevar mejor tu caso.",
     highlighted: true,
@@ -99,7 +99,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     headline: "Para operar expedientes con seguimiento más profundo.",
     monthlyPriceMx: 199,
     badge: "Operación completa",
-    ctaLabel: "Activar Pro",
+    ctaLabel: "Elegir plan",
     description:
       "Suma memoria histórica, revalidaciones, alertas proactivas y la capa más completa del copiloto laboral.",
     highlighted: false,

@@ -17,17 +17,24 @@ describe("flujo visible de pagos", () => {
 
     expect(appSource).toContain('const Payments = lazy(() => import("@/pages/Payments"));');
     expect(appSource).toContain('<Route path={"/pagos"} component={Payments} />');
+    expect(appSource).toContain('<Route path={"/planes"} component={Plans} />');
+    expect(appSource).toContain('<Route path={"/precios"} component={Plans} />');
     expect(auditarSource).toContain('href="/pagos"');
+    expect(auditarSource).toContain('href="/planes"');
     expect(auditarSource).toContain("Ver historial de pagos");
+    expect(auditarSource).toContain("Ver planes y activar");
   });
 
   it("muestra el texto principal de la nueva vista protegida de pagos", () => {
     const paymentsSource = readFromPages("Payments");
 
     expect(paymentsSource).toContain("Tu plan y lo que ya pagaste");
-    expect(paymentsSource).toContain("Esto es una demostración. No se cobra nada.");
+    expect(paymentsSource).toContain("Activaremos el cobro cuando esté listo.");
+    expect(paymentsSource).toContain("Elegir plan y empezar");
+    expect(paymentsSource).not.toContain("Esto es una demostración. No se cobra nada.");
     expect(paymentsSource).toContain("Pagos y compras registradas");
-    expect(paymentsSource).toContain("Hoy no hay cobro real ni cargo a tarjeta.");
+    expect(paymentsSource).toContain("Elegir plan");
+    expect(paymentsSource).toContain("MXN al mes");
     expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.");
     expect(paymentsSource).not.toContain("Gestionar suscripción");
     expect(paymentsSource).not.toContain("Modo de prueba del cobro");

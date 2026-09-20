@@ -58,6 +58,9 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(sanitizeClientVisibleCopy("Continuar con Manus")).toBe("Continuar");
     expect(sanitizeClientVisibleCopy("confidence score 94")).toBe("confianza orientativa 94");
     expect(sanitizeClientVisibleCopy("Estado ONLINE")).toBe("Estado en línea");
+    expect(sanitizeClientVisibleCopy("Esto es una demostración. No se cobra nada.")).toBe(
+      "Activaremos el cobro cuando esté listo.",
+    );
     expect(sanitizeClientVisibleCopy("Forge / APIMarket / Forensic")).toBe(
       "la plataforma / el servicio de consulta / revisión documental",
     );
