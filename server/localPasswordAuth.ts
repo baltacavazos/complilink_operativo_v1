@@ -78,7 +78,7 @@ async function ensureActiveTenantMembership(user: {
 }) {
   await db.ensureTenantForUser({
     userId: user.id,
-    userName: user.name ?? user.email ?? "CompliLink",
+    userName: user.name ?? user.email ?? "AuditaPatron",
     userEmail: user.email,
   });
 }

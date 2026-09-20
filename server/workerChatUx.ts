@@ -12,6 +12,7 @@ import {
   WORKER_CHAT_MULTI_DOC_UPSELL,
   WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_SOURCES_HEADING,
+  WORKER_ADVISOR_VOICE_NOTE,
   WORKER_CHAT_TITLE,
   buildWorkerStarterQuestions,
   formatWorkerChatAnswer,
@@ -64,6 +65,10 @@ export type WorkerChatGrounding = {
   prefersRemoteOpinion: boolean;
   reviewSource: "local" | "remote";
   reviewSourceLabel: string;
+  workerName: string | null;
+  employerName: string | null;
+  caseTitle: string | null;
+  riskLevel: string | null;
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -112,6 +117,10 @@ export function buildWorkerChatGrounding(params: {
   missingDocument?: { label?: string | null; reason?: string | null } | null;
   multiDocUpsell?: string | null;
   officialDigest?: OfficialDigestResult | null;
+  workerName?: string | null;
+  employerName?: string | null;
+  caseTitle?: string | null;
+  riskLevel?: string | null;
 }): WorkerChatGrounding {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
@@ -151,6 +160,10 @@ export function buildWorkerChatGrounding(params: {
     prefersRemoteOpinion: isPreferredRemoteWorkerOpinion(params.opinion),
     reviewSource: review.reviewSource,
     reviewSourceLabel: review.reviewSourceLabel,
+    workerName: asText(params.workerName),
+    employerName: asText(params.employerName),
+    caseTitle: asText(params.caseTitle),
+    riskLevel: asText(params.riskLevel),
   };
 }
 
@@ -180,11 +193,17 @@ export function buildWorkerChatFallbackAnswer(
   options?: { prompt?: string | null },
 ): string {
   if (grounding.documentsCount === 0) {
+    const who =
+      grounding.workerName && grounding.employerName
+        ? `el expediente de ${grounding.workerName} con ${grounding.employerName}`
+        : grounding.workerName
+          ? `el expediente de ${grounding.workerName}`
+          : "tu expediente";
     return formatWorkerChatAnswer({
-      answer: "Todavía no hay un documento para leer. Sin un recibo, contrato o CFDI no puedo decirte qué se ve ni qué falta.",
-      known: "Aún no hay señales visibles en un papel tuyo.",
-      missing: "Falta el primer documento laboral para empezar la lectura.",
-      nextStep: "Sube el papel laboral que tengas más a la mano. Con eso te digo lo que sí se ve y el siguiente paso.",
+      answer: `Hola. Todavía no hay un documento para leer en ${who}. Sin un recibo, contrato o CFDI no puedo decirte qué se ve ni qué falta en este caso.`,
+      known: "Aún no hay señales visibles en un papel de este expediente.",
+      missing: "Falta el primer documento laboral para empezar la lectura de este caso.",
+      nextStep: "Sube el papel laboral que tengas más a la mano. Con eso te digo, de ESTE expediente, lo que sí se ve y el siguiente paso.",
       disclaimer: grounding.disclaimer,
     });
   }
@@ -235,14 +254,26 @@ export function buildWorkerChatLlmInstructions(
       ? guidance.visibleFactLines.map((item) => `- ${item}`).join("\n")
       : "- No hay montos, RFC ni NSS claros. No inventes ninguno.";
 
+  const casePeople = [
+    grounding.workerName ? `persona trabajadora: ${grounding.workerName}` : null,
+    grounding.employerName ? `patrón: ${grounding.employerName}` : null,
+    grounding.caseTitle ? `expediente: ${grounding.caseTitle}` : null,
+    grounding.riskLevel ? `riesgo visible: ${grounding.riskLevel}` : null,
+  ]
+    .filter((item): item is string => Boolean(item))
+    .join("; ");
+
   return [
-    `Internamente puedes razonar como Helios, pero NUNCA escribas Helios, Modo Helios ni CompliLink en la respuesta visible.`,
-    `Si necesitas un nombre, preséntate solo como ${WORKER_CHAT_TITLE.toLowerCase()}.`,
-    "Eres una lectura laboral de AuditaPatrón para una persona trabajadora en México.",
-    "Habla en español simple, frases cortas, sin jerga.",
-    "Nunca te presentes como Helios, CompliLink, abogado ni autoridad.",
+    WORKER_ADVISOR_VOICE_NOTE,
+    `Si necesitas un nombre, preséntate solo como ${WORKER_CHAT_TITLE.toLowerCase()}. NUNCA escribas Helios, Modo Helios ni CompliLink.`,
+    "Habla en español sencillo, cálido y familiar. Frases cortas. Sin jerga de ingeniería ni tecnicismos.",
+    casePeople
+      ? `Este es el caso concreto que ya tienes abierto: ${casePeople}. Toda respuesta debe hablar de estas personas y papeles, no de un caso genérico.`
+      : "Este es un expediente concreto. No des consejos de libro: aplica todo a los papeles que sí están aquí.",
+    "Si preguntan un concepto (IMSS, ISR, finiquito, etc.), explícalo aplicado a ESTE expediente: qué se ve aquí, qué falta aquí y qué le conviene a esta persona.",
+    "No cites autores, doctrina, tesis ni jurisprudencia por citar. Solo bases ya listadas, en palabras simples.",
     "Usa únicamente las señales del documento y las bases legales ya listadas.",
-    "Si un dato no aparece, di que no se ve en tus papeles.",
+    "Si un dato no aparece, di que no se ve en los papeles de este expediente.",
     "Nunca inventes tesis, registro digital, Semanario Judicial, IUS ni jurisprudencia.",
     "Si el digest trae lecturas oficiales, puedes citar SOLO esos títulos y ligas, en palabras simples, sin claves de tesis.",
     "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Si es criterio reiterado, dilo así. Nunca etiquetes doctrina como jurisprudencia.",
@@ -325,8 +356,12 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
       resultCardQuestions: grounding.resultCardQuestions,
       prefersRemoteOpinion: grounding.prefersRemoteOpinion,
       reviewSource: grounding.reviewSource,
+      workerName: grounding.workerName,
+      employerName: grounding.employerName,
+      caseTitle: grounding.caseTitle,
+      riskLevel: grounding.riskLevel,
       guidance:
-        "Responde solo con estas señales y bases. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia. Nunca uses Helios en la salida visible. Si hay revisión avanzada, prefierela.",
+        "Habla como asesor laboral de ESTE expediente. Ancla cada respuesta en la persona, el patrón y los papeles de este caso. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia. Nunca uses Helios. Si hay revisión avanzada, prefierela.",
     },
     null,
     2,

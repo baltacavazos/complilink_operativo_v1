@@ -43,6 +43,14 @@ function DemoViewGuard() {
   return null;
 }
 
+function RedirectToAuditarChat() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation("/auditar?chat=1");
+  }, [setLocation]);
+  return <RouteLoadingFallback />;
+}
+
 function RouteLoadingFallback() {
   return (
     <main className="audita-access min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
@@ -71,6 +79,9 @@ function Router() {
           <Route path={"/"} component={Home} />
           <Route path={"/acceso"} component={Access} />
           <Route path={"/auditar"} component={Auditar} />
+          <Route path={"/asesor"}>{() => <RedirectToAuditarChat />}</Route>
+          <Route path={"/asesor-laboral"}>{() => <RedirectToAuditarChat />}</Route>
+          <Route path={"/chat"}>{() => <RedirectToAuditarChat />}</Route>
           <Route path={"/pagos"} component={Payments} />
           <Route path={"/planes"} component={Plans} />
           <Route path={"/precios"} component={Plans} />
@@ -101,6 +112,9 @@ function MobileQuickExit() {
     path === "/" ||
     path === "/acceso" ||
     path === "/auditar" ||
+    path === "/asesor" ||
+    path === "/asesor-laboral" ||
+    path === "/chat" ||
     path === "/historial" ||
     path === "/expediente" ||
     path === "/pagos" ||

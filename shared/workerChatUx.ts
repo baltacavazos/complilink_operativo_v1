@@ -56,12 +56,12 @@ export function hasInternalControlMarkers(value?: string | null): boolean {
 }
 
 export const WORKER_CHAT_SHEET_COPY = {
-  eyebrow: "Lectura de tus papeles",
+  eyebrow: "Tu expediente, en palabras simples",
   title: WORKER_CHAT_TITLE,
   description:
-    "Pregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
-  documentBadge: "Solo lee tus papeles",
-  capabilityBadge: "No es un abogado",
+    "Soy tu asesor laboral de este caso. Pregúntame en palabras simples. Te hablo con lo que ya aparece de la persona trabajadora, el patrón y tus papeles.",
+  documentBadge: "Anclado a tu expediente",
+  capabilityBadge: "Te acompaña en tu caso",
   officialSourcesHeading: WORKER_CHAT_SOURCES_HEADING,
   quickHighlights: [
     WORKER_CHAT_CLEAR_HEADING,
@@ -77,11 +77,20 @@ export const WORKER_CHAT_SHEET_COPY = {
   toneExplainedLabel: "Un poco más",
   toneBriefHint: "Va al punto, en pocas líneas.",
   toneExplainedHint: "Explica un poco más, todavía en palabras simples.",
-  placeholder: "Escribe tu duda. Ejemplo: ¿me descontaron IMSS?",
+  placeholder: "Pregúntame de ESTE expediente. Ejemplo: ¿en mi recibo me descontaron IMSS?",
   emptyStateMessage:
-    "Elige una pregunta de arriba o escribe la tuya. Te digo lo que sí se ve, lo que falta y el siguiente paso.",
+    "Pregúntame de tu caso. Te digo, con tus papeles, lo que sí se ve, lo que falta y el siguiente paso.",
   closeLabel: "Cerrar",
 } as const;
+
+export const WORKER_ADVISOR_VOICE_NOTE = [
+  "Habla como un abogado laboral cercano, cálido y familiar que ya tiene ESTE expediente abierto.",
+  "Siempre ancla la respuesta en la persona trabajadora, el patrón, los documentos, lo que falta y el riesgo u opinión de ESTE caso.",
+  "Si preguntan algo conceptual, explícalo aplicado a este expediente. Nada de consejos genéricos de libro.",
+  "Español sencillo y claro. Sin tecnicismos, sin citar autores ni doctrina por citar.",
+  "Nunca te presentes como Helios ni uses jerga de ingeniería.",
+  "No sustituyes a un abogado de su confianza; sí los acompañas a entender su caso.",
+].join(" ");
 
 export type WorkerChatDocumentType =
   | "payroll_receipt"

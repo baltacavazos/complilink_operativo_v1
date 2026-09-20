@@ -42,19 +42,32 @@ import { ENV } from "./_core/env";
 import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
 import { ensureMysqlTables } from "./mysqlBootstrap";
 import { deriveBridgeCallbackAlerts } from "./operationalSignals";
-import { toUserFacingDatabaseError } from "./userFacingDatabaseError";
+import {
+  isDuplicateKeyError,
+  logActionableDatabaseFailure,
+  toUserFacingDatabaseError,
+} from "./userFacingDatabaseError";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 let _lockPool: Pool | null = null;
+let missingDatabaseUrlLogged = false;
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      logActionableDatabaseFailure("Database.connect", error, {
+        step: "drizzle_init",
+      });
       _db = null;
     }
+  }
+  if (!_db && !process.env.DATABASE_URL?.trim() && !missingDatabaseUrlLogged) {
+    missingDatabaseUrlLogged = true;
+    console.error(
+      "[Database] Falta DATABASE_URL. Sin eso no se puede preparar el expediente de una cuenta nueva.",
+    );
   }
   return _db;
 }
@@ -660,6 +673,11 @@ export function buildCaseId(tenantId: string, seed?: string) {
   return `CASE-${tenantId.slice(0, 6).toUpperCase()}-${suffix}`;
 }
 
+/** Stable per-user case id. Do not use buildCaseId(..., "demo001") — similar tenant names collide. */
+export function buildPersonalCaseId(userId: number) {
+  return `CASE-U${userId}`.slice(0, 64);
+}
+
 export function buildTraceId(tenantId: string, caseId?: string, seed?: string) {
   const tail = (seed ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`).replace(/[^a-zA-Z0-9]/g, "");
   return ["trace", tenantId, caseId ?? "root", tail].join(".");
@@ -674,23 +692,18 @@ export async function ensureTenantForUser(params: {
     await ensureMysqlTables();
     const db = await getDb();
     if (!db) {
-      throw new Error("Database not available");
+      throw new Error("No pudimos preparar tu espacio de revisión.");
     }
 
+    const displayName = params.userName?.trim() || params.userEmail?.split("@")[0] || "AuditaPatron";
     const existingMembership = await db
-      .select({ tenantId: tenantMemberships.tenantId })
+      .select({ tenantId: tenantMemberships.tenantId, traceId: tenantMemberships.traceId })
       .from(tenantMemberships)
       .where(and(eq(tenantMemberships.userId, params.userId), eq(tenantMemberships.status, "active")))
       .limit(1);
 
-    if (existingMembership[0]?.tenantId) {
-      const tenant = await db.select().from(tenants).where(eq(tenants.tenantId, existingMembership[0].tenantId)).limit(1);
-      return tenant[0];
-    }
-
-    const displayName = params.userName?.trim() || params.userEmail?.split("@")[0] || "CompliLink Tenant";
-    const tenantId = buildTenantId(displayName, String(params.userId));
-    const traceId = buildTraceId(tenantId, undefined, String(params.userId));
+    const tenantId = existingMembership[0]?.tenantId || buildTenantId(displayName, String(params.userId));
+    const traceId = existingMembership[0]?.traceId || buildTraceId(tenantId, undefined, String(params.userId));
 
     const tenantPayload: InsertTenant = {
       tenantId,
@@ -700,31 +713,81 @@ export async function ensureTenantForUser(params: {
       status: "pilot",
     };
 
-    await db.insert(tenants).values(tenantPayload);
+    const existingTenant = await db.select().from(tenants).where(eq(tenants.tenantId, tenantId)).limit(1);
+    let wroteNewTenant = false;
+    let wroteNewMembership = false;
+    if (!existingTenant[0]) {
+      try {
+        await db.insert(tenants).values(tenantPayload);
+        wroteNewTenant = true;
+      } catch (error) {
+        if (!isDuplicateKeyError(error)) {
+          throw error;
+        }
+      }
+    }
 
-    const membershipPayload: InsertTenantMembership = {
-      tenantId,
-      traceId,
-      userId: params.userId,
-      role: "tenant_admin",
-      accessScope: "tenant",
-      status: "active",
-    };
+    const membership = await db
+      .select({ id: tenantMemberships.id })
+      .from(tenantMemberships)
+      .where(
+        and(
+          eq(tenantMemberships.userId, params.userId),
+          eq(tenantMemberships.tenantId, tenantId),
+          eq(tenantMemberships.status, "active"),
+        ),
+      )
+      .limit(1);
 
-    await db.insert(tenantMemberships).values(membershipPayload);
-    await createAuditLog({
-      tenantId,
-      traceId,
-      actorUserId: params.userId,
-      entityType: "tenant",
-      entityId: tenantId,
-      action: "tenant.bootstrap",
-      afterState: tenantPayload,
-    });
+    if (!membership[0]) {
+      try {
+        await db.insert(tenantMemberships).values({
+          tenantId,
+          traceId,
+          userId: params.userId,
+          role: "tenant_admin",
+          accessScope: "tenant",
+          status: "active",
+        });
+        wroteNewMembership = true;
+      } catch (error) {
+        if (!isDuplicateKeyError(error)) {
+          throw error;
+        }
+      }
+    }
+
+    if (wroteNewTenant || wroteNewMembership) {
+      try {
+        await createAuditLog({
+          tenantId,
+          traceId,
+          actorUserId: params.userId,
+          entityType: "tenant",
+          entityId: tenantId,
+          action: "tenant.bootstrap",
+          afterState: tenantPayload,
+        });
+      } catch (error) {
+        logActionableDatabaseFailure("tenant.bootstrap.audit", error, {
+          userId: params.userId,
+          tenantId,
+        });
+      }
+    }
 
     const createdTenant = await db.select().from(tenants).where(eq(tenants.tenantId, tenantId)).limit(1);
+    if (!createdTenant[0]) {
+      console.error("[tenant.bootstrap] El tenant no quedó persistido", {
+        userId: params.userId,
+        tenantId,
+        databaseUrlConfigured: Boolean(process.env.DATABASE_URL?.trim()),
+      });
+      throw new Error("No pudimos preparar tu espacio de revisión.");
+    }
     return createdTenant[0];
   } catch (error) {
+    logActionableDatabaseFailure("tenant.bootstrap", error, { userId: params.userId });
     throw toUserFacingDatabaseError(error);
   }
 }
@@ -1043,7 +1106,13 @@ export async function grantCaseAccess(input: InsertCaseAccess) {
       return;
     }
 
-    await db.insert(caseAccess).values(input);
+    try {
+      await db.insert(caseAccess).values(input);
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) {
+        throw error;
+      }
+    }
   } catch (error) {
     throw toUserFacingDatabaseError(error);
   }
@@ -1499,7 +1568,7 @@ export async function listCasesForUser(params: {
     .orderBy(desc(laborCases.updatedAt));
 
   if (explicitCaseIds.length === 0) {
-    return rows;
+    return rows.filter((row) => row.assignedUserId === params.userId);
   }
 
   return rows.filter((row) => tenantIds.includes(row.tenantId));
@@ -1521,72 +1590,101 @@ export async function getCaseDetailForUser(params: { userId: number; tenantId: s
     throw new Error("Case not found");
   }
 
+  const queryOrEmpty = async <T>(label: string, run: () => Promise<T[]>): Promise<T[]> => {
+    try {
+      return await run();
+    } catch (error) {
+      logActionableDatabaseFailure(`cases.detail.${label}`, error, {
+        userId: params.userId,
+        tenantId: params.tenantId,
+        caseId: params.caseId,
+      });
+      return [];
+    }
+  };
+
   const [events, documents, consents, alerts, policies, latestAuditarViewStateEntry, dispatchAuditLogs, webhookEvents] = await Promise.all([
-    db
-      .select()
-      .from(caseEvents)
-      .where(and(eq(caseEvents.tenantId, params.tenantId), eq(caseEvents.caseId, params.caseId)))
-      .orderBy(desc(caseEvents.eventAt)),
-    db
-      .select()
-      .from(caseDocuments)
-      .where(and(eq(caseDocuments.tenantId, params.tenantId), eq(caseDocuments.caseId, params.caseId)))
-      .orderBy(desc(caseDocuments.createdAt)),
-    db
-      .select()
-      .from(consentRecords)
-      .where(and(eq(consentRecords.tenantId, params.tenantId), eq(consentRecords.caseId, params.caseId)))
-      .orderBy(desc(consentRecords.updatedAt)),
-    db
-      .select()
-      .from(operationalAlerts)
-      .where(and(eq(operationalAlerts.tenantId, params.tenantId), eq(operationalAlerts.caseId, params.caseId)))
-      .orderBy(desc(operationalAlerts.raisedAt)),
-    db
-      .select()
-      .from(documentPolicies)
-      .where(and(eq(documentPolicies.tenantId, params.tenantId), eq(documentPolicies.caseId, params.caseId)))
-      .orderBy(desc(documentPolicies.updatedAt)),
-    db
-      .select({ afterState: auditLogs.afterState })
-      .from(auditLogs)
-      .where(
-        and(
-          eq(auditLogs.tenantId, params.tenantId),
-          eq(auditLogs.caseId, params.caseId),
-          eq(auditLogs.actorUserId, params.userId),
-          eq(auditLogs.entityType, "system"),
-          eq(auditLogs.action, "auditar.view_state.upsert"),
-        ),
-      )
-      .orderBy(desc(auditLogs.createdAt))
-      .limit(1),
-    db
-      .select({
-        id: auditLogs.id,
-        documentId: auditLogs.documentId,
-        createdAt: auditLogs.createdAt,
-        afterState: auditLogs.afterState,
-      })
-      .from(auditLogs)
-      .where(
-        and(
-          eq(auditLogs.tenantId, params.tenantId),
-          eq(auditLogs.caseId, params.caseId),
-          eq(auditLogs.action, "document.engine_dispatch"),
-        ),
-      )
-      .orderBy(desc(auditLogs.createdAt)),
-    db
-      .select({
-        id: compliLinkWebhookEvents.id,
-        documentId: compliLinkWebhookEvents.documentId,
-        correlationId: compliLinkWebhookEvents.correlationId,
-        createdAt: compliLinkWebhookEvents.createdAt,
-      })
-      .from(compliLinkWebhookEvents)
-      .where(and(eq(compliLinkWebhookEvents.tenantId, params.tenantId), eq(compliLinkWebhookEvents.caseId, params.caseId)))
-      .orderBy(desc(compliLinkWebhookEvents.createdAt)),
+    queryOrEmpty("events", () =>
+      db
+        .select()
+        .from(caseEvents)
+        .where(and(eq(caseEvents.tenantId, params.tenantId), eq(caseEvents.caseId, params.caseId)))
+        .orderBy(desc(caseEvents.eventAt)),
+    ),
+    queryOrEmpty("documents", () =>
+      db
+        .select()
+        .from(caseDocuments)
+        .where(and(eq(caseDocuments.tenantId, params.tenantId), eq(caseDocuments.caseId, params.caseId)))
+        .orderBy(desc(caseDocuments.createdAt)),
+    ),
+    queryOrEmpty("consents", () =>
+      db
+        .select()
+        .from(consentRecords)
+        .where(and(eq(consentRecords.tenantId, params.tenantId), eq(consentRecords.caseId, params.caseId)))
+        .orderBy(desc(consentRecords.updatedAt)),
+    ),
+    queryOrEmpty("alerts", () =>
+      db
+        .select()
+        .from(operationalAlerts)
+        .where(and(eq(operationalAlerts.tenantId, params.tenantId), eq(operationalAlerts.caseId, params.caseId)))
+        .orderBy(desc(operationalAlerts.raisedAt)),
+    ),
+    queryOrEmpty("policies", () =>
+      db
+        .select()
+        .from(documentPolicies)
+        .where(and(eq(documentPolicies.tenantId, params.tenantId), eq(documentPolicies.caseId, params.caseId)))
+        .orderBy(desc(documentPolicies.updatedAt)),
+    ),
+    queryOrEmpty("viewState", () =>
+      db
+        .select({ afterState: auditLogs.afterState })
+        .from(auditLogs)
+        .where(
+          and(
+            eq(auditLogs.tenantId, params.tenantId),
+            eq(auditLogs.caseId, params.caseId),
+            eq(auditLogs.actorUserId, params.userId),
+            eq(auditLogs.entityType, "system"),
+            eq(auditLogs.action, "auditar.view_state.upsert"),
+          ),
+        )
+        .orderBy(desc(auditLogs.createdAt))
+        .limit(1),
+    ),
+    queryOrEmpty("dispatchAudit", () =>
+      db
+        .select({
+          id: auditLogs.id,
+          documentId: auditLogs.documentId,
+          createdAt: auditLogs.createdAt,
+          afterState: auditLogs.afterState,
+        })
+        .from(auditLogs)
+        .where(
+          and(
+            eq(auditLogs.tenantId, params.tenantId),
+            eq(auditLogs.caseId, params.caseId),
+            eq(auditLogs.action, "document.engine_dispatch"),
+          ),
+        )
+        .orderBy(desc(auditLogs.createdAt)),
+    ),
+    queryOrEmpty("webhooks", () =>
+      db
+        .select({
+          id: compliLinkWebhookEvents.id,
+          documentId: compliLinkWebhookEvents.documentId,
+          correlationId: compliLinkWebhookEvents.correlationId,
+          createdAt: compliLinkWebhookEvents.createdAt,
+        })
+        .from(compliLinkWebhookEvents)
+        .where(and(eq(compliLinkWebhookEvents.tenantId, params.tenantId), eq(compliLinkWebhookEvents.caseId, params.caseId)))
+        .orderBy(desc(compliLinkWebhookEvents.createdAt)),
+    ),
   ]);
 
   const auditarViewStatePayload = latestAuditarViewStateEntry[0]?.afterState
@@ -2487,11 +2585,11 @@ export async function seedDemoCaseIfEmpty(userId: number) {
   try {
     await ensureMysqlTables();
     const db = await getDb();
-    if (!db) throw new Error("Database not available");
+    if (!db) throw new Error("No pudimos preparar tu espacio de revisión.");
 
+    const user = await getUserById(userId);
     let tenantIds = await getAccessibleTenantIds(userId);
     if (tenantIds.length === 0) {
-      const user = await getUserById(userId);
       if (user) {
         const tenant = await ensureTenantForUser({
           userId,
@@ -2505,127 +2603,123 @@ export async function seedDemoCaseIfEmpty(userId: number) {
     }
 
     if (tenantIds.length === 0) {
+      console.error("[workspace.seed] La cuenta no tiene tenant activo", {
+        userId,
+        databaseUrlConfigured: Boolean(process.env.DATABASE_URL?.trim()),
+      });
       throw new Error("No pudimos preparar tu espacio de revisión.");
     }
 
-    const existingPrimary = await getPrimaryCaseIdForUser(userId, tenantIds[0]);
+    const tenantId = tenantIds[0]!;
+    const existingPrimary = await getPrimaryCaseIdForUser(userId, tenantId);
     if (existingPrimary) {
-      await repairPersonalCaseAccess(userId, tenantIds[0], existingPrimary);
+      await repairPersonalCaseAccess(userId, tenantId, existingPrimary);
       return false;
     }
 
     const [caseCount] = await db.select({ value: count() }).from(laborCases).where(inArray(laborCases.tenantId, tenantIds));
     if (Number(caseCount?.value ?? 0) > 0) {
-      await repairPersonalCaseAccess(userId, tenantIds[0]);
+      await repairPersonalCaseAccess(userId, tenantId);
       return false;
     }
 
-  const tenantId = tenantIds[0]!;
-  const caseId = buildCaseId(tenantId, "demo001");
-  const traceId = buildTraceId(tenantId, caseId, "demo001");
-  const now = new Date();
+    const caseId = buildPersonalCaseId(userId);
+    const alreadySeeded = await db
+      .select({ caseId: laborCases.caseId, tenantId: laborCases.tenantId, traceId: laborCases.traceId })
+      .from(laborCases)
+      .where(eq(laborCases.caseId, caseId))
+      .limit(1);
+    if (alreadySeeded[0]) {
+      await repairPersonalCaseAccess(userId, alreadySeeded[0].tenantId, alreadySeeded[0].caseId);
+      return false;
+    }
 
-  await createCaseRecord({
-    tenantId,
-    caseId,
-    traceId,
-    title: "Mi revisión documental",
-    employeeName: "María Fernanda López",
-    employerEntity: "Compañía Piloto MX",
-    jurisdiction: "México",
-    status: "intake",
-    priority: "medium",
-    assignedUserId: userId,
-    summary: "Expediente inicial para revisar tus documentos cuando los subas.",
-    canonicalPayload: toJson({
-      tenant_id: tenantId,
-      case_id: caseId,
-      trace_id: traceId,
-      domain: "labor_case",
-      country: "MX",
-      workflow_stage: "intake",
-    }),
-    openedAt: now,
-    lastActivityAt: now,
-    dueAt: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 10),
-  });
+    const traceId = buildTraceId(tenantId, caseId, `user${userId}`);
+    const now = new Date();
+    const employeeName = user?.name?.trim() || user?.email?.split("@")[0] || "Tu expediente";
 
-  await grantCaseAccess({
-    tenantId,
-    caseId,
-    traceId,
-    userId,
-    grantedByUserId: userId,
-    accessLevel: "owner",
-    status: "active",
-  });
+    try {
+      await createCaseRecord({
+        tenantId,
+        caseId,
+        traceId,
+        title: "Mi revisión documental",
+        employeeName,
+        employerEntity: null,
+        jurisdiction: "México",
+        status: "intake",
+        priority: "medium",
+        assignedUserId: userId,
+        summary: "Expediente inicial para revisar tus documentos cuando los subas.",
+        canonicalPayload: toJson({
+          tenant_id: tenantId,
+          case_id: caseId,
+          trace_id: traceId,
+          domain: "labor_case",
+          country: "MX",
+          workflow_stage: "intake",
+        }),
+        openedAt: now,
+        lastActivityAt: now,
+        dueAt: new Date(now.getTime() + 1000 * 60 * 60 * 24 * 10),
+      });
+    } catch (error) {
+      const raced = await db
+        .select({ caseId: laborCases.caseId, tenantId: laborCases.tenantId })
+        .from(laborCases)
+        .where(eq(laborCases.caseId, caseId))
+        .limit(1);
+      if (raced[0]) {
+        await repairPersonalCaseAccess(userId, raced[0].tenantId, raced[0].caseId);
+        return false;
+      }
+      throw error;
+    }
 
-  await addCaseEvent({
-    tenantId,
-    caseId,
-    traceId,
-    actorUserId: userId,
-    eventType: "case_created",
-    title: "Caso inicial creado",
-    description: "Se generó el caso base para operación y validación del flujo.",
-    metadata: toJson({ source: "system_seed" }),
-    eventAt: now,
-  });
+    await grantCaseAccess({
+      tenantId,
+      caseId,
+      traceId,
+      userId,
+      grantedByUserId: userId,
+      accessLevel: "owner",
+      status: "active",
+    });
 
-  await addOperationalAlert({
-    tenantId,
-    caseId,
-    traceId,
-    severity: "warning",
-    category: "missing_consent",
-    title: "Consentimiento documental pendiente",
-    description: "El expediente piloto requiere registrar consentimiento para al menos un documento sensible.",
-    status: "open",
-    raisedAt: now,
-  });
+    try {
+      await addCaseEvent({
+        tenantId,
+        caseId,
+        traceId,
+        actorUserId: userId,
+        eventType: "case_created",
+        title: "Caso inicial creado",
+        description: "Se generó el caso base para revisar tus documentos.",
+        metadata: toJson({ source: "system_seed" }),
+        eventAt: now,
+      });
+    } catch (error) {
+      logActionableDatabaseFailure("workspace.seed.event", error, { userId, tenantId, caseId });
+    }
 
-  await addConsentRecord({
-    tenantId,
-    caseId,
-    traceId,
-    subjectName: "María Fernanda López",
-    subjectRole: "Trabajadora",
-    legalBasis: "Revisión de expediente laboral y trazabilidad interna",
-    status: "pending",
-    notes: "Registro de ejemplo para tablero y visibilidad.",
-  });
-
-  await upsertCanonicalContract({
-    tenantId,
-    caseId,
-    traceId,
-    contractType: "shared_engine",
-    schemaVersion: "v1",
-    status: "ready",
-    payload: toJson({
-      tenant_id: tenantId,
-      case_id: caseId,
-      trace_id: traceId,
-      entity: "labor_case",
-      documents: [],
-      policies: [],
-      audit_ready: true,
-    }),
-  });
-
-  await createAuditLog({
-    tenantId,
-    caseId,
-    traceId,
-    actorUserId: userId,
-    entityType: "case",
-    entityId: caseId,
-    action: "case.seed_demo",
-    afterState: { tenantId, caseId, traceId },
-  });
+    try {
+      await createAuditLog({
+        tenantId,
+        caseId,
+        traceId,
+        actorUserId: userId,
+        entityType: "case",
+        entityId: caseId,
+        action: "case.seed_personal",
+        afterState: { tenantId, caseId, traceId },
+      });
+    } catch (error) {
+      logActionableDatabaseFailure("workspace.seed.audit", error, { userId, tenantId, caseId });
+    }
 
     return true;
   } catch (error) {
+    logActionableDatabaseFailure("workspace.seed", error, { userId });
     throw toUserFacingDatabaseError(error);
   }
 }
@@ -2697,15 +2791,21 @@ export async function repairPersonalCaseAccess(userId: number, tenantId: string,
       .limit(1);
 
     if (!membership[0]) {
-      await db.insert(tenantMemberships).values({
-        tenantId,
-        caseId: caseRow.caseId,
-        traceId: caseRow.traceId,
-        userId,
-        role: "tenant_admin",
-        accessScope: "tenant",
-        status: "active",
-      });
+      try {
+        await db.insert(tenantMemberships).values({
+          tenantId,
+          caseId: caseRow.caseId,
+          traceId: caseRow.traceId,
+          userId,
+          role: "tenant_admin",
+          accessScope: "tenant",
+          status: "active",
+        });
+      } catch (error) {
+        if (!isDuplicateKeyError(error)) {
+          throw error;
+        }
+      }
     }
 
     await grantCaseAccess({
@@ -2731,14 +2831,33 @@ export async function ensurePersonalWorkspaceForUser(params: {
 }) {
   await ensureMysqlTables();
   const tenant = await ensureTenantForUser(params);
+  if (!tenant?.tenantId) {
+    console.error("[workspace.bootstrap] ensureTenantForUser no devolvió tenant", {
+      userId: params.userId,
+      databaseUrlConfigured: Boolean(process.env.DATABASE_URL?.trim()),
+    });
+    throw new Error("No pudimos preparar tu espacio de revisión.");
+  }
   await seedDemoCaseIfEmpty(params.userId);
-  const caseId = tenant?.tenantId ? await getPrimaryCaseIdForUser(params.userId, tenant.tenantId) : null;
-  if (tenant?.tenantId && caseId) {
+  let caseId = await getPrimaryCaseIdForUser(params.userId, tenant.tenantId);
+  if (!caseId) {
+    await repairPersonalCaseAccess(params.userId, tenant.tenantId, buildPersonalCaseId(params.userId));
+    caseId = await getPrimaryCaseIdForUser(params.userId, tenant.tenantId);
+  }
+  if (caseId) {
     await repairPersonalCaseAccess(params.userId, tenant.tenantId, caseId);
+  }
+  if (!caseId) {
+    console.error("[workspace.bootstrap] La cuenta quedó sin expediente personal", {
+      userId: params.userId,
+      tenantId: tenant.tenantId,
+      databaseUrlConfigured: Boolean(process.env.DATABASE_URL?.trim()),
+    });
+    throw new Error("No pudimos preparar tu espacio de revisión.");
   }
   return {
     tenant,
-    tenantId: tenant?.tenantId ?? null,
+    tenantId: tenant.tenantId,
     caseId,
   };
 }

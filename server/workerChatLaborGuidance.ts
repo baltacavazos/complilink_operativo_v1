@@ -44,6 +44,10 @@ export type WorkerChatLaborGuidanceInput = {
   missingDocumentLabel: string | null;
   missingDocumentReason: string | null;
   sourceOpinion?: unknown;
+  workerName?: string | null;
+  employerName?: string | null;
+  caseTitle?: string | null;
+  riskLevel?: string | null;
 };
 
 export type WorkerChatLaborGuidance = {
@@ -324,6 +328,25 @@ function ensureFoundationWhy(nextStep: string, foundation: WorkerChatGuidanceFou
   return `${nextStep} Esta lectura usa ${title} para comparar lo que sí se ve en tus papeles.`;
 }
 
+export function composeCaseAnchorPhrase(input: Pick<WorkerChatLaborGuidanceInput, "workerName" | "employerName" | "caseTitle">) {
+  const worker = asText(input.workerName);
+  const employer = asText(input.employerName);
+  if (worker && employer) {
+    return `En el expediente de ${worker} con ${employer}`;
+  }
+  if (worker) {
+    return `En el expediente de ${worker}`;
+  }
+  if (employer) {
+    return `En este expediente con ${employer}`;
+  }
+  const title = asText(input.caseTitle);
+  if (title && !/mi revisión documental/i.test(title)) {
+    return `En ${title}`;
+  }
+  return null;
+}
+
 function composeClearAnswer(
   input: WorkerChatLaborGuidanceInput,
   prefersRemote: boolean,
@@ -341,23 +364,33 @@ function composeClearAnswer(
   const imssLine = input.hasImssSignal
     ? " Si se ve IMSS en el papel, eso no confirma alta, vigencia ni semanas cotizadas."
     : "";
+  const caseAnchor = composeCaseAnchorPhrase(input);
+  const casePrefix = caseAnchor ? `${caseAnchor}, ` : "";
 
   if (remoteText) {
-    return `${remoteText}${imssLine}`.replace(/\s+/g, " ").trim();
+    return `${casePrefix}${remoteText}${imssLine}`.replace(/\s+/g, " ").trim();
   }
 
   if (visibleFactLines.length > 0) {
-    return `En tus papeles se alcanza a leer ${joinFactLines(visibleFactLines)}.${foundationLine}${imssLine}`
+    return `${casePrefix}en tus papeles se alcanza a leer ${joinFactLines(visibleFactLines)}.${foundationLine}${imssLine}`
+      .replace(/^en el /i, "En el ")
+      .replace(/^en este /i, "En este ")
+      .replace(/^en tus /i, "En tus ")
       .replace(/\s+/g, " ")
       .trim();
   }
 
   const factLine = firstExplanationLine(input.laborExplanations);
-  return (
+  return `${casePrefix}${
     factLine ??
     input.summary ??
-    "Ya hay una primera lectura de tus papeles, aunque todavía faltan piezas para cerrar la respuesta."
-  ) + foundationLine + imssLine;
+    "ya hay una primera lectura de tus papeles, aunque todavía faltan piezas para cerrar la respuesta."
+  }${foundationLine}${imssLine}`
+    .replace(/^en el /i, "En el ")
+    .replace(/^en este /i, "En este ")
+    .replace(/^ya hay /i, "Ya hay ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function composeKnown(input: WorkerChatLaborGuidanceInput, visibleFactLines: string[]) {

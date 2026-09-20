@@ -298,10 +298,10 @@ describe("chat UX helpers", () => {
 
   it("el panel usa Asesor laboral, las cuatro secciones y el sanitizador no reintroduce Helios", () => {
     expect(WORKER_CHAT_SHEET_COPY.title).toBe(WORKER_CHAT_TITLE);
-    expect(WORKER_CHAT_SHEET_COPY.eyebrow).toBe("Lectura de tus papeles");
+    expect(WORKER_CHAT_SHEET_COPY.eyebrow).toBe("Tu expediente, en palabras simples");
     expect(WORKER_CHAT_ASK_CTA).toBe("Preguntar al asesor");
     expect(WORKER_CHAT_SHEET_COPY.promptsHeading).toBe("Empieza por aquí");
-    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("No es un abogado");
+    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Te acompaña en tu caso");
     expect(WORKER_CHAT_SHEET_COPY.quickHighlights).toEqual([
       "Respuesta clara",
       "Lo que sí se sabe",

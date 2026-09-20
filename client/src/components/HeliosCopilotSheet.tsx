@@ -81,6 +81,7 @@ type HeliosCopilotSheetProps = {
   suggestedPromptsContext?: string | null;
   caseTitle?: string | null;
   employeeName?: string | null;
+  employerEntity?: string | null;
   confidenceScore?: number | null;
   disclaimer?: string | null;
   summary?: string | null;
@@ -106,6 +107,7 @@ export function HeliosCopilotSheet({
   suggestedPromptsContext,
   caseTitle,
   employeeName,
+  employerEntity,
   confidenceScore,
   disclaimer,
   summary,
@@ -175,6 +177,8 @@ export function HeliosCopilotSheet({
   const visibleSummary = sanitizeMultiline(summary) ?? summary;
   const visibleDisclaimer = sanitizeMultiline(disclaimer) ?? disclaimer;
   const visibleCaseTitle = sanitizeClientVisibleCopy(caseTitle) ?? caseTitle;
+  const visibleEmployeeName = sanitizeClientVisibleCopy(employeeName) ?? employeeName;
+  const visibleEmployer = sanitizeClientVisibleCopy(employerEntity) ?? employerEntity;
   const visibleOfficialTitles = officialTitles.slice(0, 3).map((item) => ({
     ...item,
     title: sanitizeClientVisibleCopy(item.title) ?? item.title,
@@ -218,9 +222,14 @@ export function HeliosCopilotSheet({
             <div className="ap-chat-case-card mt-5 space-y-3 rounded-[1.35rem] border border-slate-200/80 bg-white p-4 shadow-[0_18px_40px_-32px_rgba(15,23,42,0.28)]">
               <p className="text-sm font-semibold text-slate-950">
                 {visibleCaseTitle ?? "Expediente activo"}
-                {employeeName ? (
+                {visibleEmployeeName ? (
                   <span className="font-normal text-slate-600">
-                    {" "}· {employeeName}
+                    {" "}· {visibleEmployeeName}
+                  </span>
+                ) : null}
+                {visibleEmployer ? (
+                  <span className="font-normal text-slate-600">
+                    {" "}· {visibleEmployer}
                   </span>
                 ) : null}
               </p>

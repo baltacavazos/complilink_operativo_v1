@@ -14,6 +14,34 @@ export function readErrorMessage(error: unknown): string {
   return "";
 }
 
+export function readErrorCode(error: unknown): string {
+  if (typeof error === "object" && error && "code" in error) {
+    return String((error as { code?: string }).code ?? "");
+  }
+  return "";
+}
+
+export function isDuplicateKeyError(error: unknown): boolean {
+  return readErrorCode(error) === "ER_DUP_ENTRY" || /Duplicate entry/i.test(readErrorMessage(error));
+}
+
+export function logActionableDatabaseFailure(
+  scope: string,
+  error: unknown,
+  context: Record<string, unknown> = {},
+) {
+  const databaseUrlConfigured = Boolean(process.env.DATABASE_URL?.trim());
+  console.error(`[${scope}] Fallo de base de datos`, {
+    ...context,
+    code: readErrorCode(error) || undefined,
+    cause: readErrorMessage(error) || "sin mensaje",
+    databaseUrlConfigured,
+    hint: !databaseUrlConfigured
+      ? "Falta DATABASE_URL en este servicio. Configúrala y reinicia."
+      : "Si es ER_DUP_ENTRY el alta debe reutilizar el tenant/expediente. Si es ER_NO_SUCH_TABLE, el bootstrap de tablas no corrió.",
+  });
+}
+
 export function isRawDatabaseError(error: unknown): boolean {
   const message = readErrorMessage(error);
   if (!message) {

@@ -9,6 +9,7 @@ describe("acceso de expediente para cuentas nuevas", () => {
   it("repara membresía y case_access del expediente personal", () => {
     expect(dbSource).toContain("export async function repairPersonalCaseAccess");
     expect(dbSource).toContain("export async function ensurePersonalWorkspaceForUser");
+    expect(dbSource).toContain("export function buildPersonalCaseId");
     expect(dbSource).toContain("export async function getPrimaryCaseIdForUser");
     expect(dbSource).toContain('role: "tenant_admin"');
     expect(dbSource).toContain('accessLevel: "owner"');

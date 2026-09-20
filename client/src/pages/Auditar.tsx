@@ -4783,8 +4783,11 @@ export default function Auditar() {
     setBootstrapStarted(true);
     bootstrapMutation.mutate(undefined, {
       onSuccess: result => {
-        if (!selectedTenantId) {
+        if (!selectedTenantId && result.tenant?.tenantId) {
           setSelectedTenantId(result.tenant.tenantId);
+        }
+        if (result.caseId) {
+          setSelectedCaseId(result.caseId);
         }
       },
     });
@@ -4897,10 +4900,23 @@ export default function Auditar() {
     return `${auditarPersistenceKey}:copilot:${currentCaseScopeKey}`;
   }, [auditarPersistenceKey, currentCaseScopeKey]);
 
+  const previousCaseScopeRef = useRef<string | null>(null);
   useEffect(() => {
-    setHeliosCopilotOpen(false);
-    heliosCopilotMutation.reset();
+    if (!currentCaseScopeKey) return;
+    if (previousCaseScopeRef.current && previousCaseScopeRef.current !== currentCaseScopeKey) {
+      setHeliosCopilotOpen(false);
+      heliosCopilotMutation.reset();
+    }
+    previousCaseScopeRef.current = currentCaseScopeKey;
   }, [currentCaseScopeKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("chat") === "1" || params.get("asesor") === "1") {
+      setHeliosCopilotOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined" || !heliosCopilotHistoryStorageKey) {
@@ -5488,12 +5504,23 @@ export default function Auditar() {
       return `${warmVisibleNamingCopy(visibleHeliosOpinion.summary)}\n\nPregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.`;
     }
 
+    const workerName = caseDetailQuery.data?.case.employeeName?.trim();
+    const employerName = caseDetailQuery.data?.case.employerEntity?.trim();
+    const casePeople =
+      workerName && employerName
+        ? `el expediente de ${workerName} con ${employerName}`
+        : workerName
+          ? `el expediente de ${workerName}`
+          : "este expediente";
+
     if (heliosDocumentsCount === 0) {
-      return "Todavía no hay un documento para leer. Sube tu documento (recibo, CFDI o PDF del IMSS) y te digo qué se ve, qué falta y el siguiente paso.";
+      return `Todavía no hay un documento para leer en ${casePeople}. Sube tu recibo, CFDI o PDF del IMSS y te digo, de este caso, qué se ve, qué falta y el siguiente paso.`;
     }
 
-    return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"}. Pregúntame qué se ve, qué falta y el siguiente paso.`;
+    return `Ya hay una primera lectura de ${heliosDocumentsCount} documento${heliosDocumentsCount === 1 ? "" : "s"} en ${casePeople}. Pregúntame qué se ve aquí, qué falta y el siguiente paso.`;
   }, [
+    caseDetailQuery.data?.case.employeeName,
+    caseDetailQuery.data?.case.employerEntity,
     heliosDocumentsCount,
     visibleHeliosOpinion?.resultCard?.assistantIntro,
     visibleHeliosOpinion?.summary,
@@ -14241,6 +14268,7 @@ Reforzar con otro documento
                 suggestedPromptsContext={heliosCopilotSuggestedPromptsContext}
                 caseTitle={caseDetailQuery.data?.case.title}
                 employeeName={caseDetailQuery.data?.case.employeeName}
+                employerEntity={caseDetailQuery.data?.case.employerEntity}
                 confidenceScore={
                   heliosCopilotMutation.data?.confidenceScore ??
                   visibleHeliosOpinion?.confidenceScore ??
