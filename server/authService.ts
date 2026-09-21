@@ -7,6 +7,7 @@ import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
+import { canUseSmokeAuth, isSmokeAuthCode, SMOKE_AUTH_CODE } from "./smokeAuth";
 
 const EMAIL_LOGIN_COOKIE = "complilink_email_login";
 const EMAIL_CODE_TTL_MS = 1000 * 60 * 10;
@@ -460,7 +461,8 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
   const email = normalizeEmail(params.email);
   assertEmailCodeRequestAllowed(email);
 
-  const code = `${randomInt(100000, 999999)}`;
+  const smokeBypass = canUseSmokeAuth(email);
+  const code = smokeBypass ? SMOKE_AUTH_CODE : `${randomInt(100000, 999999)}`;
   const challenge = createPendingEmailChallenge({
     email,
     codeHash: hashEmailCode(email, code),
@@ -468,14 +470,29 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
   });
   const challengeToken = await signEmailChallengeToken(challenge);
 
-  const delivery = await deliverEmailCode({ requestedEmail: email, code });
+  if (!smokeBypass) {
+    const delivery = await deliverEmailCode({ requestedEmail: email, code });
+    recordEmailCodeRequest(email);
+    setPendingEmailChallenge(challenge);
+    setEmailChallengeCookie(params.req, params.res, challengeToken);
+
+    return {
+      maskedEmail: maskEmail(delivery.deliveredToEmail),
+      usedOwnerBackupEmail: delivery.usedOwnerBackupEmail,
+      expiresInSeconds: Math.floor(EMAIL_CODE_TTL_MS / 1000),
+      cooldownSeconds: Math.floor(EMAIL_RESEND_COOLDOWN_MS / 1000),
+      maxRequestsPerWindow: EMAIL_RESEND_MAX_REQUESTS,
+      rateLimitWindowSeconds: Math.floor(EMAIL_RESEND_WINDOW_MS / 1000),
+    };
+  }
+
   recordEmailCodeRequest(email);
   setPendingEmailChallenge(challenge);
   setEmailChallengeCookie(params.req, params.res, challengeToken);
 
   return {
-    maskedEmail: maskEmail(delivery.deliveredToEmail),
-    usedOwnerBackupEmail: delivery.usedOwnerBackupEmail,
+    maskedEmail: maskEmail(email),
+    usedOwnerBackupEmail: false,
     expiresInSeconds: Math.floor(EMAIL_CODE_TTL_MS / 1000),
     cooldownSeconds: Math.floor(EMAIL_RESEND_COOLDOWN_MS / 1000),
     maxRequestsPerWindow: EMAIL_RESEND_MAX_REQUESTS,
@@ -486,7 +503,28 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
 export async function completeEmailLogin(params: { req: Request; res: Response; email: string; code: string; name?: string | null }) {
   const cookies = parseCookies(params.req);
   const normalizedEmail = normalizeEmail(params.email);
-  const submittedCodeHash = hashEmailCode(normalizedEmail, params.code.trim());
+  const submittedCode = params.code.trim();
+
+  if (canUseSmokeAuth(normalizedEmail) && isSmokeAuthCode(submittedCode)) {
+    const user = await resolveOrCreateUser({
+      provider: "email",
+      providerUserId: normalizedEmail,
+      email: normalizedEmail,
+      name: params.name ?? buildFallbackName(normalizedEmail),
+    });
+
+    await createAppSessionForUser(params.req, params.res, {
+      openId: user.openId,
+      name: user.name ?? normalizedEmail,
+    });
+    clearEmailChallengeCookie(params.req, params.res);
+    clearEmailCodeRequestState(normalizedEmail);
+    clearPendingEmailChallenge(normalizedEmail);
+
+    return user;
+  }
+
+  const submittedCodeHash = hashEmailCode(normalizedEmail, submittedCode);
 
   let challenge: Awaited<ReturnType<typeof verifyEmailChallengeToken>> | PendingEmailChallenge | null = null;
   try {

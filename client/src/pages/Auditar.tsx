@@ -4277,6 +4277,7 @@ export default function Auditar() {
   const analyzeDraftMutation = trpc.cases.analyzeDocumentDraft.useMutation();
   const confirmDraftMutation = trpc.cases.confirmDocumentDraft.useMutation();
   const guestAnalyzeMutation = trpc.cases.guestAnalyzeDocument.useMutation();
+  const guestOfficialCheckMutation = trpc.cases.guestOfficialCheck.useMutation();
   const createGuestReviewCaseMutation = trpc.cases.create.useMutation();
   const claimGuestReviewMutation = trpc.cases.claimGuestPreview.useMutation();
   const persistAuditarViewStateMutation =
@@ -5564,17 +5565,26 @@ export default function Auditar() {
       uploadSocialSecurityValidation?.officialCheck,
     ],
   });
+  const guestOfficialFacts = guestReview?.preview.preliminaryAnalysis.confirmedData;
+  const guestOfficialEstimated = guestReview?.preview.preliminaryAnalysis.estimatedData;
+  const readGuestOfficialFact = (...keys: string[]) => {
+    for (const key of keys) {
+      const raw = guestOfficialFacts?.[key] ?? guestOfficialEstimated?.[key];
+      if (typeof raw === "string" && raw.trim()) return raw.trim();
+    }
+    return undefined;
+  };
   const officialCaseBriefing = buildOfficialCaseBriefing({
     officialCheck: officialCheckSummary,
     facts: {
-      period: effectiveSocialSecurityValidation?.facts?.period,
-      netAmount: effectiveSocialSecurityValidation?.facts?.netAmount,
-      imssWithheld: effectiveSocialSecurityValidation?.facts?.imssWithheld,
-      isrWithheld: effectiveSocialSecurityValidation?.facts?.isrWithheld,
-      infonavitWithheld: effectiveSocialSecurityValidation?.facts?.infonavitWithheld,
-      nss: effectiveSocialSecurityValidation?.facts?.nss,
-      curp: effectiveSocialSecurityValidation?.facts?.curp,
-      workerRfc: effectiveSocialSecurityValidation?.facts?.workerRfc,
+      period: effectiveSocialSecurityValidation?.facts?.period ?? readGuestOfficialFact("payrollPeriod", "period"),
+      netAmount: effectiveSocialSecurityValidation?.facts?.netAmount ?? readGuestOfficialFact("payrollNetAmount", "neto"),
+      imssWithheld: effectiveSocialSecurityValidation?.facts?.imssWithheld ?? readGuestOfficialFact("imssWithheld"),
+      isrWithheld: effectiveSocialSecurityValidation?.facts?.isrWithheld ?? readGuestOfficialFact("isrWithheld"),
+      infonavitWithheld: effectiveSocialSecurityValidation?.facts?.infonavitWithheld ?? readGuestOfficialFact("infonavitWithheld"),
+      nss: effectiveSocialSecurityValidation?.facts?.nss ?? readGuestOfficialFact("payrollNss", "nss"),
+      curp: effectiveSocialSecurityValidation?.facts?.curp ?? readGuestOfficialFact("payrollCurp", "curp"),
+      workerRfc: effectiveSocialSecurityValidation?.facts?.workerRfc ?? readGuestOfficialFact("workerRfc"),
     },
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
@@ -6241,7 +6251,9 @@ export default function Auditar() {
   });
   const officialCheckDisplay = resolveOfficialCheckDisplay({
     consentGranted: officialCheckConsent,
-    isPending: revalidateSocialSecurityMutation.isPending,
+    isPending:
+      revalidateSocialSecurityMutation.isPending ||
+      guestOfficialCheckMutation.isPending,
     summary: officialCheckSummary,
     missingIdentityDetail:
       officialCaseBriefing.missingIdentity.length === 3 ||
@@ -8216,6 +8228,8 @@ export default function Auditar() {
 
     setGuestReviewError(null);
     setGuestReviewClaimStarted(false);
+    setOfficialCheckResult(null);
+    setOfficialCheckConsent(false);
     try {
       const dataUrl = await fileToBase64(file);
       const [, base64Content = ""] = dataUrl.split(",");
@@ -8242,6 +8256,41 @@ export default function Auditar() {
       );
     } finally {
       event.target.value = "";
+    }
+  };
+
+  const handleGuestOfficialCheck = async () => {
+    if (!guestReview) {
+      setGuestReviewError("Primero sube un recibo para consultar IMSS y SAT.");
+      return;
+    }
+    if (!officialCheckConsent) {
+      setGuestReviewError("Marca el permiso para consultar IMSS y SAT.");
+      return;
+    }
+
+    try {
+      setGuestReviewError(null);
+      const result = await guestOfficialCheckMutation.mutateAsync({
+        guestPreviewToken: guestReview.guestPreviewToken,
+        consentGranted: officialCheckConsent,
+      });
+      if (result.officialCheck) {
+        setOfficialCheckResult(result.officialCheck);
+        if (
+          result.officialCheck.consentGranted ||
+          result.officialCheck.overallStatus !== "sin_permiso"
+        ) {
+          setOfficialCheckConsent(true);
+        }
+      }
+    } catch (error) {
+      setGuestReviewError(
+        toFriendlyAuditarRuntimeMessage(
+          error,
+          "No fue posible consultar IMSS y SAT en este momento."
+        )
+      );
     }
   };
 
@@ -8850,12 +8899,62 @@ export default function Auditar() {
               </div>
             </div>
             <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
-            {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos guardar todavía</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button type="button" className="h-12 rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700" onClick={() => {
+            <div data-testid="official-check-card" className="mt-5 rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
+              <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
+                {officialCheckDisplay.headline}
+              </p>
+              <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                {officialCheckDisplay.detail}
+              </p>
+              {officialCaseBriefing.statusLines.length &&
+              officialCheckSummary?.overallStatus !== "sin_datos" ? (
+                <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
+                  {officialCaseBriefing.statusLines.map(line => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {officialCaseBriefing.hechoLines.length ? (
+                <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
+                  {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              ) : null}
+              {officialCaseBriefing.hasOfficialConsulta ? (
+                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
+                  <p>{officialCaseBriefing.comparison.seenLine}</p>
+                  <p>{officialCaseBriefing.comparison.nextStepLine}</p>
+                </div>
+              ) : null}
+              <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={officialCheckConsent}
+                  onChange={event => setOfficialCheckConsent(event.target.checked)}
+                />
+                <span>{OFFICIAL_CHECK_CONSENT}</span>
+              </label>
+              <Button
+                type="button"
+                data-testid="official-check-cta"
+                className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                disabled={guestOfficialCheckMutation.isPending || !officialCheckConsent}
+                onClick={() => {
+                  void handleGuestOfficialCheck();
+                }}
+              >
+                {officialCheckDisplay.buttonLabel}
+              </Button>
+            </div>
+            {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos completar esto</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
+            <p className="mt-5 text-sm leading-6 text-slate-700">Guardar esta revisión es opcional. Puedes consultar IMSS y SAT ahora y crear una cuenta después si quieres conservar el resultado.</p>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => {
                 window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
               }}>
-                Crear cuenta y guardar esta revisión <ArrowRight className="ml-2 h-4 w-4" />
+                Guardar esta revisión <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
                 Cambiar recibo

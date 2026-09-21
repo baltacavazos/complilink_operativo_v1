@@ -7,6 +7,7 @@ import * as db from "./db";
 import { ENV } from "./_core/env";
 import { createAppSessionForUser } from "./authService";
 import { ensureMysqlTables } from "./mysqlBootstrap";
+import { shouldOpenSmokeTestSession } from "./smokeAuth";
 
 const scrypt = promisify(scryptCallback);
 const SCRYPT_KEYLEN = 64;
@@ -83,6 +84,51 @@ async function ensureActiveTenantMembership(user: {
   });
 }
 
+export async function completeSmokeTestSession(input: {
+  req: Request;
+  res: Response;
+  email: string;
+  password: string;
+  name?: string;
+}) {
+  if (!shouldOpenSmokeTestSession(input.email, input.password)) {
+    throw new Error("Esta sesión de prueba no está activa.");
+  }
+  if (!ENV.cookieSecret.trim()) {
+    throw new Error("Falta JWT_SECRET para firmar la sesión.");
+  }
+
+  const email = normalizeEmail(input.email);
+  const openId = openIdForEmail(email);
+  const name = (input.name?.trim() || email.split("@")[0] || "Prueba").slice(0, 120);
+
+  await db.upsertUser({
+    openId,
+    name,
+    email,
+    loginMethod: "email",
+    lastSignedIn: new Date(),
+  });
+
+  const user = await db.getUserByOpenId(openId);
+  if (!user) {
+    throw new Error("No se pudo abrir la sesión de prueba.");
+  }
+
+  await db.ensurePersonalWorkspaceForUser({
+    userId: user.id,
+    userName: user.name ?? name,
+    userEmail: user.email,
+  });
+
+  await createAppSessionForUser(input.req, input.res, {
+    openId: user.openId,
+    name: user.name ?? name,
+  });
+
+  return user;
+}
+
 export async function registerLocalPasswordAccount(input: {
   req: Request;
   res: Response;
@@ -90,6 +136,9 @@ export async function registerLocalPasswordAccount(input: {
   password: string;
   name?: string;
 }) {
+  if (shouldOpenSmokeTestSession(input.email, input.password)) {
+    return completeSmokeTestSession(input);
+  }
   if (!isLocalPasswordAuthEnabled()) {
     throw new Error("El acceso con contraseña no está activo en esta copia.");
   }
@@ -152,6 +201,9 @@ export async function loginLocalPasswordAccount(input: {
   email: string;
   password: string;
 }) {
+  if (shouldOpenSmokeTestSession(input.email, input.password)) {
+    return completeSmokeTestSession(input);
+  }
   if (!isLocalPasswordAuthEnabled()) {
     throw new Error("El acceso con contraseña no está activo en esta copia.");
   }

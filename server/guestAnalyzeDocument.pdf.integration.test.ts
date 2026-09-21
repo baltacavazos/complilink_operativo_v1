@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const storageMocks = vi.hoisted(() => ({
   storagePut: vi.fn(async () => ({
@@ -18,7 +18,7 @@ vi.mock("./_core/llm", () => ({
   }),
 }));
 
-const { appRouter } = await import("./routers");
+const { appRouter, resetAuditarRuntimeGuardsForTests } = await import("./routers");
 
 function escapePdfLiteral(value: string) {
   return value.replace(/([\\()])/g, "\\$1");
@@ -68,6 +68,10 @@ function buildPrintablePayrollPdf() {
 }
 
 describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
+  afterEach(() => {
+    resetAuditarRuntimeGuardsForTests();
+  });
+
   it("carries native PDF text through the public response with all payroll facts", async () => {
     const caller = appRouter.createCaller({
       user: null,
@@ -92,5 +96,72 @@ describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
     });
     expect(result.preview.classification.documentType).toBe("cfdi");
     expect(storageMocks.storagePut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("cases.guestOfficialCheck", () => {
+  afterEach(() => {
+    resetAuditarRuntimeGuardsForTests();
+  });
+
+  function createPublicCaller() {
+    return appRouter.createCaller({
+      user: null,
+      req: { headers: {} },
+      res: {},
+    } as never);
+  }
+
+  async function analyzeGuestReceipt() {
+    return createPublicCaller().cases.guestAnalyzeDocument({
+      fileName: "recibo-camreflex.pdf",
+      mimeType: "application/pdf",
+      base64Content: buildPrintablePayrollPdf(),
+      sourceChannel: "manual",
+    });
+  }
+
+  it("consulta IMSS y SAT sin cuenta usando el recibo de invitado", async () => {
+    const preview = await analyzeGuestReceipt();
+    const result = await createPublicCaller().cases.guestOfficialCheck({
+      guestPreviewToken: preview.guestPreviewToken,
+      consentGranted: true,
+    });
+
+    expect(result.officialCheck.consentGranted).toBe(true);
+    expect(result.officialCheck.identity.nss).toBe(true);
+    expect(result.officialCheck.overallStatus).toBe("no_configurado");
+    expect(result.officialCheckHeadline).toMatch(/Aún no configurado|Faltan datos|Falta tu permiso|Vivo|Pendiente|Falló/);
+    expect(result.officialCheckConsent).toMatch(/Doy permiso para consultar IMSS y SAT/);
+    expect(JSON.stringify(result)).not.toMatch(/Helios|CompliLink|HMAC|Manus|OTP/i);
+  });
+
+  it("rechaza un token inválido y no exige iniciar sesión", async () => {
+    await expect(
+      createPublicCaller().cases.guestOfficialCheck({
+        guestPreviewToken: `${"x".repeat(40)}.invalido`,
+        consentGranted: true,
+      }),
+    ).rejects.toThrow(/vista previa temporal/i);
+  });
+
+  it("limita consultas repetidas del mismo recibo de invitado", async () => {
+    const preview = await analyzeGuestReceipt();
+    const caller = createPublicCaller();
+
+    for (let index = 0; index < 3; index += 1) {
+      const result = await caller.cases.guestOfficialCheck({
+        guestPreviewToken: preview.guestPreviewToken,
+        consentGranted: true,
+      });
+      expect(result.officialCheck.identity.nss).toBe(true);
+    }
+
+    await expect(
+      caller.cases.guestOfficialCheck({
+        guestPreviewToken: preview.guestPreviewToken,
+        consentGranted: true,
+      }),
+    ).rejects.toThrow(/demasiadas consultas/i);
   });
 });

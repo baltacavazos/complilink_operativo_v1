@@ -536,6 +536,7 @@ const AUDITAR_TRANSIENT_DEDUP_TTL_MS = 90 * 1000;
 const AUDITAR_ANALYZE_RATE_LIMIT = 4;
 const AUDITAR_UPLOAD_RATE_LIMIT = 4;
 const AUDITAR_CONFIRM_RATE_LIMIT = 8;
+const GUEST_OFFICIAL_CHECK_RATE_LIMIT = 3;
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
 const CEO_SNAPSHOT_STALE_WINDOW_MS = 2 * 60 * 1000;
@@ -670,6 +671,36 @@ function assertAuditarRateLimit(params: {
   }
 
   auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
+}
+
+function assertGuestOfficialCheckRateLimit(params: { guestPreviewId: string; ip: string | null }) {
+  const now = Date.now();
+  pruneAuditarRateWindow(now);
+
+  const key = ["guestOfficialCheck", params.guestPreviewId, params.ip ?? "ip:unknown"].join(":");
+  const recentTimestamps = auditarRateWindowByKey.get(key) ?? [];
+
+  if (recentTimestamps.length >= GUEST_OFFICIAL_CHECK_RATE_LIMIT) {
+    throw new Error("Detectamos demasiadas consultas seguidas. Espera un minuto y vuelve a intentarlo.");
+  }
+
+  auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
+}
+
+function identityFromGuestPreview(payload: {
+  fileName: string;
+  classification: { documentType: string };
+  preliminaryAnalysis: unknown;
+  previewOpinion?: unknown;
+}) {
+  return collectWorkerOfficialIdentity(
+    extractStructuredLaborFiscalFacts({
+      documentType: payload.classification.documentType,
+      originalName: payload.fileName,
+      preliminaryAnalysis: payload.preliminaryAnalysis,
+      heliosOpinion: payload.previewOpinion,
+    }),
+  );
 }
 
 function assertAuditarTransientDedupInactive(params: {
@@ -4185,6 +4216,31 @@ export const appRouter = router({
             guestPreviewToken,
           },
           heliosOpinion: previewOpinion,
+        };
+      }),
+    guestOfficialCheck: publicProcedure
+      .input(
+        z.object({
+          guestPreviewToken: z.string().min(40),
+          consentGranted: z.boolean(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const payload = readGuestPreviewToken(input.guestPreviewToken);
+        assertGuestOfficialCheckRateLimit({
+          guestPreviewId: payload.guestPreviewId,
+          ip: getClientIp(ctx.req),
+        });
+        const officialCheck = await runOfficialGovernmentCheck({
+          identity: identityFromGuestPreview(payload),
+          consentGranted: input.consentGranted,
+          idempotencyKey: `guest-official:${payload.guestPreviewId}`,
+          correlationId: payload.traceId,
+        });
+        return {
+          officialCheck,
+          officialCheckHeadline: buildOfficialCheckHeadline(officialCheck),
+          officialCheckConsent: OFFICIAL_CHECK_CONSENT,
         };
       }),
     claimGuestPreview: protectedProcedure

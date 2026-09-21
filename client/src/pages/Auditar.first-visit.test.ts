@@ -21,6 +21,10 @@ describe("Auditar first visit", () => {
     expect(source).toContain("Siguiente paso útil");
     expect(source).toContain("claimGuestPreview.useMutation()");
     expect(source).toContain('"/auditar?resume=guest-review"');
+    expect(source).toContain("guestOfficialCheck.useMutation()");
+    expect(source).toContain("Guardar esta revisión");
+    expect(source).toContain("Guardar esta revisión es opcional");
+    expect(source).not.toContain("Crear cuenta y guardar esta revisión");
   });
 
   it("renders facts and a non-empty attention point without exposing programmer keys", () => {
