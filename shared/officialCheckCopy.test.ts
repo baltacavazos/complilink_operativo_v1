@@ -14,6 +14,8 @@ import {
   assertNoInternalBrands,
   buildOfficialFailedDetail,
   canDispatchOfficialConsult,
+  identityFlagsFromReceiptValues,
+  isGenericSatRfc,
   filterOfficialMissingFieldsForSource,
   hasLiveOfficialResult,
   reconcileOfficialCheckWithIdentity,
@@ -282,6 +284,12 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     const visible = { nss: true, curp: false, rfc: true };
     expect(canDispatchOfficialConsult(visible)).toBe(true);
     expect(canDispatchOfficialConsult({ nss: false, curp: true, rfc: false })).toBe(false);
+    expect(isGenericSatRfc("XAXX010101000")).toBe(true);
+    expect(identityFlagsFromReceiptValues({ nss: "12345678901", workerRfc: "XAXX010101000" })).toEqual({
+      nss: true,
+      curp: false,
+      rfc: false,
+    });
 
     const stale = summary("sin_datos", {
       checkedAt: "2026-09-21T15:30:00.000Z",

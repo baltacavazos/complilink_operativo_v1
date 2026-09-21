@@ -14,6 +14,8 @@ import {
 import {
   OFFICIAL_FAILED_MISSING,
   hasLiveOfficialResult,
+  identityFlagsFromReceiptValues,
+  stripContradictoryMissingIdentityCopy,
   type OfficialChatAnchor,
   type OfficialCheckSummary,
   type ReciboVsOficial,
@@ -163,14 +165,28 @@ export function buildWorkerChatGrounding(params: {
     asText(params.missingDocument?.reason) ??
     null;
   const review = describeWorkerReviewSource(params.opinion);
-  const officialBriefing =
-    params.officialBriefing ??
-    buildOfficialCaseBriefing({
-      officialCheck: params.officialCheck ?? null,
-      facts: labor.facts as OfficialBriefingFacts,
-      chatAnchor: params.chatAnchor ?? params.officialCheck?.chatAnchor ?? null,
-      reciboVsOficial: params.reciboVsOficial ?? params.officialCheck?.reciboVsOficial ?? null,
-    });
+  const receiptFacts: OfficialBriefingFacts = {
+    ...(params.officialBriefing?.facts ?? {}),
+    ...labor.facts,
+    nss: labor.facts.nss ?? params.officialBriefing?.facts.nss ?? null,
+    curp: labor.facts.curp ?? params.officialBriefing?.facts.curp ?? null,
+    workerRfc: labor.facts.workerRfc ?? params.officialBriefing?.facts.workerRfc ?? null,
+    netAmount: labor.facts.netAmount ?? params.officialBriefing?.facts.netAmount ?? null,
+  };
+  const officialBriefing = buildOfficialCaseBriefing({
+    officialCheck: params.officialCheck ?? params.officialBriefing?.officialCheck ?? null,
+    facts: receiptFacts,
+    chatAnchor:
+      params.chatAnchor ??
+      params.officialCheck?.chatAnchor ??
+      params.officialBriefing?.chatAnchor ??
+      null,
+    reciboVsOficial:
+      params.reciboVsOficial ??
+      params.officialCheck?.reciboVsOficial ??
+      params.officialBriefing?.reciboVsOficial ??
+      null,
+  });
   const caseOnly = params.caseOnly ?? !(params.officialDigest && params.officialDigest.citations.length > 0);
 
   return {
@@ -211,6 +227,19 @@ export function buildWorkerChatGrounding(params: {
   };
 }
 
+function receiptIdentityFromGrounding(grounding: WorkerChatGrounding) {
+  return identityFlagsFromReceiptValues({
+    nss: grounding.officialBriefing.facts.nss ?? grounding.laborFacts.nss,
+    curp: grounding.officialBriefing.facts.curp ?? grounding.laborFacts.curp,
+    workerRfc: grounding.officialBriefing.facts.workerRfc ?? grounding.laborFacts.workerRfc,
+    rfc: grounding.officialBriefing.facts.workerRfc ?? grounding.laborFacts.workerRfc,
+  });
+}
+
+function sanitizeChatIdentityCopy(answer: string, grounding: WorkerChatGrounding) {
+  return stripContradictoryMissingIdentityCopy(answer, receiptIdentityFromGrounding(grounding));
+}
+
 export function resolveWorkerChatGuidance(
   grounding: WorkerChatGrounding,
   prompt?: string | null,
@@ -242,6 +271,7 @@ export function buildWorkerChatFallbackAnswer(
   grounding: WorkerChatGrounding,
   options?: { prompt?: string | null },
 ): string {
+  let answer: string;
   if (grounding.documentsCount === 0) {
     const who =
       grounding.workerName && grounding.employerName
@@ -249,20 +279,18 @@ export function buildWorkerChatFallbackAnswer(
         : grounding.workerName
           ? `el expediente de ${grounding.workerName}`
           : "tu expediente";
-    return formatWorkerChatAnswer({
+    answer = formatWorkerChatAnswer({
       answer: `Hola. Todavía no hay un documento para leer en ${who}. Sin un recibo, contrato o CFDI no puedo decirte qué se ve ni qué falta en este caso.`,
       known: "Aún no hay señales visibles en un papel de este expediente.",
       missing: "Falta el primer documento laboral para empezar la lectura de este caso.",
       nextStep: "Sube el papel laboral que tengas más a la mano. Con eso te digo, de ESTE expediente, lo que sí se ve y el siguiente paso.",
       disclaimer: grounding.disclaimer,
     });
-  }
-
-  if (grounding.caseOnly && !grounding.officialBriefing.hasLiveOfficialResult) {
+  } else if (grounding.caseOnly && !grounding.officialBriefing.hasLiveOfficialResult) {
     const blocked = isPayWellQuestion(options?.prompt)
       ? buildPayWellFallback(grounding.officialBriefing)
       : buildNoLiveOfficialAnswer(grounding.officialBriefing);
-    return formatWorkerChatAnswer({
+    answer = formatWorkerChatAnswer({
       answer: blocked.clearAnswer,
       known: blocked.known,
       missing: blocked.missing,
@@ -272,11 +300,9 @@ export function buildWorkerChatFallbackAnswer(
       disclaimer: grounding.disclaimer,
       multiDocUpsell: grounding.multiDocUpsell,
     });
-  }
-
-  if (isPayWellQuestion(options?.prompt)) {
+  } else if (isPayWellQuestion(options?.prompt)) {
     const pay = buildPayWellFallback(grounding.officialBriefing);
-    return formatWorkerChatAnswer({
+    answer = formatWorkerChatAnswer({
       answer: pay.clearAnswer,
       known: pay.known,
       missing: pay.missing,
@@ -286,30 +312,31 @@ export function buildWorkerChatFallbackAnswer(
       disclaimer: grounding.disclaimer,
       multiDocUpsell: grounding.multiDocUpsell,
     });
+  } else {
+    const briefing = grounding.officialBriefing;
+    const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
+    const known =
+      briefing.hechoLines.length > 0
+        ? briefing.hechoLines.slice(0, 6).join(" ")
+        : briefing.statusLines.join(". ") || briefing.headline;
+    answer = formatWorkerChatAnswer({
+      answer: `${briefing.comparison.seenLine} ${briefing.statusLines.join(". ")}`.trim(),
+      known: known ?? "Hay un resultado de TU consulta en este expediente.",
+      missing:
+        briefing.comparison.seen === "no_se_pudo"
+          ? briefing.missingIdentityDetail ??
+            (briefingHasInstituteFailure(briefing) ? OFFICIAL_FAILED_MISSING : "La consulta no trajo un monto comparable.")
+          : "La consulta no confirma que el patrón cumpla.",
+      nextStep: briefing.comparison.nextStep,
+      officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
+      officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
+      includeOfficialSources,
+      prompt: options?.prompt,
+      disclaimer: grounding.disclaimer,
+      multiDocUpsell: grounding.multiDocUpsell,
+    });
   }
-
-  const briefing = grounding.officialBriefing;
-  const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
-  const known =
-    briefing.hechoLines.length > 0
-      ? briefing.hechoLines.slice(0, 6).join(" ")
-      : briefing.statusLines.join(". ") || briefing.headline;
-  return formatWorkerChatAnswer({
-    answer: `${briefing.comparison.seenLine} ${briefing.statusLines.join(". ")}`.trim(),
-    known: known ?? "Hay un resultado de TU consulta en este expediente.",
-    missing:
-      briefing.comparison.seen === "no_se_pudo"
-        ? briefing.missingIdentityDetail ??
-          (briefingHasInstituteFailure(briefing) ? OFFICIAL_FAILED_MISSING : "La consulta no trajo un monto comparable.")
-        : "La consulta no confirma que el patrón cumpla.",
-    nextStep: briefing.comparison.nextStep,
-    officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
-    officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
-    includeOfficialSources,
-    prompt: options?.prompt,
-    disclaimer: grounding.disclaimer,
-    multiDocUpsell: grounding.multiDocUpsell,
-  });
+  return sanitizeChatIdentityCopy(answer, grounding);
 }
 
 export function buildWorkerChatLlmInstructions(
@@ -447,41 +474,47 @@ export function sanitizeWorkerChatAnswer(
   const briefing = grounding.officialBriefing;
   const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
   if (grounding.caseOnly) {
-    return formatWorkerChatAnswer({
+    return sanitizeChatIdentityCopy(
+      formatWorkerChatAnswer({
+        answer: cleaned,
+        known:
+          briefing.hechoLines.slice(0, 6).join(" ") ||
+          briefing.statusLines.join(". ") ||
+          briefing.headline,
+        missing:
+          briefing.comparison.seen === "no_se_pudo"
+            ? briefing.missingIdentityDetail ??
+              (briefingHasInstituteFailure(briefing) ? OFFICIAL_FAILED_MISSING : "La consulta no trajo un monto comparable.")
+            : "La consulta no confirma que el patrón cumpla.",
+        nextStep: briefing.hasLiveOfficialResult
+          ? briefing.comparison.nextStep
+          : briefing.comparison.nextStep,
+        officialSources: null,
+        officialSourcesNote: null,
+        includeOfficialSources: false,
+        prompt: options?.prompt,
+        disclaimer: grounding.disclaimer,
+        multiDocUpsell: grounding.multiDocUpsell,
+      }),
+      grounding,
+    );
+  }
+  const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
+  return sanitizeChatIdentityCopy(
+    formatWorkerChatAnswer({
       answer: cleaned,
-      known:
-        briefing.hechoLines.slice(0, 6).join(" ") ||
-        briefing.statusLines.join(". ") ||
-        briefing.headline,
-      missing:
-        briefing.comparison.seen === "no_se_pudo"
-          ? briefing.missingIdentityDetail ??
-            (briefingHasInstituteFailure(briefing) ? OFFICIAL_FAILED_MISSING : "La consulta no trajo un monto comparable.")
-          : "La consulta no confirma que el patrón cumpla.",
-      nextStep: briefing.hasLiveOfficialResult
-        ? briefing.comparison.nextStep
-        : briefing.comparison.nextStep,
-      officialSources: null,
-      officialSourcesNote: null,
-      includeOfficialSources: false,
+      known: guidance.known,
+      missing: guidance.missing,
+      nextStep: guidance.nextStep,
+      officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
+      officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
+      includeOfficialSources,
       prompt: options?.prompt,
       disclaimer: grounding.disclaimer,
       multiDocUpsell: grounding.multiDocUpsell,
-    });
-  }
-  const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
-  return formatWorkerChatAnswer({
-    answer: cleaned,
-    known: guidance.known,
-    missing: guidance.missing,
-    nextStep: guidance.nextStep,
-    officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
-    officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
-    includeOfficialSources,
-    prompt: options?.prompt,
-    disclaimer: grounding.disclaimer,
-    multiDocUpsell: grounding.multiDocUpsell,
-  });
+    }),
+    grounding,
+  );
 }
 
 export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): string {

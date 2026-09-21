@@ -12,20 +12,29 @@ import {
   OFFICIAL_FAILED_MISSING,
   buildOfficialCheckHeadline,
   buildReceiptOfficialComparisonCopy,
+  OFFICIAL_CHECK_SOURCES,
+  OFFICIAL_SOURCE_LABEL,
   canDispatchOfficialConsult,
   filterOfficialMissingFieldsForSource,
   formatOfficialCheckDate,
   hasLiveOfficialResult,
   honestyToOfficialStatus,
+  identityFlagsFromReceiptValues,
   inferOfficialMissingFieldKeys,
+  isGenericSatRfc,
   isPermissionBlockedStatus,
   listFailedOfficialSources,
   listFailedOfficialSourcesFromAnchor,
   looksLikeNoOfficialResponse,
   mergeOfficialIdentityFlags,
+  officialDispatchGapDetail,
+  officialSourceGapDetail,
   officialStatusToHonesty,
   reconcileOfficialCheckWithIdentity,
   rewriteOfficialFailedMotivo,
+  rewriteOfficialIdentityHechos,
+  sourceHasRequiredOfficialIdentity,
+  stripContradictoryMissingIdentityCopy,
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
   type OfficialCheckSummary,
@@ -93,11 +102,12 @@ export function isPayWellQuestion(prompt?: string | null): boolean {
 }
 
 export function identityFlagsFromFacts(facts: OfficialBriefingFacts): OfficialIdentityFlags {
-  return {
-    nss: Boolean(facts.nss),
-    curp: Boolean(facts.curp),
-    rfc: Boolean(facts.workerRfc),
-  };
+  return identityFlagsFromReceiptValues({
+    nss: facts.nss,
+    curp: facts.curp,
+    rfc: facts.workerRfc,
+    workerRfc: facts.workerRfc,
+  });
 }
 
 export function listMissingOfficialIdentityLabels(
@@ -116,6 +126,26 @@ export function officialIdentityGapDetail(identity: OfficialIdentityFlags): stri
   if (missing.length === 1) return `Falta tu ${missing[0]} en el recibo para consultar.`;
   if (missing.length === 2) return `Falta tu ${missing[0]} y ${missing[1]} en el recibo para consultar.`;
   return "Falta tu NSS, CURP y RFC en el recibo para consultar.";
+}
+
+/** Chat: nunca «Falta tu NSS» si el recibo ya lo muestra. SAT puede pedir RFC real si XAXX. */
+export function officialChatIdentityGapDetail(
+  identity: OfficialIdentityFlags,
+  facts?: OfficialBriefingFacts | null,
+): string | null {
+  if (identity.nss && identity.rfc) {
+    return identity.curp ? null : "Falta tu CURP en el recibo para consultar Infonavit.";
+  }
+  if (identity.nss && !identity.rfc) {
+    if (isGenericSatRfc(facts?.workerRfc)) {
+      return "El RFC del recibo es genérico; SAT necesita un RFC real para consultar.";
+    }
+    return officialSourceGapDetail("sat");
+  }
+  if (!identity.nss && identity.rfc) {
+    return officialSourceGapDetail("imss");
+  }
+  return officialDispatchGapDetail(identity);
 }
 
 export function applyMissingFieldsToIdentity(
@@ -216,20 +246,31 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
       }),
     );
   }
-  return [
-    formatOfficialStatusLine({
-      sourceLabel: "IMSS y SAT",
-      status: summary.overallStatus,
+  return OFFICIAL_CHECK_SOURCES.map((source) => {
+    const hasRequired = sourceHasRequiredOfficialIdentity(source, summary.identity);
+    const status = hasRequired
+      ? summary.overallStatus === "sin_datos"
+        ? "pendiente"
+        : summary.overallStatus
+      : "sin_datos";
+    return formatOfficialStatusLine({
+      sourceLabel: OFFICIAL_SOURCE_LABEL[source],
+      status,
       checkedAt: summary.checkedAt,
-    }),
-  ];
+    });
+  });
 }
 
-export function listChatAnchorHechos(anchor: OfficialChatAnchor | null | undefined): string[] {
+export function listChatAnchorHechos(
+  anchor: OfficialChatAnchor | null | undefined,
+  identity?: OfficialIdentityFlags | null,
+): string[] {
   if (!anchor) return [];
   return [anchor.imss, anchor.sat, anchor.infonavit].flatMap((source) => {
     const prefix = sourceLabel(source.fuente);
-    return source.hechos.slice(0, 3).map((hecho) => `${prefix}: ${hecho}`);
+    return rewriteOfficialIdentityHechos(source.fuente, source.hechos, identity)
+      .slice(0, 3)
+      .map((hecho) => `${prefix}: ${hecho}`);
   });
 }
 
@@ -334,13 +375,16 @@ export function buildOfficialCaseBriefing(params: {
       : params.reciboVsOficial) ??
     officialCheck?.reciboVsOficial ??
     null;
+  const receiptIdentity = identityFlagsFromFacts(facts);
   const identity = mergeOfficialIdentity(
-    identityFlagsFromFacts(facts),
-    officialCheck?.identity,
-    applyMissingFieldsToIdentity(
-      officialCheck?.identity ?? identityFlagsFromFacts(facts),
-      collectOfficialMissingFieldKeys({ officialCheck, chatAnchor }),
-    ),
+    receiptIdentity,
+    officialCheck?.identity
+      ? {
+          nss: officialCheck.identity.nss || receiptIdentity.nss,
+          curp: officialCheck.identity.curp || receiptIdentity.curp,
+          rfc: officialCheck.identity.rfc && !isGenericSatRfc(facts.workerRfc) ? officialCheck.identity.rfc : receiptIdentity.rfc,
+        }
+      : receiptIdentity,
   );
   const missingIdentity = listMissingOfficialIdentityLabels(identity);
   const reconciled = reconcileOfficialCheckWithIdentity(
@@ -371,10 +415,10 @@ export function buildOfficialCaseBriefing(params: {
     chatAnchor: reconciled?.chatAnchor ?? chatAnchor,
     reciboVsOficial,
     statusLines,
-    hechoLines: listChatAnchorHechos(reconciled?.chatAnchor ?? chatAnchor),
+    hechoLines: listChatAnchorHechos(reconciled?.chatAnchor ?? chatAnchor, identity),
     headline: headlineStatus ? buildOfficialCheckHeadline(headlineStatus) : null,
     missingIdentity,
-    missingIdentityDetail: missingIdentity.length > 0 ? officialIdentityGapDetail(identity) : null,
+    missingIdentityDetail: officialChatIdentityGapDetail(identity, facts),
     receiptLines: listReceiptFactLines(facts),
     comparison,
     facts,
@@ -395,21 +439,25 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
     briefing.receiptLines.length > 0
       ? briefing.receiptLines.map((item) => `- ${item}`).join("\n")
       : "- En el recibo no hay montos, NSS, CURP ni RFC claros.";
-  const missing = briefing.missingIdentityDetail ?? "No faltan NSS, CURP ni RFC en el papel, o ya se usaron.";
-  return [
-    CASE_ADVISOR_RULE,
-    `Nunca inventes: ${ADVISOR_CHAT_NEVER_INVENT.join(", ")}.`,
-    "Estados oficiales del caso (únicos que puedes citar como consulta):",
-    official,
-    "Hechos de TU consulta (únicos que puedes citar; máximo 3 por fuente):",
-    hechos,
-    `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStepLine}`,
-    CASE_ADVISOR_FALLO_RULE,
-    "Montos y datos del recibo (únicos números del papel):",
-    receipt,
-    `Identidad para consultar: ${missing}`,
-    "Si preguntan «¿me pagan bien?», ancla la respuesta a esa comparación y a IMSS/SAT/Infonavit del caso. No inventes que el patrón cumple.",
-  ].join("\n");
+  const missing =
+    briefing.missingIdentityDetail ?? "No faltan NSS, CURP ni RFC en el papel, o ya se usaron.";
+  return stripContradictoryMissingIdentityCopy(
+    [
+      CASE_ADVISOR_RULE,
+      `Nunca inventes: ${ADVISOR_CHAT_NEVER_INVENT.join(", ")}.`,
+      "Estados oficiales del caso (únicos que puedes citar como consulta):",
+      official,
+      "Hechos de TU consulta (únicos que puedes citar; máximo 3 por fuente):",
+      hechos,
+      `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStepLine}`,
+      CASE_ADVISOR_FALLO_RULE,
+      "Montos y datos del recibo (únicos números del papel):",
+      receipt,
+      `Identidad para consultar: ${missing}`,
+      "Si preguntan «¿me pagan bien?», ancla la respuesta a esa comparación y a IMSS/SAT/Infonavit del caso. No inventes que el patrón cumple.",
+    ].join("\n"),
+    identityFlagsFromFacts(briefing.facts),
+  );
 }
 
 export function buildPayWellFallback(briefing: OfficialCaseBriefing): {

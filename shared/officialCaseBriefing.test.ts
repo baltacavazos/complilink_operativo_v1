@@ -268,7 +268,7 @@ describe("briefing del caso para el asesor", () => {
     });
 
     expect(briefing.missingIdentity).toEqual(["CURP"]);
-    expect(briefing.missingIdentityDetail).toBe("Falta tu CURP en el recibo para consultar.");
+    expect(briefing.missingIdentityDetail).toBe("Falta tu CURP en el recibo para consultar Infonavit.");
     expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /SAT: Pendiente/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
@@ -360,17 +360,45 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.officialCheck?.overallLabel).not.toBe("Faltan datos");
     expect(briefing.headline).not.toMatch(/Faltan datos/i);
     expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
-    expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /IMSS y SAT: Faltan datos/.test(line))).toBe(false);
     expect(briefing.statusLines.some((line) => /IMSS: (Pendiente|Vivo|Falló)/.test(line))).toBe(true);
-    expect(briefing.statusLines.some((line) => /SAT: (Pendiente|Vivo|Falló)/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
-    expect(briefing.missingIdentity).toEqual(["CURP"]);
+    expect(briefing.missingIdentity).toEqual(["CURP", "RFC"]);
+    expect(briefing.missingIdentityDetail).toMatch(/RFC(?: real)?/i);
+    expect(briefing.missingIdentityDetail).not.toMatch(/Falta tu NSS/);
     const prompt = formatOfficialCaseBriefingForPrompt(briefing);
     expect(prompt).not.toMatch(/IMSS: Faltan datos/);
-    expect(prompt).not.toMatch(/SAT: Faltan datos/);
+    expect(prompt).not.toMatch(/IMSS y SAT: Faltan datos/);
+    expect(prompt).not.toMatch(/Falta tu NSS/);
+    expect(prompt).not.toMatch(/Falta tu NSS, CURP y RFC/);
     expect(prompt).toMatch(/IMSS: (Pendiente|Vivo|Falló)/);
-    expect(prompt).toMatch(/SAT: (Pendiente|Vivo|Falló)/);
+    expect(prompt).toMatch(/SAT: Faltan datos|RFC real|RFC del recibo es genérico/);
     expect(JSON.stringify(briefing)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
+  });
+
+  it("summary viejo sin checks no dice IMSS y SAT: Faltan datos si el recibo ya tiene NSS", () => {
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("sin_datos", {
+        identity: { nss: false, curp: false, rfc: false },
+        overallDetail: "Falta tu NSS, CURP y RFC en el recibo para consultar.",
+        checks: [],
+        chatAnchor: null,
+      }),
+      facts: { nss: "12345678901", workerRfc: "XAXX010101000", netAmount: "$12,450" },
+    });
+    const prompt = formatOfficialCaseBriefingForPrompt(briefing);
+    const answer = buildNoLiveOfficialAnswer(briefing);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/IMSS y SAT: Faltan datos/);
+    expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(true);
+    expect(prompt).not.toMatch(/Falta tu NSS/);
+    expect(prompt).not.toMatch(/Falta tu NSS, CURP y RFC/);
+    expect(answer.clearAnswer).not.toMatch(/Falta tu NSS/);
+    expect(answer.missing).not.toMatch(/Falta tu NSS/);
+    expect(answer.clearAnswer).not.toMatch(/IMSS y SAT: Faltan datos/);
+    expect(JSON.stringify({ briefing, prompt, answer })).not.toMatch(/Helios|CompliLink|HMAC/i);
+    expect(prompt).toMatch(/No inventes que el patr[oó]n cumple|Nunca inventes cumple/);
   });
 
   it("usa reciboVsOficial del puente y no inventa bien", () => {

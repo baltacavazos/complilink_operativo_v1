@@ -76,6 +76,83 @@ describe("workerChatUx grounding", () => {
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
+  it("recibo con NSS y RFC visibles no deja que el chat diga Falta tu NSS", () => {
+    const staleCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "sin_datos",
+      overallLabel: "Faltan datos",
+      overallDetail: "Falta tu NSS, CURP y RFC en el recibo para consultar.",
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: false, curp: false, rfc: false },
+      checks: [],
+      chatAnchor: {
+        imss: {
+          fuente: "imss",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+          motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+          missingFields: ["nss", "curp", "rfc"],
+        },
+        sat: {
+          fuente: "sat",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+          motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+          missingFields: ["nss", "curp", "rfc"],
+        },
+        infonavit: {
+          fuente: "infonavit",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Falta el CURP para consultar Infonavit."],
+          motivoFallo: "Falta el CURP para consultar Infonavit.",
+          missingFields: ["curp"],
+        },
+      },
+    };
+    const receiptDocument = {
+      documentType: "payroll_receipt",
+      originalName: "recibo-smoke.pdf",
+      heliosOpinion: {
+        summary: "El recibo muestra NSS, RFC genérico y neto.",
+        rawPayload: {
+          preliminaryAnalysis: {
+            confirmedData: {
+              payrollNss: "12345678901",
+              workerRfc: "XAXX010101000",
+              payrollNetAmount: "$12,450",
+            },
+          },
+        },
+      },
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [receiptDocument],
+      opinion: receiptDocument.heliosOpinion,
+      officialCheck: staleCheck,
+      caseOnly: true,
+      caseTitle: "Smoke Magia",
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué dice mi consulta?" });
+    const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué dice mi consulta?" });
+
+    expect(grounding.laborFacts.nss).toBe("12345678901");
+    expect(grounding.officialBriefing.facts.nss).toBe("12345678901");
+    expect(grounding.officialBriefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
+    expect(grounding.officialBriefing.statusLines.join(" ")).not.toMatch(/IMSS y SAT: Faltan datos/);
+    expect(answer).not.toMatch(/Falta tu NSS/);
+    expect(answer).not.toMatch(/Falta tu NSS, CURP y RFC/);
+    expect(answer).not.toMatch(/IMSS y SAT: Faltan datos/);
+    expect(answer).toMatch(/No inventamos que tu patr[oó]n cumple/);
+    expect(answer.replace(/No inventamos que tu patr[oó]n cumple/g, "")).not.toMatch(/\bcumple\b/i);
+    expect(instructions).not.toMatch(/Falta tu NSS/);
+    expect(instructions).not.toMatch(/IMSS y SAT: Faltan datos/);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
   it("en el caso el prompt del modelo solo usa chatAnchor, recibo y TU consulta", () => {
     const officialCheck: OfficialCheckSummary = {
       configured: true,
