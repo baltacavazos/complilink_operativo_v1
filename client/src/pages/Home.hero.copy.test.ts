@@ -32,6 +32,7 @@ describe("Home pública · mix aprobado del hero", () => {
     expect(home).toContain(HOME_HERO_HEADLINE);
     expect(home).toContain("{activeHeroVariant.headline}");
     expect(home).toContain("{activeHeroVariant.ctaPrimary}");
+    expect(home).toContain("{HOME_HERO_PRIMARY_CTA}");
     expect(home).toContain(HOME_HERO_PRIMARY_CTA);
     expect(home).toContain('onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}');
     expect(home).toContain('window.location.href = "/auditar"');

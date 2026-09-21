@@ -3177,7 +3177,7 @@ function MobileStickyCta() {
         className="h-12 w-full rounded-full bg-slate-950 text-base font-semibold text-white hover:bg-slate-900"
         onClick={() => goToAuditFlow({ placement: "mobile_sticky_cta", source: "home_mobile_sticky" })}
       >
-        {PRIMARY_CTA_LABEL}
+        {HOME_HERO_PRIMARY_CTA}
         <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
       </Button>
     </div>
