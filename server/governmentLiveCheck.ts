@@ -17,6 +17,7 @@ import {
   readChatAnchorSource,
   readReciboVsOficial,
   rewriteOfficialFailedMotivo,
+  isGenericSatRfc,
   reconcileOfficialCheckWithIdentity,
   usedOfficialIdentityForSource,
   type OfficialChatAnchor,
@@ -119,9 +120,7 @@ export function normalizeCurp(value: unknown): string | null {
   return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/.test(normalized) ? normalized : null;
 }
 
-export function isGenericSatRfc(value: string | null | undefined): boolean {
-  return value === "XAXX010101000" || value === "XEXX010101000";
-}
+export { isGenericSatRfc };
 
 export function normalizeRfc(value: unknown, options?: { allowGeneric?: boolean }): string | null {
   if (typeof value !== "string") return null;

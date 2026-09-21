@@ -140,6 +140,8 @@ import {
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialCheckHeadline,
   hasLiveOfficialResult,
+  identityFlagsFromReceiptValues,
+  reconcileOfficialCheckWithIdentity,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -1967,7 +1969,13 @@ function buildSocialSecurityValidationSummary(params: {
     collectWorkerOfficialIdentity(laborFiscal.facts),
     ...params.documents.map((document) => officialIdentityForEngineDispatch(document)),
   );
-  const officialCheck: OfficialCheckSummary =
+  const receiptIdentity = identityFlagsFromReceiptValues({
+    nss: officialIdentity.nss,
+    curp: officialIdentity.curp,
+    rfc: officialIdentity.rfc,
+    workerRfc: officialIdentity.rfc,
+  });
+  const rawOfficialCheck: OfficialCheckSummary =
     lastLiveCheck ??
     ({
       configured: officialAvailability.any,
@@ -1980,13 +1988,11 @@ function buildSocialSecurityValidationSummary(params: {
         ? OFFICIAL_CHECK_STATUS_DETAIL.sin_permiso
         : OFFICIAL_CHECK_STATUS_DETAIL.no_configurado,
       checkedAt: null,
-      identity: {
-        nss: Boolean(officialIdentity.nss),
-        curp: Boolean(officialIdentity.curp),
-        rfc: Boolean(officialIdentity.rfc),
-      },
+      identity: receiptIdentity,
       checks: [],
     } satisfies OfficialCheckSummary);
+  const officialCheck =
+    reconcileOfficialCheckWithIdentity(rawOfficialCheck, receiptIdentity) ?? rawOfficialCheck;
 
   const coverageScore = Math.max(
     18,
@@ -3617,15 +3623,15 @@ export const appRouter = router({
           pickPreferredWorkerOpinion(chatDocuments.map((item) => item.heliosOpinion)) ??
           asObjectRecord(chatDocuments.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const missingDocuments = inferHeliosMissingDocuments({ documents });
-        const laborSignals = summarizeLaborFiscalSignals(chatDocuments);
+        const laborSignals = summarizeLaborFiscalSignals(documents);
         const officialDigest = emptyOfficialDigest();
         const socialSecurityForChat = buildSocialSecurityValidationSummary({
-          documents: chatDocuments,
+          documents,
           events: detail.events,
         });
         const officialBriefing = buildOfficialCaseBriefing({
           officialCheck: socialSecurityForChat.officialCheck,
-          facts: laborSignals.facts,
+          facts: socialSecurityForChat.facts ?? laborSignals.facts,
           chatAnchor: socialSecurityForChat.officialCheck?.chatAnchor ?? null,
           reciboVsOficial: socialSecurityForChat.officialCheck?.reciboVsOficial ?? null,
         });

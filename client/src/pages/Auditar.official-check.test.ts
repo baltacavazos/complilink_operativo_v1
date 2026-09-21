@@ -131,7 +131,8 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(display.buttonLabel).not.toMatch(/Faltan datos/i);
     expect(display.status).not.toBe("sin_datos");
     expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
-    expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /IMSS y SAT: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.missingIdentityDetail).not.toMatch(/Falta tu NSS/);
     expect(source).toContain("canDispatchOfficialConsult");
     expect(JSON.stringify({ display, briefing })).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
