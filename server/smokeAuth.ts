@@ -1,31 +1,16 @@
-/**
- * Bypass de humo: solo correos de prueba y solo si SMOKE_AUTH=1.
- * Nunca abre el OTP de clientes reales.
- */
+import { isSmokeAuthCode, isSmokeAuthEmail } from "@shared/smokeAuth";
 
-export const SMOKE_AUTH_CODE = "000000";
-const SMOKE_AUTH_DOMAIN = "@auditapatron-smoke.test";
-const SMOKE_AUTH_PLUS = "+smoke@";
-
-export function normalizeSmokeEmail(email: string) {
-  return email.trim().toLowerCase();
-}
+export { isSmokeAuthCode, isSmokeAuthEmail, normalizeSmokeEmail, SMOKE_AUTH_CODE } from "@shared/smokeAuth";
 
 export function isSmokeAuthEnabled() {
   const flag = (process.env.SMOKE_AUTH ?? "").trim().toLowerCase();
   return flag === "1" || flag === "true";
 }
 
-export function isSmokeAuthEmail(email: string) {
-  const normalized = normalizeSmokeEmail(email);
-  if (!normalized.includes("@") || normalized.startsWith("@")) return false;
-  return normalized.endsWith(SMOKE_AUTH_DOMAIN) || normalized.includes(SMOKE_AUTH_PLUS);
-}
-
 export function canUseSmokeAuth(email: string) {
   return isSmokeAuthEnabled() && isSmokeAuthEmail(email);
 }
 
-export function isSmokeAuthCode(code: string) {
-  return code.trim() === SMOKE_AUTH_CODE;
+export function shouldOpenSmokeTestSession(email: string, secret: string) {
+  return canUseSmokeAuth(email) && isSmokeAuthCode(secret);
 }

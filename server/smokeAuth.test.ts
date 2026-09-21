@@ -5,6 +5,7 @@ import {
   isSmokeAuthCode,
   isSmokeAuthEmail,
   isSmokeAuthEnabled,
+  shouldOpenSmokeTestSession,
   SMOKE_AUTH_CODE,
 } from "./smokeAuth";
 
@@ -37,6 +38,7 @@ describe("smoke auth allowlist", () => {
     expect(canUseSmokeAuth("tester@auditapatron-smoke.test")).toBe(false);
     expect(canUseSmokeAuth("qa+smoke@empresa.com")).toBe(false);
     expect(canUseSmokeAuth("balt@cavazos.com")).toBe(false);
+    expect(shouldOpenSmokeTestSession("tester@auditapatron-smoke.test", "000000")).toBe(false);
   });
 
   it("con SMOKE_AUTH=1 solo deja pasar correos smoke", () => {
@@ -46,6 +48,10 @@ describe("smoke auth allowlist", () => {
     expect(canUseSmokeAuth("qa+smoke@empresa.com")).toBe(true);
     expect(canUseSmokeAuth("balt@cavazos.com")).toBe(false);
     expect(canUseSmokeAuth("otra.persona@empresa.com")).toBe(false);
+    expect(shouldOpenSmokeTestSession("tester@auditapatron-smoke.test", "000000")).toBe(true);
+    expect(shouldOpenSmokeTestSession("qa+smoke@empresa.com", "000000")).toBe(true);
+    expect(shouldOpenSmokeTestSession("balt@cavazos.com", "000000")).toBe(false);
+    expect(shouldOpenSmokeTestSession("tester@auditapatron-smoke.test", "111111")).toBe(false);
     expect(isSmokeAuthCode("000000")).toBe(true);
     expect(isSmokeAuthCode("111111")).toBe(false);
     expect(SMOKE_AUTH_CODE).toBe("000000");
