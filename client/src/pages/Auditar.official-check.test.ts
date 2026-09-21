@@ -27,7 +27,8 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("openHeliosCopilot");
     expect(source).toContain("officialCaseBriefing.comparison.seenLine");
     expect(source).toContain("officialCaseBriefing.comparison.nextStepLine");
-    expect(source).toContain("officialCaseBriefing.statusLines.length");
+    expect(source).toContain("officialCaseBriefing.statusLines");
+    expect(source).toContain('data-testid="official-check-sources"');
     expect(source).not.toContain("overallStatus !== \"sin_datos\"");
     expect(source).toContain("canDispatchOfficialConsult(officialReceiptIdentity)");
     expect(source).toContain("lastUploadFactSignal.nss");
@@ -63,12 +64,13 @@ describe("Auditar consult UI — permiso y CTA", () => {
       },
     });
 
-    expect(fallo.buttonLabel).toBe("Falló");
-    expect(fallo.headline).toBe("Falló · 21/09/2026");
-    expect(fallo.headline).not.toBe("Falta tu permiso");
-    expect(fallo.detail).toMatch(/instituto|IMSS|SAT|Infonavit/);
-    expect(fallo.detail).toMatch(/no de AuditaPatrón/);
+    expect(fallo.buttonLabel).toBe("Probar de nuevo mañana");
+    expect(fallo.headline).toBe("Hoy no pudimos confirmar con IMSS, SAT e Infonavit");
+    expect(fallo.headline).not.toMatch(/Falló|Esto vimos/);
+    expect(fallo.detail).toMatch(/Tu recibo sí se leyó/);
+    expect(fallo.detail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(fallo.detail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
+    expect(fallo.silence?.askLabel).toBe("Preguntar qué significa");
     expect(JSON.stringify(fallo)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
 
     const faltan = resolveOfficialCheckDisplay({

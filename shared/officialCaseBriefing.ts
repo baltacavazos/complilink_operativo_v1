@@ -10,6 +10,7 @@ import {
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
   OFFICIAL_FAILED_MISSING,
+  buildInstituteSilencePresentation,
   buildOfficialCheckHeadline,
   buildReceiptOfficialComparisonCopy,
   OFFICIAL_CHECK_SOURCES,
@@ -34,7 +35,6 @@ import {
   officialSourceGapDetail,
   officialStatusToHonesty,
   reconcileOfficialCheckWithIdentity,
-  rewriteOfficialFailedMotivo,
   rewriteOfficialIdentityHechos,
   sourceHasRequiredOfficialIdentity,
   stripContradictoryMissingIdentityCopy,
@@ -51,7 +51,7 @@ export const CASE_ADVISOR_RULE =
   "Responde solo con base en este expediente y estas consultas. Si no hay dato oficial, di que aún no hay resultado / faltan datos — no inventes. Nunca inventes cumple, alta vigente ni salario oficial.";
 
 export const CASE_ADVISOR_FALLO_RULE =
-  "Si el estado es Falló: AuditaPatrón sí consultó. Quien no contestó (o está en mantenimiento) es el instituto — IMSS, SAT o Infonavit. El fallo no es de AuditaPatrón. Sin tips laborales genéricos.";
+  "Si IMSS, SAT o Infonavit no contestaron: dilo en un solo párrafo. El recibo puede estar leído, pero eso no dice si el patrón está bien dado de alta. No escribas Falló, ni «no de AuditaPatrón», ni «Esto vimos: bien». No inventes que el patrón cumple o incumple. Sin tips laborales genéricos.";
 
 export const WORKER_CHAT_NO_CONSULTA_EMPTY =
   "Aún no hay resultado de TU consulta. Pulsa Consultar IMSS y SAT.";
@@ -95,6 +95,7 @@ export type OfficialCaseBriefing = {
   receiptLines: string[];
   comparison: ReceiptOfficialComparison;
   facts: OfficialBriefingFacts;
+  instituteSilence: boolean;
 };
 
 const PAY_WELL_RE =
@@ -201,6 +202,8 @@ export function formatOfficialStatusLine(params: {
   status: OfficialCheckStatus;
   checkedAt?: string | null;
 }): string {
+  if (params.status === "no_se_pudo") return `${params.sourceLabel} — sin respuesta hoy`;
+  if (params.status === "pendiente") return `${params.sourceLabel} — esperando hoy`;
   const date = formatOfficialCheckDate(params.checkedAt);
   const label = OFFICIAL_CHECK_STATUS_LABEL[params.status];
   return date ? `${params.sourceLabel}: ${label} · ${date}` : `${params.sourceLabel}: ${label}`;
@@ -225,23 +228,18 @@ export function formatChatAnchorStatusLine(
     mapped === "pendiente" && looksLikeNoOfficialResponse(source.motivoFallo ?? source.hechos.join(" "))
       ? "no_se_pudo"
       : (mapped ?? "pendiente");
+  if (status === "no_se_pudo") return `${sourceLabel(source.fuente)} — sin respuesta hoy`;
+  if (status === "pendiente") return `${sourceLabel(source.fuente)} — esperando hoy`;
   const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
-  const fail =
-    status === "sin_datos" && source.motivoFallo
-      ? ` · ${source.motivoFallo}`
-      : status === "no_se_pudo"
-        ? ` · ${rewriteOfficialFailedMotivo(source.fuente, source.motivoFallo)}`
-        : "";
+  const fail = status === "sin_datos" && source.motivoFallo ? ` · ${source.motivoFallo}` : "";
   const label = OFFICIAL_CHECK_STATUS_LABEL[status];
   return date
     ? `${sourceLabel(source.fuente)}: ${label} · ${date}${fail}`
     : `${sourceLabel(source.fuente)}: ${label}${fail}`;
 }
 
-function lineWithInstituteFailure(line: string, source: OfficialChatAnchorSource["fuente"], detail?: string | null) {
-  if (!line.includes(": Falló") || line.includes("no de AuditaPatrón")) return line;
-  const blame = rewriteOfficialFailedMotivo(source, detail);
-  return blame ? `${line} · ${blame}` : line;
+function lineWithInstituteFailure(line: string, _source: OfficialChatAnchorSource["fuente"], _detail?: string | null) {
+  return line;
 }
 
 export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | null | undefined): string[] {
@@ -325,7 +323,7 @@ export function briefingHasInstituteFailure(briefing: OfficialCaseBriefing): boo
   if (briefing.officialCheck?.overallStatus === "no_se_pudo") return true;
   if (listFailedOfficialSources(briefing.officialCheck?.checks).length > 0) return true;
   if (listFailedOfficialSourcesFromAnchor(briefing.chatAnchor).length > 0) return true;
-  return briefing.statusLines.some((line) => /: Falló/.test(line));
+  return briefing.statusLines.some((line) => /sin respuesta hoy|: Falló/.test(line));
 }
 
 function consultAttempted(check?: OfficialCheckSummary | null): boolean {
@@ -381,9 +379,20 @@ export function selectReceiptOfficialComparison(params: {
     ...listFailedOfficialSourcesFromAnchor(check?.chatAnchor),
   ];
   const instituteFailed =
-    seen === "no_se_pudo" &&
+    (seen === "no_se_pudo" || check?.overallStatus === "no_se_pudo") &&
+    !hasLiveOfficialResult(check) &&
     (failedSources.length > 0 || check?.overallStatus === "no_se_pudo");
-  const copy = buildReceiptOfficialComparisonCopy(seen, { instituteFailed });
+  if (instituteFailed) {
+    const silence = buildInstituteSilencePresentation(failedSources);
+    return {
+      seen: "no_se_pudo",
+      seenLine: silence.verdict,
+      nextStep: silence.nextStep,
+      nextStepLine: formatOfficialNext(silence.nextStep),
+      hasOfficialConsulta: true,
+    };
+  }
+  const copy = buildReceiptOfficialComparisonCopy(seen, { instituteFailed: false });
   return {
     seen,
     seenLine: copy.seenLine,
@@ -391,6 +400,10 @@ export function selectReceiptOfficialComparison(params: {
     nextStepLine: copy.nextStepLine,
     hasOfficialConsulta: true,
   };
+}
+
+function formatOfficialNext(nextStep: string) {
+  return `Qué hacer ahora: ${nextStep}`;
 }
 
 export function buildOfficialCaseBriefing(params: {
@@ -459,6 +472,8 @@ export function buildOfficialCaseBriefing(params: {
     receiptLines: listReceiptFactLines(facts),
     comparison,
     facts,
+    instituteSilence:
+      reconciled?.overallStatus === "no_se_pudo" && !hasLiveOfficialResult(reconciled),
   };
 }
 
@@ -567,6 +582,19 @@ export function buildPayWellFallback(briefing: OfficialCaseBriefing): {
     };
   }
 
+  if (briefing.instituteSilence) {
+    const silence = buildInstituteSilencePresentation([
+      ...listFailedOfficialSources(briefing.officialCheck?.checks),
+      ...listFailedOfficialSourcesFromAnchor(briefing.chatAnchor),
+    ]);
+    return {
+      clearAnswer: silence.chat,
+      known: "Tu recibo ya está leído.",
+      missing: OFFICIAL_FAILED_MISSING,
+      nextStep: silence.nextStep,
+    };
+  }
+
   const statuses = briefing.statusLines.length > 0 ? briefing.statusLines.join(". ") : briefing.headline;
   return {
     clearAnswer: `${briefing.comparison.seenLine} ${statuses ?? ""}. ${receipt} Eso no significa que tu patrón esté al corriente.`.replace(/\s+/g, " ").trim(),
@@ -589,6 +617,9 @@ export function buildOfficialChatStarterQuestions(briefing: OfficialCaseBriefing
   if (briefing.comparison.seen === "bien") {
     return ["¿Cuadra con mi recibo?", "¿Qué guardo de este resultado?"];
   }
+  if (briefing.instituteSilence || briefing.comparison.seen === "no_se_pudo") {
+    return ["¿Qué implica esto para mi pago?"];
+  }
   return ["¿Se pudo comparar con mi recibo?", "¿Qué falta para consultar otra vez?"];
 }
 
@@ -609,17 +640,25 @@ export function buildNoLiveOfficialAnswer(briefing: OfficialCaseBriefing): {
     };
   }
 
+  if (briefing.instituteSilence || briefingHasInstituteFailure(briefing)) {
+    const silence = buildInstituteSilencePresentation([
+      ...listFailedOfficialSources(briefing.officialCheck?.checks),
+      ...listFailedOfficialSourcesFromAnchor(briefing.chatAnchor),
+    ]);
+    return {
+      clearAnswer: silence.chat,
+      known: "Tu recibo ya está leído.",
+      missing: OFFICIAL_FAILED_MISSING,
+      nextStep: silence.nextStep,
+    };
+  }
+
   const statuses = briefing.statusLines.join(". ");
-  const failed = briefingHasInstituteFailure(briefing);
   return {
-    clearAnswer: statuses
-      ? failed
-        ? `${statuses} AuditaPatrón sí consultó. ${OFFICIAL_FAILED_MISSING}`
-        : `${statuses}. Pulsa ${OFFICIAL_CHECK_BUTTON}.`
-      : WORKER_CHAT_NO_CONSULTA_EMPTY,
+    clearAnswer: statuses ? `${statuses}. Pulsa ${OFFICIAL_CHECK_BUTTON}.` : WORKER_CHAT_NO_CONSULTA_EMPTY,
     known: [statuses, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" ") || "Hay una consulta, pero sin un resultado vivo.",
-    missing: briefing.missingIdentityDetail ?? (failed ? OFFICIAL_FAILED_MISSING : "Todavía no hay un resultado vivo de IMSS, SAT o Infonavit."),
-    nextStep: failed ? briefing.comparison.nextStep : OFFICIAL_CHECK_BUTTON,
+    missing: briefing.missingIdentityDetail ?? "Todavía no hay un resultado vivo de IMSS, SAT o Infonavit.",
+    nextStep: OFFICIAL_CHECK_BUTTON,
   };
 }
 

@@ -16,10 +16,10 @@ import {
   selectReceiptOfficialComparison,
 } from "./officialCaseBriefing";
 import {
+  INSTITUTE_SILENCE_NEXT,
   OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
-  OFFICIAL_FAILED_NEXT_STEP,
   RECEIPT_OFFICIAL_COMPARISON_COPY,
   type OfficialChatAnchor,
   type OfficialCheckSummary,
@@ -168,6 +168,7 @@ describe("briefing del caso para el asesor", () => {
         },
       }),
       facts: { curp: "DILE970625HBCZPM01", workerRfc: "VECJ880326XXX" },
+      nowMs: Date.parse("2026-09-21T15:30:20.000Z"),
     });
     expect(pendingMissing.statusLines.some((line) => /IMSS: Faltan datos · 21\/09\/2026/.test(line))).toBe(true);
     expect(pendingMissing.missingIdentity).toEqual(["NSS"]);
@@ -185,9 +186,8 @@ describe("briefing del caso para el asesor", () => {
       },
       "2026-09-21T12:00:00.000Z",
     );
-    expect(noResponse).toMatch(/IMSS: Falló · 21\/09\/2026/);
-    expect(noResponse).toMatch(/no contestó/);
-    expect(noResponse).toMatch(/no de AuditaPatrón/);
+    expect(noResponse).toBe("IMSS — sin respuesta hoy");
+    expect(noResponse).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(noResponse).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
 
     const comparison = selectReceiptOfficialComparison({
@@ -278,8 +278,8 @@ describe("briefing del caso para el asesor", () => {
 
     expect(briefing.missingIdentity).toEqual(["CURP"]);
     expect(briefing.missingIdentityDetail).toBe("Falta tu CURP en el recibo para consultar Infonavit.");
-    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(true);
-    expect(briefing.statusLines.some((line) => /SAT: Pendiente/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => line === "IMSS — esperando hoy")).toBe(true);
+    expect(briefing.statusLines.some((line) => line === "SAT — esperando hoy")).toBe(true);
     expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
     expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(false);
@@ -371,7 +371,7 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.headline).not.toMatch(/Faltan datos/i);
     expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
     expect(briefing.statusLines.some((line) => /IMSS y SAT: Faltan datos/.test(line))).toBe(false);
-    expect(briefing.statusLines.some((line) => /IMSS: (Pendiente|Vivo|Falló)/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /IMSS — esperando hoy|IMSS — sin respuesta hoy|IMSS: Vivo/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
     expect(briefing.missingIdentity).toEqual(["CURP", "RFC"]);
@@ -383,7 +383,7 @@ describe("briefing del caso para el asesor", () => {
     expect(prompt).not.toMatch(/IMSS y SAT: Faltan datos/);
     expect(prompt).toMatch(/NSS en recibo: 12345678901/);
     expect(prompt).toMatch(/PROHIBIDO escribir «Falta tu NSS»/);
-    expect(prompt).toMatch(/IMSS: (Pendiente|Vivo|Falló)/);
+    expect(prompt).toMatch(/IMSS — esperando hoy|IMSS — sin respuesta hoy|IMSS: Vivo/);
     expect(prompt).toMatch(/SAT: Faltan datos|RFC real|RFC del recibo es genérico/);
     expect(JSON.stringify(briefing)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
@@ -403,7 +403,7 @@ describe("briefing del caso para el asesor", () => {
     const answer = buildNoLiveOfficialAnswer(briefing);
     expect(briefing.statusLines.join(" ")).not.toMatch(/IMSS y SAT: Faltan datos/);
     expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
-    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => line === "IMSS — esperando hoy")).toBe(true);
     expect(promptWithoutForbidRule(prompt)).not.toMatch(/Falta tu NSS/);
     expect(prompt).toMatch(/NSS en recibo: 12345678901/);
     expect(prompt).toMatch(/PROHIBIDO escribir «Falta tu NSS»/);
@@ -446,9 +446,11 @@ describe("briefing del caso para el asesor", () => {
       facts: { nss: "12345678901" },
     });
     expect(failedInstitute.hasOfficialConsulta).toBe(true);
-    expect(failedInstitute.nextStep).toBe(OFFICIAL_FAILED_NEXT_STEP);
+    expect(failedInstitute.seenLine).toMatch(/Hoy no pudimos confirmar/);
+    expect(failedInstitute.seenLine).not.toMatch(/Esto vimos/);
+    expect(failedInstitute.nextStep).toBe(INSTITUTE_SILENCE_NEXT);
     expect(failedInstitute.nextStepLine).toMatch(/Qué hacer ahora:/);
-    expect(failedInstitute.nextStep).toMatch(/no de AuditaPatrón/);
+    expect(failedInstitute.nextStep).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(failedInstitute.nextStep).not.toMatch(/Da permiso|cruza/i);
   });
 
@@ -492,12 +494,11 @@ describe("briefing del caso para el asesor", () => {
         facts: { nss: "12345678901", curp: "DILE970625HBCZPM01", workerRfc: "VECJ880326XXX" },
       }),
     );
-    expect(failed.clearAnswer).toMatch(/Falló/);
-    expect(failed.clearAnswer).toMatch(/instituto|IMSS|SAT|Infonavit/);
-    expect(failed.clearAnswer).toMatch(/no de AuditaPatrón/);
-    expect(failed.clearAnswer).not.toMatch(/respuesta usable|tip|cruza el descuento/i);
-    expect(failed.nextStep).toBe(OFFICIAL_FAILED_NEXT_STEP);
-    expect(failed.missing).toMatch(/no de AuditaPatrón/);
+    expect(failed.clearAnswer).toMatch(/Hoy pedimos datos a IMSS y SAT y no contestaron/);
+    expect(failed.clearAnswer).not.toMatch(/Respuesta clara|Lo que sí se sabe|Falló|no de AuditaPatrón/);
+    expect(failed.clearAnswer).not.toMatch(/respuesta usable|tip|cruza el descuento|cumple/i);
+    expect(failed.nextStep).toBe(INSTITUTE_SILENCE_NEXT);
+    expect(failed.missing).not.toMatch(/no de AuditaPatrón/);
   });
 
   it("NSS 12345678901 en lastUpload hace imposible «Falta tu NSS y RFC en el recibo para consultar.»", () => {
@@ -572,9 +573,8 @@ describe("briefing del caso para el asesor", () => {
       nowMs: new Date(started).getTime() + 70_000,
     });
     expect(briefing.officialCheck?.overallStatus).toBe("no_se_pudo");
-    expect(briefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
-    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(false);
-    expect(briefing.statusLines.find((line) => /IMSS: Falló/.test(line))).toMatch(/no de AuditaPatrón/);
+    expect(briefing.statusLines.some((line) => line === "IMSS — sin respuesta hoy")).toBe(true);
+    expect(briefing.statusLines.some((line) => /Pendiente|Falló|no de AuditaPatrón/.test(line))).toBe(false);
     expect(briefing.missingIdentityDetail).not.toMatch(/Falta tu NSS/);
   });
 
@@ -604,10 +604,11 @@ describe("briefing del caso para el asesor", () => {
       pendingSinceMs: started,
     });
     expect(briefing.officialCheck?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
-    expect(briefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
-    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(false);
-    expect(briefing.statusLines.join(" ")).toMatch(/instituto/);
-    expect(briefing.statusLines.join(" ")).toMatch(/no de AuditaPatrón/);
+    expect(briefing.statusLines.some((line) => line === "IMSS — sin respuesta hoy")).toBe(true);
+    expect(briefing.statusLines.some((line) => /Pendiente|Falló/.test(line))).toBe(false);
+    expect(briefing.instituteSilence).toBe(true);
+    expect(briefing.comparison.seenLine).toMatch(/Hoy no pudimos confirmar/);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/no de AuditaPatrón|Esto vimos: bien/);
     expect(briefing.statusLines.join(" ")).not.toMatch(/Falta tu NSS/);
     expect(JSON.stringify(briefing.statusLines)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });

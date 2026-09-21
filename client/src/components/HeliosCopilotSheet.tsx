@@ -288,16 +288,18 @@ export function HeliosCopilotSheet({
                   {consultCtaLabel}
                 </Button>
               ) : null}
-              <div className="ap-chat-compact-hide mt-3 grid gap-2 sm:grid-cols-2">
-                {quickHighlights.map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-slate-200/80 bg-[#f7f8fa] px-3 py-2.5 text-[0.78rem] leading-5 tracking-[-0.01em] text-slate-600"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
+              {quickHighlights.length > 0 ? (
+                <div className="ap-chat-compact-hide mt-3 grid gap-2 sm:grid-cols-2">
+                  {quickHighlights.map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-2xl border border-slate-200/80 bg-[#f7f8fa] px-3 py-2.5 text-[0.78rem] leading-5 tracking-[-0.01em] text-slate-600"
+                    >
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              ) : null}
               {onResponseToneChange ? (
                 <div className="ap-chat-compact-hide rounded-[1.15rem] border border-slate-200/80 bg-[#f7f8fa] px-3 py-3">
                   <p className="text-[12px] font-medium tracking-[-0.01em] text-slate-500">

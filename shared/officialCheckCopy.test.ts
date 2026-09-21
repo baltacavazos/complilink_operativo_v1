@@ -8,8 +8,11 @@ import {
   OFFICIAL_CHECK_READY_DETAIL,
   OFFICIAL_CHECK_READY_HEADLINE,
   OFFICIAL_CHECK_STATUS_DETAIL,
+  INSTITUTE_SILENCE_RETRY,
+  INSTITUTE_SILENCE_VERDICT,
+  INSTITUTE_WAITING_DETAIL,
+  INSTITUTE_WAITING_HEADLINE,
   OFFICIAL_CHECK_STATUS_LABEL,
-  OFFICIAL_FAILED_BLAME,
   RECEIPT_OFFICIAL_COMPARISON_COPY,
   assertNoInternalBrands,
   buildOfficialFailedDetail,
@@ -32,11 +35,11 @@ import {
   type OfficialCheckSummary,
 } from "./officialCheckCopy";
 
-function expectFailedCopyBlamesInstitute(value: string) {
-  expect(value).toMatch(/instituto|IMSS|SAT|Infonavit/);
-  expect(value).toMatch(/Consultamos|no contest/);
-  expect(value).toMatch(/no de AuditaPatrón/);
-  expect(value).not.toMatch(/respuesta usable|falló (la )?(app|plataforma)|fallo de AuditaPatrón/i);
+function expectPlainNoResponseCopy(value: string) {
+  expect(value).toMatch(/Pedimos la información|no hubo respuesta|no contestó hoy/);
+  expect(value).not.toMatch(/no de AuditaPatrón/);
+  expect(value).not.toMatch(/\bFalló\b/);
+  expect(value).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
   expect(value).not.toMatch(/Helios|CompliLink|HMAC|APIMarket|connector/i);
   expect(value).not.toMatch(/\b(sí )?cumple\b/i);
 }
@@ -76,7 +79,10 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.headline).not.toMatch(/Vivo|Pendiente|Falló/);
     expectNoInternalOrVerdictInvented(display.headline);
     expect(OFFICIAL_CHECK_CONSENT).not.toMatch(/Helios|CompliLink|HMAC/i);
-    expect(OFFICIAL_CHECK_CONSENT).toMatch(/No inventamos que tu patrón cumple/);
+    expect(OFFICIAL_CHECK_CONSENT).toBe(
+      "Autorizo que pregunten a IMSS y SAT con los datos de mi recibo, solo para ver la respuesta de hoy.",
+    );
+    expect(OFFICIAL_CHECK_READY_DETAIL).toMatch(/No inventamos que tu patrón cumple/);
   });
 
   it("con checkbox nunca muestra Falta tu permiso, aunque el servidor siga en sin_permiso", () => {
@@ -122,8 +128,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.status).toBe("consultando");
     expect(display.headline).not.toMatch(/Falta tu permiso/i);
     expect(display.detail).toBe(OFFICIAL_CHECK_LOADING_DETAIL);
-    expect(display.detail).toMatch(/instituto no contesta/);
-    expect(display.detail).toMatch(/no es un fallo de AuditaPatrón/);
+    expect(display.detail).toMatch(/Si hoy no contestan, te lo diremos/);
+    expect(display.detail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(display.detail).not.toMatch(/Falta tu permiso|Helios|HMAC|cumple/i);
   });
 
@@ -144,9 +150,9 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(vivo.headline).toBe("Vivo · 21/09/2026");
     expect(vivo.buttonLabel).toBe("Vivo");
     expect(vivo.status).toBe("vivo");
-    expect(pendiente.headline).toBe("Pendiente");
-    expect(pendiente.buttonLabel).toBe("Pendiente");
-    expect(pendiente.detail).toMatch(/Todavía no hay una respuesta oficial nueva/);
+    expect(pendiente.headline).toBe(INSTITUTE_WAITING_HEADLINE);
+    expect(pendiente.buttonLabel).toBe(OFFICIAL_CHECK_BUTTON);
+    expect(pendiente.detail).toBe(INSTITUTE_WAITING_DETAIL);
     expect(pendiente.detail).not.toMatch(/no respondió/);
 
     const afterConsult = resolveOfficialCheckDisplay({
@@ -154,14 +160,19 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       summary: summary("pendiente", { checkedAt: "2026-09-21T15:30:00.000Z" }),
       nowMs: new Date("2026-09-21T15:30:30.000Z").getTime(),
     });
-    expect(afterConsult.headline).toBe("Pendiente · 21/09/2026");
+    expect(afterConsult.headline).toBe(INSTITUTE_WAITING_HEADLINE);
     expect(afterConsult.headline).not.toMatch(/Falta tu permiso/i);
     expect(afterConsult.showPermissionCopy).toBe(false);
-    expect(fallo.headline).toBe("Falló");
-    expect(fallo.buttonLabel).toBe("Falló");
-    expectFailedCopyBlamesInstitute(fallo.detail);
-    expect(fallo.detail).toBe(OFFICIAL_CHECK_STATUS_DETAIL.no_se_pudo);
-    expect(fallo.detail).toContain(OFFICIAL_FAILED_BLAME);
+    expect(fallo.headline).toBe(INSTITUTE_SILENCE_VERDICT);
+    expect(fallo.buttonLabel).toBe(INSTITUTE_SILENCE_RETRY);
+    expect(fallo.silence?.meaning).toMatch(/Tu recibo sí se leyó/);
+    expect(fallo.silence?.sourceLines).toEqual([
+      "IMSS — sin respuesta hoy",
+      "SAT — sin respuesta hoy",
+      "Infonavit — sin respuesta hoy",
+    ]);
+    expectPlainNoResponseCopy(fallo.detail);
+    expect(fallo.detail).toContain(OFFICIAL_CHECK_STATUS_DETAIL.no_se_pudo);
 
     const faltan = resolveOfficialCheckDisplay({
       consentGranted: true,
@@ -192,7 +203,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     });
 
     expect(picked?.overallStatus).toBe("no_se_pudo");
-    expect(picked?.overallLabel).toBe("Falló");
+    expect(picked?.overallLabel).toBe("Sin respuesta");
     expect(pickHonestOfficialCheck({
       consentGranted: true,
       candidates: [summary("sin_permiso"), null],
@@ -228,7 +239,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(anchor?.imss.estado).toBe("live");
     expect(anchor?.imss.hechos[0]).toBe("Alta vigente: sí.");
     expect(anchor?.infonavit.motivoFallo).toMatch(/mantenimiento/);
-    expect(anchor?.infonavit.motivoFallo).toMatch(/no de AuditaPatrón/);
+    expect(anchor?.infonavit.motivoFallo).not.toMatch(/no de AuditaPatrón/);
     expect(anchor?.infonavit.motivoFallo).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
 
     const noResponse = readChatAnchor({
@@ -255,17 +266,17 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       },
     });
     expect(noResponse?.imss.estado).toBe("failed");
-    expect(noResponse?.imss.motivoFallo).toMatch(/no contestó/);
-    expect(noResponse?.imss.motivoFallo).toMatch(/no de AuditaPatrón/);
+    expect(noResponse?.imss.motivoFallo).toMatch(/no contestó hoy/);
+    expect(noResponse?.imss.motivoFallo).not.toMatch(/no de AuditaPatrón/);
     expect(noResponse?.infonavit.estado).toBe("failed");
     expect(noResponse?.sat.estado).toBe("pending");
 
-    expect(buildOfficialFailedDetail(["imss"])).toMatch(/Consultamos al IMSS hoy/);
+    expect(buildOfficialFailedDetail(["imss"])).toMatch(/Pedimos la información a IMSS/);
     expect(buildOfficialFailedDetail(["imss"])).not.toMatch(/SAT|Infonavit/);
     expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/IMSS y SAT/);
-    expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/Esos institutos no contestaron/);
-    expectFailedCopyBlamesInstitute(buildOfficialFailedDetail(["imss"]));
-    expectFailedCopyBlamesInstitute(buildOfficialFailedDetail(["imss", "sat", "infonavit"]));
+    expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/no hubo respuesta/);
+    expectPlainNoResponseCopy(buildOfficialFailedDetail(["imss"]));
+    expectPlainNoResponseCopy(buildOfficialFailedDetail(["imss", "sat", "infonavit"]));
 
     expect(readReciboVsOficial("bien")?.resultado).toBe("bien");
     expect(readReciboVsOficial({ resultado: "hay_diferencia", motivo: "SBC" })?.resultado).toBe("hay_diferencia");
@@ -381,7 +392,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.headline).not.toMatch(/Faltan datos/i);
     expect(display.buttonLabel).not.toMatch(/Faltan datos/i);
     expect(display.status).not.toBe("sin_datos");
-    expect(display.headline).toMatch(/Pendiente|Vivo|Falló|Consulta IMSS y SAT/);
+    expect(display.headline).toMatch(/Pendiente|Vivo|Hoy no pudimos confirmar|Todavía esperamos|Consulta IMSS y SAT/);
     expect(JSON.stringify(display)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
 
@@ -431,8 +442,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       nowMs: started + OFFICIAL_PENDING_STALE_MS + 1,
     });
     expect(stale?.overallStatus).toBe("no_se_pudo");
-    expect(stale?.overallLabel).toBe("Falló");
-    expectFailedCopyBlamesInstitute(stale?.overallDetail ?? "");
+    expect(stale?.overallLabel).toBe("Sin respuesta");
+    expectPlainNoResponseCopy(stale?.overallDetail ?? "");
     expect(stale?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
 
     const display = resolveOfficialCheckDisplay({
@@ -442,9 +453,10 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       nowMs: started + 70_000,
     });
     expect(display.status).toBe("no_se_pudo");
-    expect(display.headline).toMatch(/Falló/);
-    expect(display.buttonLabel).toBe("Falló");
-    expectFailedCopyBlamesInstitute(display.detail);
+    expect(display.headline).toMatch(/Hoy no pudimos confirmar/);
+    expect(display.buttonLabel).toBe(INSTITUTE_SILENCE_RETRY);
+    expect(display.headline).not.toMatch(/Falló/);
+    expectPlainNoResponseCopy(display.detail);
   });
 
   it("Pendiente sin checkedAt usa la fecha del ancla o el reloj de la tarjeta y pasa a Falló", () => {
@@ -482,7 +494,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       { nowMs: started + 70_000 },
     );
     expect(fromAnchor?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
-    expectFailedCopyBlamesInstitute(fromAnchor?.checks.find((item) => item.source === "imss")?.detail ?? "");
+    expectPlainNoResponseCopy(fromAnchor?.checks.find((item) => item.source === "imss")?.detail ?? "");
     expect(fromAnchor?.overallStatus).toBe("no_se_pudo");
 
     const fromCard = reconcileOfficialCheckWithIdentity(
@@ -496,7 +508,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     );
     expect(fromCard?.overallStatus).toBe("no_se_pudo");
     expect(fromCard?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
-    expectFailedCopyBlamesInstitute(fromCard?.overallDetail ?? "");
+    expectPlainNoResponseCopy(fromCard?.overallDetail ?? "");
     expect(fromCard?.overallDetail ?? "").not.toMatch(/Falta tu NSS/);
   });
 

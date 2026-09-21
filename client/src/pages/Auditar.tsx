@@ -46,6 +46,9 @@ import {
   type FiveSecondVerdict,
 } from "@shared/fiveSecondVerdict";
 import {
+  INSTITUTE_SILENCE_ASK,
+  INSTITUTE_SILENCE_CHAT,
+  INSTITUTE_SILENCE_RETRY,
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
@@ -5749,6 +5752,7 @@ export default function Auditar() {
     documentsWithOpinion: heliosDocumentsCount,
   });
   const heliosCopilotIntro = useMemo(() => {
+    if (officialCaseBriefing.instituteSilence) return INSTITUTE_SILENCE_CHAT;
     const intro = buildAsesorContinuityIntro({
       memoryGreeting:
         heliosCopilotMutation.data?.advisorMemory?.greeting ??
@@ -5768,6 +5772,7 @@ export default function Auditar() {
     heliosDocumentsCount,
     visibleHeliosOpinion?.resultCard?.assistantIntro,
     visibleHeliosOpinion?.summary,
+    officialCaseBriefing.instituteSilence,
   ]);
   const heliosCopilotPromptContextDocumentType =
     pendingDraft?.classification.documentType ??
@@ -9008,9 +9013,13 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-slate-700">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestFiveSecond.seenLine}</p>
-            <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-slate-900">{guestFiveSecond.nextStepLine}</p>
-            <p className="mt-3 text-sm leading-6 text-slate-600">{guestFiveSecond.disclaimer}</p>
+            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
+            {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
+              <>
+                <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-slate-900">{guestFiveSecond.nextStepLine}</p>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{guestFiveSecond.disclaimer}</p>
+              </>
+            )}
             <div className="mt-5 grid gap-4">
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
                 <p className="text-sm font-semibold tracking-tight text-amber-900">Qué conviene revisar</p>
@@ -9035,27 +9044,44 @@ export default function Auditar() {
             </div>
             <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
             <div data-testid="official-check-card" className="mt-5 rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
-              <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
-                {officialCheckDisplay.headline}
-              </p>
-              <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
-                {officialCheckDisplay.detail}
-              </p>
-              {officialCaseBriefing.statusLines.length ? (
+              {officialCheckDisplay.silence ? (
+                <div data-testid="official-check-silence">
+                  <p className="text-sm font-semibold text-teal-950">Qué pasó</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.whatHappened}</p>
+                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué significa para ti</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.meaning}</p>
+                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué hacer ahora</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.nextStep}</p>
+                  <p className="mt-2 text-xs leading-5 text-slate-600">{officialCheckDisplay.silence.smallPrint}</p>
+                </div>
+              ) : (
+                <>
+                  <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
+                    {officialCheckDisplay.headline}
+                  </p>
+                  <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                    {officialCheckDisplay.detail}
+                  </p>
+                </>
+              )}
+              {officialCheckDisplay.silence ? (
+                <p data-testid="official-check-headline" className="sr-only">{officialCheckDisplay.headline}</p>
+              ) : null}
+              {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).length ? (
                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                  {officialCaseBriefing.statusLines.map(line => (
+                  {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).map(line => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
               ) : null}
-              {officialCaseBriefing.hechoLines.length ? (
+              {!officialCheckDisplay.silence && officialCaseBriefing.hechoLines.length ? (
                 <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                   {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
               ) : null}
-              {officialCaseBriefing.hasOfficialConsulta ? (
+              {!officialCheckDisplay.silence && officialCaseBriefing.hasOfficialConsulta && officialCaseBriefing.comparison.seen !== "no_se_pudo" ? (
                 <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
                   <p>{officialCaseBriefing.comparison.seenLine}</p>
                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
@@ -9695,22 +9721,26 @@ export default function Auditar() {
                       </div>
                     ) : null}
                     <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
-                      <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
+                      {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
+                        <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
+                      )}
                       <div className="min-w-0">
                         <h2
                           data-testid="five-second-verdict-seen"
                           className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
                         >
                           {shouldCompactPostUploadExperience
-                            ? lastUploadFiveSecond.seenLine
+                            ? officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente"
+                              ? officialCheckDisplay.headline
+                              : lastUploadFiveSecond.seenLine
                             : lastUploadVerdict.label}
                         </h2>
-                        {shouldCompactPostUploadExperience ? (
+                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
                           <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-slate-900 sm:text-lg">
                             {lastUploadFiveSecond.nextStepLine}
                           </p>
                         ) : null}
-                        {shouldCompactPostUploadExperience ? (
+                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
                           <p className="mt-2 text-sm leading-6 text-slate-600">
                             {lastUploadFiveSecond.disclaimer}
                           </p>
@@ -9739,27 +9769,42 @@ export default function Auditar() {
                               </div>
                             </details>
                             <div data-testid="official-check-card" className="mt-3 rounded-[1rem] border border-teal-200 bg-teal-50/80 px-3 py-3 text-left">
-                              <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
-                                {officialCheckDisplay.headline}
-                              </p>
-                              <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
-                                {officialCheckDisplay.detail}
-                              </p>
-                              {officialCaseBriefing.statusLines.length ? (
+                              {officialCheckDisplay.silence ? (
+                                <div data-testid="official-check-silence">
+                                  <p className="text-sm font-semibold text-teal-950">Qué pasó</p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.whatHappened}</p>
+                                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué significa para ti</p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.meaning}</p>
+                                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué hacer ahora</p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.nextStep}</p>
+                                  <p className="mt-2 text-xs leading-5 text-slate-600">{officialCheckDisplay.silence.smallPrint}</p>
+                                  <p data-testid="official-check-headline" className="sr-only">{officialCheckDisplay.headline}</p>
+                                </div>
+                              ) : (
+                                <>
+                                  <p data-testid="official-check-headline" className={`font-semibold tracking-tight text-teal-950 ${officialCheckDisplay.status === "pendiente" ? "sr-only" : "text-sm"}`}>
+                                    {officialCheckDisplay.headline}
+                                  </p>
+                                  <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                                    {officialCheckDisplay.detail}
+                                  </p>
+                                </>
+                              )}
+                              {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).length ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                                  {officialCaseBriefing.statusLines.map(line => (
+                                  {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).map(line => (
                                     <li key={line}>{line}</li>
                                   ))}
                                 </ul>
                               ) : null}
-                              {officialCaseBriefing.hechoLines.length ? (
+                              {!officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hechoLines.length ? (
                                 <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
                                     <li key={line}>{line}</li>
                                   ))}
                                 </ul>
                               ) : null}
-                              {officialCaseBriefing.hasOfficialConsulta ? (
+                              {!officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hasOfficialConsulta && officialCaseBriefing.comparison.seen !== "no_se_pudo" ? (
                                 <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
                                   <p>{officialCaseBriefing.comparison.seenLine}</p>
                                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
@@ -9783,7 +9828,7 @@ export default function Auditar() {
                                   void handleRevalidateSocialSecurity();
                                 }}
                               >
-                                {officialCheckDisplay.buttonLabel}
+                                {officialCheckDisplay.silence ? INSTITUTE_SILENCE_RETRY : officialCheckDisplay.buttonLabel}
                               </Button>
                               {officialCaseBriefing.hasOfficialConsulta ? (
                                 <Button
@@ -9791,9 +9836,9 @@ export default function Auditar() {
                                   data-testid="official-check-chat-cta"
                                   variant="outline"
                                   className="mt-2 h-11 rounded-full border-teal-200 bg-white px-4 text-teal-950 hover:bg-teal-100"
-                                  onClick={() => openHeliosCopilot()}
+                                  onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                                 >
-                                  {WORKER_CHAT_ASK_CTA}
+                                  {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
                                 </Button>
                               ) : null}
                             </div>
@@ -9815,19 +9860,25 @@ export default function Auditar() {
                   <div className={`flex w-full flex-col gap-1 ${shouldCompactPostUploadExperience ? "items-center" : "lg:max-w-sm"}`}>
                     <Button
                       type="button"
-                      className={`rounded-[2rem] font-semibold text-white shadow-[0_46px_96px_-20px_rgba(16,185,129,0.46)] transition-all sm:h-14 sm:text-[1.08rem] ${shouldCompactPostUploadExperience ? "mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600" : "h-13 bg-slate-950 px-5 text-[1.02rem] hover:bg-slate-900"}`}
+                      className={shouldCompactPostUploadExperience && officialCheckDisplay.silence
+                        ? "mx-auto flex h-auto min-h-12 w-full max-w-[22rem] items-center justify-center rounded-[1.6rem] border border-slate-300 bg-white px-4 py-3 text-center text-base font-semibold text-slate-800 shadow-none hover:bg-slate-50"
+                        : `rounded-[2rem] font-semibold text-white shadow-[0_46px_96px_-20px_rgba(16,185,129,0.46)] transition-all sm:h-14 sm:text-[1.08rem] ${shouldCompactPostUploadExperience ? "mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600" : "h-13 bg-slate-950 px-5 text-[1.02rem] hover:bg-slate-900"}`}
                       onClick={handlePrimaryVerdictCta}
                     >
-                      {shouldCompactPostUploadExperience ? <ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.5} /> : null}
+                      {shouldCompactPostUploadExperience && !officialCheckDisplay.silence ? <ArrowRight className="h-5 w-5 shrink-0" strokeWidth={2.5} /> : null}
                       {shouldCompactPostUploadExperience
-                        ? primaryLastUploadShortcut?.label ?? "Ver qué sigue"
+                        ? officialCheckDisplay.silence
+                          ? "Subir otro recibo"
+                          : primaryLastUploadShortcut?.label ?? "Ver qué sigue"
                         : primaryLastUploadShortcut
                           ? primaryLastUploadShortcut.label
                           : WORKER_CHAT_ASK_CTA}
                     </Button>
                     {shouldCompactPostUploadExperience ? (
                       <p className="max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600">
-                        Un solo paso claro primero. El detalle del papel queda abajo, si lo quieres ver.
+                        {officialCheckDisplay.silence
+                          ? "Subir otro recibo es opcional. No hace falta para entender lo de hoy."
+                          : "Un solo paso claro primero. El detalle del papel queda abajo, si lo quieres ver."}
                       </p>
                     ) : null}
                   </div>
@@ -14701,9 +14752,21 @@ Reforzar con otro documento
                 onSendMessage={handleHeliosCopilotSend}
                 messages={heliosCopilotConversation}
                 isLoading={heliosCopilotMutation.isPending}
-                suggestedPrompts={heliosCopilotSuggestedPrompts}
-                suggestedPromptsContext={heliosCopilotSuggestedPromptsContext}
-                caseTitle={caseDetailQuery.data?.case.title}
+                suggestedPrompts={
+                  officialCaseBriefing.instituteSilence
+                    ? ["¿Qué implica esto para mi pago?"]
+                    : heliosCopilotSuggestedPrompts
+                }
+                suggestedPromptsContext={
+                  officialCaseBriefing.instituteSilence
+                    ? "Puedes preguntar qué implica para tu pago."
+                    : heliosCopilotSuggestedPromptsContext
+                }
+                caseTitle={
+                  officialCaseBriefing.instituteSilence
+                    ? "Tu consulta de hoy"
+                    : caseDetailQuery.data?.case.title
+                }
                 employeeName={caseDetailQuery.data?.case.employeeName}
                 employerEntity={caseDetailQuery.data?.case.employerEntity}
                 confidenceScore={
@@ -14718,11 +14781,15 @@ Reforzar con otro documento
                       WORKER_CHAT_DISCLAIMER
                   ) ?? WORKER_CHAT_DISCLAIMER
                 }
-                summary={warmVisibleNamingCopy(
-                  heliosCopilotMutation.data?.answer ??
-                    visibleHeliosOpinion?.summary ??
-                    null
-                )}
+                summary={
+                  officialCaseBriefing.instituteSilence
+                    ? null
+                    : warmVisibleNamingCopy(
+                        heliosCopilotMutation.data?.answer ??
+                          visibleHeliosOpinion?.summary ??
+                          null
+                      )
+                }
                 historyItems={heliosCopilotHistoryItems}
                 historyContext={heliosCopilotHistoryContext}
                 supportingDocuments={
@@ -14732,14 +14799,21 @@ Reforzar con otro documento
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
                 officialTitles={[]}
                 officialSourcesNote={null}
-                officialStatusChips={officialCaseBriefing.statusLines}
+                officialStatusChips={
+                  officialCaseBriefing.instituteSilence
+                    ? (officialCheckDisplay.silence?.sourceLines ?? [])
+                    : officialCaseBriefing.statusLines
+                }
                 officialComparison={
-                  officialCaseBriefing.hasOfficialConsulta
-                    ? {
-                        seenLine: officialCaseBriefing.comparison.seenLine,
-                        nextStep: officialCaseBriefing.comparison.nextStepLine,
-                      }
-                    : null
+                  officialCaseBriefing.instituteSilence ||
+                  officialCaseBriefing.comparison.seen === "no_se_pudo"
+                    ? null
+                    : officialCaseBriefing.hasOfficialConsulta
+                      ? {
+                          seenLine: officialCaseBriefing.comparison.seenLine,
+                          nextStep: officialCaseBriefing.comparison.nextStepLine,
+                        }
+                      : null
                 }
                 hasOfficialConsulta={officialCaseBriefing.hasOfficialConsulta}
                 consultCtaLabel={officialCheckDisplay.buttonLabel}
@@ -14749,13 +14823,25 @@ Reforzar con otro documento
                     void handleRevalidateSocialSecurity();
                   }
                 }}
-                uiCopy={{
-                  emptyStateMessage: officialCaseBriefing.hasOfficialConsulta
-                    ? "Pregúntame del resultado de TU consulta y de tu recibo."
-                    : WORKER_CHAT_NO_CONSULTA_EMPTY,
-                }}
+                uiCopy={
+                  officialCaseBriefing.instituteSilence
+                    ? {
+                        eyebrow: "Tu consulta de hoy",
+                        description: "Te digo qué pasó hoy con IMSS, SAT e Infonavit.",
+                        quickHighlights: [],
+                        capabilityBadge: "Solo esta consulta",
+                        documentBadge: "Tu recibo ya se leyó",
+                        promptsHeading: "Si quieres preguntar",
+                        emptyStateMessage: INSTITUTE_SILENCE_CHAT,
+                      }
+                    : {
+                        emptyStateMessage: officialCaseBriefing.hasOfficialConsulta
+                          ? "Pregúntame del resultado de TU consulta y de tu recibo."
+                          : WORKER_CHAT_NO_CONSULTA_EMPTY,
+                      }
+                }
                 responseTone={preferredTone}
-                onResponseToneChange={setPreferredTone}
+                onResponseToneChange={officialCaseBriefing.instituteSilence ? null : setPreferredTone}
                 onFocusSuggestedDocument={() => {
                   setHeliosCopilotOpen(false);
                   focusRecommendedUpload(

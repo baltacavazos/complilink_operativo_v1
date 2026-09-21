@@ -14,6 +14,7 @@ import {
 } from "@shared/officialCaseBriefing";
 import {
   OFFICIAL_FAILED_MISSING,
+  INSTITUTE_SILENCE_CHAT,
   hasLiveOfficialResult,
   identityFlagsFromReceiptValues,
   stripContradictoryMissingIdentityCopy,
@@ -283,6 +284,13 @@ export function buildWorkerChatFallbackAnswer(
   options?: { prompt?: string | null },
 ): string {
   let answer: string;
+  if (
+    grounding.documentsCount > 0 &&
+    !grounding.officialBriefing.hasLiveOfficialResult &&
+    (grounding.officialBriefing.instituteSilence || briefingHasInstituteFailure(grounding.officialBriefing))
+  ) {
+    return buildNoLiveOfficialAnswer(grounding.officialBriefing).clearAnswer;
+  }
   if (grounding.documentsCount === 0) {
     const who =
       grounding.workerName && grounding.employerName
@@ -417,8 +425,12 @@ export function buildWorkerChatLlmInstructions(
       "Hechos visibles (únicos montos, RFC o NSS que puedes citar):",
       visibleFacts,
       `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${nextStep}`,
-      `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
-      "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
+      grounding.officialBriefing.instituteSilence ||
+      (!grounding.officialBriefing.hasLiveOfficialResult &&
+        briefingHasInstituteFailure(grounding.officialBriefing))
+        ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Idea: ${INSTITUTE_SILENCE_CHAT} Si preguntan qué implica para el pago, di que hoy no se puede saber si el patrón está bien dado de alta ni si el pago está bien o mal. Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», dictamen.`
+        : `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
+      "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte. Si la respuesta es el párrafo de oficinas sin respuesta, no partas en cuatro.",
       `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
     ].join("\n");
   }
@@ -470,8 +482,12 @@ export function buildWorkerChatLlmInstructions(
     officialLines,
     `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${nextStep}`,
     `Si preguntan por IMSS e ISR (o impuestos/retenciones) juntos, el siguiente paso debe cubrir ambos: cruzar NSS/IMSS con el siguiente recibo o un papel IMSS (sin confirmar alta oficial) y cruzar la retención ISR con el CFDI o el depósito del mismo periodo. Si también mencionan Infonavit —o preguntan los tres—, cubre además el cruce de retención/crédito Infonavit con el aviso de retención o estado de crédito. Si preguntan por IMSS, impuestos o Infonavit por separado, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
-    `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
-    "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
+    grounding.officialBriefing.instituteSilence ||
+    (!grounding.officialBriefing.hasLiveOfficialResult &&
+      briefingHasInstituteFailure(grounding.officialBriefing))
+      ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Idea: ${INSTITUTE_SILENCE_CHAT} Si preguntan qué implica para el pago, di que hoy no se puede saber si el patrón está bien dado de alta ni si el pago está bien o mal. Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», dictamen.`
+      : `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
+    "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte. Si la respuesta es el párrafo de oficinas sin respuesta, no partas en cuatro.",
     `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
   ].join("\n");
 }
@@ -483,6 +499,12 @@ export function sanitizeWorkerChatAnswer(
 ): string {
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
   const briefing = grounding.officialBriefing;
+  if (
+    !briefing.hasLiveOfficialResult &&
+    (briefing.instituteSilence || briefingHasInstituteFailure(briefing))
+  ) {
+    return buildNoLiveOfficialAnswer(briefing).clearAnswer;
+  }
   const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
   if (grounding.caseOnly) {
     return sanitizeChatIdentityCopy(
