@@ -399,15 +399,47 @@ function identityFromClassificationPayload(payload: string) {
 }
 
 async function readExpedienteWorkerIdentity(tenantId: string, caseId: string) {
-  const rows = await listCanonicalContractsByType({
-    tenantId,
-    caseId,
-    contractType: "classification",
-    status: "ready",
-  });
+  const [readyRows, draftRows] = await Promise.all([
+    listCanonicalContractsByType({
+      tenantId,
+      caseId,
+      contractType: "classification",
+      status: "ready",
+    }),
+    listCanonicalContractsByType({
+      tenantId,
+      caseId,
+      contractType: "classification",
+      status: "draft",
+    }),
+  ]);
   return mergeWorkerOfficialIdentities(
-    ...rows.map((row) => identityFromClassificationPayload(row.payload)),
+    ...readyRows.map((row) => identityFromClassificationPayload(row.payload)),
+    ...draftRows.map((row) => identityFromClassificationPayload(row.payload)),
   );
+}
+
+function asPersonIdentity(identity?: { nss: string | null; curp: string | null; rfc: string | null } | null) {
+  const rfc = identity?.rfc && identity.rfc.length === 13 ? identity.rfc : null;
+  return {
+    nss: identity?.nss ?? null,
+    curp: identity?.curp ?? null,
+    rfc,
+  };
+}
+
+function hasPersonAnchor(identity: { nss: string | null; curp: string | null; rfc: string | null }) {
+  return Boolean(identity.nss || identity.curp || identity.rfc);
+}
+
+function personKeysConflict(
+  left: { nss: string | null; curp: string | null; rfc: string | null },
+  right: { nss: string | null; curp: string | null; rfc: string | null },
+) {
+  if (left.nss && right.nss && left.nss !== right.nss) return true;
+  if (left.curp && right.curp && left.curp !== right.curp) return true;
+  if (left.rfc && right.rfc && left.rfc !== right.rfc) return true;
+  return false;
 }
 
 function sameVisibleName(left?: string | null, right?: string | null) {
@@ -434,7 +466,22 @@ function assertDocumentIdentityGuardrail(params: {
     return;
   }
 
-  if (fiscalIdentitiesMatch(params.expectedIdentity, params.detectedIdentity)) {
+  const expectedPerson = asPersonIdentity(params.expectedIdentity);
+  const detectedPerson = asPersonIdentity(params.detectedIdentity);
+
+  if (fiscalIdentitiesMatch(expectedPerson, detectedPerson)) {
+    return;
+  }
+
+  if (personKeysConflict(expectedPerson, detectedPerson)) {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: SINGLE_CASE_IDENTITY_MESSAGE,
+    });
+  }
+
+  // El nombre del expediente sale de la cuenta hasta que un documento ancla NSS, CURP o RFC de persona.
+  if (!hasPersonAnchor(expectedPerson)) {
     return;
   }
 

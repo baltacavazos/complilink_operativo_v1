@@ -1887,6 +1887,16 @@ describe("appRouter case workflows", () => {
 
   it("rejects upload when a normal user submits a document that appears to belong to another person", async () => {
     vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValueOnce([
+      {
+        payload: JSON.stringify({
+          confirmedData: {
+            payrollNss: "12345678901",
+            workerRfc: "MARM800101ABC",
+          },
+        }),
+      },
+    ] as never);
 
     const caller = appRouter.createCaller(
       createProtectedContext({
@@ -1973,8 +1983,114 @@ describe("appRouter case workflows", () => {
     expect(payload.confirmedData?.workerRfc).not.toBe(payload.confirmedData?.employerRfc);
   });
 
+  it("acepta el XML de nómina del mismo trabajador aunque sea el primer archivo y el expediente tenga otro nombre", async () => {
+    const actualDb = await vi.importActual<typeof import("./db")>("./db");
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockImplementation(
+      actualDb.documentSeemsToBelongToAnotherPerson,
+    );
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      ...demoCaseDetail,
+      case: {
+        ...demoCaseDetail.case,
+        employeeName: "smoke+ap57-1512",
+      },
+    } as never);
+    const xml = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 83,
+        openId: "smoke-ap57-xml-first",
+        email: "smoke+ap57-1512@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "9f09564820f07679caa8e245cfa333a14db49b4e80e1a5d911cab4e0d51c5bac.xml",
+        mimeType: "application/xml",
+        base64Content: `data:application/xml;base64,${Buffer.from(xml, "utf8").toString("base64")}`,
+        sourceChannel: "manual",
+      }),
+    ).resolves.toMatchObject({
+      previewAsset: {
+        fileName: "9f09564820f07679caa8e245cfa333a14db49b4e80e1a5d911cab4e0d51c5bac.xml",
+      },
+    });
+
+    expect(db.upsertCanonicalContract).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        contractType: "classification",
+        status: "draft",
+      }),
+    );
+    const draftCall = vi.mocked(db.upsertCanonicalContract).mock.calls.at(-1)?.[0];
+    const draftPayload = JSON.parse(String(draftCall?.payload)) as {
+      preliminaryAnalysis?: {
+        estimatedData?: { workerName?: string };
+        confirmedData?: { workerRfc?: string; employerRfc?: string; payrollNss?: string; payrollCurp?: string };
+      };
+    };
+    expect(draftPayload.preliminaryAnalysis?.estimatedData?.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
+    expect(draftPayload.preliminaryAnalysis?.confirmedData).toMatchObject({
+      workerRfc: "UIPD9211257I0",
+      employerRfc: "ECC190605VA1",
+      payrollNss: "84129214965",
+      payrollCurp: "UIPD921125HYNCLD03",
+    });
+  });
+
+  it("sigue rechazando el XML si el expediente ya está anclado a otro NSS", async () => {
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValue([
+      {
+        payload: JSON.stringify({
+          confirmedData: {
+            payrollNss: "11111111111",
+            workerRfc: "MARM800101ABC",
+          },
+        }),
+      },
+    ] as never);
+    const xml = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 84,
+        openId: "smoke-ap57-otro-nss",
+        email: "smoke+ap57-otro@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.analyzeDocumentDraft({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "otro-trabajador.xml",
+        mimeType: "application/xml",
+        base64Content: `data:application/xml;base64,${Buffer.from(xml, "utf8").toString("base64")}`,
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/expediente digital está vinculado a una sola persona[\s\S]*parece pertenecer a alguien distinto/i);
+
+    expect(db.upsertCanonicalContract).not.toHaveBeenCalled();
+  });
+
   it("rejects draft analysis when a normal user submits a document that appears to belong to another person", async () => {
     vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValueOnce([
+      {
+        payload: JSON.stringify({
+          confirmedData: {
+            payrollNss: "12345678901",
+            workerRfc: "MARM800101ABC",
+          },
+        }),
+      },
+    ] as never);
 
     const caller = appRouter.createCaller(
       createProtectedContext({
