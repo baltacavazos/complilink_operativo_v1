@@ -147,6 +147,172 @@ export function buildInstituteSilencePresentation(
   };
 }
 
+export type OfficialSourceOutcome = {
+  source: OfficialCheckSource;
+  status: OfficialCheckStatus;
+  maintenance: boolean;
+  hechos: string[];
+  checkedAt: string | null;
+};
+
+export type OfficialResultPresentation = InstituteSilencePresentation & {
+  kind: "silent" | "mixed";
+};
+
+function officialSourceWithArticle(source: OfficialCheckSource): string {
+  if (source === "sat") return "el SAT";
+  if (source === "imss") return "el IMSS";
+  return "Infonavit";
+}
+
+function joinSpanishLabels(labels: string[]): string {
+  if (labels.length === 0) return "";
+  if (labels.length === 1) return labels[0];
+  const last = labels[labels.length - 1];
+  const conj = /^i/i.test(last) ? "e" : "y";
+  if (labels.length === 2) return `${labels[0]} ${conj} ${last}`;
+  return `${labels.slice(0, -1).join(", ")} ${conj} ${last}`;
+}
+
+function usefulOfficialHechos(hechos: string[]): string[] {
+  return hechos
+    .map((item) => item.replace(/\s+/g, " ").trim())
+    .filter((item) => item.length > 0)
+    .filter((item) => !looksLikeNoOfficialResponse(item))
+    .filter((item) => !looksLikeInstituteMaintenance(item))
+    .filter((item) => !/faltan datos|falta tu |falta el |falta un /i.test(item))
+    .slice(0, 3);
+}
+
+export function sourceReportedMaintenance(parts: Array<string | null | undefined>): boolean {
+  return parts.some((part) => looksLikeInstituteMaintenance(part));
+}
+
+export function silentOfficialSourceLine(label: string, maintenance: boolean): string {
+  const base = instituteSilenceSourceLine(label);
+  return maintenance ? `${base} · en mantenimiento` : base;
+}
+
+export function readOfficialSourceOutcomes(
+  summary?: (Pick<OfficialCheckSummary, "checkedAt"> &
+    Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>) | null,
+): OfficialSourceOutcome[] {
+  if (!summary) return [];
+  const bySource = new Map<OfficialCheckSource, OfficialSourceOutcome>();
+  for (const check of summary.checks ?? []) {
+    bySource.set(check.source, {
+      source: check.source,
+      status: check.status,
+      maintenance: sourceReportedMaintenance([check.motivoFallo, ...(check.hechos ?? [])]),
+      hechos: usefulOfficialHechos(check.hechos ?? []),
+      checkedAt: check.checkedAt ?? summary.checkedAt ?? null,
+    });
+  }
+  const anchor = summary.chatAnchor;
+  if (anchor) {
+    for (const source of [anchor.imss, anchor.sat, anchor.infonavit]) {
+      const current = bySource.get(source.fuente);
+      const anchorLive = source.estado === "live";
+      const anchorFailed = source.estado === "failed" && listOfficialMissingFieldKeys(source.missingFields).length === 0;
+      const status: OfficialCheckStatus = anchorLive
+        ? "vivo"
+        : current?.status === "vivo"
+          ? "vivo"
+          : anchorFailed
+            ? "no_se_pudo"
+            : (current?.status ?? "pendiente");
+      const maintenance =
+        sourceReportedMaintenance([source.motivoFallo, ...source.hechos]) || Boolean(current?.maintenance && status === "no_se_pudo");
+      const hechos = anchorLive
+        ? usefulOfficialHechos(source.hechos.length > 0 ? source.hechos : (current?.hechos ?? []))
+        : (current?.hechos ?? usefulOfficialHechos(source.hechos));
+      bySource.set(source.fuente, {
+        source: source.fuente,
+        status,
+        maintenance,
+        hechos,
+        checkedAt: source.fecha ?? current?.checkedAt ?? summary.checkedAt ?? null,
+      });
+    }
+  }
+  return OFFICIAL_CHECK_SOURCES.map((source) => bySource.get(source)).filter(
+    (item): item is OfficialSourceOutcome => Boolean(item),
+  );
+}
+
+function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): string {
+  const liveNames = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
+  const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
+  const verb = live.length === 1 ? "contestó" : "contestaron";
+  const facts = live.flatMap((item) => item.hechos.slice(0, 2).map((hecho) => `${OFFICIAL_SOURCE_LABEL[item.source]}: ${hecho}`));
+  const factBit = facts.length > 0 ? ` ${facts.join(" ")}` : "";
+  const still = silent.length === 1 ? "aún no contesta" : "aún no contestan";
+  const maint = silent.length > 0 && silent.every((item) => item.maintenance) ? " (en mantenimiento)" : "";
+  return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. Prueba mañana, o pregúntame qué implica para tu pago.`;
+}
+
+function mixedOfficialPresentation(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): OfficialResultPresentation {
+  const liveArticles = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
+  const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
+  const still = silent.length === 1 ? "aún no contesta" : "aún no contestan";
+  const liveVerb = live.length === 1 ? "sí contestó hoy" : "sí contestaron hoy";
+  const maintNote =
+    silent.length > 0 && silent.every((item) => item.maintenance)
+      ? " (están en mantenimiento)"
+      : silent.some((item) => item.maintenance)
+        ? " (algunas están en mantenimiento)"
+        : "";
+  const sourceLines = [
+    ...live.flatMap((item) => {
+      const label = OFFICIAL_SOURCE_LABEL[item.source];
+      const date = formatOfficialCheckDate(item.checkedAt);
+      const head = date ? `${label}: Vivo · ${date}` : `${label}: Vivo`;
+      return [head, ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
+    }),
+    ...silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance)),
+  ];
+  return {
+    kind: "mixed",
+    verdict: `Confirmamos con ${liveArticles}. ${silentNames} ${still}.`,
+    whatHappened: `${liveArticles.charAt(0).toUpperCase()}${liveArticles.slice(1)} ${liveVerb}. Pedimos la información a ${silentNames} y hoy no hubo respuesta${maintNote}.`,
+    meaning: `Tu recibo sí se leyó. Lo que ${live.length === 1 ? "contestó" : "contestaron"} ${liveArticles} no dice si tu patrón está bien registrado en ${silentNames}. Eso no quiere decir que te estén haciendo trampa.`,
+    nextStep: `Guarda lo que respondió ${liveArticles}. Vuelve a consultar ${silentNames} mañana. Si quieres, pregunta al asesor: «¿qué implica esto para mi pago?»`,
+    smallPrint: INSTITUTE_SILENCE_SMALL,
+    retryLabel: INSTITUTE_SILENCE_RETRY,
+    askLabel: INSTITUTE_SILENCE_ASK,
+    sourceLines,
+    chat: mixedOfficialChat(live, silent),
+  };
+}
+
+/**
+ * Veredicto por fuente. El título de las tres oficinas solo cabe si ninguna contestó.
+ * Si alguna está viva, se cita. El silencio de las otras no la arrastra.
+ */
+export function buildHonestOfficialPresentation(
+  summary?: (Pick<OfficialCheckSummary, "overallStatus" | "checkedAt"> &
+    Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>) | null,
+): OfficialResultPresentation | null {
+  if (!summary) return null;
+  const outcomes = readOfficialSourceOutcomes(summary);
+  const live = outcomes.filter((item) => item.status === "vivo");
+  const silent = outcomes.filter((item) => item.status === "no_se_pudo");
+  if (live.length > 0 && silent.length > 0) {
+    return mixedOfficialPresentation(live, silent);
+  }
+  if (live.length > 0 || outcomes.some((item) => item.status === "pendiente" || item.status === "sin_datos")) {
+    return null;
+  }
+  if (summary.overallStatus !== "no_se_pudo" && silent.length === 0) return null;
+  const silentSources = silent.map((item) => item.source);
+  const base = buildInstituteSilencePresentation(silentSources);
+  const lines =
+    silent.length > 0
+      ? silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance))
+      : base.sourceLines;
+  return { ...base, kind: "silent", sourceLines: lines };
+}
+
 /** Qué pasó cuando la oficina no contestó. Sin culpar a la app y sin la palabra Falló. */
 export function buildOfficialFailedDetail(sources?: OfficialCheckSource[] | null): string {
   return instituteSilenceWhatHappened(sources);
@@ -855,6 +1021,13 @@ export function reconcileOfficialCheckWithIdentity(
     } else if (missingOfficialFieldsForSource(item.source, mergedIdentity).length > 0) {
       status = "sin_datos";
     }
+    const anchor = chatAnchor?.[item.source];
+    const anchorSaysLive = anchor?.estado === "live";
+    if (anchorSaysLive || honesty === "live" || item.status === "vivo") {
+      status = "vivo";
+    }
+    const liveHechos =
+      anchorSaysLive && anchor.hechos.length > 0 ? anchor.hechos : (item.hechos ?? []);
     const detail =
       status === "sin_datos"
         ? officialSourceGapDetail(item.source, options?.facts)
@@ -873,9 +1046,11 @@ export function reconcileOfficialCheckWithIdentity(
       used: usedOfficialIdentityForSource(item.source, mergedIdentity),
       missingFields: missingOfficialFieldsForSource(item.source, mergedIdentity),
       honesty: officialStatusToHonesty(status),
-      hechos: rewriteOfficialIdentityHechos(item.source, item.hechos ?? [], mergedIdentity),
+      hechos: rewriteOfficialIdentityHechos(item.source, status === "vivo" ? liveHechos : (item.hechos ?? []), mergedIdentity),
       motivoFallo:
-        item.motivoFallo && textContradictsVisibleReceiptIdentity(item.motivoFallo, mergedIdentity)
+        status === "vivo"
+          ? null
+          : item.motivoFallo && textContradictsVisibleReceiptIdentity(item.motivoFallo, mergedIdentity)
           ? sourceHasRequiredOfficialIdentity(item.source, mergedIdentity)
             ? null
             : officialSourceGapDetail(item.source, options?.facts)
@@ -1224,15 +1399,13 @@ export function readReciboVsOficial(value: unknown): ReciboVsOficial | null {
 
 export function hasLiveOfficialResult(summary?: OfficialCheckSummary | null): boolean {
   if (!summary) return false;
+  if (summary.checks.some((item) => item.status === "vivo" || item.honesty === "live")) return true;
   if (summary.chatAnchor) {
     return [summary.chatAnchor.sat, summary.chatAnchor.imss, summary.chatAnchor.infonavit].some(
       (item) => item.estado === "live",
     );
   }
-  return (
-    summary.overallStatus === "vivo" ||
-    summary.checks.some((item) => item.status === "vivo" || item.honesty === "live")
-  );
+  return summary.overallStatus === "vivo";
 }
 
 export function formatReceiptOfficialSeenLine(seen: ReciboVsOficialResultado) {
@@ -1275,7 +1448,10 @@ export function buildOfficialCheckHeadline(
   summary: Pick<OfficialCheckSummary, "overallStatus" | "checkedAt"> &
     Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>,
 ) {
+  const presentation = buildHonestOfficialPresentation(summary);
+  if (presentation?.kind === "mixed") return presentation.verdict;
   if (summary.overallStatus === "no_se_pudo") {
+    if (presentation?.kind === "silent") return presentation.verdict;
     const fromChecks = listFailedOfficialSources(summary.checks);
     const fromAnchor = listFailedOfficialSourcesFromAnchor(summary.chatAnchor);
     return instituteSilenceVerdict(fromChecks.length > 0 ? fromChecks : fromAnchor);
@@ -1392,10 +1568,21 @@ export function resolveOfficialCheckDisplay(params: {
           showPermissionCopy: false,
         };
       }
+      const presentation = buildHonestOfficialPresentation(honest);
+      if (presentation?.kind === "mixed") {
+        return {
+          headline: presentation.verdict,
+          detail: `${presentation.whatHappened} ${presentation.meaning} ${presentation.nextStep}`,
+          buttonLabel: presentation.retryLabel,
+          status: "vivo",
+          showPermissionCopy: false,
+          silence: presentation,
+        };
+      }
       if (honest.overallStatus === "no_se_pudo") {
         const fromChecks = listFailedOfficialSources(honest.checks);
         const fromAnchor = listFailedOfficialSourcesFromAnchor(honest.chatAnchor);
-        const silence = buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
+        const silence = presentation ?? buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
         return {
           headline: silence.verdict,
           detail: `${silence.whatHappened} ${silence.meaning} ${silence.nextStep}`,

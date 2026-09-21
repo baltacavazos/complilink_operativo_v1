@@ -242,14 +242,128 @@ describe("workerChatUx grounding", () => {
 
     expect(grounding.laborFacts.workerRfc).toBe("UIPD9211257I0");
     expect(grounding.officialBriefing.facts.workerRfc).toBe("UIPD9211257I0");
-    expect(grounding.officialBriefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
-    expect(grounding.officialBriefing.statusLines.some((line) => /SAT: Falló/.test(line))).toBe(true);
-    expect(grounding.officialBriefing.statusLines.some((line) => /Infonavit: Falló/.test(line))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("IMSS — sin respuesta hoy"))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("SAT — sin respuesta hoy"))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Infonavit — sin respuesta hoy"))).toBe(true);
     expect(blob).not.toMatch(/Falta un RFC/i);
     expect(blob).not.toMatch(/RFC real/i);
     expect(blob).not.toMatch(/IMSS: Pendiente/);
     expect(blob).not.toMatch(/Faltan datos/);
     expect(blob.replace(/No inventamos que tu patr[oó]n cumple/g, "")).not.toMatch(/\bcumple\b|\bcobro\b/i);
+  });
+
+  it("recibo UIPD cita el SAT vivo y no dice que las tres oficinas no contestaron", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const officialCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "vivo",
+      overallLabel: "Vivo",
+      overallDetail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+      checkedAt,
+      identity: { nss: true, curp: true, rfc: true },
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "no_se_pudo",
+          label: "Sin respuesta",
+          detail: "503 mantenimiento",
+          checkedAt,
+          used: { nss: true, curp: true, rfc: true },
+          honesty: "failed",
+          hechos: ["IMSS en mantenimiento."],
+          motivoFallo: "503 mantenimiento",
+        },
+        {
+          source: "sat",
+          sourceLabel: "SAT",
+          status: "vivo",
+          label: "Vivo",
+          detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+          checkedAt,
+          used: { nss: true, curp: true, rfc: true },
+          honesty: "live",
+          hechos: ["RFC: UIPD9211257I0", "Situación: activo"],
+        },
+        {
+          source: "infonavit",
+          sourceLabel: "Infonavit",
+          status: "no_se_pudo",
+          label: "Sin respuesta",
+          detail: "503 mantenimiento",
+          checkedAt,
+          used: { nss: true, curp: true, rfc: true },
+          honesty: "failed",
+          hechos: ["Infonavit en mantenimiento."],
+          motivoFallo: "503 mantenimiento",
+        },
+      ],
+      chatAnchor: {
+        imss: {
+          fuente: "imss",
+          estado: "failed",
+          fecha: checkedAt,
+          hechos: ["IMSS en mantenimiento."],
+          motivoFallo: "503 mantenimiento",
+        },
+        sat: {
+          fuente: "sat",
+          estado: "live",
+          fecha: checkedAt,
+          hechos: ["RFC: UIPD9211257I0", "Situación: activo"],
+          motivoFallo: null,
+        },
+        infonavit: {
+          fuente: "infonavit",
+          estado: "failed",
+          fecha: checkedAt,
+          hechos: ["Infonavit en mantenimiento."],
+          motivoFallo: "503 mantenimiento",
+        },
+      },
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [
+        {
+          documentType: "payroll_receipt",
+          originalName: "recibo-uipd.xml",
+          heliosOpinion: {
+            summary: "El recibo muestra NSS, CURP y RFC de la persona trabajadora.",
+            rawPayload: {
+              preliminaryAnalysis: {
+                confirmedData: {
+                  payrollNss: "84129214965",
+                  curp: "UIPD921125HYNCLD03",
+                  employerRfc: "ECC190605VA1",
+                  receptor_rfc: "UIPD9211257I0",
+                  payrollNetAmount: "$4,725.60",
+                },
+              },
+            },
+          },
+        },
+      ],
+      officialCheck,
+      caseOnly: true,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué dice mi consulta?" });
+    const lied = sanitizeWorkerChatAnswer(
+      "Hoy no pudimos confirmar con IMSS, SAT e Infonavit. Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron.",
+      grounding,
+      { prompt: "¿Qué dice mi consulta?" },
+    );
+    const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué dice mi consulta?" });
+
+    expect(grounding.officialBriefing.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(answer).toMatch(/UIPD9211257I0/);
+    expect(answer).toMatch(/IMSS e Infonavit aún no contestan/);
+    expect(answer).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(lied).toMatch(/UIPD9211257I0/);
+    expect(lied).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(instructions).toMatch(/SAT: Vivo|UIPD9211257I0/);
+    expect(instructions).not.toMatch(/Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron/);
+    expect(answer).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
   });
 
   it("lastUpload NSS sin flags del servidor impide la cita exacta y la recorta si el modelo la inventa", () => {

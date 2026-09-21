@@ -10,6 +10,7 @@ import {
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
   OFFICIAL_FAILED_MISSING,
+  buildHonestOfficialPresentation,
   buildInstituteSilencePresentation,
   buildOfficialCheckHeadline,
   buildReceiptOfficialComparisonCopy,
@@ -41,6 +42,7 @@ import {
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
   type OfficialCheckSummary,
+  type OfficialResultPresentation,
   type OfficialCheckStatus,
   type OfficialIdentityFlags,
   type ReciboVsOficial,
@@ -96,6 +98,7 @@ export type OfficialCaseBriefing = {
   comparison: ReceiptOfficialComparison;
   facts: OfficialBriefingFacts;
   instituteSilence: boolean;
+  verdict: OfficialResultPresentation | null;
 };
 
 const PAY_WELL_RE =
@@ -201,8 +204,12 @@ export function formatOfficialStatusLine(params: {
   sourceLabel: string;
   status: OfficialCheckStatus;
   checkedAt?: string | null;
+  maintenance?: boolean;
 }): string {
-  if (params.status === "no_se_pudo") return `${params.sourceLabel} — sin respuesta hoy`;
+  if (params.status === "no_se_pudo") {
+    const base = `${params.sourceLabel} — sin respuesta hoy`;
+    return params.maintenance ? `${base} · en mantenimiento` : base;
+  }
   if (params.status === "pendiente") return `${params.sourceLabel} — esperando hoy`;
   const date = formatOfficialCheckDate(params.checkedAt);
   const label = OFFICIAL_CHECK_STATUS_LABEL[params.status];
@@ -228,7 +235,11 @@ export function formatChatAnchorStatusLine(
     mapped === "pendiente" && looksLikeNoOfficialResponse(source.motivoFallo ?? source.hechos.join(" "))
       ? "no_se_pudo"
       : (mapped ?? "pendiente");
-  if (status === "no_se_pudo") return `${sourceLabel(source.fuente)} — sin respuesta hoy`;
+  if (status === "no_se_pudo") {
+    const maintenance = /mantenimiento/i.test(`${source.motivoFallo ?? ""} ${source.hechos.join(" ")}`);
+    const base = `${sourceLabel(source.fuente)} — sin respuesta hoy`;
+    return maintenance ? `${base} · en mantenimiento` : base;
+  }
   if (status === "pendiente") return `${sourceLabel(source.fuente)} — esperando hoy`;
   const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
   const fail = status === "sin_datos" && source.motivoFallo ? ` · ${source.motivoFallo}` : "";
@@ -248,12 +259,16 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
     return [summary.chatAnchor.imss, summary.chatAnchor.sat, summary.chatAnchor.infonavit].map(
       (source) => {
         const check = summary.checks.find((item) => item.source === source.fuente);
+        const maintenance = /mantenimiento/i.test(
+          `${check?.motivoFallo ?? ""} ${source.motivoFallo ?? ""} ${(check?.hechos ?? []).join(" ")} ${source.hechos.join(" ")}`,
+        );
         const line =
           check && check.status === "no_se_pudo" && source.estado !== "failed" && source.estado !== "live"
             ? formatOfficialStatusLine({
                 sourceLabel: check.sourceLabel,
                 status: check.status,
                 checkedAt: check.checkedAt ?? source.fecha ?? summary.checkedAt,
+                maintenance,
               })
             : formatChatAnchorStatusLine(source, summary.checkedAt, summary.identity);
         return lineWithInstituteFailure(line, source.fuente, check?.detail ?? source.motivoFallo);
@@ -267,6 +282,7 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
           sourceLabel: item.sourceLabel,
           status: item.status,
           checkedAt: item.checkedAt ?? summary.checkedAt,
+          maintenance: /mantenimiento/i.test(`${item.motivoFallo ?? ""} ${(item.hechos ?? []).join(" ")}`),
         }),
         item.source,
         item.detail,
@@ -449,7 +465,17 @@ export function buildOfficialCaseBriefing(params: {
     reciboVsOficial,
     hasDifferenceSignal: params.hasDifferenceSignal,
   });
-  const statusLines = formatOfficialCheckStatusLines(reconciled);
+  const verdict = buildHonestOfficialPresentation(reconciled);
+  const formattedStatusLines = formatOfficialCheckStatusLines(reconciled);
+  const statusLines = verdict?.sourceLines?.length
+    ? [
+        ...verdict.sourceLines,
+        ...formattedStatusLines.filter((line) => {
+          const name = line.split(/[:—]/)[0]?.trim();
+          return name ? !verdict.sourceLines.some((item) => item.startsWith(name)) : true;
+        }),
+      ]
+    : formattedStatusLines;
   const canDispatch = canDispatchOfficialConsult(identity);
   const headlineStatus =
     reconciled &&
@@ -472,8 +498,8 @@ export function buildOfficialCaseBriefing(params: {
     receiptLines: listReceiptFactLines(facts),
     comparison,
     facts,
-    instituteSilence:
-      reconciled?.overallStatus === "no_se_pudo" && !hasLiveOfficialResult(reconciled),
+    instituteSilence: verdict?.kind === "silent",
+    verdict,
   };
 }
 
@@ -492,10 +518,12 @@ export function alignVisibleChatWithBriefing(
   if (!raw.trim()) return "";
   const identity = briefing ? identityFlagsFromFacts(briefing.facts) : null;
   let next = stripContradictoryMissingIdentityCopy(raw, identity, briefing?.facts);
-  const failedLines = (briefing?.statusLines ?? []).filter((line) => /:\s*Falló/.test(line));
+  const failedLines = (briefing?.statusLines ?? []).filter((line) =>
+    /:\s*Falló|— sin respuesta hoy/.test(line),
+  );
   if (failedLines.length > 0) {
-    const sat = failedLines.find((line) => line.startsWith("SAT:"));
-    const infonavit = failedLines.find((line) => line.startsWith("Infonavit:"));
+    const sat = failedLines.find((line) => /^SAT\b/.test(line));
+    const infonavit = failedLines.find((line) => /^Infonavit\b/.test(line));
     if (sat || infonavit) {
       next = next.replace(/SAT\/Infonavit:\s*Faltan datos(?:\s*·\s*\d{2}\/\d{2}\/\d{4})?/gi, [sat, infonavit].filter(Boolean).join(". "));
     }
@@ -582,8 +610,17 @@ export function buildPayWellFallback(briefing: OfficialCaseBriefing): {
     };
   }
 
+  if (briefing.verdict?.kind === "mixed") {
+    return {
+      clearAnswer: briefing.verdict.chat,
+      known: [briefing.verdict.verdict, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" "),
+      missing: "Todavía falta la respuesta de las oficinas que hoy no contestaron.",
+      nextStep: briefing.verdict.nextStep,
+    };
+  }
+
   if (briefing.instituteSilence) {
-    const silence = buildInstituteSilencePresentation([
+    const silence = briefing.verdict ?? buildInstituteSilencePresentation([
       ...listFailedOfficialSources(briefing.officialCheck?.checks),
       ...listFailedOfficialSourcesFromAnchor(briefing.chatAnchor),
     ]);
@@ -640,11 +677,22 @@ export function buildNoLiveOfficialAnswer(briefing: OfficialCaseBriefing): {
     };
   }
 
+  if (briefing.verdict?.kind === "mixed") {
+    return {
+      clearAnswer: briefing.verdict.chat,
+      known: [briefing.verdict.verdict, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" "),
+      missing: "Todavía falta la respuesta de las oficinas que hoy no contestaron.",
+      nextStep: briefing.verdict.nextStep,
+    };
+  }
+
   if (briefing.instituteSilence || briefingHasInstituteFailure(briefing)) {
-    const silence = buildInstituteSilencePresentation([
-      ...listFailedOfficialSources(briefing.officialCheck?.checks),
-      ...listFailedOfficialSourcesFromAnchor(briefing.chatAnchor),
-    ]);
+    const silence = briefing.verdict?.kind === "silent"
+      ? briefing.verdict
+      : buildInstituteSilencePresentation([
+          ...listFailedOfficialSources(briefing.officialCheck?.checks),
+          ...listFailedOfficialSourcesFromAnchor(briefing.chatAnchor),
+        ]);
     return {
       clearAnswer: silence.chat,
       known: "Tu recibo ya está leído.",

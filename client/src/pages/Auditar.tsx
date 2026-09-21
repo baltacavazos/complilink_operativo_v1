@@ -5752,6 +5752,7 @@ export default function Auditar() {
     documentsWithOpinion: heliosDocumentsCount,
   });
   const heliosCopilotIntro = useMemo(() => {
+    if (officialCaseBriefing.verdict?.chat) return officialCaseBriefing.verdict.chat;
     if (officialCaseBriefing.instituteSilence) return INSTITUTE_SILENCE_CHAT;
     const intro = buildAsesorContinuityIntro({
       memoryGreeting:
@@ -5773,6 +5774,7 @@ export default function Auditar() {
     visibleHeliosOpinion?.resultCard?.assistantIntro,
     visibleHeliosOpinion?.summary,
     officialCaseBriefing.instituteSilence,
+    officialCaseBriefing.verdict,
   ]);
   const heliosCopilotPromptContextDocumentType =
     pendingDraft?.classification.documentType ??
@@ -14800,12 +14802,13 @@ Reforzar con otro documento
                 officialTitles={[]}
                 officialSourcesNote={null}
                 officialStatusChips={
-                  officialCaseBriefing.instituteSilence
-                    ? (officialCheckDisplay.silence?.sourceLines ?? [])
+                  officialCheckDisplay.silence?.sourceLines?.length
+                    ? officialCheckDisplay.silence.sourceLines
                     : officialCaseBriefing.statusLines
                 }
                 officialComparison={
                   officialCaseBriefing.instituteSilence ||
+                  officialCaseBriefing.verdict?.kind === "mixed" ||
                   officialCaseBriefing.comparison.seen === "no_se_pudo"
                     ? null
                     : officialCaseBriefing.hasOfficialConsulta
@@ -14824,15 +14827,17 @@ Reforzar con otro documento
                   }
                 }}
                 uiCopy={
-                  officialCaseBriefing.instituteSilence
+                  officialCaseBriefing.verdict
                     ? {
                         eyebrow: "Tu consulta de hoy",
-                        description: "Te digo qué pasó hoy con IMSS, SAT e Infonavit.",
+                        description: officialCaseBriefing.verdict.kind === "mixed"
+                          ? "Te digo qué contestó cada oficina hoy."
+                          : "Te digo qué pasó hoy con IMSS, SAT e Infonavit.",
                         quickHighlights: [],
                         capabilityBadge: "Solo esta consulta",
                         documentBadge: "Tu recibo ya se leyó",
                         promptsHeading: "Si quieres preguntar",
-                        emptyStateMessage: INSTITUTE_SILENCE_CHAT,
+                        emptyStateMessage: officialCaseBriefing.verdict.chat,
                       }
                     : {
                         emptyStateMessage: officialCaseBriefing.hasOfficialConsulta
@@ -14841,7 +14846,7 @@ Reforzar con otro documento
                       }
                 }
                 responseTone={preferredTone}
-                onResponseToneChange={officialCaseBriefing.instituteSilence ? null : setPreferredTone}
+                onResponseToneChange={officialCaseBriefing.verdict ? null : setPreferredTone}
                 onFocusSuggestedDocument={() => {
                   setHeliosCopilotOpen(false);
                   focusRecommendedUpload(
