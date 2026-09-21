@@ -194,6 +194,93 @@ describe("briefing del caso para el asesor", () => {
     expect(comparison.nextStep).toBe(RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.nextStep);
   });
 
+  it("recibo con NSS y RFC sin CURP no marca IMSS/SAT como Faltan datos", () => {
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        identity: { nss: true, curp: false, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+            missingFields: [],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "pendiente",
+            label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "pending",
+            hechos: [],
+            missingFields: [],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "sin_datos",
+            label: OFFICIAL_CHECK_STATUS_LABEL.sin_datos,
+            detail: "Falta tu CURP en el recibo para consultar.",
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            missingFields: ["curp"],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "pending",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Todavía no hay una respuesta oficial nueva de IMSS."],
+            motivoFallo: null,
+            missingFields: [],
+          },
+          sat: {
+            fuente: "sat",
+            estado: "pending",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+            motivoFallo: null,
+            missingFields: [],
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "pending",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            motivoFallo: null,
+            missingFields: ["curp"],
+          },
+        },
+        reciboVsOficial: { resultado: "no_se_pudo", motivo: "Infonavit sin CURP." },
+      }),
+      facts: { nss: "12345678901", workerRfc: "VECJ880326XXX", netAmount: "$12,450" },
+    });
+
+    expect(briefing.missingIdentity).toEqual(["CURP"]);
+    expect(briefing.missingIdentityDetail).toBe("Falta tu CURP en el recibo para consultar.");
+    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /SAT: Pendiente/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.hasOfficialConsulta).toBe(true);
+    expect(briefing.reciboVsOficial?.resultado).toBe("no_se_pudo");
+    expect(briefing.receiptLines.join(" ")).toMatch(/NSS 12345678901/);
+    expect(briefing.receiptLines.join(" ")).toMatch(/VECJ880326XXX/);
+    expect(JSON.stringify(briefing)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
+  });
+
   it("usa reciboVsOficial del puente y no inventa bien", () => {
     const bien = selectReceiptOfficialComparison({
       officialCheck: official("vivo", { chatAnchor: liveAnchor }),

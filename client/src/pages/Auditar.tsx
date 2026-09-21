@@ -9611,8 +9611,7 @@ export default function Auditar() {
                               <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                                 {officialCheckDisplay.detail}
                               </p>
-                              {officialCaseBriefing.statusLines.length &&
-                              officialCheckSummary?.overallStatus !== "sin_datos" ? (
+                              {officialCaseBriefing.statusLines.length ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCaseBriefing.statusLines.map(line => (
                                     <li key={line}>{line}</li>

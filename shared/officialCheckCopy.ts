@@ -255,6 +255,15 @@ export type OfficialCheckSummary = {
   reciboVsOficial?: ReciboVsOficial | null;
 };
 
+export type OfficialIdentityField = keyof OfficialIdentityFlags;
+
+/** IMSS consulta con NSS; SAT con RFC; Infonavit con CURP. No se piden los tres en cada fuente. */
+export const OFFICIAL_SOURCE_REQUIRED_FIELDS: Record<OfficialCheckSource, OfficialIdentityField[]> = {
+  imss: ["nss"],
+  sat: ["rfc"],
+  infonavit: ["curp"],
+};
+
 export function listOfficialMissingFieldKeys(values?: unknown): string[] {
   if (!Array.isArray(values)) return [];
   const keys: string[] = [];
@@ -275,6 +284,46 @@ export function listOfficialMissingFieldKeys(values?: unknown): string[] {
   return keys;
 }
 
+export function sourceHasRequiredOfficialIdentity(
+  source: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
+): boolean {
+  return OFFICIAL_SOURCE_REQUIRED_FIELDS[source].some((key) => Boolean(identity?.[key]));
+}
+
+export function missingOfficialFieldsForSource(
+  source: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
+): OfficialIdentityField[] {
+  return OFFICIAL_SOURCE_REQUIRED_FIELDS[source].filter((key) => !identity?.[key]);
+}
+
+export function usedOfficialIdentityForSource(
+  source: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
+): OfficialIdentityFlags {
+  return {
+    nss: source === "imss" && Boolean(identity?.nss),
+    curp: source === "infonavit" && Boolean(identity?.curp),
+    rfc: source === "sat" && Boolean(identity?.rfc),
+  };
+}
+
+/** Quita campos que la fuente no pide o que el recibo ya trae. */
+export function filterOfficialMissingFieldsForSource(
+  source: OfficialCheckSource | null | undefined,
+  reported: unknown,
+  identity?: OfficialIdentityFlags | null,
+): string[] {
+  const reportedKeys = listOfficialMissingFieldKeys(reported);
+  const required = source ? OFFICIAL_SOURCE_REQUIRED_FIELDS[source] : (["nss", "curp", "rfc"] as OfficialIdentityField[]);
+  return reportedKeys.filter((key) => {
+    if (!required.includes(key as OfficialIdentityField)) return false;
+    if (identity?.[key as OfficialIdentityField]) return false;
+    return true;
+  });
+}
+
 export function looksLikeNoOfficialResponse(text?: string | null): boolean {
   return /no respondi[oó]|no contest[oó]|\btimeout\b|\btimed?\s*out\b|service unavailable|error del servidor/i.test(
     String(text ?? ""),
@@ -284,6 +333,8 @@ export function looksLikeNoOfficialResponse(text?: string | null): boolean {
 export function inferOfficialMissingFieldKeys(text?: string | null): string[] {
   const haystack = String(text ?? "").toLowerCase();
   if (!haystack) return [];
+  // Copy genérico del panel: no pintar las tres fuentes como si faltara todo.
+  if (/faltan?\s+(?:tu\s+)?nss[,/]?\s*curp\s+(y|o)\s+rfc/.test(haystack)) return [];
   const keys: string[] = [];
   if (/\bfalta(?:n)?\b[^.]{0,40}\bnss\b|\bnss\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("nss");
   if (/\bfalta(?:n)?\b[^.]{0,40}\bcurp\b|\bcurp\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("curp");
@@ -294,9 +345,11 @@ export function inferOfficialMissingFieldKeys(text?: string | null): string[] {
 export function honestyToOfficialStatus(
   honesty?: string | null,
   missingFields?: string[] | null,
+  identity?: OfficialIdentityFlags | null,
+  source?: OfficialCheckSource | null,
 ): OfficialCheckStatus | null {
   const value = String(honesty ?? "").trim().toLowerCase();
-  const missing = listOfficialMissingFieldKeys(missingFields);
+  const missing = filterOfficialMissingFieldsForSource(source, missingFields, identity);
   if (value === "live" || value === "vivo") return "vivo";
   if (missing.length > 0) return "sin_datos";
   if (!value) return null;
@@ -354,23 +407,32 @@ function pendingChatSource(fuente: OfficialCheckSource): OfficialChatAnchorSourc
 export function readChatAnchorSource(
   value: unknown,
   fuente: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
 ): OfficialChatAnchorSource {
   const record = asRecord(value);
   if (!record) return pendingChatSource(fuente);
   const hechos = sanitizeHechos(record.hechos);
   const motivoFalloText =
     asText(record.motivoFallo) ?? asText(record.workerReason) ?? asText(record.reason);
-  const missing = [
-    ...listOfficialMissingFieldKeys(record.missingFields),
-    ...inferOfficialMissingFieldKeys(hechos.join(" ")),
-    ...inferOfficialMissingFieldKeys(motivoFalloText),
-  ].filter((item, index, all) => all.indexOf(item) === index);
+  const missing = filterOfficialMissingFieldsForSource(
+    fuente,
+    [
+      ...listOfficialMissingFieldKeys(record.missingFields),
+      ...inferOfficialMissingFieldKeys(hechos.join(" ")),
+      ...inferOfficialMissingFieldKeys(motivoFalloText),
+    ],
+    identity,
+  );
   let estado =
     record.estado === "live" || record.estado === "pending" || record.estado === "failed"
       ? record.estado
       : officialStatusToHonesty(
-          honestyToOfficialStatus(asText(record.honesty) ?? asText(record.status), missing) ??
-            "pendiente",
+          honestyToOfficialStatus(
+            asText(record.honesty) ?? asText(record.status),
+            missing,
+            identity,
+            fuente,
+          ) ?? "pendiente",
         );
   const noResponse = looksLikeNoOfficialResponse(`${motivoFalloText ?? ""} ${hechos.join(" ")}`);
   if (estado === "pending" && missing.length === 0 && noResponse) {
@@ -402,14 +464,17 @@ export function readChatAnchorSource(
   };
 }
 
-export function readChatAnchor(value: unknown): OfficialChatAnchor | null {
+export function readChatAnchor(
+  value: unknown,
+  identity?: OfficialIdentityFlags | null,
+): OfficialChatAnchor | null {
   const record = asRecord(value);
   if (!record) return null;
   if (!record.sat && !record.imss && !record.infonavit) return null;
   return {
-    sat: readChatAnchorSource(record.sat, "sat"),
-    imss: readChatAnchorSource(record.imss, "imss"),
-    infonavit: readChatAnchorSource(record.infonavit, "infonavit"),
+    sat: readChatAnchorSource(record.sat, "sat", identity),
+    imss: readChatAnchorSource(record.imss, "imss", identity),
+    infonavit: readChatAnchorSource(record.infonavit, "infonavit", identity),
   };
 }
 

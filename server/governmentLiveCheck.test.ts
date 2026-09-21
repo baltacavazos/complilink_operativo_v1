@@ -150,6 +150,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       curp: "DILE970625HBCZPM01",
       rfc: "VECJ880326XXX",
     });
+    expect(body.worker).toEqual(body.autonomousInput);
+    expect(body.identity).toEqual(body.autonomousInput);
+    expect(body.workerIdentity).toEqual(body.autonomousInput);
   });
 
   it("si la URL es el intake, pega al puente derivado y firma timestamp+cuerpo", async () => {
@@ -376,14 +379,115 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       identity: { nss: false, curp: true, rfc: false },
     });
 
-    expect(parsed?.overallStatus).toBe("sin_datos");
-    expect(parsed?.overallLabel).toBe("Faltan datos");
-    expect(parsed?.overallDetail).toBe("Falta tu NSS y RFC en el recibo para consultar.");
-    expect(parsed?.checkedAt).toBe("2026-09-21T12:00:00.000Z");
-    expect(parsed?.identity).toEqual({ nss: false, curp: true, rfc: false });
     expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("sin_datos");
+    expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("sin_datos");
+    expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
+    expect(parsed?.overallStatus).toBe("no_se_pudo");
+    expect(parsed?.identity).toEqual({ nss: false, curp: true, rfc: false });
     expect(parsed?.reciboVsOficial?.resultado).toBe("no_se_pudo");
     expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
+  });
+
+  it("recibo con NSS y RFC sin CURP no marca IMSS/SAT overall Faltan datos", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          event: "document.processed.v1",
+          result: {
+            officialCheck: {
+              imss: {
+                honesty: "pending",
+                status: "pending",
+                missingFields: ["nss", "curp", "rfc"],
+                hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+              },
+              sat: {
+                honesty: "pending",
+                status: "pending",
+                missingFields: ["nss", "curp", "rfc"],
+                hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+              },
+              infonavit: {
+                honesty: "pending",
+                status: "pending",
+                missingFields: ["nss", "curp", "rfc"],
+                hechos: ["Falta el CURP para consultar Infonavit."],
+              },
+            },
+            chatAnchor: {
+              imss: { fuente: "imss", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."], motivoFallo: null, missingFields: ["nss", "curp", "rfc"] },
+              sat: { fuente: "sat", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."], motivoFallo: null, missingFields: ["nss", "curp", "rfc"] },
+              infonavit: { fuente: "infonavit", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el CURP para consultar Infonavit."], motivoFallo: null, missingFields: ["curp"] },
+            },
+            reciboVsOficial: { resultado: "hay_diferencia", motivo: "El SBC no coincide." },
+          },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const identity = collectWorkerOfficialIdentity({
+      nss: "12345678901",
+      workerRfc: "VECJ880326XXX",
+    });
+    const result = await runOfficialGovernmentCheck({
+      identity,
+      consentGranted: true,
+      env: ENGINE_ENV,
+      now: new Date("2026-09-21T12:00:00.000Z"),
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    expect(identity).toMatchObject({ nss: "12345678901", curp: null, rfc: "VECJ880326XXX" });
+    expect(result.identity).toEqual({ nss: true, curp: false, rfc: true });
+    expect(result.overallStatus).toBe("pendiente");
+    expect(result.overallLabel).toBe("Pendiente");
+    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
+    expect(result.checks.find((item) => item.source === "sat")?.status).toBe("pendiente");
+    expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("sin_datos");
+    expect(result.checks.find((item) => item.source === "imss")?.missingFields).toEqual([]);
+    expect(result.checks.find((item) => item.source === "sat")?.missingFields).toEqual([]);
+    expect(result.checks.find((item) => item.source === "infonavit")?.missingFields).toEqual(["curp"]);
+    expect(result.reciboVsOficial?.resultado).toBe("hay_diferencia");
+    const posted = JSON.parse(String(fetchImpl.mock.calls[0]?.[1] && (fetchImpl.mock.calls[0][1] as RequestInit).body)) as Record<string, unknown>;
+    expect(posted.autonomousInput).toEqual({ nss: "12345678901", rfc: "VECJ880326XXX" });
+    expect(posted.worker).toEqual({ nss: "12345678901", curp: null, rfc: "VECJ880326XXX" });
+    expect(JSON.stringify(result)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
+  });
+
+  it("el RFC del recibo, aunque sea genérico, no apaga SAT si ya se leyó como RFC de la persona", () => {
+    const fromReceipt = collectWorkerOfficialIdentity({
+      nss: "12345678901",
+      workerRfc: "XAXX010101000",
+    });
+    expect(fromReceipt).toEqual({
+      nss: "12345678901",
+      curp: null,
+      rfc: "XAXX010101000",
+    });
+
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            imss: { honesty: "pending", missingFields: ["nss", "curp", "rfc"] },
+            sat: { honesty: "pending", missingFields: ["nss", "curp", "rfc"] },
+            infonavit: { honesty: "pending", missingFields: ["curp"] },
+          },
+          reciboVsOficial: { resultado: "no_se_pudo", motivo: "Falta CURP para Infonavit." },
+        },
+      },
+      identity: { nss: true, curp: false, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+
+    expect(parsed?.overallStatus).toBe("pendiente");
+    expect(parsed?.identity).toEqual({ nss: true, curp: false, rfc: true });
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
+    expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("pendiente");
+    expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("sin_datos");
+    expect(parsed?.reciboVsOficial?.motivo).toMatch(/CURP/);
   });
 
   it("saca NSS, CURP y RFC del texto del recibo", () => {
@@ -404,6 +508,17 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nss: "84129214965",
       curp: "DILE970625HBCZPM01",
       rfc: "VECJ880326XXX",
+    });
+    expect(
+      collectWorkerOfficialIdentity({
+        nss: "12345678901",
+        workerRfc: "XAXX010101000",
+        text: "RFC del trabajador XAXX010101000 NSS 12345678901 neto $12,450",
+      }),
+    ).toEqual({
+      nss: "12345678901",
+      curp: null,
+      rfc: "XAXX010101000",
     });
   });
 

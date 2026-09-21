@@ -25,6 +25,8 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("openHeliosCopilot");
     expect(source).toContain("officialCaseBriefing.comparison.seenLine");
     expect(source).toContain("officialCaseBriefing.comparison.nextStepLine");
+    expect(source).toContain("officialCaseBriefing.statusLines.length");
+    expect(source).not.toContain("overallStatus !== \"sin_datos\"");
     expect(source).not.toMatch(/Helios bridge HMAC|HMAC authentication failed/);
     expect(source).not.toMatch(/APIMARKET/);
   });

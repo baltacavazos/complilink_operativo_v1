@@ -4,10 +4,12 @@ import {
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialFailedDetail,
   buildOfficialMaintenanceDetail,
+  filterOfficialMissingFieldsForSource,
   honestyToOfficialStatus,
   inferOfficialMissingFieldKeys,
   listFailedOfficialSources,
   listOfficialMissingFieldKeys,
+  missingOfficialFieldsForSource,
   looksLikeInstituteMaintenance,
   looksLikeNoOfficialResponse,
   officialStatusToHonesty,
@@ -15,6 +17,7 @@ import {
   readChatAnchorSource,
   readReciboVsOficial,
   rewriteOfficialFailedMotivo,
+  usedOfficialIdentityForSource,
   type OfficialChatAnchor,
   type OfficialCheckSource,
   type OfficialCheckStatus,
@@ -24,7 +27,6 @@ import {
   type ReciboVsOficial,
 } from "@shared/officialCheckCopy";
 import {
-  applyMissingFieldsToIdentity,
   officialIdentityGapDetail,
 } from "@shared/officialCaseBriefing";
 import {
@@ -116,11 +118,15 @@ export function normalizeCurp(value: unknown): string | null {
   return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/.test(normalized) ? normalized : null;
 }
 
-export function normalizeRfc(value: unknown): string | null {
+export function isGenericSatRfc(value: string | null | undefined): boolean {
+  return value === "XAXX010101000" || value === "XEXX010101000";
+}
+
+export function normalizeRfc(value: unknown, options?: { allowGeneric?: boolean }): string | null {
   if (typeof value !== "string") return null;
   const normalized = value.trim().toUpperCase().replace(/[^A-Z0-9Ñ&]/g, "");
   if (normalized.length < 12 || normalized.length > 13) return null;
-  if (normalized === "XAXX010101000" || normalized === "XEXX010101000") return null;
+  if (!options?.allowGeneric && isGenericSatRfc(normalized)) return null;
   return normalized;
 }
 
@@ -172,7 +178,7 @@ export function extractReceiptOfficialIdentity(source: unknown): WorkerOfficialI
           !found.rfc &&
           /rfctrabajador|rfcreceptor|rfcempleado|rfcworker|workerrfc/.test(compact)
         ) {
-          found.rfc = normalizeRfc(value);
+          found.rfc = normalizeRfc(value, { allowGeneric: true });
         }
         if (typeof value === "string" || typeof value === "number") {
           texts.push(String(value));
@@ -197,7 +203,7 @@ export function extractReceiptOfficialIdentity(source: unknown): WorkerOfficialI
       normalizeCurp(haystack.match(CURP_BARE_RE)?.[1]);
   }
   if (!found.rfc) {
-    found.rfc = normalizeRfc(haystack.match(RFC_TRABAJADOR_RE)?.[1]);
+    found.rfc = normalizeRfc(haystack.match(RFC_TRABAJADOR_RE)?.[1], { allowGeneric: true });
     if (!found.rfc) {
       const physical = [...haystack.toUpperCase().matchAll(RFC_BARE_RE)]
         .map((item) => normalizeRfc(item[1]))
@@ -220,15 +226,15 @@ export function collectWorkerOfficialIdentity(facts: {
   const fromFacts = {
     nss: normalizeNss(facts.nss),
     curp: normalizeCurp(facts.curp),
-    rfc: normalizeRfc(facts.workerRfc ?? facts.rfc),
+    rfc: normalizeRfc(facts.workerRfc ?? facts.rfc, { allowGeneric: Boolean(facts.workerRfc) }),
   };
   const extracted = extractReceiptOfficialIdentity(facts.haystack ?? facts.text ?? facts);
   const rfc = fromFacts.rfc ?? extracted.rfc;
-  const employerRfc = normalizeRfc(facts.employerRfc);
+  const employerRfc = normalizeRfc(facts.employerRfc, { allowGeneric: true });
   return {
     nss: fromFacts.nss ?? extracted.nss,
     curp: fromFacts.curp ?? extracted.curp,
-    rfc: rfc && rfc !== employerRfc ? rfc : null,
+    rfc: fromFacts.rfc ? rfc : rfc && rfc !== employerRfc ? rfc : null,
   };
 }
 
@@ -306,6 +312,12 @@ export function buildOfficialCheckBridgePayload(params: {
   if (params.identity.curp) autonomousInput.curp = params.identity.curp;
   if (params.identity.rfc) autonomousInput.rfc = params.identity.rfc;
 
+  const worker = {
+    nss: params.identity.nss,
+    curp: params.identity.curp,
+    rfc: params.identity.rfc,
+  };
+
   return {
     action: OFFICIAL_CHECK_ACTION,
     eventName: OFFICIAL_CHECK_EVENT,
@@ -313,6 +325,9 @@ export function buildOfficialCheckBridgePayload(params: {
     consentGranted: true,
     sources: ["imss", "sat"],
     autonomousInput,
+    worker,
+    identity: worker,
+    workerIdentity: worker,
     nss: params.identity.nss,
     curp: params.identity.curp,
     rfc: params.identity.rfc,
@@ -508,21 +523,27 @@ function readOfficialObligationCheck(
   const motivoText =
     (typeof record?.workerReason === "string" ? record.workerReason : null) ??
     (typeof record?.motivoFallo === "string" ? record.motivoFallo : null);
-  const missing = [
-    ...listOfficialMissingFieldKeys(record?.missingFields),
-    ...inferOfficialMissingFieldKeys(hechos.join(" ")),
-    ...inferOfficialMissingFieldKeys(motivoText),
-  ].filter((item, index, all) => all.indexOf(item) === index);
+  const missing = filterOfficialMissingFieldsForSource(
+    source,
+    [
+      ...listOfficialMissingFieldKeys(record?.missingFields),
+      ...inferOfficialMissingFieldKeys(hechos.join(" ")),
+      ...inferOfficialMissingFieldKeys(motivoText),
+    ],
+    used,
+  );
   const fromHonesty = honestyToOfficialStatus(
     record ? String(record.honesty ?? record.estado ?? record.status ?? "") : null,
     missing,
+    used,
+    source,
   );
   const mapped = fromHonesty ?? fallback ?? "pendiente";
   const status =
     mapped === "pendiente" && looksLikeNoOfficialResponse(`${motivoText ?? ""} ${hechos.join(" ")}`)
       ? "no_se_pudo"
       : mapped;
-  const anchor = record ? readChatAnchorSource(record, source) : null;
+  const anchor = record ? readChatAnchorSource(record, source, used) : null;
   const rawMotivo =
     status === "no_se_pudo" || status === "sin_datos"
       ? motivoText
@@ -538,7 +559,7 @@ function readOfficialObligationCheck(
       (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
       anchor?.fecha ??
       nowIso,
-    used,
+    used: usedOfficialIdentityForSource(source, used),
     honesty: anchor?.estado ?? officialStatusToHonesty(status),
     hechos: hechos.length > 0 ? hechos : anchor?.hechos,
     motivoFallo,
@@ -546,7 +567,7 @@ function readOfficialObligationCheck(
       status === "no_se_pudo"
         ? buildOfficialFailedDetail([source])
         : rawMotivo ?? undefined,
-    missingFields: missing.length > 0 ? missing : anchor?.missingFields,
+    missingFields: missing.length > 0 ? missing : filterOfficialMissingFieldsForSource(source, anchor?.missingFields, used),
   });
 }
 
@@ -603,11 +624,13 @@ export function officialCheckFromBridgeReturn(params: {
     asRecord(result?.officialCheck) ??
     asRecord(root.officialCheck) ??
     asRecord(currentResult?.officialCheck);
+  const used = params.identity ?? { nss: false, curp: false, rfc: false };
+  const knownIdentity = Boolean(params.identity);
   const chatAnchor =
-    readChatAnchor(result?.chatAnchor) ??
-    readChatAnchor(root.chatAnchor) ??
-    readChatAnchor(officialCheck?.chatAnchor) ??
-    readChatAnchor(currentResult?.chatAnchor);
+    readChatAnchor(result?.chatAnchor, used) ??
+    readChatAnchor(root.chatAnchor, used) ??
+    readChatAnchor(officialCheck?.chatAnchor, used) ??
+    readChatAnchor(currentResult?.chatAnchor, used);
   const reciboVsOficial: ReciboVsOficial | null =
     readReciboVsOficial(result?.reciboVsOficial) ??
     readReciboVsOficial(result?.receiptVsOfficial) ??
@@ -615,8 +638,6 @@ export function officialCheckFromBridgeReturn(params: {
     readReciboVsOficial(root.receiptVsOfficial) ??
     readReciboVsOficial(currentResult?.reciboVsOficial) ??
     readReciboVsOficial(currentResult?.receiptVsOfficial);
-
-  const used = params.identity ?? { nss: false, curp: false, rfc: false };
   const nowIso = params.nowIso ?? null;
   const imssStatus = readNestedOfficialSource(roots, "imss");
   const satStatus = readNestedOfficialSource(roots, "sat");
@@ -634,9 +655,21 @@ export function officialCheckFromBridgeReturn(params: {
         checkedAt: nowIso,
         identity: used,
         checks: [
-          sourceCheck("imss", "pendiente", { checkedAt: nowIso }),
-          sourceCheck("sat", "pendiente", { checkedAt: nowIso }),
-          sourceCheck("infonavit", "pendiente", { checkedAt: nowIso }),
+          sourceCheck("imss", !knownIdentity || used.nss ? "pendiente" : "sin_datos", {
+            checkedAt: nowIso,
+            used: usedOfficialIdentityForSource("imss", used),
+            missingFields: knownIdentity ? missingOfficialFieldsForSource("imss", used) : [],
+          }),
+          sourceCheck("sat", !knownIdentity || used.rfc ? "pendiente" : "sin_datos", {
+            checkedAt: nowIso,
+            used: usedOfficialIdentityForSource("sat", used),
+            missingFields: knownIdentity ? missingOfficialFieldsForSource("sat", used) : [],
+          }),
+          sourceCheck("infonavit", !knownIdentity || used.curp ? "pendiente" : "sin_datos", {
+            checkedAt: nowIso,
+            used: usedOfficialIdentityForSource("infonavit", used),
+            missingFields: knownIdentity ? missingOfficialFieldsForSource("infonavit", used) : [],
+          }),
         ],
         chatAnchor,
         reciboVsOficial,
@@ -666,14 +699,19 @@ export function officialCheckFromBridgeReturn(params: {
         workerReason: source.motivoFallo ?? check.motivoFallo,
         motivoFallo: source.motivoFallo ?? check.motivoFallo,
         hechos: source.hechos.length > 0 ? source.hechos : check.hechos,
-        missingFields: [
-          ...listOfficialMissingFieldKeys(source.missingFields),
-          ...listOfficialMissingFieldKeys(check.missingFields),
-        ],
+        missingFields: filterOfficialMissingFieldsForSource(
+          source.fuente,
+          [
+            ...listOfficialMissingFieldKeys(source.missingFields),
+            ...listOfficialMissingFieldKeys(check.missingFields),
+          ],
+          used,
+        ),
         fecha: source.fecha ?? check.checkedAt,
         checkedAt: source.fecha ?? check.checkedAt,
       },
       source.fuente,
+      used,
     );
     return {
       ...merged,
@@ -693,22 +731,21 @@ export function officialCheckFromBridgeReturn(params: {
         estado: checks[0].honesty,
         fecha: checks[0].checkedAt,
         missingFields: checks[0].missingFields,
-      }, "imss"),
+      }, "imss", used),
       sat: readChatAnchorSource({
         ...checks[1],
         estado: checks[1].honesty,
         fecha: checks[1].checkedAt,
         missingFields: checks[1].missingFields,
-      }, "sat"),
+      }, "sat", used),
       infonavit: readChatAnchorSource({
         ...checks[2],
         estado: checks[2].honesty,
         fecha: checks[2].checkedAt,
         missingFields: checks[2].missingFields,
-      }, "infonavit"),
+      }, "infonavit", used),
     } satisfies OfficialChatAnchor);
-  const missingKeys = checks.flatMap((item) => item.missingFields ?? []);
-  const identity = applyMissingFieldsToIdentity(used, missingKeys);
+  const identity = used;
   const failedSources = listFailedOfficialSources(checks);
   const overallDetail =
     overallStatus === "sin_datos"
@@ -745,7 +782,7 @@ export async function runOfficialGovernmentCheck(params: {
   const identity = {
     nss: normalizeNss(params.identity.nss),
     curp: normalizeCurp(params.identity.curp),
-    rfc: normalizeRfc(params.identity.rfc),
+    rfc: normalizeRfc(params.identity.rfc, { allowGeneric: true }),
   };
   const engine = readEngineBridgeConfig(env);
   const configured = Boolean(engine.webhookUrl && engine.hmacSecret);
@@ -827,7 +864,11 @@ export async function runOfficialGovernmentCheck(params: {
       ...fromReturn,
       configured: true,
       consentGranted: true,
-      identity: fromReturn.identity ?? used,
+      identity: {
+        nss: used.nss || Boolean(fromReturn.identity?.nss),
+        curp: used.curp || Boolean(fromReturn.identity?.curp),
+        rfc: used.rfc || Boolean(fromReturn.identity?.rfc),
+      },
       overallDetail:
         fromReturn.overallStatus === "sin_datos"
           ? fromReturn.overallDetail
@@ -840,17 +881,20 @@ export async function runOfficialGovernmentCheck(params: {
   const satStatus = readSourceStatusFromResult(posted.responseJson, "sat") ?? overallStatus;
   const infonavitStatus = readSourceStatusFromResult(posted.responseJson, "infonavit") ?? overallStatus;
   const checks = [
-    sourceCheck("imss", identity.nss || identity.curp ? imssStatus : "sin_datos", {
+    sourceCheck("imss", identity.nss ? imssStatus : "sin_datos", {
       checkedAt: nowIso,
-      used,
+      used: usedOfficialIdentityForSource("imss", used),
+      missingFields: missingOfficialFieldsForSource("imss", used),
     }),
-    sourceCheck("sat", identity.rfc || identity.curp ? satStatus : "sin_datos", {
+    sourceCheck("sat", identity.rfc ? satStatus : "sin_datos", {
       checkedAt: nowIso,
-      used,
+      used: usedOfficialIdentityForSource("sat", used),
+      missingFields: missingOfficialFieldsForSource("sat", used),
     }),
-    sourceCheck("infonavit", identity.nss || identity.curp ? infonavitStatus : "sin_datos", {
+    sourceCheck("infonavit", identity.curp ? infonavitStatus : "sin_datos", {
       checkedAt: nowIso,
-      used,
+      used: usedOfficialIdentityForSource("infonavit", used),
+      missingFields: missingOfficialFieldsForSource("infonavit", used),
     }),
   ];
   const rolled = rollupStatus(checks.map((item) => item.status));

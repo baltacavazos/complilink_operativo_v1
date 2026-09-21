@@ -13,6 +13,7 @@ import {
   RECEIPT_OFFICIAL_COMPARISON_COPY,
   assertNoInternalBrands,
   buildOfficialFailedDetail,
+  filterOfficialMissingFieldsForSource,
   hasLiveOfficialResult,
   honestyToOfficialStatus,
   pickHonestOfficialCheck,
@@ -199,6 +200,10 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(honestyToOfficialStatus("pending")).toBe("pendiente");
     expect(honestyToOfficialStatus("failed", ["nss"])).toBe("sin_datos");
     expect(honestyToOfficialStatus("failed")).toBe("no_se_pudo");
+    const receipt = { nss: true, curp: false, rfc: true };
+    expect(honestyToOfficialStatus("pending", ["nss", "curp", "rfc"], receipt, "imss")).toBe("pendiente");
+    expect(honestyToOfficialStatus("pending", ["nss", "curp", "rfc"], receipt, "sat")).toBe("pendiente");
+    expect(honestyToOfficialStatus("pending", ["nss", "curp", "rfc"], receipt, "infonavit")).toBe("sin_datos");
 
     const anchor = readChatAnchor({
       sat: { fuente: "sat", estado: "pending", fecha: null, hechos: ["Todavía no hay una respuesta oficial nueva de SAT."], motivoFallo: null },
@@ -259,5 +264,10 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
 
     expect(hasLiveOfficialResult(summary("vivo"))).toBe(true);
     expect(hasLiveOfficialResult(summary("pendiente"))).toBe(false);
+
+    const parsedIdentity = { nss: true, curp: false, rfc: true };
+    expect(filterOfficialMissingFieldsForSource("imss", ["nss", "curp", "rfc"], parsedIdentity)).toEqual([]);
+    expect(filterOfficialMissingFieldsForSource("sat", ["nss", "curp", "rfc"], parsedIdentity)).toEqual([]);
+    expect(filterOfficialMissingFieldsForSource("infonavit", ["nss", "curp", "rfc"], parsedIdentity)).toEqual(["curp"]);
   });
 });

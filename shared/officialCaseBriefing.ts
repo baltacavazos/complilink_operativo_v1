@@ -12,6 +12,7 @@ import {
   OFFICIAL_FAILED_MISSING,
   buildOfficialCheckHeadline,
   buildReceiptOfficialComparisonCopy,
+  filterOfficialMissingFieldsForSource,
   formatOfficialCheckDate,
   hasLiveOfficialResult,
   honestyToOfficialStatus,
@@ -19,7 +20,6 @@ import {
   isPermissionBlockedStatus,
   listFailedOfficialSources,
   listFailedOfficialSourcesFromAnchor,
-  listOfficialMissingFieldKeys,
   looksLikeNoOfficialResponse,
   officialStatusToHonesty,
   rewriteOfficialFailedMotivo,
@@ -117,14 +117,18 @@ export function officialIdentityGapDetail(identity: OfficialIdentityFlags): stri
 
 export function applyMissingFieldsToIdentity(
   identity: OfficialIdentityFlags,
-  missingFields?: unknown,
+  _missingFields?: unknown,
 ): OfficialIdentityFlags {
-  const missing = listOfficialMissingFieldKeys(missingFields);
-  if (missing.length === 0) return identity;
+  return identity;
+}
+
+export function mergeOfficialIdentity(
+  ...identities: Array<OfficialIdentityFlags | null | undefined>
+): OfficialIdentityFlags {
   return {
-    nss: missing.includes("nss") ? false : identity.nss,
-    curp: missing.includes("curp") ? false : identity.curp,
-    rfc: missing.includes("rfc") ? false : identity.rfc,
+    nss: identities.some((item) => item?.nss),
+    curp: identities.some((item) => item?.curp),
+    rfc: identities.some((item) => item?.rfc),
   };
 }
 
@@ -133,22 +137,23 @@ export function collectOfficialMissingFieldKeys(params: {
   chatAnchor?: OfficialChatAnchor | null;
 }): string[] {
   const keys: string[] = [];
-  const push = (values?: unknown) => {
-    for (const key of listOfficialMissingFieldKeys(values)) {
+  const identity = params.officialCheck?.identity;
+  const push = (source: "imss" | "sat" | "infonavit" | null, values?: unknown) => {
+    for (const key of filterOfficialMissingFieldsForSource(source, values, identity)) {
       if (!keys.includes(key)) keys.push(key);
     }
   };
   for (const check of params.officialCheck?.checks ?? []) {
-    push(check.missingFields);
-    push(inferOfficialMissingFieldKeys(check.motivoFallo));
-    push(inferOfficialMissingFieldKeys((check.hechos ?? []).join(" ")));
+    push(check.source, check.missingFields);
+    push(check.source, inferOfficialMissingFieldKeys(check.motivoFallo));
+    push(check.source, inferOfficialMissingFieldKeys((check.hechos ?? []).join(" ")));
   }
   const anchor = params.chatAnchor ?? params.officialCheck?.chatAnchor;
   if (anchor) {
     for (const source of [anchor.imss, anchor.sat, anchor.infonavit]) {
-      push(source.missingFields);
-      push(inferOfficialMissingFieldKeys(source.motivoFallo));
-      push(inferOfficialMissingFieldKeys(source.hechos.join(" ")));
+      push(source.fuente, source.missingFields);
+      push(source.fuente, inferOfficialMissingFieldKeys(source.motivoFallo));
+      push(source.fuente, inferOfficialMissingFieldKeys(source.hechos.join(" ")));
     }
   }
   return keys;
@@ -171,8 +176,14 @@ function sourceLabel(fuente: OfficialChatAnchorSource["fuente"]): string {
 export function formatChatAnchorStatusLine(
   source: OfficialChatAnchorSource,
   fallbackDate?: string | null,
+  identity?: OfficialIdentityFlags | null,
 ): string {
-  const mapped = honestyToOfficialStatus(source.estado, source.missingFields);
+  const mapped = honestyToOfficialStatus(
+    source.estado,
+    filterOfficialMissingFieldsForSource(source.fuente, source.missingFields, identity),
+    identity,
+    source.fuente,
+  );
   const status =
     mapped === "pendiente" && looksLikeNoOfficialResponse(source.motivoFallo ?? source.hechos.join(" "))
       ? "no_se_pudo"
@@ -194,7 +205,7 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
   if (!summary || isPermissionBlockedStatus(summary.overallStatus)) return [];
   if (summary.chatAnchor) {
     return [summary.chatAnchor.imss, summary.chatAnchor.sat, summary.chatAnchor.infonavit].map(
-      (source) => formatChatAnchorStatusLine(source, summary.checkedAt),
+      (source) => formatChatAnchorStatusLine(source, summary.checkedAt, summary.identity),
     );
   }
   if (summary.checks.length > 0) {
@@ -324,9 +335,13 @@ export function buildOfficialCaseBriefing(params: {
       : params.reciboVsOficial) ??
     officialCheck?.reciboVsOficial ??
     null;
-  const identity = applyMissingFieldsToIdentity(
-    officialCheck?.identity ?? identityFlagsFromFacts(facts),
-    collectOfficialMissingFieldKeys({ officialCheck, chatAnchor }),
+  const identity = mergeOfficialIdentity(
+    identityFlagsFromFacts(facts),
+    officialCheck?.identity,
+    applyMissingFieldsToIdentity(
+      officialCheck?.identity ?? identityFlagsFromFacts(facts),
+      collectOfficialMissingFieldKeys({ officialCheck, chatAnchor }),
+    ),
   );
   const missingIdentity = listMissingOfficialIdentityLabels(identity);
   const comparison = selectReceiptOfficialComparison({
