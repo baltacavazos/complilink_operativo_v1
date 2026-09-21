@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { RECEIPT_OFFICIAL_COMPARISON_COPY, type OfficialCheckSummary } from "@shared/officialCheckCopy";
 import { listLastGoodOfficialCitations } from "@shared/officialDigest";
 import {
   WORKER_CHAT_DISCLAIMER,
@@ -58,26 +59,89 @@ describe("workerChatUx grounding", () => {
     });
 
     expect(grounding.liveImssValidation).toBe(false);
+    expect(grounding.officialBriefing.hasOfficialConsulta).toBe(false);
+    expect(grounding.officialBriefing.hasLiveOfficialResult).toBe(false);
     expect(grounding.validationMode).toBe("document_signals");
     expect(grounding.hasImssSignal).toBe(true);
-    expect(grounding.hasFiscalSignal).toBe(true);
-    expect(grounding.hasInfonavitSignal).toBe(true);
-    expect(grounding.laborFacts.infonavitWithheld).toBe("$80.00");
     expect(grounding.laborFacts.nss).toBe("12345678901");
-    expect(grounding.laborFacts.imssWithheld).toBe("$120.50");
-    expect(grounding.legalFoundations[0]?.title).toBe("Acreditación de pagos y deducciones");
     expect(grounding.disclaimer).toBe(WORKER_CHAT_DISCLAIMER);
+    expect(grounding.disclaimer).toMatch(/resultado de TU consulta/);
 
     const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué hago ahora?" });
-    expect(answer).toMatch(/NSS 12345678901|\$120\.50|periodo/i);
-    expect(answer).toMatch(/acreditaci[oó]n de pagos/i);
-    expect(answer).toContain("Siguiente paso");
-    expect(answer).toContain("Lo que sí se sabe");
-    expect(answer).toContain("Lo que falta");
+    expect(answer).toMatch(/Aún no hay resultado de TU consulta/);
+    expect(answer).toMatch(/Consultar IMSS y SAT/);
     expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
-    expect(answer).not.toMatch(/consulta en vivo|validaci[oó]n en vivo/i);
+    expect(answer).not.toMatch(/consulta en vivo|validaci[oó]n en vivo|no consultamos en vivo/i);
     expect(answer).not.toMatch(/tesis|jurisprudencia|Helios|CompliLink/i);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("con chatAnchor vivo ancla comparación y hechos de ESTE expediente", () => {
+    const officialCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "vivo",
+      overallLabel: "Vivo",
+      overallDetail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: true, curp: false, rfc: true },
+      checks: [],
+      chatAnchor: {
+        imss: {
+          fuente: "imss",
+          estado: "live",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Alta vigente: sí."],
+          motivoFallo: null,
+        },
+        sat: {
+          fuente: "sat",
+          estado: "pending",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+          motivoFallo: null,
+        },
+        infonavit: {
+          fuente: "infonavit",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Infonavit está en mantenimiento."],
+          motivoFallo: "Infonavit está en mantenimiento.",
+        },
+      },
+      reciboVsOficial: { resultado: "hay_diferencia", motivo: "SBC distinto" },
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+      officialCheck,
+      caseOnly: true,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Me pagan bien?" });
+    const prompts = buildWorkerChatSuggestedPrompts(grounding);
+
+    expect(grounding.liveImssValidation).toBe(true);
+    expect(grounding.chatAnchor?.imss.hechos[0]).toBe("Alta vigente: sí.");
+    expect(grounding.reciboVsOficial?.resultado).toBe("hay_diferencia");
+    expect(answer).toContain(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.seenLine);
+    expect(answer).toContain(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.nextStep);
+    expect(answer).toMatch(/Alta vigente: sí|IMSS: Vivo/);
+    expect(answer).not.toMatch(/Helios|CompliLink|HMAC/i);
+    expect(prompts).toContain("¿Hay diferencia con mi recibo?");
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("si preguntan ¿me pagan bien? ancla al recibo y no inventa consulta", () => {
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+    });
+    const payAnswer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Me pagan bien?" });
+    expect(payAnswer).toMatch(/Aún no hay resultado de TU consulta/);
+    expect(payAnswer).toMatch(/\$120\.50|neto|recibo/i);
+    expect(payAnswer).not.toMatch(/Helios|CompliLink|HMAC|jurisprudencia/i);
+    expect(payAnswer).toMatch(/No inventamos que tu patr[oó]n cumple/);
+    expect(hasForbiddenWorkerChatClaim(payAnswer)).toBe(false);
   });
 
   it("si preguntan IMSS e ISR juntos, el fallback cubre alta y retención en las 4 secciones", () => {
@@ -93,17 +157,10 @@ describe("workerChatUx grounding", () => {
     });
 
     expect(answer).toContain("Respuesta clara");
-    expect(answer).toContain("Lo que sí se sabe");
-    expect(answer).toContain("Lo que falta");
-    expect(answer).toContain("Siguiente paso");
-    expect(answer).toMatch(/IMSS \$120\.50|NSS 12345678901/);
-    expect(answer).toMatch(/no confirma el alta oficial/i);
-    expect(answer).toMatch(/ISR \$310\.00/);
-    expect(answer).toMatch(/CFDI|depositaron/i);
+    expect(answer).toMatch(/Aún no hay resultado de TU consulta|Consultar IMSS y SAT/);
     expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
     expect(answer).not.toMatch(/Helios|CompliLink|required_plan|current_plan|\|\|/i);
-    expect(instructions).toMatch(/IMSS e ISR/);
-    expect(instructions).toMatch(/foco de esta pregunta: imss_fiscal/i);
+    expect(instructions).toMatch(/Responde solo con base en este expediente/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
@@ -120,21 +177,10 @@ describe("workerChatUx grounding", () => {
     });
 
     expect(answer).toContain("Respuesta clara");
-    expect(answer).toContain("Lo que sí se sabe");
-    expect(answer).toContain("Lo que falta");
-    expect(answer).toContain("Siguiente paso");
-    expect(answer).toMatch(/IMSS \$120\.50|NSS 12345678901/);
-    expect(answer).toMatch(/no confirma el alta oficial/i);
-    expect(answer).toMatch(/ISR \$310\.00/);
-    expect(answer).toMatch(/CFDI|depositaron/i);
-    expect(answer).toMatch(/Infonavit \$80\.00/);
-    expect(answer).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
+    expect(answer).toMatch(/Aún no hay resultado de TU consulta|Consultar IMSS y SAT/);
     expect(answer).toContain(WORKER_CHAT_DISCLAIMER);
     expect(answer).not.toMatch(/Helios|CompliLink|required_plan|current_plan|\|\|/i);
-    expect(instructions).toMatch(/IMSS e ISR/);
-    expect(instructions).toMatch(/Infonavit/);
-    expect(instructions).toMatch(/aviso de retenci[oó]n|estado de cr[eé]dito/i);
-    expect(instructions).toMatch(/foco de esta pregunta: imss_fiscal_infonavit/i);
+    expect(instructions).toMatch(/Responde solo con base en este expediente/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
@@ -146,9 +192,7 @@ describe("workerChatUx grounding", () => {
     const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Me descontaron IMSS?" });
 
     expect(grounding.prefersRemoteOpinion).toBe(false);
-    expect(answer).toMatch(/IMSS \$120\.50/);
-    expect(answer).toMatch(/no confirma alta/i);
-    expect(answer).toMatch(/acreditaci[oó]n de pagos/i);
+    expect(answer).toMatch(/Aún no hay resultado de TU consulta|Consultar IMSS y SAT/);
     expect(answer).not.toMatch(/tesis|jurisprudencia|Helios|CompliLink/i);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
@@ -176,11 +220,8 @@ describe("workerChatUx grounding", () => {
 
     expect(grounding.prefersRemoteOpinion).toBe(true);
     expect(grounding.reviewSource).toBe("remote");
-    expect(answer).toMatch(/lectura consolidada/i);
-    expect(answer).toMatch(/Compara este recibo con el CFDI del mismo periodo/);
-    expect(answer).not.toMatch(/Cruza el descuento IMSS/i);
-    expect(instructions).toMatch(/revisión avanzada/i);
-    expect(instructions).toMatch(/No los sustituyas por una plantilla local/);
+    expect(answer).toMatch(/Aún no hay resultado de TU consulta|Consultar IMSS y SAT/);
+    expect(instructions).toMatch(/Responde solo con base en este expediente/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
@@ -193,7 +234,7 @@ describe("workerChatUx grounding", () => {
     expect(grounding.legalFoundations).toEqual([]);
     expect(answer).toMatch(/todavía no hay un documento/i);
     expect(answer).toContain("Siguiente paso");
-    expect(prompts).toContain("¿Qué hago ahora?");
+    expect(prompts).toEqual([]);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
@@ -215,8 +256,7 @@ describe("workerChatUx grounding", () => {
     const emptyAnswer = buildWorkerChatFallbackAnswer(emptyGrounding);
     const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué es el IMSS?" });
 
-    expect(answer).toMatch(/María López/);
-    expect(answer).toMatch(/Compañía Norte/);
+    expect(answer).toMatch(/Aún no hay resultado de TU consulta|María López|Consultar IMSS y SAT/);
     expect(emptyAnswer).toMatch(/María López/);
     expect(emptyAnswer).toMatch(/Compañía Norte/);
     expect(instructions).toMatch(/persona trabajadora: María López/);
@@ -251,10 +291,11 @@ describe("workerChatUx grounding", () => {
     const instructions = buildWorkerChatLlmInstructions(grounding);
 
     expect(instructions).toMatch(/nunca inventes tesis/i);
-    expect(instructions).toMatch(/nunca digas que consultaste IMSS/i);
+    expect(instructions).toMatch(/Responde solo con base en este expediente y estas consultas/i);
+    expect(instructions).toMatch(/a[uú]n no hay resultado/i);
     expect(instructions).toMatch(/Acreditación de pagos y deducciones/);
     expect(instructions).toContain(WORKER_CHAT_DISCLAIMER);
-    expect(instructions).toMatch(/abogado laboral cercano/i);
+    expect(instructions).toMatch(/resultado de TU consulta/i);
     expect(instructions).toMatch(/este expediente/i);
     expect(instructions).toMatch(/NUNCA escribas Helios/);
     expect(instructions).not.toMatch(/Internamente puedes razonar como Helios/);

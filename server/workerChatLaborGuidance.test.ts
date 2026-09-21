@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { hasForbiddenWorkerChatClaim } from "@shared/workerChatUx";
 import {
+  WORKER_CHAT_GENERIC_LABOR_PRIMARY_DISABLED,
   buildLaborFiscalChatGuidance,
   inferWorkerChatPromptFocus,
   listVisibleLaborFactLines,
@@ -63,6 +64,17 @@ const localInput = {
 };
 
 describe("workerChatLaborGuidance", () => {
+  it("apaga el consejo genérico como respuesta principal del chat de caso", () => {
+    expect(WORKER_CHAT_GENERIC_LABOR_PRIMARY_DISABLED).toBe(true);
+    const guidance = buildLaborFiscalChatGuidance(
+      { ...localInput, caseChatPrimary: true },
+      "¿Qué hago ahora?",
+    );
+    expect(guidance.clearAnswer).toMatch(/resultado de TU consulta|este expediente/i);
+    expect(guidance.clearAnswer).not.toMatch(/ya hay una primera lectura/i);
+    expect(guidance.clearAnswer).not.toMatch(/Helios|CompliLink|\bcumple\b/i);
+  });
+
   it("lista solo hechos visibles del papel", () => {
     expect(listVisibleLaborFactLines(FACTS)).toEqual(
       expect.arrayContaining([

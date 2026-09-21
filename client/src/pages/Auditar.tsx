@@ -33,7 +33,6 @@ import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_RETRY_ERROR,
-  buildWorkerStarterQuestions,
   capWorkerChatConversationHistory,
   extractWorkerClearAnswer,
   extractWorkerWhatToDoNow,
@@ -47,11 +46,16 @@ import {
   type FiveSecondVerdict,
 } from "@shared/fiveSecondVerdict";
 import {
-  OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_CONSENT,
-  buildOfficialCheckHeadline,
+  pickHonestOfficialCheck,
+  resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
+import {
+  WORKER_CHAT_NO_CONSULTA_EMPTY,
+  buildOfficialCaseBriefing,
+  buildOfficialChatStarterQuestions,
+} from "@shared/officialCaseBriefing";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
@@ -4325,6 +4329,8 @@ export default function Auditar() {
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
+  const [officialCheckResult, setOfficialCheckResult] =
+    useState<OfficialCheckSummary | null>(null);
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
   const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
   const [guestReviewClaimStarted, setGuestReviewClaimStarted] = useState(false);
@@ -5549,6 +5555,29 @@ export default function Auditar() {
     lastUpload?.socialSecurityValidation ?? null;
   const effectiveSocialSecurityValidation =
     uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
+  const officialCheckSummary = pickHonestOfficialCheck({
+    consentGranted: officialCheckConsent,
+    candidates: [
+      officialCheckResult,
+      socialSecurityValidation?.officialCheck,
+      uploadSocialSecurityValidation?.officialCheck,
+    ],
+  });
+  const officialCaseBriefing = buildOfficialCaseBriefing({
+    officialCheck: officialCheckSummary,
+    facts: {
+      period: effectiveSocialSecurityValidation?.facts?.period,
+      netAmount: effectiveSocialSecurityValidation?.facts?.netAmount,
+      imssWithheld: effectiveSocialSecurityValidation?.facts?.imssWithheld,
+      isrWithheld: effectiveSocialSecurityValidation?.facts?.isrWithheld,
+      infonavitWithheld: effectiveSocialSecurityValidation?.facts?.infonavitWithheld,
+      nss: effectiveSocialSecurityValidation?.facts?.nss,
+      curp: effectiveSocialSecurityValidation?.facts?.curp,
+      workerRfc: effectiveSocialSecurityValidation?.facts?.workerRfc,
+    },
+    chatAnchor: officialCheckSummary?.chatAnchor ?? null,
+    reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
+  });
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
     () =>
@@ -5615,59 +5644,18 @@ export default function Auditar() {
     documents[documents.length - 1]?.documentType ??
     "";
   const heliosCopilotSuggestedPrompts = useMemo(() => {
-    const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
-    const cardPrompts =
-      visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
-    const contextualPrompts = getDocumentContextualShortcuts(
-      heliosCopilotPromptContextDocumentType
-    )
-      .map(item => item.prompt)
-      .filter((item): item is string => Boolean(item));
-    const localPrompts = buildWorkerStarterQuestions({
-      documentType: heliosCopilotPromptContextDocumentType || null,
-      documentsCount: documents.length,
-      hasImssSignal: Boolean(
-        caseDetailQuery.data?.socialSecurityValidation?.hasImssSignal
-      ),
-      hasFiscalSignal: Boolean(
-        caseDetailQuery.data?.socialSecurityValidation?.hasFiscalSignal
-      ),
-      hasInfonavitSignal: Boolean(
-        caseDetailQuery.data?.socialSecurityValidation?.hasInfonavitSignal
-      ),
-      recommendedNextStep:
-        visibleHeliosOpinion?.resultCard?.nextStepSummary ||
-        visibleHeliosOpinion?.recommendedNextStep ||
-        null,
-      resultCardQuestions: cardPrompts,
-    });
-
-    return Array.from(
-      new Set([
-        ...cardPrompts,
-        ...localPrompts,
-        ...serverPrompts,
-        ...contextualPrompts,
-      ])
-    ).slice(0, 4);
+    const officialStarters = buildOfficialChatStarterQuestions(officialCaseBriefing);
+    const serverPrompts = officialCaseBriefing.hasOfficialConsulta
+      ? (heliosCopilotMutation.data?.suggestedPrompts ?? [])
+      : [];
+    return Array.from(new Set([...officialStarters, ...serverPrompts])).slice(0, 4);
   }, [
-    caseDetailQuery.data?.socialSecurityValidation?.hasFiscalSignal,
-    caseDetailQuery.data?.socialSecurityValidation?.hasImssSignal,
-    caseDetailQuery.data?.socialSecurityValidation?.hasInfonavitSignal,
-    documents,
     heliosCopilotMutation.data?.suggestedPrompts,
-    heliosCopilotPromptContextDocumentType,
-    visibleHeliosOpinion?.recommendedNextStep,
-    visibleHeliosOpinion?.resultCard?.nextStepSummary,
-    visibleHeliosOpinion?.resultCard?.suggestedQuestions,
+    officialCaseBriefing,
   ]);
-  const heliosCopilotSuggestedPromptsContext = useMemo(() => {
-    if (heliosCopilotPromptContextDocumentType) {
-      return `Preguntas simples sobre tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()}.`;
-    }
-
-    return "Preguntas simples para empezar. Elige una o escribe la tuya.";
-  }, [heliosCopilotPromptContextDocumentType]);
+  const heliosCopilotSuggestedPromptsContext = officialCaseBriefing.hasOfficialConsulta
+    ? "Preguntas sobre el resultado de TU consulta."
+    : "Primero consulta IMSS y SAT.";
   const heliosCopilotHistoryContext = useMemo(() => {
     if (remoteAdvisorMemory?.greeting || heliosCopilotMessages.length > 0) {
       return "Retomo lo que ya platicamos de este expediente, aunque abras el chat en otro momento. Sigo con esta persona, este patrón y estos papeles.";
@@ -6238,12 +6226,16 @@ export default function Auditar() {
     classificationConfidence: lastUpload?.classification.classificationConfidence,
     riskLevel: lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel,
   });
-  const officialCheckSummary =
-    effectiveSocialSecurityValidation?.officialCheck ?? null;
-  const officialCheckHeadline = officialCheckSummary
-    ? effectiveSocialSecurityValidation?.officialCheckHeadline ??
-      buildOfficialCheckHeadline(officialCheckSummary)
-    : null;
+  const officialCheckDisplay = resolveOfficialCheckDisplay({
+    consentGranted: officialCheckConsent,
+    isPending: revalidateSocialSecurityMutation.isPending,
+    summary: officialCheckSummary,
+    missingIdentityDetail:
+      officialCaseBriefing.missingIdentity.length === 3
+        ? officialCaseBriefing.missingIdentityDetail
+        : null,
+  });
+  const officialCheckHeadline = officialCheckDisplay.headline;
   const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
       plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -7533,10 +7525,27 @@ export default function Auditar() {
     try {
       setSubmitError(null);
       setLegalGateError(null);
-      await revalidateSocialSecurityMutation.mutateAsync({
+      const result = await revalidateSocialSecurityMutation.mutateAsync({
         ...caseDetailInput,
         consentGranted: officialCheckConsent,
       });
+      if (result.officialCheck) {
+        setOfficialCheckResult(result.officialCheck);
+        setLastUpload((current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            socialSecurityValidation: {
+              ...current.socialSecurityValidation,
+              officialCheck: result.officialCheck,
+              officialCheckHeadline: result.officialCheckHeadline,
+              lastRevalidatedAt: result.lastRevalidatedAt,
+              lastRevalidationSummary: result.lastRevalidationSummary,
+              liveImssValidation: result.liveImssValidation,
+            },
+          };
+        });
+      }
       await Promise.all([
         utils.cases.detail.invalidate(caseDetailInput),
         caseDetailQuery.refetch(),
@@ -9480,21 +9489,24 @@ export default function Auditar() {
                               </div>
                             </details>
                             <div data-testid="official-check-card" className="mt-3 rounded-[1rem] border border-teal-200 bg-teal-50/80 px-3 py-3 text-left">
-                              <p className="text-sm font-semibold tracking-tight text-teal-950">
-                                {officialCheckHeadline ?? "Consulta IMSS y SAT"}
+                              <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
+                                {officialCheckDisplay.headline}
                               </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">
-                                {officialCheckSummary?.overallDetail ??
-                                  "Si das permiso, consultamos IMSS y SAT con tu NSS, CURP o RFC. Si no hay respuesta, te lo decimos. No inventamos que tu patrón cumple."}
+                              <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                                {officialCheckDisplay.detail}
                               </p>
-                              {officialCheckSummary?.checks?.length ? (
+                              {officialCheckConsent && officialCaseBriefing.statusLines.length ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                                  {officialCheckSummary.checks.map(check => (
-                                    <li key={check.source}>
-                                      {check.sourceLabel}: {check.label}
-                                    </li>
+                                  {officialCaseBriefing.statusLines.map(line => (
+                                    <li key={line}>{line}</li>
                                   ))}
                                 </ul>
+                              ) : null}
+                              {officialCheckConsent && officialCaseBriefing.hasOfficialConsulta ? (
+                                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
+                                  <p>{officialCaseBriefing.comparison.seenLine}</p>
+                                  <p>{officialCaseBriefing.comparison.nextStepLine}</p>
+                                </div>
                               ) : null}
                               <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
                                 <input
@@ -9507,15 +9519,14 @@ export default function Auditar() {
                               </label>
                               <Button
                                 type="button"
+                                data-testid="official-check-cta"
                                 className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
                                 disabled={revalidateSocialSecurityMutation.isPending || !officialCheckConsent}
                                 onClick={() => {
                                   void handleRevalidateSocialSecurity();
                                 }}
                               >
-                                {revalidateSocialSecurityMutation.isPending
-                                  ? "Consultando..."
-                                  : OFFICIAL_CHECK_BUTTON}
+                                {officialCheckDisplay.buttonLabel}
                               </Button>
                             </div>
                           </>
@@ -10453,6 +10464,8 @@ export default function Auditar() {
                       setSelectedCaseId("");
                       setPendingDraft(null);
                       setLastUpload(null);
+                      setOfficialCheckResult(null);
+                      setOfficialCheckConsent(false);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
                   >
@@ -10474,6 +10487,8 @@ export default function Auditar() {
                       setSelectedCaseId(event.target.value);
                       setPendingDraft(null);
                       setLastUpload(null);
+                      setOfficialCheckResult(null);
+                      setOfficialCheckConsent(false);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
                   >
@@ -14436,8 +14451,30 @@ Reforzar con otro documento
                   heliosCopilotSupportingDocuments
                 }
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
-                officialTitles={heliosCopilotMutation.data?.officialTitles ?? []}
-                officialSourcesNote={heliosCopilotMutation.data?.officialSourcesNote ?? null}
+                officialTitles={[]}
+                officialSourcesNote={null}
+                officialStatusChips={officialCaseBriefing.statusLines}
+                officialComparison={
+                  officialCaseBriefing.hasOfficialConsulta
+                    ? {
+                        seenLine: officialCaseBriefing.comparison.seenLine,
+                        nextStep: officialCaseBriefing.comparison.nextStep,
+                      }
+                    : null
+                }
+                hasOfficialConsulta={officialCaseBriefing.hasOfficialConsulta}
+                consultCtaLabel={officialCheckDisplay.buttonLabel}
+                onConsultOfficial={() => {
+                  setHeliosCopilotOpen(false);
+                  if (officialCheckConsent) {
+                    void handleRevalidateSocialSecurity();
+                  }
+                }}
+                uiCopy={{
+                  emptyStateMessage: officialCaseBriefing.hasOfficialConsulta
+                    ? "Pregúntame del resultado de TU consulta y de tu recibo."
+                    : WORKER_CHAT_NO_CONSULTA_EMPTY,
+                }}
                 responseTone={preferredTone}
                 onResponseToneChange={setPreferredTone}
                 onFocusSuggestedDocument={() => {

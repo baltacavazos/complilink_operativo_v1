@@ -138,6 +138,7 @@ import {
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialCheckHeadline,
+  hasLiveOfficialResult,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -149,7 +150,8 @@ import {
   sanitizeWorkerChatAnswer,
   scopeWorkerChatDocumentsForPlan,
 } from "./workerChatUx";
-import { resolveOfficialDigest } from "./officialDigest";
+import { emptyOfficialDigest } from "@shared/officialDigest";
+import { buildOfficialCaseBriefing, CASE_ADVISOR_RULE } from "@shared/officialCaseBriefing";
 import {
   capWorkerChatConversationHistory,
   sanitizeWorkerChatCopy,
@@ -2129,11 +2131,18 @@ function buildHeliosCopilotSuggestedPrompts(params: {
   documentsCount: number;
   documents: Awaited<ReturnType<typeof listVisibleDocuments>>;
   missingDocuments: Array<{ label: string; reason: string; prompt: string }>;
+  officialCheck?: OfficialCheckSummary | null;
+  officialBriefing?: ReturnType<typeof buildOfficialCaseBriefing> | null;
 }) {
   const grounding = buildWorkerChatGrounding({
     documents: params.documents,
     opinion: params.opinion,
     missingDocument: params.missingDocuments[0] ?? null,
+    officialCheck: params.officialCheck ?? null,
+    officialBriefing: params.officialBriefing ?? null,
+    chatAnchor: params.officialCheck?.chatAnchor ?? null,
+    reciboVsOficial: params.officialCheck?.reciboVsOficial ?? null,
+    caseOnly: true,
   });
   return buildWorkerChatSuggestedPrompts({
     ...grounding,
@@ -2190,8 +2199,7 @@ function buildHeliosCopilotContext(params: {
       recentConversation: normalizeHeliosCopilotConversationHistory(params.conversationHistory),
       durableMemory: formatAdvisorMemoryForPrompt(params.durableMemory),
       missingDocuments: params.missingDocuments,
-      guidance:
-        "Habla como un abogado laboral cercano de ESTE expediente. Ancla cada respuesta en la persona trabajadora, el patrón, los documentos, lo que falta y el riesgo visible. Si preguntan algo conceptual, aplícalo a este caso. Sin tecnicismos, sin citar autores, sin Helios. Si algo no aparece, dilo. No inventes consulta oficial, IUS ni jurisprudencia.",
+        guidance: CASE_ADVISOR_RULE,
       pedagogyMode: hasComplexSignals ? "high" : "standard",
     },
     null,
@@ -3573,23 +3581,28 @@ export const appRouter = router({
           asObjectRecord(chatDocuments.find((item) => asObjectRecord(item.heliosOpinion))?.heliosOpinion);
         const missingDocuments = inferHeliosMissingDocuments({ documents });
         const laborSignals = summarizeLaborFiscalSignals(chatDocuments);
-        const officialDigest = await resolveOfficialDigest(
-          {
-            prompt: input.prompt,
-            documentType:
-              laborSignals.snapshots[0]?.documentType ?? chatDocuments[0]?.documentType ?? null,
-            hasImssSignal: laborSignals.hasImssSignal,
-            hasFiscalSignal: laborSignals.hasFiscalSignal,
-            hasInfonavitSignal: laborSignals.hasInfonavitSignal,
-          },
-          { live: process.env.VITEST !== "true" },
-        );
+        const officialDigest = emptyOfficialDigest();
+        const socialSecurityForChat = buildSocialSecurityValidationSummary({
+          documents: chatDocuments,
+          events: detail.events,
+        });
+        const officialBriefing = buildOfficialCaseBriefing({
+          officialCheck: socialSecurityForChat.officialCheck,
+          facts: laborSignals.facts,
+          chatAnchor: socialSecurityForChat.officialCheck?.chatAnchor ?? null,
+          reciboVsOficial: socialSecurityForChat.officialCheck?.reciboVsOficial ?? null,
+        });
         const workerChatGrounding = buildWorkerChatGrounding({
           documents: chatDocuments,
           opinion: latestOpinion,
           missingDocument: missingDocuments[0] ?? null,
           multiDocUpsell: scopedChat.upsell,
           officialDigest,
+          officialCheck: socialSecurityForChat.officialCheck,
+          officialBriefing,
+          chatAnchor: officialBriefing.chatAnchor,
+          reciboVsOficial: officialBriefing.reciboVsOficial,
+          caseOnly: true,
           workerName: detail.case.employeeName,
           employerName: detail.case.employerEntity,
           caseTitle: detail.case.title,
@@ -3600,6 +3613,8 @@ export const appRouter = router({
           documentsCount: chatDocuments.length,
           documents: chatDocuments,
           missingDocuments,
+          officialCheck: socialSecurityForChat.officialCheck,
+          officialBriefing,
         });
         const disclaimer = WORKER_CHAT_DISCLAIMER;
         const confidenceScore = getOptionalNumber(latestOpinion?.confidenceScore);
@@ -3618,8 +3633,12 @@ export const appRouter = router({
         );
 
         let answer = fallbackAnswer;
+        const canGroundLlm =
+          chatDocuments.length > 0 &&
+          (officialBriefing.hasLiveOfficialResult ||
+            hasLiveOfficialResult(socialSecurityForChat.officialCheck));
 
-        if (chatDocuments.length > 0) {
+        if (canGroundLlm) {
           try {
             const response = await invokeLLM({
               messages: [
@@ -3631,7 +3650,16 @@ export const appRouter = router({
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, durableMemory, missingDocuments })}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- Estado de aceptación legal visible: ${
+                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, durableMemory, missingDocuments })}\n\nConsulta y recibo de este caso:\n${JSON.stringify({
+                      officialCheck: socialSecurityForChat.officialCheck,
+                      chatAnchor: officialBriefing.chatAnchor,
+                      reciboVsOficial: officialBriefing.reciboVsOficial,
+                      officialStatuses: officialBriefing.statusLines,
+                      hechos: officialBriefing.hechoLines,
+                      comparison: officialBriefing.comparison,
+                      receipt: officialBriefing.receiptLines,
+                      missingIdentity: officialBriefing.missingIdentity,
+                    }, null, 2)}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- ${CASE_ADVISOR_RULE}\n- Estado de aceptación legal visible: ${
                     legalAcceptance.isAccepted
                       ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
                       : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`

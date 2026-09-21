@@ -27,7 +27,7 @@ export const WORKER_CHAT_SOURCES_HEADING = OFFICIAL_SOURCES_HEADING;
 export const WORKER_CHAT_WHAT_NOW_HEADING = WORKER_CHAT_NEXT_HEADING;
 
 export const WORKER_CHAT_DISCLAIMER =
-  "Esto no es asesoría legal. No soy abogado. Solo leo lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.";
+  "Esto no es asesoría legal. No soy abogado. Te hablo con el resultado de TU consulta IMSS, SAT o Infonavit y con tu recibo. No inventamos que tu patrón cumple.";
 
 export const WORKER_CHAT_MULTI_DOC_UPSELL =
   "La lectura de varios documentos juntos está en el plan Esencial. Con tu plan gratis puedes preguntar sobre este documento.";
@@ -59,9 +59,9 @@ export const WORKER_CHAT_SHEET_COPY = {
   eyebrow: "Tu expediente, en palabras simples",
   title: WORKER_CHAT_TITLE,
   description:
-    "Soy tu asesor laboral de este caso. Pregúntame en palabras simples. Te hablo con lo que ya aparece de la persona trabajadora, el patrón y tus papeles.",
-  documentBadge: "Anclado a tu expediente",
-  capabilityBadge: "Te acompaña en tu caso",
+    "Soy tu asesor laboral de este caso. Te hablo con el resultado de TU consulta y con tu recibo. Si aún no hay resultado, te lo digo.",
+  documentBadge: "Resultado de TU consulta",
+  capabilityBadge: "Solo este expediente",
   officialSourcesHeading: WORKER_CHAT_SOURCES_HEADING,
   quickHighlights: [
     WORKER_CHAT_CLEAR_HEADING,
@@ -79,14 +79,14 @@ export const WORKER_CHAT_SHEET_COPY = {
   toneExplainedHint: "Explica un poco más, todavía en palabras simples.",
   placeholder: "Pregúntame de ESTE expediente. Ejemplo: ¿en mi recibo me descontaron IMSS?",
   emptyStateMessage:
-    "Pregúntame de tu caso. Te digo, con tus papeles, lo que sí se ve, lo que falta y el siguiente paso.",
+    "Pregúntame del resultado de TU consulta y de tu recibo. Si aún no hay resultado, pulsa Consultar IMSS y SAT.",
   closeLabel: "Cerrar",
 } as const;
 
 export const WORKER_ADVISOR_VOICE_NOTE = [
-  "Habla como un abogado laboral cercano, cálido y familiar que ya tiene ESTE expediente abierto.",
-  "Siempre ancla la respuesta en la persona trabajadora, el patrón, los documentos, lo que falta y el riesgo u opinión de ESTE caso.",
-  "Si preguntan algo conceptual, explícalo aplicado a este expediente. Nada de consejos genéricos de libro.",
+  "Habla solo con el resultado de TU consulta y el recibo de ESTE expediente.",
+  "Si no hay resultado de TU consulta, una frase y el botón Consultar. Nada de consejos genéricos.",
+  "Nunca inventes cumple, alta vigente ni salario oficial si no vienen en los hechos de la consulta.",
   "Español sencillo y claro. Sin tecnicismos, sin citar autores ni doctrina por citar.",
   "Nunca te presentes como Helios ni uses jerga de ingeniería.",
   "No sustituyes a un abogado de su confianza; sí los acompañas a entender su caso.",
@@ -110,6 +110,8 @@ export type WorkerChatStarterContext = {
   missingDocumentLabel?: string | null;
   recommendedNextStep?: string | null;
   resultCardQuestions?: string[] | null;
+  hasOfficialConsulta?: boolean;
+  officialStarters?: string[] | null;
 };
 
 export type WorkerChatAnswerSections = {
@@ -157,16 +159,17 @@ export function hasInventedLegalCitation(value?: string | null): boolean {
 
 export function hasForbiddenLiveValidationClaim(value?: string | null): boolean {
   if (!value) return false;
+  const deniesCumple = /no (?:inventamos|significa) que tu patr[oó]n (?:cumple|est[eé] al corriente)/i.test(
+    value,
+  );
   return (
-    /consulta(?:r|mos|do)? en vivo/i.test(value) ||
     /validaci[oó]n en vivo/i.test(value) ||
-    /ya (?:consultamos|validamos|verificamos) (?:ante |en )?(?:el )?(?:IMSS|SAT|Infonavit)/i.test(
-      value,
-    ) ||
+    /ya (?:validamos|verificamos) (?:ante |en )?(?:el )?(?:IMSS|SAT|Infonavit)/i.test(value) ||
     /confirmamos (?:tu |el )?alta/i.test(value) ||
     /(?:confirmamos|validamos|verificamos|confirma(?:mos)? que|s[ií][,.]?\s+que)\s+(?:est[aá]s? )?(?:oficialmente )?(?:bien )?dado de alta/i.test(
       value,
-    )
+    ) ||
+    (/\btu patr[oó]n cumple\b/i.test(value) && !deniesCumple)
   );
 }
 
@@ -196,11 +199,10 @@ export function stripInventedLegalCitations(value: string): string {
 
 export function stripLiveValidationClaims(value: string): string {
   let next = value;
-  next = next.replace(/consulta(?:r|mos|do)? en vivo/gi, "leer tus documentos");
   next = next.replace(/validaci[oó]n en vivo/gi, "lectura de tus documentos");
   next = next.replace(
-    /ya (?:consultamos|validamos|verificamos) (?:ante |en )?(?:el )?(IMSS|SAT|Infonavit)/gi,
-    "en tus papeles se ve una señal de $1, pero no es una consulta oficial",
+    /ya (?:validamos|verificamos) (?:ante |en )?(?:el )?(IMSS|SAT|Infonavit)/gi,
+    "la consulta de $1 de este caso, si ya existe, es lo único que puedo citar",
   );
   next = next.replace(
     /confirmamos (?:tu |el )?alta(?: ante el IMSS)?/gi,
@@ -256,6 +258,18 @@ function payrollDiscountQuestion(context: WorkerChatStarterContext): string {
 }
 
 export function buildWorkerStarterQuestions(context: WorkerChatStarterContext = {}): string[] {
+  const official = (context.officialStarters ?? [])
+    .map((item) => asText(item))
+    .filter((item): item is string => Boolean(item))
+    .map((item) => sanitizeWorkerChatCopy(item) ?? item)
+    .filter((item) => !hasForbiddenWorkerBrand(item));
+  if (official.length > 0) {
+    return official.slice(0, 4);
+  }
+  if (context.hasOfficialConsulta === false) {
+    return [];
+  }
+
   const fromCard = (context.resultCardQuestions ?? [])
     .map((item) => asText(item))
     .filter((item): item is string => Boolean(item))

@@ -2,13 +2,22 @@ import {
   OFFICIAL_CHECK_CONSENT,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  honestyToOfficialStatus,
+  officialStatusToHonesty,
+  readChatAnchor,
+  readChatAnchorSource,
+  readReciboVsOficial,
+  type OfficialChatAnchor,
   type OfficialCheckStatus,
   type OfficialCheckSummary,
   type OfficialIdentityFlags,
   type OfficialSourceCheck,
+  type ReciboVsOficial,
 } from "@shared/officialCheckCopy";
+import { officialIdentityGapDetail } from "@shared/officialCaseBriefing";
 import {
   canonicalizeEngineWebhookUrl,
+  deriveHeliosBridgeUrl,
   postSignedAuditaPatronEngine,
   type SignedEnginePostResult,
 } from "./auditaPatronIntegrationService";
@@ -37,9 +46,33 @@ export type OfficialCheckEngineConfig = {
   hmacSecret: string;
 };
 
+export function resolveOfficialCheckWebhookUrl(engineWebhookUrl: string): string {
+  const configured = canonicalizeEngineWebhookUrl(engineWebhookUrl);
+  if (!configured) return "";
+
+  try {
+    const path = new URL(configured).pathname.replace(/\/+$/, "") || "/";
+    if (path === "/api/auditapatron/webhook" || path === "/api/auditapatron/complilink-webhook") {
+      return deriveHeliosBridgeUrl(configured) || configured;
+    }
+    return configured;
+  } catch {
+    return configured;
+  }
+}
+
+export function resolveOfficialCheckTargetUrls(engineWebhookUrl: string): string[] {
+  const primary = resolveOfficialCheckWebhookUrl(engineWebhookUrl);
+  const derived = deriveHeliosBridgeUrl(engineWebhookUrl);
+  const urls: string[] = [];
+  if (primary) urls.push(primary);
+  if (derived && !urls.includes(derived)) urls.push(derived);
+  return urls;
+}
+
 export function readEngineBridgeConfig(env: GovernmentLiveEnv = process.env): OfficialCheckEngineConfig {
   return {
-    webhookUrl: canonicalizeEngineWebhookUrl(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "")),
+    webhookUrl: resolveOfficialCheckWebhookUrl(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "")),
     hmacSecret: String(env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "").trim(),
   };
 }
@@ -107,16 +140,19 @@ function hasAnyIdentity(identity: WorkerOfficialIdentity) {
 function sourceCheck(
   source: OfficialSourceCheck["source"],
   status: OfficialCheckStatus,
-  extra?: Partial<Pick<OfficialSourceCheck, "checkedAt" | "used" | "detail">>,
+  extra?: Partial<Pick<OfficialSourceCheck, "checkedAt" | "used" | "detail" | "honesty" | "hechos" | "motivoFallo">>,
 ): OfficialSourceCheck {
   return {
     source,
     sourceLabel: SOURCE_LABEL[source],
     status,
     label: OFFICIAL_CHECK_STATUS_LABEL[status],
-    detail: extra?.detail ?? OFFICIAL_CHECK_STATUS_DETAIL[status],
+    detail: extra?.detail ?? extra?.motivoFallo ?? OFFICIAL_CHECK_STATUS_DETAIL[status],
     checkedAt: extra?.checkedAt ?? null,
     used: extra?.used ?? { nss: false, curp: false, rfc: false },
+    honesty: extra?.honesty ?? officialStatusToHonesty(status),
+    hechos: extra?.hechos?.slice(0, 3) ?? [],
+    motivoFallo: extra?.motivoFallo ?? null,
   };
 }
 
@@ -321,6 +357,58 @@ function readNestedOfficialSource(
   return null;
 }
 
+function readOfficialObligationCheck(
+  value: unknown,
+  source: OfficialSourceCheck["source"],
+  fallback: OfficialCheckStatus | null,
+  nowIso: string | null,
+  used: OfficialIdentityFlags,
+): OfficialSourceCheck {
+  const record = asRecord(value);
+  const missing = Array.isArray(record?.missingFields)
+    ? record.missingFields.map((item) => String(item))
+    : [];
+  const fromHonesty = honestyToOfficialStatus(
+    record ? String(record.honesty ?? record.estado ?? record.status ?? "") : null,
+    missing,
+  );
+  const status = fromHonesty ?? fallback ?? "pendiente";
+  const anchor = record ? readChatAnchorSource(record, source) : null;
+  const hechos = record
+    ? (Array.isArray(record.hechos) ? record.hechos.map((item) => String(item).trim()).filter(Boolean).slice(0, 3) : [])
+    : [];
+  const motivoFallo =
+    status === "no_se_pudo" || status === "sin_datos"
+      ? (typeof record?.workerReason === "string" ? record.workerReason : null) ??
+        (typeof record?.motivoFallo === "string" ? record.motivoFallo : null)
+      : null;
+  return sourceCheck(source, status, {
+    checkedAt:
+      (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
+      anchor?.fecha ??
+      nowIso,
+    used,
+    honesty: anchor?.estado ?? officialStatusToHonesty(status),
+    hechos: hechos.length > 0 ? hechos : anchor?.hechos,
+    motivoFallo: motivoFallo ?? anchor?.motivoFallo ?? null,
+    detail: motivoFallo ?? undefined,
+  });
+}
+
+function pickBridgeResultRoots(root: Record<string, unknown>): Array<Record<string, unknown> | null> {
+  const result = asRecord(root.result) ?? asRecord(root.analysisResults) ?? root;
+  const current = asRecord(root.currentResponseEvent);
+  const currentResult = asRecord(current?.result);
+  const officialCheck =
+    asRecord(result?.officialCheck) ??
+    asRecord(root.officialCheck) ??
+    asRecord(currentResult?.officialCheck);
+  const extracted = asRecord(root.extractedFields);
+  const metadata = asRecord(root.metadata);
+  const official = asRecord(result?.official) ?? asRecord(metadata?.official) ?? asRecord(metadata?.live_check);
+  return [officialCheck, currentResult, official, result, extracted, metadata, root];
+}
+
 export function officialCheckFromBridgeReturn(params: {
   payload: Record<string, unknown> | null | undefined;
   identity?: OfficialIdentityFlags;
@@ -330,7 +418,7 @@ export function officialCheckFromBridgeReturn(params: {
   if (!root) return null;
 
   const eventName = String(root.event ?? root.eventName ?? "");
-  if (eventName && eventName !== "document.processed.v1") {
+  if (eventName && eventName !== "document.processed.v1" && root.action !== "official_check") {
     if (eventName === "document.rejected.v1") {
       const failed: OfficialCheckStatus = "no_se_pudo";
       return {
@@ -346,21 +434,41 @@ export function officialCheckFromBridgeReturn(params: {
           sourceCheck("sat", failed, { checkedAt: params.nowIso ?? null }),
           sourceCheck("infonavit", failed, { checkedAt: params.nowIso ?? null }),
         ],
+        chatAnchor: null,
+        reciboVsOficial: null,
       };
     }
     return null;
   }
 
+  const roots = pickBridgeResultRoots(root);
   const result = asRecord(root.result) ?? asRecord(root.analysisResults) ?? root;
-  const extracted = asRecord(root.extractedFields);
-  const metadata = asRecord(root.metadata);
-  const official = asRecord(result?.official) ?? asRecord(metadata?.official) ?? asRecord(metadata?.live_check);
-  const roots = [official, result, extracted, metadata, root];
+  const currentResult = asRecord(asRecord(root.currentResponseEvent)?.result);
+  const officialCheck =
+    asRecord(result?.officialCheck) ??
+    asRecord(root.officialCheck) ??
+    asRecord(currentResult?.officialCheck);
+  const chatAnchor =
+    readChatAnchor(result?.chatAnchor) ??
+    readChatAnchor(root.chatAnchor) ??
+    readChatAnchor(officialCheck?.chatAnchor) ??
+    readChatAnchor(currentResult?.chatAnchor);
+  const reciboVsOficial: ReciboVsOficial | null =
+    readReciboVsOficial(result?.reciboVsOficial) ??
+    readReciboVsOficial(result?.receiptVsOfficial) ??
+    readReciboVsOficial(root.reciboVsOficial) ??
+    readReciboVsOficial(root.receiptVsOfficial) ??
+    readReciboVsOficial(currentResult?.reciboVsOficial) ??
+    readReciboVsOficial(currentResult?.receiptVsOfficial);
 
-  const imss = readNestedOfficialSource(roots, "imss");
-  const sat = readNestedOfficialSource(roots, "sat");
-  const infonavit = readNestedOfficialSource(roots, "infonavit");
-  if (!imss && !sat && !infonavit) {
+  const used = params.identity ?? { nss: false, curp: false, rfc: false };
+  const nowIso = params.nowIso ?? null;
+  const imssStatus = readNestedOfficialSource(roots, "imss");
+  const satStatus = readNestedOfficialSource(roots, "sat");
+  const infonavitStatus = readNestedOfficialSource(roots, "infonavit");
+  const hasClkShape = Boolean(officialCheck?.sat || officialCheck?.imss || officialCheck?.infonavit || chatAnchor);
+
+  if (!imssStatus && !satStatus && !infonavitStatus && !hasClkShape) {
     if (eventName === "document.processed.v1") {
       return {
         configured: true,
@@ -368,25 +476,40 @@ export function officialCheckFromBridgeReturn(params: {
         overallStatus: "pendiente",
         overallLabel: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
         overallDetail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
-        checkedAt: params.nowIso ?? null,
-        identity: params.identity ?? { nss: false, curp: false, rfc: false },
+        checkedAt: nowIso,
+        identity: used,
         checks: [
-          sourceCheck("imss", "pendiente", { checkedAt: params.nowIso ?? null }),
-          sourceCheck("sat", "pendiente", { checkedAt: params.nowIso ?? null }),
-          sourceCheck("infonavit", "pendiente", { checkedAt: params.nowIso ?? null }),
+          sourceCheck("imss", "pendiente", { checkedAt: nowIso }),
+          sourceCheck("sat", "pendiente", { checkedAt: nowIso }),
+          sourceCheck("infonavit", "pendiente", { checkedAt: nowIso }),
         ],
+        chatAnchor,
+        reciboVsOficial,
       };
     }
     return null;
   }
 
-  const nowIso = params.nowIso ?? null;
   const checks = [
-    sourceCheck("imss", imss ?? "pendiente", { checkedAt: nowIso }),
-    sourceCheck("sat", sat ?? "pendiente", { checkedAt: nowIso }),
-    sourceCheck("infonavit", infonavit ?? "pendiente", { checkedAt: nowIso }),
+    readOfficialObligationCheck(officialCheck?.imss ?? chatAnchor?.imss, "imss", imssStatus, nowIso, used),
+    readOfficialObligationCheck(officialCheck?.sat ?? chatAnchor?.sat, "sat", satStatus, nowIso, used),
+    readOfficialObligationCheck(
+      officialCheck?.infonavit ?? chatAnchor?.infonavit,
+      "infonavit",
+      infonavitStatus,
+      nowIso,
+      used,
+    ),
   ];
   const overallStatus = rollupStatus(checks.map((item) => item.status));
+  const resolvedAnchor: OfficialChatAnchor | null =
+    chatAnchor ??
+    ({
+      imss: readChatAnchorSource({ ...checks[0], estado: checks[0].honesty, fecha: checks[0].checkedAt }, "imss"),
+      sat: readChatAnchorSource({ ...checks[1], estado: checks[1].honesty, fecha: checks[1].checkedAt }, "sat"),
+      infonavit: readChatAnchorSource({ ...checks[2], estado: checks[2].honesty, fecha: checks[2].checkedAt }, "infonavit"),
+    } satisfies OfficialChatAnchor);
+
   return {
     configured: true,
     consentGranted: true,
@@ -394,8 +517,10 @@ export function officialCheckFromBridgeReturn(params: {
     overallLabel: OFFICIAL_CHECK_STATUS_LABEL[overallStatus],
     overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[overallStatus],
     checkedAt: nowIso,
-    identity: params.identity ?? { nss: false, curp: false, rfc: false },
+    identity: used,
     checks,
+    chatAnchor: resolvedAnchor,
+    reciboVsOficial,
   };
 }
 
@@ -442,6 +567,7 @@ export async function runOfficialGovernmentCheck(params: {
       ...emptySummary("sin_datos", identity),
       configured: true,
       consentGranted: true,
+      overallDetail: officialIdentityGapDetail(identityFlags(identity)),
     };
   }
 
@@ -452,16 +578,51 @@ export async function runOfficialGovernmentCheck(params: {
     correlationId: params.correlationId,
   });
 
-  const posted = await postSignedAuditaPatronEngine({
-    url: engine.webhookUrl,
-    payload,
-    hmacSecret: engine.hmacSecret,
-    timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
-    maxAttempts: GOVERNMENT_LIVE_MAX_ATTEMPTS,
-    fetchImpl: params.fetchImpl,
-    sleep: params.sleep,
-    now: params.now,
+  const targetUrls = resolveOfficialCheckTargetUrls(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? engine.webhookUrl));
+  let posted: SignedEnginePostResult | null = null;
+  for (const url of targetUrls.length > 0 ? targetUrls : [engine.webhookUrl]) {
+    posted = await postSignedAuditaPatronEngine({
+      url,
+      payload,
+      hmacSecret: engine.hmacSecret,
+      timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
+      maxAttempts: GOVERNMENT_LIVE_MAX_ATTEMPTS,
+      fetchImpl: params.fetchImpl,
+      sleep: params.sleep,
+      now: params.now,
+    });
+    if (posted.ok) break;
+    if (posted.reason === "hmac_failed" || posted.reason === "authentication_failed") break;
+    if (posted.reason === "timeout" || posted.reason === "retryable_http" || posted.reason === "server_error") {
+      break;
+    }
+    if (posted.httpStatus === 404 || posted.reason === "redirect_without_hmac_headers") {
+      continue;
+    }
+    break;
+  }
+  if (!posted) {
+    return {
+      ...emptySummary("no_se_pudo", identity),
+      configured: true,
+      consentGranted: true,
+    };
+  }
+
+  const fromReturn = officialCheckFromBridgeReturn({
+    payload: asRecord(posted.responseJson),
+    identity: used,
+    nowIso,
   });
+  if (fromReturn) {
+    return {
+      ...fromReturn,
+      configured: true,
+      consentGranted: true,
+      identity: used,
+      overallDetail: fromReturn.overallDetail || workerDetailForBridgeResult(fromReturn.overallStatus, posted),
+    };
+  }
 
   const overallStatus = classifyBridgeOfficialCheck(posted);
   const imssStatus = readSourceStatusFromResult(posted.responseJson, "imss") ?? overallStatus;
@@ -492,6 +653,8 @@ export async function runOfficialGovernmentCheck(params: {
     checkedAt: nowIso,
     identity: used,
     checks,
+    chatAnchor: null,
+    reciboVsOficial: null,
   };
 }
 

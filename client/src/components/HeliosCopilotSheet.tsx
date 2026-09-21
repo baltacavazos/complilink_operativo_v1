@@ -1,5 +1,6 @@
 import { AIChatBox, type Message as AIChatMessage } from "@/components/AIChatBox";
 import { sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { OFFICIAL_CHECK_BUTTON } from "@shared/officialCheckCopy";
 import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_SHEET_COPY,
@@ -94,6 +95,11 @@ type HeliosCopilotSheetProps = {
   onFocusSuggestedDocument?: (() => void) | null;
   officialTitles?: HeliosOfficialTitle[];
   officialSourcesNote?: string | null;
+  officialStatusChips?: string[];
+  officialComparison?: { seenLine: string; nextStep: string } | null;
+  onConsultOfficial?: (() => void) | null;
+  consultCtaLabel?: string;
+  hasOfficialConsulta?: boolean;
   uiCopy?: HeliosCopilotSheetCopy;
 };
 
@@ -120,6 +126,11 @@ export function HeliosCopilotSheet({
   onFocusSuggestedDocument,
   officialTitles = [],
   officialSourcesNote,
+  officialStatusChips = [],
+  officialComparison = null,
+  onConsultOfficial = null,
+  consultCtaLabel = OFFICIAL_CHECK_BUTTON,
+  hasOfficialConsulta = false,
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const mergedCopy = {
@@ -238,19 +249,45 @@ export function HeliosCopilotSheet({
                   {visibleSummary}
                 </p>
               ) : null}
-              <div className="flex flex-wrap gap-1.5">
-                <span className="ap-chat-chip">
-                  {copy.documentBadge}
-                </span>
-                <span className="ap-chat-chip">
-                  {copy.capabilityBadge}
-                </span>
-                {typeof confidenceScore === "number" ? (
+              <div className="flex flex-wrap gap-1.5" data-testid="ap-chat-official-chips">
+                {officialStatusChips.length > 0 ? (
+                  officialStatusChips.map((chip) => (
+                    <span key={chip} className="ap-chat-chip">
+                      {chip}
+                    </span>
+                  ))
+                ) : (
+                  <>
+                    <span className="ap-chat-chip">
+                      {copy.documentBadge}
+                    </span>
+                    <span className="ap-chat-chip">
+                      {copy.capabilityBadge}
+                    </span>
+                  </>
+                )}
+                {typeof confidenceScore === "number" && officialStatusChips.length === 0 ? (
                   <span className="ap-chat-chip">
                     Confianza orientativa {confidenceScore}%
                   </span>
                 ) : null}
               </div>
+              {officialComparison ? (
+                <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3 py-2.5" data-testid="ap-chat-official-comparison">
+                  <p className="text-sm font-semibold text-slate-950">{officialComparison.seenLine}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-700">{officialComparison.nextStep}</p>
+                </div>
+              ) : null}
+              {onConsultOfficial && !hasOfficialConsulta ? (
+                <Button
+                  type="button"
+                  className="h-10 w-full rounded-full bg-teal-700 text-white hover:bg-teal-800"
+                  data-testid="ap-chat-consult-cta"
+                  onClick={onConsultOfficial}
+                >
+                  {consultCtaLabel}
+                </Button>
+              ) : null}
               <div className="ap-chat-compact-hide mt-3 grid gap-2 sm:grid-cols-2">
                 {quickHighlights.map((item) => (
                   <div

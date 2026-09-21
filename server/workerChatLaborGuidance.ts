@@ -6,6 +6,9 @@ import {
   type LaborFiscalStructuredFacts,
 } from "./laborFiscalSignals";
 
+/** El chat de caso no usa tips laborales genéricos como respuesta principal. */
+export const WORKER_CHAT_GENERIC_LABOR_PRIMARY_DISABLED = true;
+
 export type WorkerChatPromptFocus =
   | "imss"
   | "fiscal"
@@ -48,6 +51,7 @@ export type WorkerChatLaborGuidanceInput = {
   employerName?: string | null;
   caseTitle?: string | null;
   riskLevel?: string | null;
+  caseChatPrimary?: boolean;
 };
 
 export type WorkerChatLaborGuidance = {
@@ -352,6 +356,13 @@ function composeClearAnswer(
   prefersRemote: boolean,
   visibleFactLines: string[],
 ) {
+  if (WORKER_CHAT_GENERIC_LABOR_PRIMARY_DISABLED && input.caseChatPrimary) {
+    if (visibleFactLines.length > 0) {
+      return `En este expediente se ve ${joinFactLines(visibleFactLines)}. Eso no sustituye el resultado de TU consulta.`;
+    }
+    return "Este consejo genérico no es la respuesta del caso. Usa el resultado de TU consulta.";
+  }
+
   const opinion = asRecord(input.sourceOpinion);
   const remoteText = prefersRemote
     ? cleanCopy(asText(typeof opinion?.legalOpinion === "string" ? opinion.legalOpinion : null)) ??

@@ -16,6 +16,8 @@ import {
   getOfficialCheckAvailability,
   isOfficialCheckConfigured,
   officialCheckFromBridgeReturn,
+  resolveOfficialCheckTargetUrls,
+  resolveOfficialCheckWebhookUrl,
   runOfficialGovernmentCheck,
 } from "./governmentLiveCheck";
 
@@ -48,6 +50,19 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(
       canonicalizeEngineWebhookUrl("https://www.complilink.mx/api/integrations/auditapatron/bridge"),
     ).toBe("https://complilink.mx/api/integrations/auditapatron/bridge");
+    expect(
+      resolveOfficialCheckWebhookUrl("https://www.complilink.mx/api/integrations/auditapatron/bridge"),
+    ).toBe("https://complilink.mx/api/integrations/auditapatron/bridge");
+    expect(resolveOfficialCheckWebhookUrl("https://www.complilink.mx/api/auditapatron/webhook")).toBe(
+      "https://complilink.mx/api/internal/helios/bridge",
+    );
+    expect(resolveOfficialCheckTargetUrls(ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL)).toEqual([
+      ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL,
+      "https://complilink.mx/api/internal/helios/bridge",
+    ]);
+    expect(resolveOfficialCheckTargetUrls("https://www.complilink.mx/api/internal/helios/bridge")).toEqual([
+      "https://complilink.mx/api/internal/helios/bridge",
+    ]);
   });
 
   it("devuelve aún no configurado sin llamar al puente", async () => {
@@ -136,6 +151,42 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
   });
 
+  it("si la URL es el intake, pega al puente derivado y firma timestamp+cuerpo", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ received: true, responseContract: "auditapatron.bridge.ack.v1" }), {
+        status: 202,
+      }),
+    );
+
+    const result = await runOfficialGovernmentCheck({
+      identity: { nss: "12345678901", curp: null, rfc: null },
+      consentGranted: true,
+      env: {
+        AUDITAPATRON_ENGINE_WEBHOOK_URL: "https://www.complilink.mx/api/auditapatron/webhook",
+        AUDITAPATRON_ENGINE_HMAC_SECRET: ENGINE_ENV.AUDITAPATRON_ENGINE_HMAC_SECRET,
+      },
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    expect(result.overallStatus).toBe("pendiente");
+    expect(result.overallLabel).toBe("Pendiente");
+    expect(result.overallDetail).not.toMatch(/HMAC|Helios|cumple/i);
+    const posted = readPosted(fetchImpl);
+    expect(posted.url).toBe("https://complilink.mx/api/internal/helios/bridge");
+    expect(posted.url).not.toContain("www.");
+    expect(posted.init.redirect).toBe("manual");
+    const headers = posted.init.headers as Record<string, string>;
+    expect(headers["X-AuditaPatron-Signature"]).toBe(
+      buildAuditaPatronEngineSignature(
+        headers["X-AuditaPatron-Timestamp"],
+        posted.body,
+        ENGINE_ENV.AUDITAPATRON_ENGINE_HMAC_SECRET,
+      ),
+    );
+    expect(headers.Authorization).toBe(`Bearer ${ENGINE_ENV.AUDITAPATRON_ENGINE_HMAC_SECRET}`);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
   it("degrada HMAC 403 a no se pudo, sin inventar", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ error: "Helios bridge HMAC authentication failed" }), { status: 403 }),
@@ -154,6 +205,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.overallDetail).not.toMatch(/HMAC|Helios|cumple/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(String(fetchImpl.mock.calls[0]?.[0])).toBe(ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL);
   });
 
   it("muestra 404 de proveedor como no se pudo, no como consulta hecha", async () => {
@@ -259,6 +311,65 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(pending?.overallStatus).toBe("pendiente");
     expect(pending?.overallLabel).toBe("Pendiente");
+  });
+
+  it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            sat: {
+              obligation: "sat",
+              honesty: "pending",
+              status: "pending",
+              workerLabel: "Pendiente",
+              workerReason: "Todavía no hay una respuesta oficial nueva de SAT.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: [],
+              hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+            },
+            imss: {
+              obligation: "imss",
+              honesty: "live",
+              status: "live",
+              workerLabel: "Hay respuesta oficial",
+              workerReason: "Ya hay una respuesta oficial de IMSS con fecha.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: [],
+              hechos: ["Alta vigente: sí.", "Salario registrado: $450.25."],
+            },
+            infonavit: {
+              obligation: "infonavit",
+              honesty: "failed",
+              status: "failed",
+              workerLabel: "No se pudo consultar",
+              workerReason: "Infonavit está en mantenimiento.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: [],
+              hechos: ["Infonavit está en mantenimiento."],
+            },
+          },
+          chatAnchor: {
+            sat: { fuente: "sat", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Todavía no hay una respuesta oficial nueva de SAT."], motivoFallo: null },
+            imss: { fuente: "imss", estado: "live", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Alta vigente: sí.", "Salario registrado: $450.25."], motivoFallo: null },
+            infonavit: { fuente: "infonavit", estado: "failed", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Infonavit está en mantenimiento."], motivoFallo: "Infonavit está en mantenimiento." },
+          },
+          reciboVsOficial: { resultado: "hay_diferencia", motivo: "El SBC no coincide." },
+        },
+      },
+      nowIso: "2026-09-21T12:00:00.000Z",
+      identity: { nss: true, curp: false, rfc: true },
+    });
+
+    expect(parsed?.overallStatus).toBe("vivo");
+    expect(parsed?.chatAnchor?.imss.estado).toBe("live");
+    expect(parsed?.chatAnchor?.imss.hechos).toEqual(["Alta vigente: sí.", "Salario registrado: $450.25."]);
+    expect(parsed?.chatAnchor?.infonavit.motivoFallo).toMatch(/mantenimiento/);
+    expect(parsed?.reciboVsOficial?.resultado).toBe("hay_diferencia");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.hechos?.[0]).toMatch(/Alta vigente/);
+    expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC/i);
+    expect(JSON.stringify(parsed)).toMatch(/No significa que tu patrón cumple/);
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {

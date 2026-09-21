@@ -340,9 +340,9 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Copiloto laboral de Helios");
     expect(source).not.toContain("Tu asesor laboral ya entendió lo visible de tu expediente");
     expect(helpers).toContain("Asesor laboral");
-    expect(helpers).toContain("Pregúntame en palabras simples");
+    expect(helpers).toContain("resultado de TU consulta");
     expect(helpers).toContain("Empieza por aquí");
-    expect(helpers).toContain("Te acompaña en tu caso");
+    expect(helpers).toContain("Solo este expediente");
     expect(helpers).toContain("Lo que sí se sabe");
     expect(helpers).toContain("Siguiente paso");
     expect(helpers).toMatch(/no es asesoría legal/i);
