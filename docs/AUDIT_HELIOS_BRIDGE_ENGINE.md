@@ -39,7 +39,7 @@ auditaPatronReturnWebhook.ingestCompliLinkReturnPayload()
 | Dirección | Evento | Dónde se acepta |
 | --- | --- | --- |
 | Saliente | `document.uploaded` | Tras guardar, `sendDocumentToAuditaPatronEngine` |
-| Saliente | `official.check.requested` (`action: official_check`) | Consulta IMSS/SAT del trabajador: `POST /api/internal/helios/bridge` en el host del engine, con `autonomousInput` {nss,curp,rfc} |
+| Saliente | `official.check.requested` (`action: official_check`) | Consulta IMSS/SAT: POST a `AUDITAPATRON_ENGINE_WEBHOOK_URL` tal cual (`/api/integrations/auditapatron/bridge`), `autonomousInput` {nss,curp,rfc}, **sin** `providerId` inventado |
 | Entrante | `document.processed.v1` | `/api/auditapatron/webhook` y `/api/auditapatron/complilink-webhook` |
 | Entrante | `document.rejected.v1` | mismos endpoints |
 | Entrante | `document.retry_requested.v1` | mismos endpoints |
@@ -51,7 +51,7 @@ Cualquier otro nombre se rechaza con `unknown_event` y se registra en log. No se
 | Superficie | Archivo | Qué hace |
 | --- | --- | --- |
 | Cliente bridge saliente | `server/auditaPatronIntegrationService.ts` | Firma HMAC del **raw JSON enviado**, Bearer, **no sigue redirects**, reescribe `www` → apex, reintentos 5xx/red, health **suave**, acuse `auditapatron.bridge.ack.v1` |
-| Consulta IMSS/SAT | `server/governmentLiveCheck.ts` | Dispara Helios con URL+HMAC del engine. **No** usa `APIMARKET_*` (viven en CompliLink). 403 HMAC/5xx → español, sin inventar |
+| Consulta IMSS/SAT | `server/governmentLiveCheck.ts` | POST a la URL del engine (HMAC + Bearer). **No** usa `APIMARKET_*`. 200 con datos → vivo; 5xx/acuse → pendiente; 403/404 → no se pudo |
 | Intake + retorno | `POST /api/auditapatron/webhook` | HMAC. `document.uploaded` se reenvía; los eventos v1 se ingieren |
 | Retorno | `POST /api/auditapatron/complilink-webhook` | HMAC **o** secreto compartido; idempotencia por `eventKey` con replay seguro |
 | Opinión Helios | `server/heliosIntegrationService.ts` | URL presente → remoto. Envío OK → `processing`. Envío fallido → `error` en español, **sin dictamen inventado**. Sin URL → plantilla `mock` (no es el cerebro en vivo) |

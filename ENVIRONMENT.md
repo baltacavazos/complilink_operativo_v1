@@ -55,15 +55,16 @@ Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FO
 
 AuditaPatrón **no** cablea `APIMARKET_*` ni `CAPSOLVER_*`. Esas llaves viven en el servicio **CompliLink** (cerebro Helios), no en este Railway.
 
-La consulta del trabajador dispara el puente ya existente. En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`) deben estar (modo remoto):
+La consulta del trabajador dispara **la URL configurada**, sin reescribir la ruta. Auth del puente ya está viva (Bearer = `AUDITAPATRON_ENGINE_HMAC_SECRET`, alineado con el `BRIDGE_TOKEN` de CompliLink).
+
+En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`):
 
 | Variable | Notas |
 | --- | --- |
-| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Preferir host canónico `https://complilink.mx/...`. **Nunca** `www.complilink.mx`: el redirect pierde HMAC/Bearer y el Tester ve fallo de firma. |
-| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)`; nunca en Git |
+| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Destino exacto. Hoy: `https://web-production-f1d10.up.railway.app/api/integrations/auditapatron/bridge`. No cambiar a `/api/internal/helios/bridge`. Evitar `www`. |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)` y Bearer. Nunca en Git. |
 
-El código deriva `https://<mismo-host>/api/internal/helios/bridge` y envía NSS/CURP/RFC del expediente.  
-Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). Firma 403 / error de red → «No se pudo». 5xx / timeout → «Pendiente». Nunca «cumple».
+Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con respuesta del instituto → «Consulta hecha». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «No se pudo». Nunca «cumple». **No** agregar `APIMARKET_*` aquí.
 
 ## Bridge AuditaPatrón
 

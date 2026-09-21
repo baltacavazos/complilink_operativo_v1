@@ -8,7 +8,7 @@ import {
   type OfficialSourceCheck,
 } from "@shared/officialCheckCopy";
 import {
-  deriveHeliosBridgeUrl,
+  canonicalizeEngineWebhookUrl,
   postSignedAuditaPatronEngine,
   type SignedEnginePostResult,
 } from "./auditaPatronIntegrationService";
@@ -34,16 +34,12 @@ export type WorkerOfficialIdentity = {
 export type OfficialCheckEngineConfig = {
   webhookUrl: string;
   hmacSecret: string;
-  heliosBridgeUrl: string;
 };
 
 export function readEngineBridgeConfig(env: GovernmentLiveEnv = process.env): OfficialCheckEngineConfig {
-  const webhookUrl = String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "").trim();
-  const hmacSecret = String(env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "").trim();
   return {
-    webhookUrl,
-    hmacSecret,
-    heliosBridgeUrl: deriveHeliosBridgeUrl(webhookUrl),
+    webhookUrl: canonicalizeEngineWebhookUrl(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "")),
+    hmacSecret: String(env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "").trim(),
   };
 }
 
@@ -246,6 +242,9 @@ export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): Off
   if (result.httpStatus === 429 || (result.httpStatus !== null && result.httpStatus >= 500)) {
     return "pendiente";
   }
+  if (result.httpStatus === 404) {
+    return "no_se_pudo";
+  }
   if (result.reason === "hmac_failed" || result.reason === "authentication_failed") {
     return "no_se_pudo";
   }
@@ -256,6 +255,16 @@ export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): Off
     return "no_se_pudo";
   }
   return "no_se_pudo";
+}
+
+function workerDetailForBridgeResult(
+  status: OfficialCheckStatus,
+  posted: SignedEnginePostResult,
+): string {
+  if (posted.httpStatus === 404) {
+    return "No se pudo consultar. Todavía no hay una respuesta de IMSS o SAT para estos datos.";
+  }
+  return OFFICIAL_CHECK_STATUS_DETAIL[status];
 }
 
 export async function runOfficialGovernmentCheck(params: {
@@ -304,7 +313,6 @@ export async function runOfficialGovernmentCheck(params: {
     };
   }
 
-  const targetUrl = engine.heliosBridgeUrl || engine.webhookUrl;
   const payload = buildOfficialCheckBridgePayload({
     identity,
     nowIso,
@@ -313,7 +321,7 @@ export async function runOfficialGovernmentCheck(params: {
   });
 
   const posted = await postSignedAuditaPatronEngine({
-    url: targetUrl,
+    url: engine.webhookUrl,
     payload,
     hmacSecret: engine.hmacSecret,
     timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
@@ -343,7 +351,7 @@ export async function runOfficialGovernmentCheck(params: {
     consentGranted: true,
     overallStatus: rolled,
     overallLabel: OFFICIAL_CHECK_STATUS_LABEL[rolled],
-    overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[rolled],
+    overallDetail: workerDetailForBridgeResult(rolled, posted),
     checkedAt: nowIso,
     identity: used,
     checks,

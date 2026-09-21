@@ -9,7 +9,6 @@ import {
 import {
   buildAuditaPatronEngineSignature,
   canonicalizeEngineWebhookUrl,
-  deriveHeliosBridgeUrl,
 } from "./auditaPatronIntegrationService";
 import {
   OFFICIAL_CHECK_ACTION,
@@ -20,7 +19,8 @@ import {
 } from "./governmentLiveCheck";
 
 const ENGINE_ENV = {
-  AUDITAPATRON_ENGINE_WEBHOOK_URL: "https://www.complilink.mx/api/auditapatron/webhook",
+  AUDITAPATRON_ENGINE_WEBHOOK_URL:
+    "https://web-production-f1d10.up.railway.app/api/integrations/auditapatron/bridge",
   AUDITAPATRON_ENGINE_HMAC_SECRET: "bridge-hmac-secret-123456",
 };
 
@@ -38,16 +38,16 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(isOfficialCheckConfigured({})).toBe(false);
     expect(
       isOfficialCheckConfigured({
-        AUDITAPATRON_ENGINE_WEBHOOK_URL: "https://complilink.mx/api/auditapatron/webhook",
+        AUDITAPATRON_ENGINE_WEBHOOK_URL: ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL,
       }),
     ).toBe(false);
     expect(getOfficialCheckAvailability(ENGINE_ENV).any).toBe(true);
     expect(canonicalizeEngineWebhookUrl(ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL)).toBe(
-      "https://complilink.mx/api/auditapatron/webhook",
+      ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL,
     );
-    expect(deriveHeliosBridgeUrl(ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL)).toBe(
-      "https://complilink.mx/api/internal/helios/bridge",
-    );
+    expect(
+      canonicalizeEngineWebhookUrl("https://www.complilink.mx/api/integrations/auditapatron/bridge"),
+    ).toBe("https://complilink.mx/api/integrations/auditapatron/bridge");
   });
 
   it("devuelve aún no configurado sin llamar al puente", async () => {
@@ -83,7 +83,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("firma el JSON exacto, evita www y no sigue redirects", async () => {
+  it("pega a la URL del engine, firma el JSON exacto y manda Bearer = HMAC", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -114,8 +114,8 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(JSON.stringify(result)).not.toMatch(/APIMarket|Helios|CompliLink|connector/i);
 
     const posted = readPosted(fetchImpl);
-    expect(posted.url).toBe("https://complilink.mx/api/internal/helios/bridge");
-    expect(posted.url).not.toContain("www.");
+    expect(posted.url).toBe(ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL);
+    expect(posted.url).not.toContain("/api/internal/helios/bridge");
     expect(posted.init.redirect).toBe("manual");
     const headers = posted.init.headers as Record<string, string>;
     expect(headers["X-AuditaPatron-Signature"]).toBe(
@@ -126,8 +126,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       ),
     );
     expect(headers.Authorization).toBe(`Bearer ${ENGINE_ENV.AUDITAPATRON_ENGINE_HMAC_SECRET}`);
-    const body = JSON.parse(posted.body) as { action: string; autonomousInput: { nss: string; curp: string; rfc: string } };
+    const body = JSON.parse(posted.body) as Record<string, unknown>;
     expect(body.action).toBe(OFFICIAL_CHECK_ACTION);
+    expect(body.providerId).toBeUndefined();
     expect(body.autonomousInput).toEqual({
       nss: "12345678901",
       curp: "DILE970625HBCZPM01",
@@ -153,6 +154,25 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.overallDetail).not.toMatch(/HMAC|Helios|cumple/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("muestra 404 de proveedor como no se pudo, no como consulta hecha", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Provider not found" }), { status: 404 }),
+    );
+    const result = await runOfficialGovernmentCheck({
+      identity: { nss: "12345678901", curp: "DILE970625HBCZPM01", rfc: "VECJ880326XXX" },
+      consentGranted: true,
+      env: ENGINE_ENV,
+      now: new Date("2026-09-21T12:00:00.000Z"),
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    expect(result.overallStatus).toBe("no_se_pudo");
+    expect(result.overallLabel).toBe("No se pudo");
+    expect(result.overallDetail).toMatch(/todavía no hay una respuesta de IMSS o SAT/i);
+    expect(result.overallDetail).not.toMatch(/Provider|Helios|cumple/i);
+    expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
   });
 
   it("degrada 503 y timeout a pendiente", async () => {
