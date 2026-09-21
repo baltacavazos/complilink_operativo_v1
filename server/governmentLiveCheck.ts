@@ -237,7 +237,7 @@ export function collectWorkerOfficialIdentity(facts: {
   return {
     nss: fromFacts.nss ?? extracted.nss,
     curp: fromFacts.curp ?? extracted.curp,
-    rfc: fromFacts.rfc ? rfc : rfc && rfc !== employerRfc ? rfc : null,
+    rfc: rfc && rfc !== employerRfc ? rfc : null,
   };
 }
 
