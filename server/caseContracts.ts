@@ -254,6 +254,15 @@ function extractXmlTags(text: string, localName: string) {
   return text.match(new RegExp(`<[^>]*\\b${escapedName}\\b[^>]*>`, "gi")) ?? [];
 }
 
+/** Conserva Emisor/Receptor/Nómina si el certificado empuja el complemento fuera del recorte. */
+export function derivePayrollXmlTextHint(xml: string) {
+  const compact = xml.replace(/^\uFEFF/, "").replace(/\s+/g, " ").trim();
+  const identityTags = (compact.match(/<[^>]*\b(?:Emisor|Receptor|Nomina)\b[^>]*>/gi) ?? []).join(" ");
+  const head = compact.slice(0, 6000);
+  if (!identityTags || head.includes(identityTags)) return head;
+  return `${head} ${identityTags}`.replace(/\s+/g, " ").trim().slice(0, 20000);
+}
+
 function extractTagAttribute(tag: string, attributeName: string) {
   return extractXmlAttribute(tag, attributeName);
 }

@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -537,18 +538,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
   });
 
   it("despacha SAT con el RFC de la persona, Infonavit con CURP e IMSS con NSS", () => {
-    const textHint = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:nomina12="http://www.sat.gob.mx/nomina12" Total="4725.60">',
-      '<cfdi:Emisor Rfc="ECC190605VA1" Nombre="EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V." />',
-      '<cfdi:Receptor Rfc="UIPD9211257I0" Nombre="ULISES IRVIN PEREZ DOMINGUEZ" />',
-      "<cfdi:Complemento>",
-      '<nomina12:Nomina Version="1.2">',
-      '<nomina12:Receptor Curp="UIPD921125HYNCLD03" NumSeguridadSocial="84129214965" />',
-      "</nomina12:Nomina>",
-      "</cfdi:Complemento>",
-      "</cfdi:Comprobante>",
-    ].join("");
+    const textHint = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
     const analysis = buildPreliminaryLaborAnalysis({
       fileName: "recibo-nomina.xml",
       mimeType: "application/xml",

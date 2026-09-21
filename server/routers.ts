@@ -96,6 +96,7 @@ import {
   buildDocumentId,
   buildDocumentStorageKey,
   buildPreliminaryLaborAnalysis,
+  derivePayrollXmlTextHint,
   buildSharedEngineEnvelope,
   CASE_PRIORITIES,
   CASE_STATUSES,
@@ -1512,17 +1513,9 @@ function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buff
   }
 }
 
-function collectXmlIdentityTags(xml: string) {
-  return (xml.match(/<[^>]*\b(?:Emisor|Receptor|Nomina)\b[^>]*>/gi) ?? []).join(" ");
-}
-
 async function buildBinaryDerivedTextHint(params: { mimeType: string; binary: Buffer }) {
   if (params.mimeType === "text/xml" || params.mimeType === "application/xml") {
-    const compact = params.binary.toString("utf8").replace(/^\uFEFF/, "").replace(/\s+/g, " ").trim();
-    const identityTags = collectXmlIdentityTags(compact);
-    const head = compact.slice(0, 6000);
-    if (!identityTags || head.includes(identityTags)) return head;
-    return `${head} ${identityTags}`.replace(/\s+/g, " ").trim().slice(0, 20000);
+    return derivePayrollXmlTextHint(params.binary.toString("utf8"));
   }
 
   if (params.mimeType === DOCX_MIME_TYPE) {

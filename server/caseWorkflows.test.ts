@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
@@ -1928,18 +1929,7 @@ describe("appRouter case workflows", () => {
       },
     ] as never);
 
-    const xml = [
-      '<?xml version="1.0" encoding="UTF-8"?>',
-      '<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:nomina12="http://www.sat.gob.mx/nomina12" Total="4725.60">',
-      '<cfdi:Emisor Rfc="ECC190605VA1" Nombre="EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V." />',
-      '<cfdi:Receptor Rfc="UIPD9211257I0" Nombre="ULISES IRVIN PEREZ DOMINGUEZ" />',
-      "<cfdi:Complemento>",
-      '<nomina12:Nomina Version="1.2">',
-      '<nomina12:Receptor Curp="UIPD921125HYNCLD03" NumSeguridadSocial="84129214965" />',
-      "</nomina12:Nomina>",
-      "</cfdi:Complemento>",
-      "</cfdi:Comprobante>",
-    ].join("");
+    const xml = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
 
     const caller = appRouter.createCaller(
       createProtectedContext({
@@ -1970,6 +1960,17 @@ describe("appRouter case workflows", () => {
         originalName: "recibo-nomina.xml",
       }),
     );
+    const classification = vi
+      .mocked(db.upsertCanonicalContracts)
+      .mock.calls.flatMap((call) => call[0] ?? [])
+      .find((item) => item?.contractType === "classification");
+    const payload = JSON.parse(String(classification?.payload)) as {
+      confirmedData?: { workerRfc?: string; employerRfc?: string; payrollCurp?: string };
+    };
+    expect(payload.confirmedData?.workerRfc).toBe("UIPD9211257I0");
+    expect(payload.confirmedData?.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(payload.confirmedData?.employerRfc).toBe("ECC190605VA1");
+    expect(payload.confirmedData?.workerRfc).not.toBe(payload.confirmedData?.employerRfc);
   });
 
   it("rejects draft analysis when a normal user submits a document that appears to belong to another person", async () => {
