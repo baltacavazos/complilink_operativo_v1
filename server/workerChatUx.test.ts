@@ -160,6 +160,98 @@ describe("workerChatUx grounding", () => {
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
+  it("fixture 53 con RFC UIPD no deja Falta un RFC real ni un Pendiente viejo", () => {
+    const started = "2026-09-21T15:30:00.000Z";
+    const gap = "Falta un RFC real en el recibo para consultar SAT.";
+    const receiptDocument = {
+      documentType: "payroll_receipt",
+      originalName: "recibo-53.xml",
+      heliosOpinion: {
+        summary: "El recibo muestra NSS, CURP y RFC de la persona trabajadora.",
+        rawPayload: {
+          preliminaryAnalysis: {
+            confirmedData: {
+              payrollNss: "84129214965",
+              curp: "UIPD921125HYNCLD03",
+              employerRfc: "ECC190605VA1",
+              receptor_rfc: "UIPD9211257I0",
+              payrollNetAmount: "$4,725.60",
+            },
+          },
+        },
+      },
+    };
+    const staleCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "pendiente",
+      overallLabel: "Pendiente",
+      overallDetail: gap,
+      checkedAt: started,
+      identity: { nss: true, curp: false, rfc: false },
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "pendiente",
+          label: "Pendiente",
+          detail: "Todavía no hay una respuesta oficial nueva.",
+          checkedAt: started,
+          used: { nss: true, curp: false, rfc: false },
+          honesty: "pending",
+        },
+        {
+          source: "sat",
+          sourceLabel: "SAT",
+          status: "sin_datos",
+          label: "Faltan datos",
+          detail: gap,
+          checkedAt: started,
+          used: { nss: false, curp: false, rfc: false },
+          honesty: "failed",
+          motivoFallo: gap,
+          missingFields: ["rfc"],
+        },
+        {
+          source: "infonavit",
+          sourceLabel: "Infonavit",
+          status: "sin_datos",
+          label: "Faltan datos",
+          detail: "Falta tu CURP en el recibo para consultar.",
+          checkedAt: started,
+          used: { nss: false, curp: false, rfc: false },
+          honesty: "failed",
+          missingFields: ["curp"],
+        },
+      ],
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [receiptDocument],
+      opinion: receiptDocument.heliosOpinion,
+      officialCheck: staleCheck,
+      caseOnly: true,
+      nowMs: new Date(started).getTime() + 120_000,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué dice mi consulta?" });
+    const invented = sanitizeWorkerChatAnswer(
+      "IMSS: Pendiente. SAT/Infonavit: Faltan datos. Falta un RFC real en el recibo para consultar SAT.",
+      grounding,
+      { prompt: "¿Qué dice mi consulta?" },
+    );
+    const blob = [answer, invented, grounding.officialBriefing.statusLines.join("\n")].join("\n");
+
+    expect(grounding.laborFacts.workerRfc).toBe("UIPD9211257I0");
+    expect(grounding.officialBriefing.facts.workerRfc).toBe("UIPD9211257I0");
+    expect(grounding.officialBriefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => /SAT: Falló/.test(line))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => /Infonavit: Falló/.test(line))).toBe(true);
+    expect(blob).not.toMatch(/Falta un RFC/i);
+    expect(blob).not.toMatch(/RFC real/i);
+    expect(blob).not.toMatch(/IMSS: Pendiente/);
+    expect(blob).not.toMatch(/Faltan datos/);
+    expect(blob.replace(/No inventamos que tu patr[oó]n cumple/g, "")).not.toMatch(/\bcumple\b|\bcobro\b/i);
+  });
+
   it("lastUpload NSS sin flags del servidor impide la cita exacta y la recorta si el modelo la inventa", () => {
     const invented = sanitizeWorkerChatAnswer(
       "Falta tu NSS y RFC en el recibo para consultar.",

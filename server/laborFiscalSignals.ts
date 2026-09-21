@@ -2,6 +2,7 @@ import {
   humanizeStructuredFieldLabel,
   isWorkerSystemStructuredField,
 } from "./workerVisibleExtraction";
+import { resolveBriefingWorkerRfc } from "@shared/officialCheckCopy";
 import { extractReceiptOfficialIdentity } from "./governmentLiveCheck";
 
 type RecordLike = Record<string, unknown>;
@@ -76,7 +77,7 @@ const FACT_ALIASES: Record<keyof LaborFiscalStructuredFacts, string[]> = {
   perceptions: ["payrollperceptions", "percepciones", "totalpercepciones", "grossamount"],
   deductions: ["payrolldeductions", "deducciones", "totaldeducciones", "deductions"],
   employerRfc: ["employerrfc", "rfcpayrollissuer", "rfcemisor", "rfcpatron"],
-  workerRfc: ["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker", "rfcempleado", "rfcreceptorcfdi"],
+  workerRfc: ["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker", "rfcempleado", "rfcreceptorcfdi", "receptorrfc", "rfcdeltrabajador"],
   nss: [
     "payrollnss",
     "nss",
@@ -227,14 +228,18 @@ export function extractStructuredLaborFiscalFacts(
 ): LaborFiscalStructuredFacts {
   const employerRfc = readAliasedFact(document, FACT_ALIASES.employerRfc);
   const extracted = extractReceiptOfficialIdentity(documentIdentityHaystack(document));
-  const workerRfc = readAliasedFact(document, FACT_ALIASES.workerRfc) ?? extracted.rfc;
+  const { confirmedData, estimatedData } = collectAnalysisRecords(document);
+  const workerRfc = resolveBriefingWorkerRfc(
+    [readAliasedFact(document, FACT_ALIASES.workerRfc), extracted.rfc, confirmedData, estimatedData],
+    employerRfc,
+  );
   return {
     period: readAliasedFact(document, FACT_ALIASES.period),
     netAmount: readAliasedFact(document, FACT_ALIASES.netAmount),
     perceptions: readAliasedFact(document, FACT_ALIASES.perceptions),
     deductions: readAliasedFact(document, FACT_ALIASES.deductions),
     employerRfc,
-    workerRfc: workerRfc && workerRfc !== employerRfc ? workerRfc : null,
+    workerRfc,
     nss: readAliasedFact(document, FACT_ALIASES.nss) ?? extracted.nss,
     curp: readAliasedFact(document, FACT_ALIASES.curp) ?? extracted.curp,
     employerRegistration: readAliasedFact(document, FACT_ALIASES.employerRegistration),

@@ -4,6 +4,7 @@ import {
   CASE_ADVISOR_FALLO_RULE,
   CASE_ADVISOR_RULE,
   WORKER_CHAT_NO_CONSULTA_EMPTY,
+  alignVisibleChatWithBriefing,
   buildNoLiveOfficialAnswer,
   buildOfficialCaseBriefing,
   buildOfficialChatStarterQuestions,
@@ -609,5 +610,116 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.statusLines.join(" ")).toMatch(/no de AuditaPatrón/);
     expect(briefing.statusLines.join(" ")).not.toMatch(/Falta tu NSS/);
     expect(JSON.stringify(briefing.statusLines)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
+  });
+
+  it("fixture 53 UIPD + CURP + NSS no pide RFC real y cita el mismo Falló de la tarjeta", () => {
+    const started = "2026-09-21T15:30:00.000Z";
+    const facts = {
+      nss: "84129214965",
+      curp: "UIPD921125HYNCLD03",
+      workerRfc: "UIPD9211257I0",
+      employerRfc: "ECC190605VA1",
+      netAmount: "$4,725.60",
+    };
+    const gap = "Falta un RFC real en el recibo para consultar SAT.";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt: started,
+        identity: { nss: false, curp: false, rfc: false },
+        overallDetail: gap,
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt: started,
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de IMSS."],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: gap,
+            checkedAt: started,
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: [gap],
+            motivoFallo: gap,
+            missingFields: ["rfc"],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: "Falta tu CURP en el recibo para consultar.",
+            checkedAt: started,
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta tu CURP en el recibo para consultar."],
+            missingFields: ["curp"],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "pending",
+            fecha: started,
+            hechos: ["Todavía no hay una respuesta oficial nueva de IMSS."],
+            motivoFallo: null,
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: started,
+            hechos: [gap],
+            motivoFallo: gap,
+            missingFields: ["rfc"],
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: started,
+            hechos: ["Falta tu CURP en el recibo para consultar."],
+            motivoFallo: "Falta tu CURP en el recibo para consultar.",
+            missingFields: ["curp"],
+          },
+        },
+      }),
+      facts,
+      nowMs: new Date(started).getTime() + 120_000,
+    });
+    const prompt = formatOfficialCaseBriefingForPrompt(briefing);
+    const answer = buildNoLiveOfficialAnswer(briefing);
+    const staleHistory =
+      "IMSS: Pendiente. SAT/Infonavit: Faltan datos. Falta un RFC real en el recibo para consultar SAT.";
+    const aligned = alignVisibleChatWithBriefing(staleHistory, briefing);
+    const visible = [
+      JSON.stringify(briefing),
+      promptWithoutForbidRule(prompt),
+      answer.clearAnswer,
+      answer.known,
+      answer.missing,
+      aligned,
+    ].join("\n");
+
+    expect(briefing.facts.workerRfc).toBe("UIPD9211257I0");
+    expect(briefing.missingIdentity).not.toContain("RFC");
+    expect(briefing.officialCheck?.overallStatus).toBe("no_se_pudo");
+    expect(briefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /SAT: Falló/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /Infonavit: Falló/.test(line))).toBe(true);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/Pendiente|Faltan datos/);
+    expect(visible).not.toMatch(/Falta un RFC/i);
+    expect(visible).not.toMatch(/RFC real/i);
+    expect(aligned).toMatch(/IMSS: Falló/);
+    expect(aligned).toMatch(/SAT: Falló/);
+    expect(aligned).not.toMatch(/Pendiente|Faltan datos/);
+    expect(JSON.stringify({ briefing, answer, aligned })).not.toMatch(/\bcumple\b|\bcobro\b/i);
   });
 });

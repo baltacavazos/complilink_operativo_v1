@@ -143,7 +143,9 @@ import {
   buildOfficialCheckHeadline,
   hasLiveOfficialResult,
   identityFlagsFromReceiptValues,
+  mergeCardFailedOfficialCheck,
   reconcileOfficialCheckWithIdentity,
+  resolveBriefingWorkerRfc,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -585,6 +587,38 @@ function readLatestBridgeSmokeStatus() {
   return readBridgeSmokeMonitoringSnapshot();
 }
 const auditarTargetTypeSchema = z.enum(["payroll_receipt", "cfdi", "contract", "imss", "evidence"]);
+
+function resolveChatReceiptIdentity(
+  receipt: { workerRfc?: string; employerRfc?: string } | undefined,
+  labor: { workerRfc?: string | null; employerRfc?: string | null },
+  social: { workerRfc?: string | null; employerRfc?: string | null } | null | undefined,
+) {
+  const employerRfc = receipt?.employerRfc || labor.employerRfc || social?.employerRfc || null;
+  return {
+    employerRfc,
+    workerRfc: resolveBriefingWorkerRfc([receipt?.workerRfc, labor.workerRfc, social?.workerRfc], employerRfc),
+  };
+}
+const cardOfficialCheckInput = z.object({
+  overallStatus: z.literal("no_se_pudo"),
+  checkedAt: z.string().max(40).nullable().optional(),
+  identity: z.object({
+    nss: z.boolean(),
+    curp: z.boolean(),
+    rfc: z.boolean(),
+  }),
+  checks: z
+    .array(
+      z.object({
+        source: z.enum(["imss", "sat", "infonavit"]),
+        status: z.enum(["vivo", "pendiente", "no_se_pudo", "no_configurado", "sin_datos", "sin_permiso"]),
+        checkedAt: z.string().max(40).nullable().optional(),
+        detail: z.string().max(400).optional(),
+      }),
+    )
+    .max(3)
+    .optional(),
+});
 const auditarHistoryFilterSchema = z.enum(["all", "document", "response", "summary"]);
 const auditarCaptureModeSchema = z.enum(["camera", "file"]);
 const commercePlanKeySchema = z.enum(["free", "essential", "pro"]);
@@ -3659,6 +3693,7 @@ export const appRouter = router({
             })
             .optional(),
           pendingSinceMs: z.number().finite().optional(),
+          cardOfficialCheck: cardOfficialCheckInput.optional(),
           conversationHistory: z.preprocess(
             (value) => (value == null ? undefined : capWorkerChatConversationHistory(value)),
             z
@@ -3727,28 +3762,22 @@ export const appRouter = router({
           documents,
           events: detail.events,
         });
+        const cardOfficialCheck = mergeCardFailedOfficialCheck(
+          socialSecurityForChat.officialCheck,
+          input.cardOfficialCheck,
+        );
         const officialBriefing = buildOfficialCaseBriefing({
-          officialCheck: socialSecurityForChat.officialCheck,
+          officialCheck: cardOfficialCheck,
           facts: {
             ...(socialSecurityForChat.facts ?? laborSignals.facts),
             nss: input.receiptFacts?.nss || laborSignals.facts.nss || socialSecurityForChat.facts?.nss,
             curp: input.receiptFacts?.curp || laborSignals.facts.curp || socialSecurityForChat.facts?.curp,
-            workerRfc:
-              input.receiptFacts?.workerRfc ||
-              laborSignals.facts.workerRfc ||
-              socialSecurityForChat.facts?.workerRfc,
-            employerRfc:
-              input.receiptFacts?.employerRfc ||
-              laborSignals.facts.employerRfc ||
-              socialSecurityForChat.facts?.employerRfc,
-            netAmount:
-              input.receiptFacts?.netAmount ||
-              laborSignals.facts.netAmount ||
-              socialSecurityForChat.facts?.netAmount,
+            ...resolveChatReceiptIdentity(input.receiptFacts, laborSignals.facts, socialSecurityForChat.facts),
+            netAmount: input.receiptFacts?.netAmount || laborSignals.facts.netAmount || socialSecurityForChat.facts?.netAmount,
             period: input.receiptFacts?.period || laborSignals.facts.period || socialSecurityForChat.facts?.period,
           },
-          chatAnchor: socialSecurityForChat.officialCheck?.chatAnchor ?? null,
-          reciboVsOficial: socialSecurityForChat.officialCheck?.reciboVsOficial ?? null,
+          chatAnchor: cardOfficialCheck?.chatAnchor ?? null,
+          reciboVsOficial: cardOfficialCheck?.reciboVsOficial ?? null,
           nowMs: Date.now(),
           pendingSinceMs: input.pendingSinceMs ?? null,
         });
@@ -3758,7 +3787,7 @@ export const appRouter = router({
           missingDocument: missingDocuments[0] ?? null,
           multiDocUpsell: scopedChat.upsell,
           officialDigest,
-          officialCheck: socialSecurityForChat.officialCheck,
+          officialCheck: cardOfficialCheck,
           officialBriefing,
           chatAnchor: officialBriefing.chatAnchor,
           reciboVsOficial: officialBriefing.reciboVsOficial,
@@ -3773,7 +3802,7 @@ export const appRouter = router({
           documentsCount: chatDocuments.length,
           documents: chatDocuments,
           missingDocuments,
-          officialCheck: socialSecurityForChat.officialCheck,
+          officialCheck: cardOfficialCheck,
           officialBriefing,
         });
         const disclaimer = WORKER_CHAT_DISCLAIMER;

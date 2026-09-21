@@ -110,6 +110,7 @@ export function identityFlagsFromFacts(facts: OfficialBriefingFacts): OfficialId
     curp: facts.curp,
     rfc: facts.workerRfc,
     workerRfc: facts.workerRfc,
+    employerRfc: facts.employerRfc,
   });
 }
 
@@ -137,7 +138,7 @@ export function officialChatIdentityGapDetail(
   facts?: OfficialBriefingFacts | null,
 ): string | null {
   const nssVisible = identity.nss || looksLikeOfficialNss(facts?.nss);
-  const rfcVisible = identity.rfc || looksLikeRealWorkerRfc(facts?.workerRfc);
+  const rfcVisible = identity.rfc || looksLikeRealWorkerRfc(facts?.workerRfc, facts?.employerRfc);
   if (nssVisible && rfcVisible) {
     return identity.curp || looksLikeOfficialCurp(facts?.curp)
       ? null
@@ -461,6 +462,41 @@ export function buildOfficialCaseBriefing(params: {
   };
 }
 
+const STALE_SOURCE_STATUS_RE = (source: string) =>
+  new RegExp(
+    `${source}:\\s*(?:Pendiente|Faltan datos)(?:\\s*·\\s*\\d{2}/\\d{2}/\\d{4})?(?:\\s*·\\s*[^\\n.]*)?`,
+    "gi",
+  );
+
+/** Cita y historial usan el mismo Falló de la tarjeta, no un Pendiente viejo. */
+export function alignVisibleChatWithBriefing(
+  text: string,
+  briefing?: Pick<OfficialCaseBriefing, "statusLines" | "facts"> | null,
+): string {
+  const raw = String(text ?? "");
+  if (!raw.trim()) return "";
+  const identity = briefing ? identityFlagsFromFacts(briefing.facts) : null;
+  let next = stripContradictoryMissingIdentityCopy(raw, identity, briefing?.facts);
+  const failedLines = (briefing?.statusLines ?? []).filter((line) => /:\s*Falló/.test(line));
+  if (failedLines.length > 0) {
+    const sat = failedLines.find((line) => line.startsWith("SAT:"));
+    const infonavit = failedLines.find((line) => line.startsWith("Infonavit:"));
+    if (sat || infonavit) {
+      next = next.replace(/SAT\/Infonavit:\s*Faltan datos(?:\s*·\s*\d{2}\/\d{2}\/\d{4})?/gi, [sat, infonavit].filter(Boolean).join(". "));
+    }
+    for (const line of failedLines) {
+      const source = line.match(/^(IMSS|SAT|Infonavit)/)?.[1];
+      if (!source) continue;
+      next = next.replace(STALE_SOURCE_STATUS_RE(source), line.trim());
+    }
+    next = next.replace(
+      /IMSS:\s*Pendiente[^.\n]{0,80}SAT\/Infonavit:\s*Faltan datos[^.\n]*/gi,
+      failedLines.join(". "),
+    );
+  }
+  return next.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefing): string {
   const official = briefing.hasOfficialConsulta
     ? briefing.statusLines.length > 0
@@ -484,6 +520,12 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
     : nssAlreadyOnReceipt
       ? "Hecho fijo: el recibo ya tiene NSS. PROHIBIDO escribir «Falta tu NSS» o «Falta tu NSS y RFC en el recibo para consultar.» Si el NSS ya está en el recibo, no lo niegues."
       : "En el recibo no se alcanzó a leer un NSS.";
+  const personRfc = looksLikeRealWorkerRfc(briefing.facts.workerRfc, briefing.facts.employerRfc)
+    ? briefing.facts.workerRfc
+    : null;
+  const rfcFact = personRfc
+    ? `Hecho fijo del recibo: RFC de la persona trabajadora ${personRfc}. Si ya está en el recibo, no lo niegues ni pidas otro para consultar SAT.`
+    : "";
   const grounded = stripContradictoryMissingIdentityCopy(
     [
       CASE_ADVISOR_RULE,
@@ -502,7 +544,7 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
     identityFlagsFromFacts(briefing.facts),
     briefing.facts,
   );
-  return `${nssFact}\n${grounded}`;
+  return [rfcFact, nssFact, alignVisibleChatWithBriefing(grounded, briefing)].filter(Boolean).join("\n");
 }
 
 export function buildPayWellFallback(briefing: OfficialCaseBriefing): {

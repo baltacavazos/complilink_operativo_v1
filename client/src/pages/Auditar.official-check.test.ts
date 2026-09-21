@@ -33,6 +33,9 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("lastUploadFactSignal.nss");
     expect(source).toContain("lastUploadFactSignal.workerRfc");
     expect(source).toContain("receiptFacts:");
+    expect(source).toContain("cardOfficialCheck");
+    expect(source).toContain("resolveBriefingWorkerRfc");
+    expect(source).toContain("alignVisibleChatWithBriefing");
     expect(source).toContain("officialCaseBriefing.facts.nss");
     expect(source).toContain("officialNowMs");
     expect(source).toContain("nowMs: officialNowMs");
