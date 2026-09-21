@@ -3,6 +3,7 @@
  * Español plano, «Asesor laboral», secciones fijas y sin jerga interna.
  */
 
+import { stripInstituteBlameCopy } from "./officialCheckCopy";
 import {
   OFFICIAL_SOURCES_HEADING,
   maskOfficialDigestSpans,
@@ -86,7 +87,7 @@ export const WORKER_CHAT_SHEET_COPY = {
 export const WORKER_ADVISOR_VOICE_NOTE = [
   "Habla solo con el resultado de TU consulta y el recibo de ESTE expediente.",
   "Si no hay resultado de TU consulta, una frase y el botón Consultar. Nada de consejos genéricos.",
-  "Si el estado es Falló: AuditaPatrón sí consultó. Quien no contestó o está en mantenimiento es el instituto, no AuditaPatrón. Sin tips laborales genéricos.",
+  "Si IMSS, SAT o Infonavit no contestaron, dilo en un solo párrafo: el recibo puede estar leído, pero aún no sabemos si el patrón está bien dado de alta. No escribas Falló ni culpes a AuditaPatrón. Sin tips laborales genéricos.",
   "Nunca inventes cumple, alta vigente ni salario oficial si no vienen en los hechos de la consulta.",
   "Español sencillo y claro. Sin tecnicismos, sin citar autores ni doctrina por citar.",
   "Nunca te presentes como Helios ni uses jerga de ingeniería.",
@@ -240,6 +241,7 @@ export function sanitizeWorkerChatCopy(value?: string | null): string | null {
   next = next.replace(/\bForensic\b/gi, "revisión documental");
   next = stripInventedLegalCitations(next);
   next = stripLiveValidationClaims(next);
+  next = stripInstituteBlameCopy(next);
   next = collapseCopy(next);
   return next;
 }

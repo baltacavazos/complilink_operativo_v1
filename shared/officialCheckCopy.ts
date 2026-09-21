@@ -18,12 +18,12 @@ export type OfficialCheckStatus = (typeof OFFICIAL_CHECK_STATUSES)[number];
 
 export const OFFICIAL_CHECK_BUTTON = "Consultar IMSS y SAT";
 export const OFFICIAL_CHECK_CONSENT =
-  "Doy permiso para consultar IMSS y SAT con mi NSS, CURP o RFC que ya aparecen en mis papeles. Solo para ver si hay una respuesta de hoy. No inventamos que tu patrón cumple.";
+  "Autorizo que pregunten a IMSS y SAT con los datos de mi recibo, solo para ver la respuesta de hoy.";
 
 export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = {
   vivo: "Vivo",
   pendiente: "Pendiente",
-  no_se_pudo: "Falló",
+  no_se_pudo: "Sin respuesta",
   no_configurado: "Aún no configurado",
   sin_datos: "Faltan datos",
   sin_permiso: "Falta tu permiso",
@@ -35,12 +35,40 @@ export const OFFICIAL_SOURCE_LABEL: Record<OfficialCheckSource, string> = {
   infonavit: "Infonavit",
 };
 
-export const OFFICIAL_FAILED_BLAME = "El fallo es del instituto, no de AuditaPatrón.";
-export const OFFICIAL_FAILED_BLAME_PLURAL = "El fallo es de ellos, no de AuditaPatrón.";
-export const OFFICIAL_FAILED_NEXT_STEP =
-  "Inténtalo más tarde. El instituto no contestó; el fallo es de ellos, no de AuditaPatrón.";
+export const INSTITUTE_SILENCE_VERDICT =
+  "Hoy no pudimos confirmar con IMSS, SAT e Infonavit";
+export const INSTITUTE_SILENCE_WHAT_HAPPENED =
+  "Pedimos la información a esas oficinas y hoy no hubo respuesta (a veces están saturadas o en mantenimiento).";
+export const INSTITUTE_SILENCE_MEANING =
+  "Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado ahí. Eso no quiere decir que te estén haciendo trampa; solo que hoy no se pudo comprobar.";
+export const INSTITUTE_SILENCE_NEXT =
+  "Vuelve a consultar mañana. Si quieres, pregunta al asesor: «¿qué implica esto para mi pago?»";
+export const INSTITUTE_SILENCE_SMALL =
+  "Si algo falla al preguntar otra vez, no es por tu recibo.";
+export const INSTITUTE_SILENCE_RETRY = "Probar de nuevo mañana";
+export const INSTITUTE_SILENCE_ASK = "Preguntar qué significa";
+export const INSTITUTE_SILENCE_CHAT =
+  "Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.";
+export const INSTITUTE_WAITING_HEADLINE =
+  "Todavía esperamos respuesta de IMSS, SAT e Infonavit";
+export const INSTITUTE_WAITING_DETAIL =
+  "Pedimos la información y hoy aún no contestan. Si no hay respuesta, te lo diremos.";
+
+export const OFFICIAL_FAILED_NEXT_STEP = "Vuelve a consultar mañana.";
 export const OFFICIAL_FAILED_MISSING =
-  "El instituto no contestó. El fallo es del instituto, no de AuditaPatrón.";
+  "Hoy no hubo respuesta. Aún no podemos decir si tu patrón está bien dado de alta.";
+
+const INSTITUTE_BLAME_RE =
+  /el fallo es del instituto, no de auditapatr[oó]n\.?|el fallo es de ellos, no de auditapatr[oó]n\.?|no de auditapatr[oó]n/gi;
+
+export function stripInstituteBlameCopy(value?: string | null): string {
+  return String(value ?? "")
+    .replace(INSTITUTE_BLAME_RE, "")
+    .replace(/Falló\s*·\s*\d{1,2}\/\d{1,2}\/\d{2,4}/g, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([.,;])/g, "$1")
+    .trim();
+}
 
 function uniqueOfficialSources(sources?: OfficialCheckSource[] | null): OfficialCheckSource[] {
   const seen = new Set<OfficialCheckSource>();
@@ -61,28 +89,79 @@ export function formatOfficialSourceList(sources?: OfficialCheckSource[] | null)
   return `${labels[0]}, ${labels[1]} e ${labels[2]}`;
 }
 
-function consultedTodayPhrase(sources?: OfficialCheckSource[] | null): string {
+export type InstituteSilencePresentation = {
+  verdict: string;
+  whatHappened: string;
+  meaning: string;
+  nextStep: string;
+  smallPrint: string;
+  retryLabel: string;
+  askLabel: string;
+  sourceLines: string[];
+  chat: string;
+};
+
+export function instituteSilenceVerdict(sources?: OfficialCheckSource[] | null): string {
   const unique = uniqueOfficialSources(sources);
-  if (unique.length === 0) return "Consultamos al instituto hoy.";
-  if (unique.length === 1) return `Consultamos al ${OFFICIAL_SOURCE_LABEL[unique[0]]} hoy.`;
-  return `Consultamos a ${formatOfficialSourceList(unique)} hoy.`;
+  if (unique.length === 0 || unique.length >= 3) return INSTITUTE_SILENCE_VERDICT;
+  return `Hoy no pudimos confirmar con ${formatOfficialSourceList(unique)}`;
 }
 
-/** Detalle canónico de Falló. Si solo falló una, la nombra. Si fallaron varias, un solo párrafo. */
-export function buildOfficialFailedDetail(sources?: OfficialCheckSource[] | null): string {
+export function instituteSilenceWhatHappened(sources?: OfficialCheckSource[] | null): string {
   const unique = uniqueOfficialSources(sources);
-  if (unique.length <= 1) {
-    return `${consultedTodayPhrase(unique)} El instituto no contestó (o está en mantenimiento). ${OFFICIAL_FAILED_BLAME} Inténtalo más tarde.`;
+  if (unique.length === 1) {
+    const name = OFFICIAL_SOURCE_LABEL[unique[0]];
+    return `Pedimos la información a ${name} y hoy no hubo respuesta (a veces está saturado o en mantenimiento).`;
   }
-  return `${consultedTodayPhrase(unique)} Esos institutos no contestaron (o están en mantenimiento). ${OFFICIAL_FAILED_BLAME_PLURAL} Inténtalo más tarde.`;
+  if (unique.length === 2) {
+    return `Pedimos la información a ${formatOfficialSourceList(unique)} y hoy no hubo respuesta (a veces están saturadas o en mantenimiento).`;
+  }
+  return INSTITUTE_SILENCE_WHAT_HAPPENED;
+}
+
+export function instituteSilenceChat(sources?: OfficialCheckSource[] | null): string {
+  const unique = uniqueOfficialSources(sources);
+  if (unique.length === 0 || unique.length >= 3) return INSTITUTE_SILENCE_CHAT;
+  return `Hoy pedimos datos a ${formatOfficialSourceList(unique)} y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.`;
+}
+
+export function instituteSilenceSourceLine(label: string): string {
+  return `${label} — sin respuesta hoy`;
+}
+
+export function buildInstituteSilencePresentation(
+  sources?: OfficialCheckSource[] | null,
+): InstituteSilencePresentation {
+  const unique = uniqueOfficialSources(sources);
+  const listed = unique.length > 0 ? unique : (["imss", "sat", "infonavit"] as const);
+  return {
+    verdict: instituteSilenceVerdict(unique),
+    whatHappened: instituteSilenceWhatHappened(unique),
+    meaning: INSTITUTE_SILENCE_MEANING,
+    nextStep: INSTITUTE_SILENCE_NEXT,
+    smallPrint: INSTITUTE_SILENCE_SMALL,
+    retryLabel: INSTITUTE_SILENCE_RETRY,
+    askLabel: INSTITUTE_SILENCE_ASK,
+    sourceLines: listed.slice(0, 3).map((source) => instituteSilenceSourceLine(OFFICIAL_SOURCE_LABEL[source])),
+    chat: instituteSilenceChat(unique),
+  };
+}
+
+/** Qué pasó cuando la oficina no contestó. Sin culpar a la app y sin la palabra Falló. */
+export function buildOfficialFailedDetail(sources?: OfficialCheckSource[] | null): string {
+  return instituteSilenceWhatHappened(sources);
 }
 
 export function buildOfficialMaintenanceDetail(sources?: OfficialCheckSource[] | null): string {
   const unique = uniqueOfficialSources(sources);
-  if (unique.length <= 1) {
-    return `${consultedTodayPhrase(unique)} El instituto está en mantenimiento. ${OFFICIAL_FAILED_BLAME} Inténtalo más tarde.`;
+  if (unique.length === 0) {
+    return "Pedimos la información y la oficina está en mantenimiento. Puedes intentar más tarde.";
   }
-  return `${consultedTodayPhrase(unique)} Esos institutos están en mantenimiento. ${OFFICIAL_FAILED_BLAME_PLURAL} Inténtalo más tarde.`;
+  const who = formatOfficialSourceList(unique);
+  if (unique.length === 1) {
+    return `Pedimos la información a ${who} y está en mantenimiento. Puedes intentar más tarde.`;
+  }
+  return `Pedimos la información a ${who} y están en mantenimiento. Puedes intentar más tarde.`;
 }
 
 export function buildOfficialFailedMotivo(
@@ -90,10 +169,8 @@ export function buildOfficialFailedMotivo(
   kind: "timeout" | "mantenimiento" | "generic" = "generic",
 ): string {
   const name = OFFICIAL_SOURCE_LABEL[source];
-  if (kind === "mantenimiento") {
-    return `El ${name} está en mantenimiento. ${OFFICIAL_FAILED_BLAME}`;
-  }
-  return `El ${name} no contestó. ${OFFICIAL_FAILED_BLAME}`;
+  if (kind === "mantenimiento") return `El ${name} está en mantenimiento.`;
+  return `El ${name} no contestó hoy.`;
 }
 
 export function looksLikeInstituteMaintenance(text?: string | null): boolean {
@@ -142,7 +219,7 @@ export function listFailedOfficialSourcesFromAnchor(
   );
 }
 
-/** Reescribe un Falló guardado (o vago) para que culpe al instituto, no a la app. */
+/** Reescribe un resultado sin respuesta para decir qué pasó, sin culpar a la app. */
 export function honestOfficialFailedDetail(
   summary?: Pick<OfficialCheckSummary, "overallStatus" | "overallDetail" | "checks" | "chatAnchor"> | null,
 ): string {
@@ -324,7 +401,7 @@ export const RECEIPT_OFFICIAL_COMPARISON_COPY = {
   no_se_pudo: {
     seenLine: "Esto vimos: no se pudo",
     nextStep: "Da permiso, revisa NSS, CURP y RFC, y pulsa Consultar IMSS y SAT otra vez.",
-    instituteNextStep: OFFICIAL_FAILED_NEXT_STEP,
+    instituteNextStep: INSTITUTE_SILENCE_NEXT,
   },
 } as const;
 
@@ -744,14 +821,27 @@ export function reconcileOfficialCheckWithIdentity(
           })
         : OFFICIAL_CHECK_STATUS_DETAIL[overallStatus];
 
+  const visibleChecks = checks.map((item) => {
+    if (item.status !== "no_se_pudo") {
+      return { ...item, label: OFFICIAL_CHECK_STATUS_LABEL[item.status] };
+    }
+    const kind = looksLikeInstituteMaintenance(item.detail ?? item.motivoFallo) ? "mantenimiento" : "timeout";
+    return {
+      ...item,
+      label: OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo,
+      detail: buildOfficialFailedMotivo(item.source, kind),
+      motivoFallo: item.motivoFallo ? buildOfficialFailedMotivo(item.source, kind) : item.motivoFallo,
+    };
+  });
+
   return {
     ...summary,
     identity: mergedIdentity,
-    checks,
+    checks: visibleChecks,
     chatAnchor: syncedAnchor ?? summary.chatAnchor,
     overallStatus,
     overallLabel: OFFICIAL_CHECK_STATUS_LABEL[overallStatus],
-    overallDetail,
+    overallDetail: stripInstituteBlameCopy(overallDetail),
   };
 }
 
@@ -1020,7 +1110,16 @@ export function formatOfficialCheckDate(iso: string | null | undefined) {
   return `${day}/${month}/${year}`;
 }
 
-export function buildOfficialCheckHeadline(summary: Pick<OfficialCheckSummary, "overallStatus" | "checkedAt">) {
+export function buildOfficialCheckHeadline(
+  summary: Pick<OfficialCheckSummary, "overallStatus" | "checkedAt"> &
+    Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>,
+) {
+  if (summary.overallStatus === "no_se_pudo") {
+    const fromChecks = listFailedOfficialSources(summary.checks);
+    const fromAnchor = listFailedOfficialSourcesFromAnchor(summary.chatAnchor);
+    return instituteSilenceVerdict(fromChecks.length > 0 ? fromChecks : fromAnchor);
+  }
+  if (summary.overallStatus === "pendiente") return INSTITUTE_WAITING_HEADLINE;
   const label = OFFICIAL_CHECK_STATUS_LABEL[summary.overallStatus];
   const date = formatOfficialCheckDate(summary.checkedAt);
   return date ? `${label} · ${date}` : label;
@@ -1028,10 +1127,10 @@ export function buildOfficialCheckHeadline(summary: Pick<OfficialCheckSummary, "
 
 export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando...";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
-  "Estamos consultando IMSS y SAT. Si el instituto no contesta, te lo decimos. Eso no es un fallo de AuditaPatrón.";
+  "Estamos preguntando a IMSS, SAT e Infonavit. Si hoy no contestan, te lo diremos.";
 export const OFFICIAL_CHECK_READY_HEADLINE = "Consulta IMSS y SAT";
 export const OFFICIAL_CHECK_READY_DETAIL =
-  "Con tu permiso consultamos IMSS y SAT. Si el instituto no contesta, te lo decimos. El fallo sería del instituto, no de AuditaPatrón. No inventamos que tu patrón cumple.";
+  "Con tu permiso preguntamos a IMSS y SAT. Si hoy no contestan, te lo diremos. No inventamos que tu patrón cumple.";
 
 export type OfficialCheckDisplayStatus = OfficialCheckStatus | "consultando" | "listo";
 
@@ -1041,6 +1140,7 @@ export type OfficialCheckDisplay = {
   buttonLabel: string;
   status: OfficialCheckDisplayStatus;
   showPermissionCopy: boolean;
+  silence?: InstituteSilencePresentation | null;
 };
 
 export function isPermissionBlockedStatus(status: OfficialCheckStatus | null | undefined) {
@@ -1069,7 +1169,7 @@ export function pickHonestOfficialCheck(params: {
 
 /**
  * Permiso primero. Con el checkbox marcado nunca se muestra «Falta tu permiso».
- * El CTA refleja Consultando / Vivo / Pendiente / Falló según la respuesta, no un veredicto inventado.
+ * El CTA refleja Consultando / Vivo / esperando / sin respuesta según la respuesta, no un veredicto inventado.
  */
 export function resolveOfficialCheckDisplay(params: {
   consentGranted: boolean;
@@ -1115,14 +1215,12 @@ export function resolveOfficialCheckDisplay(params: {
       if (honest.overallStatus === "sin_datos" && canDispatch) {
         if (honest.checkedAt || honest.chatAnchor || honest.reciboVsOficial) {
           return {
-            headline: buildOfficialCheckHeadline({
-              overallStatus: "pendiente",
-              checkedAt: honest.checkedAt,
-            }),
-            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
-            buttonLabel: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+            headline: INSTITUTE_WAITING_HEADLINE,
+            detail: INSTITUTE_WAITING_DETAIL,
+            buttonLabel: OFFICIAL_CHECK_BUTTON,
             status: "pendiente",
             showPermissionCopy: false,
+            silence: null,
           };
         }
         return {
@@ -1133,17 +1231,41 @@ export function resolveOfficialCheckDisplay(params: {
           showPermissionCopy: false,
         };
       }
+      if (honest.overallStatus === "no_se_pudo") {
+        const fromChecks = listFailedOfficialSources(honest.checks);
+        const fromAnchor = listFailedOfficialSourcesFromAnchor(honest.chatAnchor);
+        const silence = buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
+        return {
+          headline: silence.verdict,
+          detail: `${silence.whatHappened} ${silence.meaning} ${silence.nextStep}`,
+          buttonLabel: silence.retryLabel,
+          status: "no_se_pudo",
+          showPermissionCopy: false,
+          silence,
+        };
+      }
+      if (honest.overallStatus === "pendiente") {
+        return {
+          headline: INSTITUTE_WAITING_HEADLINE,
+          detail: looksLikeInstituteMaintenance(honest.overallDetail)
+            ? honest.overallDetail
+            : INSTITUTE_WAITING_DETAIL,
+          buttonLabel: OFFICIAL_CHECK_BUTTON,
+          status: "pendiente",
+          showPermissionCopy: false,
+          silence: null,
+        };
+      }
       return {
         headline: buildOfficialCheckHeadline(honest),
         detail:
           honest.overallStatus === "sin_datos" && !canDispatch && params.missingIdentityDetail
             ? params.missingIdentityDetail
-            : honest.overallStatus === "no_se_pudo"
-              ? honestOfficialFailedDetail(honest)
-              : honest.overallDetail,
+            : honest.overallDetail,
         buttonLabel: honest.overallLabel,
         status: honest.overallStatus,
         showPermissionCopy: false,
+        silence: null,
       };
     }
 

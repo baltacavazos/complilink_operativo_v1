@@ -131,8 +131,8 @@ describe("cases.guestOfficialCheck", () => {
     expect(result.officialCheck.consentGranted).toBe(true);
     expect(result.officialCheck.identity.nss).toBe(true);
     expect(result.officialCheck.overallStatus).toBe("no_configurado");
-    expect(result.officialCheckHeadline).toMatch(/Aún no configurado|Faltan datos|Falta tu permiso|Vivo|Pendiente|Falló/);
-    expect(result.officialCheckConsent).toMatch(/Doy permiso para consultar IMSS y SAT/);
+    expect(result.officialCheckHeadline).toMatch(/Aún no configurado|Faltan datos|Falta tu permiso|Vivo|Todavía esperamos|Hoy no pudimos confirmar/);
+    expect(result.officialCheckConsent).toMatch(/Autorizo que pregunten a IMSS y SAT/);
     expect(JSON.stringify(result)).not.toMatch(/Helios|CompliLink|HMAC|Manus|OTP/i);
   });
 
