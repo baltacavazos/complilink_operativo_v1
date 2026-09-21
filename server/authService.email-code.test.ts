@@ -68,6 +68,7 @@ function extractCodeFromEmailPayload(fetchMock: ReturnType<typeof vi.fn>) {
 describe("authService email code flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    delete process.env.SMOKE_AUTH;
     sdkMocks.createSessionToken.mockResolvedValue("session_token_value");
   });
 
@@ -142,5 +143,135 @@ describe("authService email code flow", () => {
     ).rejects.toMatchObject<AuthFlowError>({
       code: "INVALID_EMAIL_CODE",
     });
+  });
+
+  it("con SMOKE_AUTH=1 el correo smoke entra con 000000 y no manda OTP", async () => {
+    process.env.SMOKE_AUTH = "1";
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    dbMocks.getUserByEmail.mockResolvedValue(undefined);
+    dbMocks.upsertUser.mockResolvedValue(undefined);
+    dbMocks.getUserByOpenId.mockResolvedValue({
+      id: 2,
+      openId: "email:tester@auditapatron-smoke.test",
+      email: "tester@auditapatron-smoke.test",
+      name: "Tester",
+      loginMethod: "email",
+      role: "user",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      lastSignedIn: new Date("2026-01-01T00:00:00.000Z"),
+    });
+
+    await startEmailLogin({
+      req: makeReq(),
+      res: makeRes(),
+      email: "tester@auditapatron-smoke.test",
+      name: "Tester",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const verifyRes = makeRes();
+    const user = await completeEmailLogin({
+      req: makeReq(),
+      res: verifyRes,
+      email: "tester@auditapatron-smoke.test",
+      code: "000000",
+    });
+
+    expect(user.email).toBe("tester@auditapatron-smoke.test");
+    expect(sdkMocks.createSessionToken).toHaveBeenCalledOnce();
+    expect(verifyRes.cookie).toHaveBeenCalled();
+  });
+
+  it("con SMOKE_AUTH=1 un correo +smoke@ entra sin inbox", async () => {
+    process.env.SMOKE_AUTH = "1";
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    dbMocks.getUserByEmail.mockResolvedValue(undefined);
+    dbMocks.upsertUser.mockResolvedValue(undefined);
+    dbMocks.getUserByOpenId.mockResolvedValue({
+      id: 3,
+      openId: "email:qa+smoke@empresa.com",
+      email: "qa+smoke@empresa.com",
+      name: "qa+smoke@empresa.com",
+      loginMethod: "email",
+      role: "user",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+      lastSignedIn: new Date("2026-01-01T00:00:00.000Z"),
+    });
+
+    const user = await completeEmailLogin({
+      req: makeReq(),
+      res: makeRes(),
+      email: "qa+smoke@empresa.com",
+      code: "000000",
+    });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(user.email).toBe("qa+smoke@empresa.com");
+    expect(sdkMocks.createSessionToken).toHaveBeenCalledOnce();
+  });
+
+  it("con SMOKE_AUTH=1 un correo normal sigue exigiendo el OTP real", async () => {
+    process.env.SMOKE_AUTH = "1";
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ id: "email_normal" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await startEmailLogin({
+      req: makeReq(),
+      res: makeRes(),
+      email: "cliente.real@empresa.com",
+      name: "Cliente",
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    await expect(
+      completeEmailLogin({
+        req: makeReq(),
+        res: makeRes(),
+        email: "cliente.real@empresa.com",
+        code: "000000",
+      }),
+    ).rejects.toMatchObject<AuthFlowError>({
+      code: "INVALID_EMAIL_CODE",
+    });
+    expect(sdkMocks.createSessionToken).not.toHaveBeenCalled();
+  });
+
+  it("sin SMOKE_AUTH un correo smoke no salta el OTP", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ id: "email_smoke_off" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await startEmailLogin({
+      req: makeReq(),
+      res: makeRes(),
+      email: "flag-off@auditapatron-smoke.test",
+      name: "Tester",
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    await expect(
+      completeEmailLogin({
+        req: makeReq(),
+        res: makeRes(),
+        email: "flag-off@auditapatron-smoke.test",
+        code: "000000",
+      }),
+    ).rejects.toMatchObject<AuthFlowError>({
+      code: "INVALID_EMAIL_CODE",
+    });
+    expect(sdkMocks.createSessionToken).not.toHaveBeenCalled();
   });
 });
