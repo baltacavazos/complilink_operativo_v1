@@ -11,6 +11,8 @@ const { dbMocks } = vi.hoisted(() => ({
     createAuditLog: vi.fn(),
     getDocumentById: vi.fn(),
     resolveCompliLinkDocument: vi.fn(),
+    findLaborCaseByTraceOrId: vi.fn(),
+    findLatestCaseDocument: vi.fn(),
     registerCompliLinkWebhookEvent: vi.fn(),
     upsertCanonicalContract: vi.fn(),
     updateCompliLinkWebhookEvent: vi.fn(),
@@ -76,6 +78,60 @@ function buildReturnPayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function officialObligation(source: "sat" | "imss" | "infonavit", resultado: "vivo" | "no_se_pudo", reason: string) {
+  const live = resultado === "vivo";
+  return {
+    obligation: source,
+    honesty: live ? "live" : "failed",
+    status: live ? "vivo" : "failed",
+    resultado,
+    workerLabel: live ? "Hay respuesta oficial" : "Falló",
+    workerReason: reason,
+    checkedAt: "2026-09-21T18:00:00.000Z",
+    missingFields: [],
+    hechos: [reason],
+  };
+}
+
+function buildOfficialCheckReturnContract() {
+  const sat = officialObligation("sat", "vivo", "El SAT confirmó el RFC consultado.");
+  const imss = officialObligation("imss", "no_se_pudo", "IMSS no respondió en esta consulta.");
+  const infonavit = officialObligation("infonavit", "no_se_pudo", "Infonavit no respondió en esta consulta.");
+  const officialCheck = {
+    sat,
+    imss,
+    infonavit,
+    chatAnchor: {
+      sat: { fuente: "sat", estado: "live", resultado: "vivo", fecha: "2026-09-21T18:00:00.000Z", hechos: sat.hechos, motivoFallo: null },
+      imss: { fuente: "imss", estado: "failed", resultado: "no_se_pudo", fecha: "2026-09-21T18:00:00.000Z", hechos: imss.hechos, motivoFallo: imss.workerReason },
+      infonavit: { fuente: "infonavit", estado: "failed", resultado: "no_se_pudo", fecha: "2026-09-21T18:00:00.000Z", hechos: infonavit.hechos, motivoFallo: infonavit.workerReason },
+    },
+    nota: "SAT respondió. IMSS no se pudo consultar. Infonavit no se pudo consultar.",
+  };
+
+  return {
+    contractVersion: "auditapatron_return_contract_v1",
+    currentResponseEvent: {
+      eventId: "clx-official-check-001",
+      eventName: "document.processed.v1",
+      correlationId: "trace.bridge.case-001",
+      traceId: "trace.bridge.case-001",
+      documentId: null,
+      businessStatus: "accepted",
+      emittedAt: "2026-09-21T18:05:00.000Z",
+      result: {
+        officialCheck,
+        chatAnchor: officialCheck.chatAnchor,
+        nota: officialCheck.nota,
+        reciboVsOficial: null,
+      },
+    },
+    canonicalExamples: {
+      success: { eventName: "document.processed.v1", note: "ejemplo, no es esta consulta" },
+    },
+  };
+}
+
 function buildIncomingUploadPayload(overrides: Record<string, unknown> = {}) {
   return {
     event: "document.uploaded",
@@ -108,6 +164,8 @@ describe("auditaPatronReturnWebhook", () => {
     };
     dbMocks.getDocumentById.mockResolvedValue(resolvedDocument);
     dbMocks.resolveCompliLinkDocument.mockResolvedValue(resolvedDocument);
+    dbMocks.findLaborCaseByTraceOrId.mockResolvedValue(null);
+    dbMocks.findLatestCaseDocument.mockResolvedValue(null);
     dbMocks.upsertCanonicalContract.mockResolvedValue(undefined);
     dbMocks.addCaseEvent.mockResolvedValue(undefined);
     dbMocks.addOperationalAlert.mockResolvedValue(undefined);
@@ -643,6 +701,123 @@ describe("auditaPatronReturnWebhook", () => {
     await expect(returnResponse.json()).resolves.toMatchObject({
       issues: [{ code: "unknown_event", field: "event" }],
     });
+    expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+  });
+
+  it("acepta el contrato de retorno con SAT vivo e IMSS e Infonavit en no_se_pudo", async () => {
+    dbMocks.registerCompliLinkWebhookEvent.mockResolvedValue({
+      created: true,
+      event: { id: 977 },
+    });
+
+    const payload = buildOfficialCheckReturnContract();
+    const body = JSON.stringify(payload);
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const signature = buildAuditaPatronEngineSignature(timestamp, body, "return-webhook-secret-123456");
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+
+    const bearerResponse = await fetch(`http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+      body,
+    });
+    const signedResponse = await fetch(`http://127.0.0.1:${address.port}/api/auditapatron/webhook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-AuditaPatron-Timestamp": timestamp,
+        "X-AuditaPatron-Signature": signature,
+      },
+      body,
+    });
+
+    expect(bearerResponse.status).toBe(200);
+    expect(signedResponse.status).toBe(200);
+    await expect(bearerResponse.json()).resolves.toMatchObject({
+      received: true,
+      processingStatus: "processed",
+      responseContract: "auditapatron.bridge.ack.v1",
+    });
+
+    const stored = JSON.parse(String(dbMocks.upsertCanonicalContract.mock.calls[0]?.[0]?.payload));
+    const statusBySource = Object.fromEntries(
+      (stored.live_check?.checks ?? []).map((item: { source: string; status: string }) => [item.source, item.status]),
+    );
+    expect(statusBySource).toEqual({
+      imss: "no_se_pudo",
+      sat: "vivo",
+      infonavit: "no_se_pudo",
+    });
+    expect(stored.live_check.overallDetail).toMatch(/No significa que tu patrón cumple/);
+    expect(dbMocks.resolveCompliLinkDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        correlationId: "trace.bridge.case-001",
+        traceId: "trace.bridge.case-001",
+      }),
+    );
+  });
+
+  it("guarda el SAT vivo en el expediente cuando el retorno no trae documentId pero sí el trace", async () => {
+    dbMocks.resolveCompliLinkDocument.mockResolvedValue(null);
+    dbMocks.findLaborCaseByTraceOrId.mockResolvedValue({
+      tenantId: "tenant-bridge",
+      caseId: "CASE-BRIDGE-001",
+      traceId: "trace.bridge.case-001",
+    });
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+      body: JSON.stringify(buildOfficialCheckReturnContract()),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      received: true,
+      processingStatus: "accepted",
+      caseId: "CASE-BRIDGE-001",
+    });
+    expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+    const eventMetadata = JSON.parse(String(dbMocks.addCaseEvent.mock.calls[0]?.[0]?.metadata));
+    expect(eventMetadata.live_check.checks.map((item: { source: string; status: string }) => `${item.source}:${item.status}`)).toEqual([
+      "imss:no_se_pudo",
+      "sat:vivo",
+      "infonavit:no_se_pudo",
+    ]);
+    expect(eventMetadata.revalidation_scope).toBe("social_security");
+  });
+
+  it("responde 200 al retorno de official_check aunque todavía no haya expediente local", async () => {
+    dbMocks.resolveCompliLinkDocument.mockResolvedValue(null);
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer return-webhook-secret-123456",
+      },
+      body: JSON.stringify(buildOfficialCheckReturnContract()),
+    });
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      received: true,
+      processingStatus: "accepted",
+      correlationId: "trace.bridge.case-001",
+      remoteEventId: "clx-official-check-001",
+    });
+    expect(dbMocks.addCaseEvent).not.toHaveBeenCalled();
     expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
   });
 

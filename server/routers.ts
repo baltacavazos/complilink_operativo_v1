@@ -3976,6 +3976,10 @@ export const appRouter = router({
           ),
           consentGranted: Boolean(input.consentGranted),
           now: recordedAt,
+          correlationId: detail.case.traceId,
+          traceId: detail.case.traceId,
+          caseId: input.caseId,
+          sourceDocumentId: documents[0]?.documentId ?? null,
         });
         const liveRan = Boolean(input.consentGranted) && officialCheck.configured;
         const revalidationContract = {
@@ -4396,6 +4400,7 @@ export const appRouter = router({
           consentGranted: input.consentGranted,
           idempotencyKey: `guest-official:${payload.guestPreviewId}`,
           correlationId: payload.traceId,
+          traceId: payload.traceId,
         });
         return {
           officialCheck,
