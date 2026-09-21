@@ -1,5 +1,7 @@
 import {
+  CASE_ADVISOR_FALLO_RULE,
   CASE_ADVISOR_RULE,
+  briefingHasInstituteFailure,
   buildNoLiveOfficialAnswer,
   buildOfficialCaseBriefing,
   buildOfficialChatStarterQuestions,
@@ -10,6 +12,7 @@ import {
   type OfficialBriefingFacts,
 } from "@shared/officialCaseBriefing";
 import {
+  OFFICIAL_FAILED_MISSING,
   hasLiveOfficialResult,
   type OfficialChatAnchor,
   type OfficialCheckSummary,
@@ -296,7 +299,8 @@ export function buildWorkerChatFallbackAnswer(
     known: known ?? "Hay un resultado de TU consulta en este expediente.",
     missing:
       briefing.comparison.seen === "no_se_pudo"
-        ? briefing.missingIdentityDetail ?? "La consulta no trajo un monto comparable."
+        ? briefing.missingIdentityDetail ??
+          (briefingHasInstituteFailure(briefing) ? OFFICIAL_FAILED_MISSING : "La consulta no trajo un monto comparable.")
         : "La consulta no confirma que el patrón cumpla.",
     nextStep: briefing.comparison.nextStep,
     officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
@@ -313,6 +317,9 @@ export function buildWorkerChatLlmInstructions(
   options?: { prompt?: string | null },
 ): string {
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
+  const nextStep = briefingHasInstituteFailure(grounding.officialBriefing)
+    ? grounding.officialBriefing.comparison.nextStep
+    : guidance.nextStep;
   const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
   const foundations =
     grounding.legalFoundations.length > 0
@@ -349,6 +356,7 @@ export function buildWorkerChatLlmInstructions(
   if (grounding.caseOnly) {
     return [
       CASE_ADVISOR_RULE,
+      CASE_ADVISOR_FALLO_RULE,
       formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),
       `chatAnchor: ${JSON.stringify(grounding.chatAnchor)}`,
       `reciboVsOficial: ${JSON.stringify(grounding.reciboVsOficial)}`,
@@ -364,11 +372,13 @@ export function buildWorkerChatLlmInstructions(
       "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Nunca etiquetes doctrina como jurisprudencia.",
       grounding.officialBriefing.hasLiveOfficialResult
         ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
-        : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
+        : briefingHasInstituteFailure(grounding.officialBriefing)
+          ? `${CASE_ADVISOR_FALLO_RULE} Inténtalo más tarde.`
+          : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
       "Límite: habla solo con el resultado de TU consulta y el recibo de ESTE expediente. No inventes cumple, alta vigente ni salario oficial.",
       "Hechos visibles (únicos montos, RFC o NSS que puedes citar):",
       visibleFacts,
-      `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${guidance.nextStep}`,
+      `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${nextStep}`,
       `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
       "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
       `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
@@ -377,6 +387,7 @@ export function buildWorkerChatLlmInstructions(
 
   return [
     CASE_ADVISOR_RULE,
+    CASE_ADVISOR_FALLO_RULE,
     formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),
     `chatAnchor: ${JSON.stringify(grounding.chatAnchor)}`,
     `reciboVsOficial: ${JSON.stringify(grounding.reciboVsOficial)}`,
@@ -401,7 +412,9 @@ export function buildWorkerChatLlmInstructions(
       : `No uses el título ${WORKER_CHAT_SOURCES_HEADING}. La respuesta son solo las cuatro secciones del papel.`,
     grounding.officialBriefing.hasLiveOfficialResult
       ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
-      : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
+      : briefingHasInstituteFailure(grounding.officialBriefing)
+        ? `${CASE_ADVISOR_FALLO_RULE} Inténtalo más tarde.`
+        : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
     `Modo de lectura: ${grounding.officialBriefing.hasLiveOfficialResult ? "recibo + resultado de TU consulta" : "sin resultado vivo"}.`,
     `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
       guidance.prefersRemoteOpinion
@@ -417,7 +430,7 @@ export function buildWorkerChatLlmInstructions(
     foundations,
     "Lecturas oficiales del digest (únicos títulos y ligas que puedes citar):",
     officialLines,
-    `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${guidance.nextStep}`,
+    `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${nextStep}`,
     `Si preguntan por IMSS e ISR (o impuestos/retenciones) juntos, el siguiente paso debe cubrir ambos: cruzar NSS/IMSS con el siguiente recibo o un papel IMSS (sin confirmar alta oficial) y cruzar la retención ISR con el CFDI o el depósito del mismo periodo. Si también mencionan Infonavit —o preguntan los tres—, cubre además el cruce de retención/crédito Infonavit con el aviso de retención o estado de crédito. Si preguntan por IMSS, impuestos o Infonavit por separado, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
     `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
     "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
@@ -442,7 +455,8 @@ export function sanitizeWorkerChatAnswer(
         briefing.headline,
       missing:
         briefing.comparison.seen === "no_se_pudo"
-          ? briefing.missingIdentityDetail ?? "La consulta no trajo un monto comparable."
+          ? briefing.missingIdentityDetail ??
+            (briefingHasInstituteFailure(briefing) ? OFFICIAL_FAILED_MISSING : "La consulta no trajo un monto comparable.")
           : "La consulta no confirma que el patrón cumpla.",
       nextStep: briefing.hasLiveOfficialResult
         ? briefing.comparison.nextStep

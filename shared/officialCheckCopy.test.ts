@@ -3,13 +3,16 @@ import { describe, expect, it } from "vitest";
 import {
   OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_CONSENT,
+  OFFICIAL_CHECK_LOADING_DETAIL,
   OFFICIAL_CHECK_LOADING_LABEL,
   OFFICIAL_CHECK_READY_DETAIL,
   OFFICIAL_CHECK_READY_HEADLINE,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  OFFICIAL_FAILED_BLAME,
   RECEIPT_OFFICIAL_COMPARISON_COPY,
   assertNoInternalBrands,
+  buildOfficialFailedDetail,
   hasLiveOfficialResult,
   honestyToOfficialStatus,
   pickHonestOfficialCheck,
@@ -18,6 +21,15 @@ import {
   resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
 } from "./officialCheckCopy";
+
+function expectFailedCopyBlamesInstitute(value: string) {
+  expect(value).toMatch(/instituto|IMSS|SAT|Infonavit/);
+  expect(value).toMatch(/Consultamos|no contest/);
+  expect(value).toMatch(/no de AuditaPatrón/);
+  expect(value).not.toMatch(/respuesta usable|falló (la )?(app|plataforma)|fallo de AuditaPatrón/i);
+  expect(value).not.toMatch(/Helios|CompliLink|HMAC|APIMarket|connector/i);
+  expect(value).not.toMatch(/\b(sí )?cumple\b/i);
+}
 
 function summary(status: OfficialCheckSummary["overallStatus"], extra?: Partial<OfficialCheckSummary>): OfficialCheckSummary {
   return {
@@ -98,6 +110,9 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.buttonLabel).toBe(OFFICIAL_CHECK_LOADING_LABEL);
     expect(display.status).toBe("consultando");
     expect(display.headline).not.toMatch(/Falta tu permiso/i);
+    expect(display.detail).toBe(OFFICIAL_CHECK_LOADING_DETAIL);
+    expect(display.detail).toMatch(/instituto no contesta/);
+    expect(display.detail).toMatch(/no es un fallo de AuditaPatrón/);
     expect(display.detail).not.toMatch(/Falta tu permiso|Helios|HMAC|cumple/i);
   });
 
@@ -132,6 +147,9 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(afterConsult.showPermissionCopy).toBe(false);
     expect(fallo.headline).toBe("Falló");
     expect(fallo.buttonLabel).toBe("Falló");
+    expectFailedCopyBlamesInstitute(fallo.detail);
+    expect(fallo.detail).toBe(OFFICIAL_CHECK_STATUS_DETAIL.no_se_pudo);
+    expect(fallo.detail).toContain(OFFICIAL_FAILED_BLAME);
 
     const faltan = resolveOfficialCheckDisplay({
       consentGranted: true,
@@ -190,6 +208,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(anchor?.imss.estado).toBe("live");
     expect(anchor?.imss.hechos[0]).toBe("Alta vigente: sí.");
     expect(anchor?.infonavit.motivoFallo).toMatch(/mantenimiento/);
+    expect(anchor?.infonavit.motivoFallo).toMatch(/no de AuditaPatrón/);
+    expect(anchor?.infonavit.motivoFallo).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
 
     const noResponse = readChatAnchor({
       imss: {
@@ -215,9 +235,17 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       },
     });
     expect(noResponse?.imss.estado).toBe("failed");
-    expect(noResponse?.imss.motivoFallo).toMatch(/no respondió/);
+    expect(noResponse?.imss.motivoFallo).toMatch(/no contestó/);
+    expect(noResponse?.imss.motivoFallo).toMatch(/no de AuditaPatrón/);
     expect(noResponse?.infonavit.estado).toBe("failed");
     expect(noResponse?.sat.estado).toBe("pending");
+
+    expect(buildOfficialFailedDetail(["imss"])).toMatch(/Consultamos al IMSS hoy/);
+    expect(buildOfficialFailedDetail(["imss"])).not.toMatch(/SAT|Infonavit/);
+    expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/IMSS y SAT/);
+    expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/Esos institutos no contestaron/);
+    expectFailedCopyBlamesInstitute(buildOfficialFailedDetail(["imss"]));
+    expectFailedCopyBlamesInstitute(buildOfficialFailedDetail(["imss", "sat", "infonavit"]));
 
     expect(readReciboVsOficial("bien")?.resultado).toBe("bien");
     expect(readReciboVsOficial({ resultado: "hay_diferencia", motivo: "SBC" })?.resultado).toBe("hay_diferencia");

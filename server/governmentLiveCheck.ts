@@ -2,15 +2,21 @@ import {
   OFFICIAL_CHECK_CONSENT,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  buildOfficialFailedDetail,
+  buildOfficialMaintenanceDetail,
   honestyToOfficialStatus,
   inferOfficialMissingFieldKeys,
+  listFailedOfficialSources,
   listOfficialMissingFieldKeys,
+  looksLikeInstituteMaintenance,
   looksLikeNoOfficialResponse,
   officialStatusToHonesty,
   readChatAnchor,
   readChatAnchorSource,
   readReciboVsOficial,
+  rewriteOfficialFailedMotivo,
   type OfficialChatAnchor,
+  type OfficialCheckSource,
   type OfficialCheckStatus,
   type OfficialCheckSummary,
   type OfficialIdentityFlags,
@@ -248,12 +254,20 @@ function sourceCheck(
     sourceLabel: SOURCE_LABEL[source],
     status,
     label: OFFICIAL_CHECK_STATUS_LABEL[status],
-    detail: extra?.detail ?? extra?.motivoFallo ?? OFFICIAL_CHECK_STATUS_DETAIL[status],
+    detail:
+      extra?.detail ??
+      extra?.motivoFallo ??
+      (status === "no_se_pudo" ? buildOfficialFailedDetail([source]) : OFFICIAL_CHECK_STATUS_DETAIL[status]),
     checkedAt: extra?.checkedAt ?? null,
     used: extra?.used ?? { nss: false, curp: false, rfc: false },
     honesty: extra?.honesty ?? officialStatusToHonesty(status),
     hechos: extra?.hechos?.slice(0, 3) ?? [],
-    motivoFallo: extra?.motivoFallo ?? null,
+    motivoFallo:
+      extra?.motivoFallo !== undefined
+        ? extra.motivoFallo
+        : status === "no_se_pudo"
+          ? rewriteOfficialFailedMotivo(source, extra?.detail)
+          : null,
     missingFields: extra?.missingFields ?? [],
   };
 }
@@ -409,15 +423,19 @@ export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): Off
   return "no_se_pudo";
 }
 
+const CONSULTED_BRIDGE_SOURCES: OfficialCheckSource[] = ["imss", "sat"];
+
 function workerDetailForBridgeResult(
   status: OfficialCheckStatus,
   posted: SignedEnginePostResult,
+  sources: OfficialCheckSource[] = CONSULTED_BRIDGE_SOURCES,
 ): string {
-  if (posted.httpStatus === 404) {
-    return "Falló la consulta. Todavía no hay una respuesta de IMSS o SAT para estos datos.";
+  const haystack = `${collectHaystack(posted.responseJson)} ${posted.reason ?? ""}`;
+  if (status === "pendiente" && looksLikeInstituteMaintenance(haystack)) {
+    return buildOfficialMaintenanceDetail(sources);
   }
-  if (status === "no_se_pudo" && (posted.reason === "timeout" || looksLikeNoOfficialResponse(collectHaystack(posted.responseJson)))) {
-    return "No hubo respuesta en esta consulta. Inténtalo más tarde.";
+  if (status === "no_se_pudo") {
+    return buildOfficialFailedDetail(sources);
   }
   return OFFICIAL_CHECK_STATUS_DETAIL[status];
 }
@@ -505,10 +523,16 @@ function readOfficialObligationCheck(
       ? "no_se_pudo"
       : mapped;
   const anchor = record ? readChatAnchorSource(record, source) : null;
-  const motivoFallo =
+  const rawMotivo =
     status === "no_se_pudo" || status === "sin_datos"
       ? motivoText
       : null;
+  const motivoFallo =
+    status === "sin_datos"
+      ? rawMotivo ?? anchor?.motivoFallo ?? null
+      : status === "no_se_pudo"
+        ? rewriteOfficialFailedMotivo(source, rawMotivo ?? anchor?.motivoFallo)
+        : null;
   return sourceCheck(source, status, {
     checkedAt:
       (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
@@ -517,8 +541,11 @@ function readOfficialObligationCheck(
     used,
     honesty: anchor?.estado ?? officialStatusToHonesty(status),
     hechos: hechos.length > 0 ? hechos : anchor?.hechos,
-    motivoFallo: motivoFallo ?? anchor?.motivoFallo ?? null,
-    detail: motivoFallo ?? undefined,
+    motivoFallo,
+    detail:
+      status === "no_se_pudo"
+        ? buildOfficialFailedDetail([source])
+        : rawMotivo ?? undefined,
     missingFields: missing.length > 0 ? missing : anchor?.missingFields,
   });
 }
@@ -554,7 +581,7 @@ export function officialCheckFromBridgeReturn(params: {
         consentGranted: true,
         overallStatus: failed,
         overallLabel: OFFICIAL_CHECK_STATUS_LABEL[failed],
-        overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[failed],
+        overallDetail: buildOfficialFailedDetail(["imss", "sat", "infonavit"]),
         checkedAt: params.nowIso ?? null,
         identity: params.identity ?? { nss: false, curp: false, rfc: false },
         checks: [
@@ -682,10 +709,13 @@ export function officialCheckFromBridgeReturn(params: {
     } satisfies OfficialChatAnchor);
   const missingKeys = checks.flatMap((item) => item.missingFields ?? []);
   const identity = applyMissingFieldsToIdentity(used, missingKeys);
+  const failedSources = listFailedOfficialSources(checks);
   const overallDetail =
     overallStatus === "sin_datos"
       ? officialIdentityGapDetail(identity)
-      : OFFICIAL_CHECK_STATUS_DETAIL[overallStatus];
+      : overallStatus === "no_se_pudo"
+        ? buildOfficialFailedDetail(failedSources)
+        : OFFICIAL_CHECK_STATUS_DETAIL[overallStatus];
 
   return {
     configured: true,

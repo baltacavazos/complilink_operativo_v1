@@ -45,6 +45,9 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(fallo.buttonLabel).toBe("Falló");
     expect(fallo.headline).toBe("Falló · 21/09/2026");
     expect(fallo.headline).not.toBe("Falta tu permiso");
+    expect(fallo.detail).toMatch(/instituto|IMSS|SAT|Infonavit/);
+    expect(fallo.detail).toMatch(/no de AuditaPatrón/);
+    expect(fallo.detail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
     expect(JSON.stringify(fallo)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
 
     const faltan = resolveOfficialCheckDisplay({

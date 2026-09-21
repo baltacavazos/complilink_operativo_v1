@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  CASE_ADVISOR_FALLO_RULE,
   CASE_ADVISOR_RULE,
   WORKER_CHAT_NO_CONSULTA_EMPTY,
   buildNoLiveOfficialAnswer,
@@ -17,6 +18,7 @@ import {
   OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  OFFICIAL_FAILED_NEXT_STEP,
   RECEIPT_OFFICIAL_COMPARISON_COPY,
   type OfficialChatAnchor,
   type OfficialCheckSummary,
@@ -176,7 +178,9 @@ describe("briefing del caso para el asesor", () => {
       "2026-09-21T12:00:00.000Z",
     );
     expect(noResponse).toMatch(/IMSS: Falló · 21\/09\/2026/);
-    expect(noResponse).toMatch(/no respondió/);
+    expect(noResponse).toMatch(/no contestó/);
+    expect(noResponse).toMatch(/no de AuditaPatrón/);
+    expect(noResponse).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
 
     const comparison = selectReceiptOfficialComparison({
       officialCheck: official("sin_datos", {
@@ -216,6 +220,16 @@ describe("briefing del caso para el asesor", () => {
     });
     expect(unknown.seenLine).toBe(RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.seenLine);
     expect(unknown.seen).toBe("no_se_pudo");
+
+    const failedInstitute = selectReceiptOfficialComparison({
+      officialCheck: official("no_se_pudo"),
+      facts: { nss: "12345678901" },
+    });
+    expect(failedInstitute.hasOfficialConsulta).toBe(true);
+    expect(failedInstitute.nextStep).toBe(OFFICIAL_FAILED_NEXT_STEP);
+    expect(failedInstitute.nextStepLine).toMatch(/Qué hacer ahora:/);
+    expect(failedInstitute.nextStep).toMatch(/no de AuditaPatrón/);
+    expect(failedInstitute.nextStep).not.toMatch(/Da permiso|cruza/i);
   });
 
   it("el prompt forzado cita chatAnchor y prohíbe inventar cumple", () => {
@@ -233,6 +247,7 @@ describe("briefing del caso para el asesor", () => {
     expect(prompt).toMatch(/Qué hacer ahora:/);
     expect(prompt).toMatch(/neto \$4,200/);
     expect(prompt).toMatch(/Nunca inventes: cumple, alta vigente, salario oficial/);
+    expect(prompt).toContain(CASE_ADVISOR_FALLO_RULE);
     expect(prompt).not.toMatch(/Helios|CompliLink|HMAC|jurisprudencia|DOF|SCJN/i);
     expect(briefing.hasLiveOfficialResult).toBe(true);
     expect(buildOfficialChatStarterQuestions(briefing)).toContain("¿Hay diferencia con mi recibo?");
@@ -248,5 +263,18 @@ describe("briefing del caso para el asesor", () => {
     expect(blocked.clearAnswer).toBe(WORKER_CHAT_NO_CONSULTA_EMPTY);
     expect(blocked.nextStep).toBe(OFFICIAL_CHECK_BUTTON);
     expect(buildOfficialChatStarterQuestions(buildOfficialCaseBriefing({}))).toEqual([]);
+
+    const failed = buildNoLiveOfficialAnswer(
+      buildOfficialCaseBriefing({
+        officialCheck: official("no_se_pudo"),
+        facts: { nss: "12345678901" },
+      }),
+    );
+    expect(failed.clearAnswer).toMatch(/Falló/);
+    expect(failed.clearAnswer).toMatch(/instituto|IMSS|SAT|Infonavit/);
+    expect(failed.clearAnswer).toMatch(/no de AuditaPatrón/);
+    expect(failed.clearAnswer).not.toMatch(/respuesta usable|tip|cruza el descuento/i);
+    expect(failed.nextStep).toBe(OFFICIAL_FAILED_NEXT_STEP);
+    expect(failed.missing).toMatch(/no de AuditaPatrón/);
   });
 });
