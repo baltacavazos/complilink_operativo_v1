@@ -12,12 +12,14 @@ test.describe("flujo público base para trabajador", () => {
     await page.goto("/", { waitUntil: "networkidle" });
 
     await expect(
-      page.getByRole("heading", { name: "Sube tu recibo y te decimos qué revisar." })
+      page.getByRole("heading", {
+        name: "Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?",
+      })
     ).toBeVisible();
     await expect(
-      page.getByText("Empieza gratis con un solo archivo. No necesitas cuenta para ver la primera lectura.")
+      page.getByText("Primera lectura gratis, un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú lo guardes.")
     ).toBeVisible();
-    await page.getByRole("button", { name: "Empezar auditoría gratis" }).first().click();
+    await page.getByRole("button", { name: "Revisar mi recibo gratis" }).first().click();
 
     await expect(page).toHaveURL(/\/auditar$/);
 

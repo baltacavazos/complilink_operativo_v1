@@ -59,10 +59,12 @@ describe("Auditapatron closeout experience", () => {
   });
 
   it("keeps the conversion promise strong and routes the primary CTA to the audit flow", () => {
+    expect(homeSource).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
+    expect(homeSource).toContain("Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar.");
+    expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Sube tu recibo y te decimos qué revisar.");
     expect(homeSource).toContain("Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.");
     expect(homeSource).toContain("Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.");
-    expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Cómo funciona");
     expect(homeSource).toContain("Sube un archivo");
     expect(homeSource).toContain("Mira la señal");

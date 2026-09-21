@@ -12,6 +12,14 @@ import {
   BILLING_SOFT_NOTE,
   FIRST_WIN_PROMISE,
   GUARANTEE_LINE,
+  HOME_HERO_CHECKLIST,
+  HOME_HERO_CLOSING_LINE,
+  HOME_HERO_CTA_MICROCOPY,
+  HOME_HERO_HEADLINE,
+  HOME_HERO_HONESTY_LINE,
+  HOME_HERO_PRIMARY_CTA,
+  HOME_HERO_SECTION_TITLE,
+  HOME_HERO_SUBHEAD,
   PLAN_NAV_CTA,
   PLAN_PRIMARY_CTA,
   SOCIAL_PROOF_LINE,
@@ -137,6 +145,49 @@ describe("Claridad — take my money without live charge", () => {
       expect(source).toContain("getVisiblePaidPlans");
       expect(source).not.toMatch(/hasta 10 documentos/i);
       expect(source).not.toContain("Hasta 10 documentos");
+    }
+  });
+
+  it("fija el mix aprobado del hero público: titular emocional y CTA de primera lectura", () => {
+    const home = readPage("Home");
+    const variants = ["alert", "control", "short_paid_campaign", "direct_money_check"];
+
+    expect(HOME_HERO_HEADLINE).toBe(
+      "Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?",
+    );
+    expect(HOME_HERO_SUBHEAD).toContain("español normal");
+    expect(HOME_HERO_SECTION_TITLE).toBe("Qué revisas con AuditaPatrón");
+    expect(HOME_HERO_CHECKLIST).toHaveLength(6);
+    expect(HOME_HERO_PRIMARY_CTA).toBe("Revisar mi recibo gratis");
+    expect(HOME_HERO_CTA_MICROCOPY).toContain("Sin cuenta al principio");
+    expect(HOME_HERO_HONESTY_LINE).toContain("No demuestra por sí sola un incumplimiento");
+    expect(HOME_HERO_CLOSING_LINE).toBe(
+      "Cuentas claras. Primero entiende. Luego decides si hablas con RH o pides aclaración.",
+    );
+
+    expect(home).toContain("HOME_HERO_HEADLINE");
+    expect(home).toContain("HOME_HERO_PRIMARY_CTA");
+    expect(home).toContain(HOME_HERO_HEADLINE);
+    expect(home).toContain(HOME_HERO_SUBHEAD);
+    expect(home).toContain(HOME_HERO_SECTION_TITLE);
+    expect(home).toContain(HOME_HERO_PRIMARY_CTA);
+    expect(home).toContain(HOME_HERO_CTA_MICROCOPY);
+    expect(home).toContain(HOME_HERO_HONESTY_LINE);
+    expect(home).toContain(HOME_HERO_CLOSING_LINE);
+    expect(home).toContain("activeHeroVariant.ctaPrimary");
+    expect(home).toContain('placement: "hero_primary"');
+    expect(home).toContain('window.location.href = "/auditar"');
+    expect(home).toContain("min-w-0");
+    expect(home).toContain("text-pretty");
+    expect(home).not.toContain("CompliLink");
+    expect(home).not.toMatch(/\bHelios\b/);
+
+    for (const item of HOME_HERO_CHECKLIST) {
+      expect(home).toContain(item);
+    }
+
+    for (const variant of variants) {
+      expect(home).toContain(`${variant}: approvedGuestHeroCopy`);
     }
   });
 

@@ -98,10 +98,31 @@ id="como-funciona"
 id="privacidad"
 id="boveda"
 Guárdalo en tu bóveda y sigue con más contexto
+Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?
+Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar.
+Qué revisas con AuditaPatrón
+Revisar mi recibo gratis
+Primera lectura gratis, un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú lo guardes.
+Explicamos lo que dicen tus documentos. No demuestra por sí sola un incumplimiento ni garantiza el cálculo completo.
+Cuentas claras. Primero entiende. Luego decides si hablas con RH o pides aclaración.
+Sube tu recibo y te decimos qué revisar.
+Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.
+Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.
+Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.
+¿Tu recibo de nómina está bien o hay algo raro?
+Empieza con una foto. No necesitas reunir todo.
 */
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
   FIRST_WIN_STEPS,
+  HOME_HERO_CHECKLIST,
+  HOME_HERO_CLOSING_LINE,
+  HOME_HERO_CTA_MICROCOPY,
+  HOME_HERO_HEADLINE,
+  HOME_HERO_HONESTY_LINE,
+  HOME_HERO_PRIMARY_CTA,
+  HOME_HERO_SECTION_TITLE,
+  HOME_HERO_SUBHEAD,
   PLANS_PATH,
   getVisiblePaidPlans,
 } from "@shared/conversionCopy";
@@ -443,59 +464,29 @@ const guidedFaqOptions = [
   },
 ];
 
+const approvedGuestHeroCopy = {
+  tabLabel: "Revisión inicial",
+  eyebrowMobile: "Sube tu recibo y revísalo gratis",
+  eyebrowDesktop: "Sube tu recibo y revísalo gratis",
+  titleLead: "Que no te vean la cara",
+  titleAccent: "¿tu patrón te paga bien y declara el salario que corresponde?",
+  headline: HOME_HERO_HEADLINE,
+  supportLine: HOME_HERO_SUBHEAD,
+  microDescription: HOME_HERO_CTA_MICROCOPY,
+  body: "",
+  sectionTitle: HOME_HERO_SECTION_TITLE,
+  checklist: HOME_HERO_CHECKLIST,
+  honestyLine: HOME_HERO_HONESTY_LINE,
+  closingLine: HOME_HERO_CLOSING_LINE,
+  ctaPrimary: HOME_HERO_PRIMARY_CTA,
+  ctaSecondary: "Ver un ejemplo",
+} as const;
+
 const heroCopyVariants = {
-  alert: {
-    tabLabel: "Revisión inicial",
-    eyebrowMobile: "Sube tu recibo y revísalo gratis",
-    eyebrowDesktop: "Sube tu recibo y revísalo gratis",
-    titleLead: "Sube tu recibo",
-    titleAccent: "y te decimos qué revisar.",
-    headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube tu recibo de nómina y te mostramos qué conviene revisar primero. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.",
-    microDescription: "Empieza gratis con un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
-    body: "Primero ves un resultado claro, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.",
-    ctaPrimary: "Revisar mi recibo gratis",
-    ctaSecondary: "Ver un ejemplo",
-  },
-  control: {
-    tabLabel: "Revisión inicial",
-    eyebrowMobile: "Empieza con tu recibo más reciente",
-    eyebrowDesktop: "Empieza con tu recibo más reciente",
-    titleLead: "Sube tu recibo",
-    titleAccent: "y te decimos qué revisar.",
-    headline: "Sube tu recibo y te decimos qué revisar.",
-    supportLine: "Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.",
-    microDescription: "Es una lectura orientativa. Gratis, sin cuenta al principio. No entra a tu expediente hasta que tú decidas guardarlo.",
-    body: "",
-    ctaPrimary: "Sube tu recibo y revisa gratis",
-    ctaSecondary: "Ver un ejemplo",
-  },
-  short_paid_campaign: {
-    tabLabel: "Revisión inicial",
-    eyebrowMobile: "Sube tu recibo y revísalo gratis",
-    eyebrowDesktop: "Sube tu recibo y revísalo gratis",
-    titleLead: "Sube tu recibo",
-    titleAccent: "y entiende rápido qué revisar.",
-    headline: "Sube tu recibo y entiende rápido qué revisar.",
-    supportLine: "Empieza con un solo recibo y recibe una lectura orientativa sobre si tu pago merece una revisión más seria.",
-    microDescription: "Si aparece un resultado, te mostramos qué revisar primero y cómo seguir sin enredarte.",
-    body: "Ves una primera lectura útil antes de decidir si guardas, comparas o sigues con más contexto.",
-    ctaPrimary: "Revisar mi recibo gratis",
-    ctaSecondary: "Ver un ejemplo",
-  },
-  direct_money_check: {
-    tabLabel: "Revisión inicial",
-    eyebrowMobile: "Revisa tu pago con un solo documento",
-    eyebrowDesktop: "Revisa tu pago con un solo documento",
-    titleLead: "Revisa tu pago",
-    titleAccent: "con una primera lectura útil.",
-    headline: "Revisa tu pago con una primera lectura útil.",
-    supportLine: "Sube un recibo y recibe una primera lectura sobre lo que conviene revisar en tu pago.",
-    microDescription: "Si aparece un resultado, te mostramos qué revisar primero y cuál sería el siguiente documento útil.",
-    body: "Empieza gratis, con privacidad desde el inicio y con una lectura clara antes de decidir si sigues o lo guardas.",
-    ctaPrimary: "Revisar mi recibo gratis",
-    ctaSecondary: "Ver un ejemplo",
-  },
+  alert: approvedGuestHeroCopy,
+  control: approvedGuestHeroCopy,
+  short_paid_campaign: approvedGuestHeroCopy,
+  direct_money_check: approvedGuestHeroCopy,
 } as const;
 
 const heroPrediagnosticOptions = [
@@ -1212,40 +1203,50 @@ function HeroSection() {
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
       <div className="container relative z-10 mx-auto grid max-w-6xl items-start gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
-        <div className="ap-hero-copy mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
+        <div className="ap-hero-copy mx-auto flex min-w-0 max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
-            className="ap-status-chip motion-enter-soft inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+            className="ap-status-chip motion-enter-soft inline-flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="sm:hidden">Sube foto o PDF</span>
-            <span className="hidden sm:inline">Sube tu recibo y revísalo gratis</span>
+            <span className="min-w-0 text-pretty sm:hidden">Sube foto o PDF</span>
+            <span className="hidden min-w-0 text-pretty sm:inline">Sube tu recibo y revísalo gratis</span>
           </div>
 
             <h1
-              className="ap-hero-headline motion-enter-soft mt-2.5 max-w-[16ch] text-balance text-[2.12rem] font-bold leading-[1.12] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[15ch] max-[359px]:text-[1.95rem] max-[359px]:leading-[1.14] sm:mt-4 sm:max-w-[14ch] sm:text-[3.05rem] sm:leading-[1.08] lg:max-w-[13ch] lg:text-[3.75rem]"
+              className="ap-hero-headline motion-enter-soft mt-2.5 min-w-0 w-full max-w-full text-pretty text-[1.68rem] font-bold leading-[1.2] tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.5rem] max-[359px]:leading-[1.22] sm:mt-4 sm:text-[2.25rem] sm:leading-[1.16] lg:text-[2.55rem]"
               style={{ ["--motion-delay" as string]: "120ms" }}
             >
               {activeHeroVariant.headline}
             </h1>
 
             <p
-              className="ap-hero-support motion-enter-soft mt-2.5 max-w-xl text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:hidden"
+              className="ap-hero-support motion-enter-soft mt-2.5 min-w-0 w-full max-w-xl text-pretty text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
-              {`${activeHeroVariant.supportLine} ${activeHeroVariant.microDescription}`}
+              {activeHeroVariant.supportLine}
             </p>
 
-            <p
-              className="ap-hero-support motion-enter-soft mt-2.5 hidden max-w-xl text-[0.98rem] leading-6 text-slate-700 sm:block sm:text-[1rem] sm:leading-6"
-              style={{ ["--motion-delay" as string]: "180ms" }}
+            <div
+              className="motion-enter-soft mt-4 min-w-0 w-full max-w-xl text-left"
+              style={{ ["--motion-delay" as string]: "210ms" }}
             >
-              {`${activeHeroVariant.supportLine} ${activeHeroVariant.microDescription}`}
-            </p>
+              <p className="min-w-0 text-pretty text-[0.95rem] font-semibold tracking-tight text-slate-950">
+                {activeHeroVariant.sectionTitle}
+              </p>
+              <ul className="mt-2.5 space-y-2">
+                {activeHeroVariant.checklist.map((item) => (
+                  <li key={item} className="flex min-w-0 items-start gap-2 text-sm leading-5 text-slate-700">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                    <span className="min-w-0 text-pretty">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             {activeHeroVariant.body ? (
               <p
-                className="ap-hero-support motion-enter-soft mt-2 max-w-xl text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
+                className="ap-hero-support motion-enter-soft mt-2 min-w-0 max-w-xl text-pretty text-[0.98rem] leading-7 text-slate-600 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
                 style={{ ["--motion-delay" as string]: "210ms" }}
               >
                 {activeHeroVariant.body}
@@ -1253,10 +1254,10 @@ function HeroSection() {
             ) : null}
 
             <p
-              className="motion-enter-soft mt-3 max-w-xl rounded-[1rem] border border-slate-200 bg-white/90 px-3.5 py-2.5 text-sm font-medium leading-5 text-slate-700 shadow-sm"
+              className="motion-enter-soft mt-3 min-w-0 max-w-xl rounded-[1rem] border border-slate-200 bg-white/90 px-3.5 py-2.5 text-pretty text-sm font-medium leading-5 text-slate-700 shadow-sm"
               style={{ ["--motion-delay" as string]: "230ms" }}
             >
-              Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti.
+              Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.
             </p>
 
             <div
@@ -1302,11 +1303,11 @@ function HeroSection() {
           >
             <div className="ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <Button
-              className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto motion-hover-lift text-base font-semibold shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.99]"
+              className="h-12 w-full min-w-0 rounded-full bg-teal-600 px-6 text-pretty text-white hover:bg-teal-700 sm:w-auto motion-hover-lift text-base font-semibold shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.99]"
               onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}
             >
-              {PRIMARY_CTA_LABEL}
-              <ArrowRight className="motion-arrow ml-2 h-4 w-4" strokeWidth={1.8} />
+              {activeHeroVariant.ctaPrimary}
+              <ArrowRight className="motion-arrow ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
             </Button>
             <Button
               variant="outline"
@@ -1318,9 +1319,12 @@ function HeroSection() {
               Ver planes y activar
             </Button>
             </div>
-              <div className="space-y-1.5">
-                <p className="text-sm leading-5 text-slate-700">Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
-                <p className="text-sm leading-5 text-slate-700">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
+              <div className="min-w-0 space-y-1.5">
+                <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">{activeHeroVariant.microDescription}</p>
+                <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">{activeHeroVariant.honestyLine}</p>
+                <p className="min-w-0 text-pretty text-sm font-medium leading-5 text-slate-800">{activeHeroVariant.closingLine}</p>
+                <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
+                <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
                 <div className="flex flex-wrap gap-2 max-[359px]:hidden">
                   {[
                     "Gratis para empezar",
@@ -1332,7 +1336,7 @@ function HeroSection() {
                     </span>
                   ))}
                 </div>
-                <p className="text-sm leading-5 text-slate-700 max-[359px]:hidden">
+                <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700 max-[359px]:hidden">
                   Empieza con una foto o PDF y ves si tu pago merece una revisión más a fondo, sin cuenta al inicio. No es un cruce en vivo con SAT/IMSS.
                 </p>
               </div>

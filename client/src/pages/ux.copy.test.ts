@@ -101,6 +101,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("<CopilotPreviewSection />");
     expect(source).toContain('id="como-funciona"');
     expect(source).toContain('const [selectedHeroVariant, setSelectedHeroVariant] = useState<InteractiveHeroVariantKey>("control")');
+    expect(source).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
+    expect(source).toContain("Revisar mi recibo gratis");
     expect(source).toContain('Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.');
     expect(source).toContain('id="app"');
     expect(source).toContain('App móvil en camino');
