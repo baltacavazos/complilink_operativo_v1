@@ -16,7 +16,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
     expect(homeSource).toContain("Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
-    expect(homeSource).toContain("Resultado real desde el primer archivo");
+    expect(homeSource).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
     expect(homeSource).toContain("Primero ves si te sirve; después decides si lo guardas en tu expediente.");
     expect(homeSource).toContain("Tres pasos. Una lectura clara.");
     expect(homeSource).toContain("Control visible desde el primer archivo.");
@@ -59,10 +59,12 @@ describe("Auditapatron closeout experience", () => {
   });
 
   it("keeps the conversion promise strong and routes the primary CTA to the audit flow", () => {
+    expect(homeSource).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
+    expect(homeSource).toContain("Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar.");
+    expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Sube tu recibo y te decimos qué revisar.");
     expect(homeSource).toContain("Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.");
     expect(homeSource).toContain("Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.");
-    expect(homeSource).toContain("Revisar mi recibo gratis");
     expect(homeSource).toContain("Cómo funciona");
     expect(homeSource).toContain("Sube un archivo");
     expect(homeSource).toContain("Mira la señal");
@@ -105,7 +107,7 @@ describe("Auditapatron closeout experience", () => {
     expect(auditFlowSource).toContain("Borrador primero");
     expect(auditFlowSource).toContain("Rastro legal visible");
     expect(auditFlowSource).toContain("Control de privacidad");
-    expect(auditFlowSource).toContain("Señal visible de control");
+    expect(auditFlowSource).toContain("Privacidad activa desde el primer intento");
     expect(auditFlowSource).toContain("No tienes que adivinar qué pasó con tu archivo.");
     expect(auditFlowSource).toContain("Guardar en mi bóveda privada");
     expect(auditFlowSource).toContain("Descargar reporte PDF");

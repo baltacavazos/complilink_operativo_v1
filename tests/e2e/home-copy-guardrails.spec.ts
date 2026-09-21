@@ -21,8 +21,8 @@ test.describe("home pública", () => {
       expect(bodyText).not.toContain(phrase);
     }
 
-    expect(bodyText).toContain("¿Tu recibo de nómina está bien o hay algo raro?");
-    expect(bodyText).toContain("Empieza con una foto. No necesitas reunir todo.");
+    expect(bodyText).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
+    expect(bodyText).toContain("Primera lectura gratis, un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú lo guardes.");
     expect(bodyText).toContain("No compartimos tu archivo con tu empresa.");
     expect(bodyText).not.toContain(
       "Helios ya conectó documentos del expediente y está devolviendo una lectura preliminar",
