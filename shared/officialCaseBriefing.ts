@@ -16,6 +16,9 @@ import {
   OFFICIAL_SOURCE_LABEL,
   canDispatchOfficialConsult,
   filterOfficialMissingFieldsForSource,
+  looksLikeOfficialCurp,
+  looksLikeOfficialNss,
+  looksLikeRealWorkerRfc,
   formatOfficialCheckDate,
   hasLiveOfficialResult,
   honestyToOfficialStatus,
@@ -133,19 +136,23 @@ export function officialChatIdentityGapDetail(
   identity: OfficialIdentityFlags,
   facts?: OfficialBriefingFacts | null,
 ): string | null {
-  if (identity.nss && identity.rfc) {
-    return identity.curp ? null : "Falta tu CURP en el recibo para consultar Infonavit.";
+  const nssVisible = identity.nss || looksLikeOfficialNss(facts?.nss);
+  const rfcVisible = identity.rfc || looksLikeRealWorkerRfc(facts?.workerRfc);
+  if (nssVisible && rfcVisible) {
+    return identity.curp || looksLikeOfficialCurp(facts?.curp)
+      ? null
+      : "Falta tu CURP en el recibo para consultar Infonavit.";
   }
-  if (identity.nss && !identity.rfc) {
+  if (nssVisible && !rfcVisible) {
     if (isGenericSatRfc(facts?.workerRfc)) {
       return "El RFC del recibo es genérico; SAT necesita un RFC real para consultar.";
     }
     return officialSourceGapDetail("sat");
   }
-  if (!identity.nss && identity.rfc) {
+  if (!nssVisible && rfcVisible) {
     return officialSourceGapDetail("imss");
   }
-  return officialDispatchGapDetail(identity);
+  return officialDispatchGapDetail(identity, facts);
 }
 
 export function applyMissingFieldsToIdentity(
@@ -281,7 +288,7 @@ export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
     facts.imssWithheld ? `IMSS del recibo ${facts.imssWithheld}` : null,
     facts.isrWithheld ? `ISR del recibo ${facts.isrWithheld}` : null,
     facts.infonavitWithheld ? `Infonavit del recibo ${facts.infonavitWithheld}` : null,
-    facts.nss ? `NSS ${facts.nss}` : null,
+    facts.nss ? `NSS en recibo: ${facts.nss}` : null,
     facts.curp ? `CURP ${facts.curp}` : null,
     facts.workerRfc ? `RFC de la persona trabajadora ${facts.workerRfc}` : null,
   ].filter((item): item is string => Boolean(item));
@@ -365,6 +372,7 @@ export function buildOfficialCaseBriefing(params: {
   chatAnchor?: OfficialChatAnchor | null;
   reciboVsOficial?: ReciboVsOficial | ReciboVsOficialResultado | null;
   hasDifferenceSignal?: boolean;
+  nowMs?: number;
 }): OfficialCaseBriefing {
   const facts = params.facts ?? {};
   const officialCheck = params.officialCheck ?? null;
@@ -392,6 +400,7 @@ export function buildOfficialCaseBriefing(params: {
       ? { ...officialCheck, chatAnchor: chatAnchor ?? officialCheck.chatAnchor ?? null, reciboVsOficial }
       : officialCheck,
     identity,
+    { nowMs: params.nowMs, facts },
   );
   const comparison = selectReceiptOfficialComparison({
     officialCheck: reconciled,
@@ -441,7 +450,14 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
       : "- En el recibo no hay montos, NSS, CURP ni RFC claros.";
   const missing =
     briefing.missingIdentityDetail ?? "No faltan NSS, CURP ni RFC en el papel, o ya se usaron.";
-  return stripContradictoryMissingIdentityCopy(
+  const nssAlreadyOnReceipt =
+    Boolean(briefing.facts.nss) || !briefing.missingIdentity.includes("NSS");
+  const nssFact = briefing.facts.nss
+    ? `Hecho fijo del recibo: NSS en recibo: ${briefing.facts.nss}. PROHIBIDO escribir «Falta tu NSS» o «Falta tu NSS y RFC en el recibo para consultar.» Si el NSS ya está en el recibo, no lo niegues.`
+    : nssAlreadyOnReceipt
+      ? "Hecho fijo: el recibo ya tiene NSS. PROHIBIDO escribir «Falta tu NSS» o «Falta tu NSS y RFC en el recibo para consultar.» Si el NSS ya está en el recibo, no lo niegues."
+      : "En el recibo no se alcanzó a leer un NSS.";
+  const grounded = stripContradictoryMissingIdentityCopy(
     [
       CASE_ADVISOR_RULE,
       `Nunca inventes: ${ADVISOR_CHAT_NEVER_INVENT.join(", ")}.`,
@@ -457,7 +473,9 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
       "Si preguntan «¿me pagan bien?», ancla la respuesta a esa comparación y a IMSS/SAT/Infonavit del caso. No inventes que el patrón cumple.",
     ].join("\n"),
     identityFlagsFromFacts(briefing.facts),
+    briefing.facts,
   );
+  return `${nssFact}\n${grounded}`;
 }
 
 export function buildPayWellFallback(briefing: OfficialCaseBriefing): {

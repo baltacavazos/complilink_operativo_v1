@@ -4335,6 +4335,7 @@ export default function Auditar() {
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
   const [officialCheckResult, setOfficialCheckResult] =
     useState<OfficialCheckSummary | null>(null);
+  const [officialNowMs, setOfficialNowMs] = useState(() => Date.now());
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
   const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
   const [guestReviewClaimStarted, setGuestReviewClaimStarted] = useState(false);
@@ -5586,8 +5587,18 @@ export default function Auditar() {
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
   });
+  const officialPendingWatch =
+    officialCheckSummary?.overallStatus === "pendiente" ||
+    officialCheckSummary?.checks?.some(item => item.status === "pendiente");
+  useEffect(() => {
+    if (!officialPendingWatch) return;
+    setOfficialNowMs(Date.now());
+    const intervalId = window.setInterval(() => setOfficialNowMs(Date.now()), 5000);
+    return () => window.clearInterval(intervalId);
+  }, [officialPendingWatch, officialCheckSummary?.checkedAt]);
   const officialCaseBriefing = buildOfficialCaseBriefing({
     officialCheck: officialCheckSummary,
+    nowMs: officialNowMs,
     facts: {
       period:
         lastUploadFactSignal.period ??
@@ -6285,6 +6296,8 @@ export default function Auditar() {
       guestOfficialCheckMutation.isPending,
     summary: officialCaseBriefing.officialCheck ?? officialCheckSummary,
     identity: officialReceiptIdentity,
+    nowMs: officialNowMs,
+    facts: officialCaseBriefing.facts,
     missingIdentityDetail: canDispatchOfficialConsult(officialReceiptIdentity)
       ? null
       : officialCaseBriefing.missingIdentityDetail,
@@ -7655,6 +7668,13 @@ export default function Auditar() {
         caseId: selectedCaseId,
         prompt: content,
         responseTone: preferredTone,
+        receiptFacts: {
+          nss: officialCaseBriefing.facts.nss ?? undefined,
+          curp: officialCaseBriefing.facts.curp ?? undefined,
+          workerRfc: officialCaseBriefing.facts.workerRfc ?? undefined,
+          netAmount: officialCaseBriefing.facts.netAmount ?? undefined,
+          period: officialCaseBriefing.facts.period ?? undefined,
+        },
         conversationHistory: buildHeliosCopilotConversationHistoryInput({
           current: heliosCopilotMessages,
           nextPrompt: content,
