@@ -432,15 +432,24 @@ export const OFFICIAL_PENDING_STALE_MS = 60_000;
 export function isStaleOfficialPending(
   checkedAt?: string | null,
   nowMs: number = Date.now(),
+  extra?: { anchorFecha?: string | null; pendingSinceMs?: number | null },
 ): boolean {
-  if (!checkedAt) return false;
-  const at = new Date(checkedAt).getTime();
-  return Number.isFinite(at) && nowMs - at > OFFICIAL_PENDING_STALE_MS;
+  const times: number[] = [];
+  for (const value of [checkedAt, extra?.anchorFecha]) {
+    if (!value) continue;
+    const at = new Date(value).getTime();
+    if (Number.isFinite(at)) times.push(at);
+  }
+  if (typeof extra?.pendingSinceMs === "number" && Number.isFinite(extra.pendingSinceMs)) {
+    times.push(extra.pendingSinceMs);
+  }
+  if (times.length === 0) return false;
+  return nowMs - Math.min(...times) > OFFICIAL_PENDING_STALE_MS;
 }
 
 export function officialDispatchGapDetail(
   identity?: OfficialIdentityFlags | null,
-  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null,
+  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null,
 ): string {
   const nssVisible = Boolean(identity?.nss) || looksLikeOfficialNss(facts?.nss);
   const rfcVisible = Boolean(identity?.rfc) || looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc);
@@ -452,14 +461,25 @@ export function officialDispatchGapDetail(
     if (isGenericSatRfc(facts?.workerRfc ?? facts?.rfc)) {
       return "El RFC del recibo es genérico; SAT necesita un RFC real para consultar.";
     }
-    return officialSourceGapDetail("sat");
+    return officialSourceGapDetail("sat", facts);
   }
   if (missing.length === 1) return `Falta tu ${missing[0]} en el recibo para consultar.`;
   return FALTA_NSS_Y_RFC_EXACT;
 }
 
-export function officialSourceGapDetail(source: OfficialCheckSource): string {
-  if (source === "sat") return "Falta un RFC real en el recibo para consultar SAT.";
+export function officialSourceGapDetail(
+  source: OfficialCheckSource,
+  facts?: { workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null,
+): string {
+  if (source === "sat") {
+    if (looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc)) {
+      return OFFICIAL_CHECK_STATUS_DETAIL.pendiente;
+    }
+    if (looksLikeRealWorkerRfc(facts?.employerRfc) && !looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc)) {
+      return "Falta el RFC de la persona trabajadora para consultar SAT.";
+    }
+    return "Falta un RFC real en el recibo para consultar SAT.";
+  }
   const field = OFFICIAL_SOURCE_REQUIRED_FIELDS[source][0];
   const label = field === "nss" ? "NSS" : field === "curp" ? "CURP" : "RFC";
   return `Falta tu ${label} en el recibo para consultar.`;
@@ -525,7 +545,7 @@ function sourceFromAnchor(
     label: OFFICIAL_CHECK_STATUS_LABEL[status],
     detail:
       status === "sin_datos"
-        ? officialSourceGapDetail(fuente)
+        ? officialSourceGapDetail(fuente, options?.facts)
         : status === "no_se_pudo"
           ? rewriteOfficialFailedMotivo(fuente, anchor.motivoFallo)
           : OFFICIAL_CHECK_STATUS_DETAIL[status],
@@ -545,7 +565,11 @@ function sourceFromAnchor(
 export function reconcileOfficialCheckWithIdentity(
   summary: OfficialCheckSummary | null | undefined,
   identity?: OfficialIdentityFlags | null,
-  options?: { nowMs?: number; facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null },
+  options?: {
+    nowMs?: number;
+    pendingSinceMs?: number | null;
+    facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null;
+  },
 ): OfficialCheckSummary | null {
   if (!summary) return null;
   const factIdentity = options?.facts
@@ -594,7 +618,7 @@ export function reconcileOfficialCheckWithIdentity(
     }
     const detail =
       status === "sin_datos"
-        ? officialSourceGapDetail(item.source)
+        ? officialSourceGapDetail(item.source, options?.facts)
         : status === "no_se_pudo"
           ? rewriteOfficialFailedMotivo(item.source, item.motivoFallo ?? item.detail)
           : textContradictsVisibleReceiptIdentity(item.detail, mergedIdentity)
@@ -615,7 +639,7 @@ export function reconcileOfficialCheckWithIdentity(
         item.motivoFallo && textContradictsVisibleReceiptIdentity(item.motivoFallo, mergedIdentity)
           ? sourceHasRequiredOfficialIdentity(item.source, mergedIdentity)
             ? null
-            : officialSourceGapDetail(item.source)
+            : officialSourceGapDetail(item.source, options?.facts)
           : item.motivoFallo,
     };
   };
@@ -642,7 +666,7 @@ export function reconcileOfficialCheckWithIdentity(
       source.motivoFallo && textContradictsVisibleReceiptIdentity(source.motivoFallo, mergedIdentity)
         ? sourceHasRequiredOfficialIdentity(fuente, mergedIdentity)
           ? null
-          : officialSourceGapDetail(fuente)
+          : officialSourceGapDetail(fuente, options?.facts)
         : source.motivoFallo;
     return {
       ...source,
@@ -668,25 +692,35 @@ export function reconcileOfficialCheckWithIdentity(
   }
 
   const nowMs = options?.nowMs ?? Date.now();
+  const pendingSinceMs = options?.pendingSinceMs ?? null;
+  const anchorFechaFor = (source: OfficialCheckSource) => chatAnchor?.[source]?.fecha ?? null;
   const livePresent = hasLiveOfficialResult({ ...summary, checks, chatAnchor: chatAnchor ?? summary.chatAnchor });
-  if (!livePresent) {
-    checks = checks.map((item) => {
-      if (item.status !== "pendiente") return item;
-      if (!isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs)) return item;
-      return {
-        ...item,
-        status: "no_se_pudo" as const,
-        label: OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo,
-        detail: rewriteOfficialFailedMotivo(item.source, item.motivoFallo ?? item.detail),
-        honesty: "failed" as const,
-        motivoFallo: rewriteOfficialFailedMotivo(item.source, item.motivoFallo),
-      };
-    });
-    if (overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs)) {
-      overallStatus = "no_se_pudo";
-    } else if (checks.length > 0 && !isPermissionBlockedStatus(overallStatus) && overallStatus !== "no_configurado") {
-      overallStatus = rollupOfficialCheckStatus(checks.map((item) => item.status));
+  checks = checks.map((item) => {
+    if (item.status !== "pendiente" || item.honesty === "live") return item;
+    if (
+      !isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs, {
+        anchorFecha: anchorFechaFor(item.source),
+        pendingSinceMs,
+      })
+    ) {
+      return item;
     }
+    return {
+      ...item,
+      status: "no_se_pudo" as const,
+      label: OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo,
+      detail: rewriteOfficialFailedMotivo(item.source, item.motivoFallo ?? item.detail),
+      honesty: "failed" as const,
+      motivoFallo: rewriteOfficialFailedMotivo(item.source, item.motivoFallo),
+    };
+  });
+  if (!livePresent && overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs, {
+    anchorFecha: anchorFechaFor("imss") ?? anchorFechaFor("sat") ?? anchorFechaFor("infonavit"),
+    pendingSinceMs,
+  })) {
+    overallStatus = "no_se_pudo";
+  } else if (checks.length > 0 && !isPermissionBlockedStatus(overallStatus) && overallStatus !== "no_configurado") {
+    overallStatus = rollupOfficialCheckStatus(checks.map((item) => item.status));
   }
 
   const syncedAnchor = chatAnchor
@@ -1043,7 +1077,8 @@ export function resolveOfficialCheckDisplay(params: {
   missingIdentityDetail?: string | null;
   identity?: OfficialIdentityFlags | null;
   nowMs?: number;
-  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null;
+  pendingSinceMs?: number | null;
+  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null;
 }): OfficialCheckDisplay {
   if (params.isPending) {
     return {
@@ -1059,6 +1094,7 @@ export function resolveOfficialCheckDisplay(params: {
   const canDispatch = canDispatchOfficialConsult(identity);
   const reconciled = reconcileOfficialCheckWithIdentity(params.summary, identity, {
     nowMs: params.nowMs,
+    pendingSinceMs: params.pendingSinceMs,
     facts: params.facts,
   });
   const consultAlreadyVisible = Boolean(

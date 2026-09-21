@@ -128,6 +128,7 @@ import {
 } from "./laborFiscalSignals";
 import {
   collectWorkerOfficialIdentity,
+  fiscalIdentitiesMatch,
   getOfficialCheckAvailability,
   mergeWorkerOfficialIdentities,
   readOfficialCheckFromMetadata,
@@ -167,6 +168,7 @@ import {
 import {
   humanizeMissingExtractionTarget,
   humanizeStructuredFieldLabel,
+  isPayrollExtractionTargetCovered,
   isWorkerSystemStructuredField,
 } from "./workerVisibleExtraction";
 import {
@@ -347,12 +349,84 @@ function getDetectedWorkerName(preliminaryAnalysis: {
   );
 }
 
+function getDetectedEmployerName(preliminaryAnalysis: {
+  confirmedData?: Record<string, unknown> | null;
+  estimatedData?: Record<string, unknown> | null;
+}) {
+  return (
+    getRecordStringValue(preliminaryAnalysis.confirmedData ?? {}, "payrollEmployerName") ??
+    getRecordStringValue(preliminaryAnalysis.estimatedData ?? {}, "payrollEmployerName") ??
+    getRecordStringValue(preliminaryAnalysis.confirmedData ?? {}, "employerName") ??
+    getRecordStringValue(preliminaryAnalysis.estimatedData ?? {}, "employerName") ??
+    null
+  );
+}
+
+function readAnalysisIdentity(record: {
+  confirmedData?: Record<string, unknown> | null;
+  estimatedData?: Record<string, unknown> | null;
+} | null | undefined) {
+  const confirmed: Record<string, unknown> = record?.confirmedData ?? {};
+  const estimated: Record<string, unknown> = record?.estimatedData ?? {};
+  return collectWorkerOfficialIdentity({
+    nss: confirmed.payrollNss ?? estimated.payrollNss ?? confirmed.nss ?? estimated.nss,
+    curp: confirmed.payrollCurp ?? estimated.payrollCurp ?? confirmed.curp ?? estimated.curp,
+    workerRfc: confirmed.workerRfc ?? estimated.workerRfc,
+    employerRfc: confirmed.employerRfc ?? estimated.employerRfc,
+  });
+}
+
+function identityFromClassificationPayload(payload: string) {
+  try {
+    const parsed = JSON.parse(payload) as {
+      confirmedData?: Record<string, unknown> | null;
+      estimatedData?: Record<string, unknown> | null;
+      preliminaryAnalysis?: {
+        confirmedData?: Record<string, unknown> | null;
+        estimatedData?: Record<string, unknown> | null;
+      } | null;
+    };
+    return mergeWorkerOfficialIdentities(
+      readAnalysisIdentity(parsed),
+      readAnalysisIdentity(parsed.preliminaryAnalysis),
+    );
+  } catch {
+    return null;
+  }
+}
+
+async function readExpedienteWorkerIdentity(tenantId: string, caseId: string) {
+  const rows = await listCanonicalContractsByType({
+    tenantId,
+    caseId,
+    contractType: "classification",
+    status: "ready",
+  });
+  return mergeWorkerOfficialIdentities(
+    ...rows.map((row) => identityFromClassificationPayload(row.payload)),
+  );
+}
+
 function assertDocumentIdentityGuardrail(params: {
   ceoBypass: boolean;
   expectedWorkerName?: string | null;
   detectedWorkerName?: string | null;
+  detectedEmployerName?: string | null;
+  expectedIdentity?: { nss: string | null; curp: string | null; rfc: string | null } | null;
+  detectedIdentity?: { nss: string | null; curp: string | null; rfc: string | null } | null;
 }) {
   if (params.ceoBypass) {
+    return;
+  }
+
+  if (fiscalIdentitiesMatch(params.expectedIdentity, params.detectedIdentity)) {
+    return;
+  }
+
+  const detectedNameIsEmployer =
+    Boolean(params.detectedEmployerName && params.detectedWorkerName) &&
+    !documentSeemsToBelongToAnotherPerson(params.detectedEmployerName, params.detectedWorkerName);
+  if (detectedNameIsEmployer) {
     return;
   }
 
@@ -1107,6 +1181,12 @@ function sanitizeStructuredExtractionResult(result: StructuredExtractionResult, 
         }),
       )
       .filter((item) => item.length > 0)
+      .filter((item) =>
+        !isPayrollExtractionTargetCovered(item, [
+          ...sanitizedFields,
+          ...fallback.fields,
+        ]),
+      )
       .slice(0, 6),
     reviewNotes: result.reviewNotes
       .map((item) =>
@@ -1172,7 +1252,7 @@ function buildStructuredExtractionHeadline(documentType: ReturnType<typeof class
   }
 }
 
-function buildStructuredExtractionFallback(params: {
+export function buildStructuredExtractionFallback(params: {
   classification: ReturnType<typeof classifyMexicanLaborDocument>;
   preliminaryAnalysis: ReturnType<typeof buildPreliminaryLaborAnalysis>;
 }): StructuredExtractionResult {
@@ -1200,13 +1280,9 @@ function buildStructuredExtractionFallback(params: {
     .filter((field) => !isWorkerSystemStructuredField(field));
 
   const fields = [...confirmedFields, ...estimatedFields].slice(0, 10);
-  const normalizedFieldIndex = new Set(fields.map((field) => `${field.key}|${field.label}`.toLowerCase()));
   const missingFields = params.preliminaryAnalysis.extractionTargets
     .map((target) => humanizeMissingExtractionTarget(target))
-    .filter((target) => {
-      const normalizedTarget = target.toLowerCase();
-      return !Array.from(normalizedFieldIndex).some((entry) => entry.includes(normalizedTarget));
-    });
+    .filter((target) => !isPayrollExtractionTargetCovered(target, fields));
 
   return {
     headline: buildStructuredExtractionHeadline(params.classification.documentType),
@@ -1426,9 +1502,17 @@ function assertAuditarMimeMatchesBinary(params: { mimeType: string; binary: Buff
   }
 }
 
+function collectXmlIdentityTags(xml: string) {
+  return (xml.match(/<[^>]*\b(?:Emisor|Receptor|Nomina)\b[^>]*>/gi) ?? []).join(" ");
+}
+
 async function buildBinaryDerivedTextHint(params: { mimeType: string; binary: Buffer }) {
   if (params.mimeType === "text/xml" || params.mimeType === "application/xml") {
-    return params.binary.toString("utf8").replace(/^\uFEFF/, "").replace(/\s+/g, " ").slice(0, 6000);
+    const compact = params.binary.toString("utf8").replace(/^\uFEFF/, "").replace(/\s+/g, " ").trim();
+    const identityTags = collectXmlIdentityTags(compact);
+    const head = compact.slice(0, 6000);
+    if (!identityTags || head.includes(identityTags)) return head;
+    return `${head} ${identityTags}`.replace(/\s+/g, " ").trim().slice(0, 20000);
   }
 
   if (params.mimeType === DOCX_MIME_TYPE) {
@@ -3566,10 +3650,12 @@ export const appRouter = router({
               nss: z.string().trim().max(32).optional(),
               curp: z.string().trim().max(32).optional(),
               workerRfc: z.string().trim().max(20).optional(),
+              employerRfc: z.string().trim().max(20).optional(),
               netAmount: z.string().trim().max(40).optional(),
               period: z.string().trim().max(80).optional(),
             })
             .optional(),
+          pendingSinceMs: z.number().finite().optional(),
           conversationHistory: z.preprocess(
             (value) => (value == null ? undefined : capWorkerChatConversationHistory(value)),
             z
@@ -3648,6 +3734,10 @@ export const appRouter = router({
               input.receiptFacts?.workerRfc ||
               laborSignals.facts.workerRfc ||
               socialSecurityForChat.facts?.workerRfc,
+            employerRfc:
+              input.receiptFacts?.employerRfc ||
+              laborSignals.facts.employerRfc ||
+              socialSecurityForChat.facts?.employerRfc,
             netAmount:
               input.receiptFacts?.netAmount ||
               laborSignals.facts.netAmount ||
@@ -3656,6 +3746,8 @@ export const appRouter = router({
           },
           chatAnchor: socialSecurityForChat.officialCheck?.chatAnchor ?? null,
           reciboVsOficial: socialSecurityForChat.officialCheck?.reciboVsOficial ?? null,
+          nowMs: Date.now(),
+          pendingSinceMs: input.pendingSinceMs ?? null,
         });
         const workerChatGrounding = buildWorkerChatGrounding({
           documents: chatDocuments,
@@ -4656,10 +4748,14 @@ export const appRouter = router({
             textHint: input.textHint,
           });
         const detectedWorkerName = getDetectedWorkerName(preliminaryAnalysis);
+        const expedienteIdentity = await readExpedienteWorkerIdentity(input.tenantId, input.caseId);
         assertDocumentIdentityGuardrail({
           ceoBypass,
           expectedWorkerName: detail.case.employeeName,
           detectedWorkerName,
+          detectedEmployerName: getDetectedEmployerName(preliminaryAnalysis),
+          expectedIdentity: expedienteIdentity,
+          detectedIdentity: readAnalysisIdentity(preliminaryAnalysis),
         });
         const createdAt = new Date();
 
@@ -5382,10 +5478,14 @@ export const appRouter = router({
           });
 
         const detectedWorkerName = getDetectedWorkerName(preliminaryAnalysis);
+        const expedienteIdentity = await readExpedienteWorkerIdentity(input.tenantId, input.caseId);
         assertDocumentIdentityGuardrail({
           ceoBypass,
           expectedWorkerName: detail.case.employeeName,
           detectedWorkerName,
+          detectedEmployerName: getDetectedEmployerName(preliminaryAnalysis),
+          expectedIdentity: expedienteIdentity,
+          detectedIdentity: readAnalysisIdentity(preliminaryAnalysis),
         });
         const processedAt = new Date();
 

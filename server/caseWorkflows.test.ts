@@ -1913,6 +1913,65 @@ describe("appRouter case workflows", () => {
     expect(db.addDocumentRecord).not.toHaveBeenCalled();
   });
 
+  it("acepta el XML del mismo recibo aunque el nombre parezca de otra persona", async () => {
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValue(true);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValueOnce([
+      {
+        payload: JSON.stringify({
+          confirmedData: {
+            payrollNss: "84129214965",
+            payrollCurp: "UIPD921125HYNCLD03",
+            workerRfc: "UIPD9211257I0",
+          },
+        }),
+        status: "ready",
+      },
+    ] as never);
+
+    const xml = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:nomina12="http://www.sat.gob.mx/nomina12" Total="4725.60">',
+      '<cfdi:Emisor Rfc="ECC190605VA1" Nombre="EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V." />',
+      '<cfdi:Receptor Rfc="UIPD9211257I0" Nombre="ULISES IRVIN PEREZ DOMINGUEZ" />',
+      "<cfdi:Complemento>",
+      '<nomina12:Nomina Version="1.2">',
+      '<nomina12:Receptor Curp="UIPD921125HYNCLD03" NumSeguridadSocial="84129214965" />',
+      "</nomina12:Nomina>",
+      "</cfdi:Complemento>",
+      "</cfdi:Comprobante>",
+    ].join("");
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 81,
+        openId: "worker-same-receipt-xml",
+        email: "worker-same-receipt-xml@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "recibo-nomina.xml",
+        mimeType: "application/xml",
+        base64Content: `data:application/xml;base64,${Buffer.from(xml, "utf8").toString("base64")}`,
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(db.addDocumentRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        originalName: "recibo-nomina.xml",
+      }),
+    );
+  });
+
   it("rejects draft analysis when a normal user submits a document that appears to belong to another person", async () => {
     vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
 

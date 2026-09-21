@@ -27,6 +27,7 @@ import {
   FALTA_NSS_Y_RFC_EXACT,
   OFFICIAL_PENDING_STALE_MS,
   officialDispatchGapDetail,
+  officialSourceGapDetail,
   stripContradictoryMissingIdentityCopy,
   type OfficialCheckSummary,
 } from "./officialCheckCopy";
@@ -443,5 +444,114 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.headline).toMatch(/Falló/);
     expect(display.buttonLabel).toBe("Falló");
     expectFailedCopyBlamesInstitute(display.detail);
+  });
+
+  it("Pendiente sin checkedAt usa la fecha del ancla o el reloj de la tarjeta y pasa a Falló", () => {
+    const started = new Date("2026-09-21T15:30:00.000Z").getTime();
+    const imssCheck = {
+      source: "imss" as const,
+      sourceLabel: "IMSS",
+      status: "pendiente" as const,
+      label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+      detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+      checkedAt: null,
+      used: { nss: true, curp: false, rfc: false },
+      honesty: "pending" as const,
+      hechos: [],
+    };
+    const anchor = {
+      fuente: "imss" as const,
+      estado: "pending" as const,
+      fecha: "2026-09-21T15:30:00.000Z",
+      hechos: ["Todavía no hay una respuesta oficial nueva de IMSS."],
+      motivoFallo: null,
+    };
+    const fromAnchor = reconcileOfficialCheckWithIdentity(
+      summary("pendiente", {
+        checkedAt: null,
+        identity: { nss: true, curp: false, rfc: false },
+        checks: [imssCheck],
+        chatAnchor: {
+          imss: anchor,
+          sat: { ...anchor, fuente: "sat", hechos: ["Todavía no hay una respuesta oficial nueva de SAT."] },
+          infonavit: { ...anchor, fuente: "infonavit", hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."] },
+        },
+      }),
+      { nss: true, curp: false, rfc: false },
+      { nowMs: started + 70_000 },
+    );
+    expect(fromAnchor?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expectFailedCopyBlamesInstitute(fromAnchor?.checks.find((item) => item.source === "imss")?.detail ?? "");
+    expect(fromAnchor?.overallStatus).toBe("no_se_pudo");
+
+    const fromCard = reconcileOfficialCheckWithIdentity(
+      summary("pendiente", {
+        checkedAt: null,
+        identity: { nss: true, curp: false, rfc: false },
+        checks: [imssCheck],
+      }),
+      { nss: true, curp: false, rfc: false },
+      { nowMs: started + 70_000, pendingSinceMs: started },
+    );
+    expect(fromCard?.overallStatus).toBe("no_se_pudo");
+    expect(fromCard?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expectFailedCopyBlamesInstitute(fromCard?.overallDetail ?? "");
+    expect(fromCard?.overallDetail ?? "").not.toMatch(/Falta tu NSS/);
+  });
+
+  it("un SAT vivo no congela el IMSS que sigue Pendiente más de 60s", () => {
+    const started = new Date("2026-09-21T15:30:00.000Z").getTime();
+    const stale = reconcileOfficialCheckWithIdentity(
+      summary("pendiente", {
+        checkedAt: "2026-09-21T15:30:00.000Z",
+        identity: { nss: true, curp: false, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "vivo",
+            label: OFFICIAL_CHECK_STATUS_LABEL.vivo,
+            detail: OFFICIAL_CHECK_STATUS_DETAIL.vivo,
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "live",
+            hechos: [],
+          },
+        ],
+      }),
+      { nss: true, curp: false, rfc: true },
+      { nowMs: started + 70_000 },
+    );
+    expect(stale?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(stale?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+  });
+
+  it("no dice que falta el RFC si el de la persona ya está, y no usa el del patrón", () => {
+    expect(
+      officialSourceGapDetail("sat", {
+        workerRfc: "UIPD9211257I0",
+        employerRfc: "ECC190605VA1",
+      }),
+    ).not.toMatch(/Falta tu RFC|Falta el RFC|Falta un RFC/i);
+    expect(
+      officialSourceGapDetail("sat", { employerRfc: "ECC190605VA1" }),
+    ).toBe("Falta el RFC de la persona trabajadora para consultar SAT.");
+    expect(
+      officialSourceGapDetail("sat", {
+        workerRfc: "UIPD9211257I0",
+        employerRfc: "ECC190605VA1",
+      }),
+    ).toBe(OFFICIAL_CHECK_STATUS_DETAIL.pendiente);
   });
 });

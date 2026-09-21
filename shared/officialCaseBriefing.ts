@@ -147,7 +147,7 @@ export function officialChatIdentityGapDetail(
     if (isGenericSatRfc(facts?.workerRfc)) {
       return "El RFC del recibo es genérico; SAT necesita un RFC real para consultar.";
     }
-    return officialSourceGapDetail("sat");
+    return officialSourceGapDetail("sat", facts);
   }
   if (!nssVisible && rfcVisible) {
     return officialSourceGapDetail("imss");
@@ -237,20 +237,41 @@ export function formatChatAnchorStatusLine(
     : `${sourceLabel(source.fuente)}: ${label}${fail}`;
 }
 
+function lineWithInstituteFailure(line: string, source: OfficialChatAnchorSource["fuente"], detail?: string | null) {
+  if (!/: Falló\b/.test(line) || line.includes("no de AuditaPatrón")) return line;
+  const blame = rewriteOfficialFailedMotivo(source, detail);
+  return blame ? `${line} · ${blame}` : line;
+}
+
 export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | null | undefined): string[] {
   if (!summary || isPermissionBlockedStatus(summary.overallStatus)) return [];
   if (summary.chatAnchor) {
     return [summary.chatAnchor.imss, summary.chatAnchor.sat, summary.chatAnchor.infonavit].map(
-      (source) => formatChatAnchorStatusLine(source, summary.checkedAt, summary.identity),
+      (source) => {
+        const check = summary.checks.find((item) => item.source === source.fuente);
+        const line =
+          check && check.status === "no_se_pudo" && source.estado !== "failed" && source.estado !== "live"
+            ? formatOfficialStatusLine({
+                sourceLabel: check.sourceLabel,
+                status: check.status,
+                checkedAt: check.checkedAt ?? source.fecha ?? summary.checkedAt,
+              })
+            : formatChatAnchorStatusLine(source, summary.checkedAt, summary.identity);
+        return lineWithInstituteFailure(line, source.fuente, check?.detail ?? source.motivoFallo);
+      },
     );
   }
   if (summary.checks.length > 0) {
     return summary.checks.map((item) =>
-      formatOfficialStatusLine({
-        sourceLabel: item.sourceLabel,
-        status: item.status,
-        checkedAt: item.checkedAt ?? summary.checkedAt,
-      }),
+      lineWithInstituteFailure(
+        formatOfficialStatusLine({
+          sourceLabel: item.sourceLabel,
+          status: item.status,
+          checkedAt: item.checkedAt ?? summary.checkedAt,
+        }),
+        item.source,
+        item.detail,
+      ),
     );
   }
   return OFFICIAL_CHECK_SOURCES.map((source) => {
@@ -260,11 +281,15 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
         ? "pendiente"
         : summary.overallStatus
       : "sin_datos";
-    return formatOfficialStatusLine({
-      sourceLabel: OFFICIAL_SOURCE_LABEL[source],
-      status,
-      checkedAt: summary.checkedAt,
-    });
+    return lineWithInstituteFailure(
+      formatOfficialStatusLine({
+        sourceLabel: OFFICIAL_SOURCE_LABEL[source],
+        status,
+        checkedAt: summary.checkedAt,
+      }),
+      source,
+      null,
+    );
   });
 }
 
@@ -291,6 +316,7 @@ export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
     facts.nss ? `NSS en recibo: ${facts.nss}` : null,
     facts.curp ? `CURP ${facts.curp}` : null,
     facts.workerRfc ? `RFC de la persona trabajadora ${facts.workerRfc}` : null,
+    facts.employerRfc ? `RFC del patrón ${facts.employerRfc}` : null,
   ].filter((item): item is string => Boolean(item));
 }
 
@@ -373,6 +399,7 @@ export function buildOfficialCaseBriefing(params: {
   reciboVsOficial?: ReciboVsOficial | ReciboVsOficialResultado | null;
   hasDifferenceSignal?: boolean;
   nowMs?: number;
+  pendingSinceMs?: number | null;
 }): OfficialCaseBriefing {
   const facts = params.facts ?? {};
   const officialCheck = params.officialCheck ?? null;
@@ -400,7 +427,7 @@ export function buildOfficialCaseBriefing(params: {
       ? { ...officialCheck, chatAnchor: chatAnchor ?? officialCheck.chatAnchor ?? null, reciboVsOficial }
       : officialCheck,
     identity,
-    { nowMs: params.nowMs, facts },
+    { nowMs: params.nowMs, pendingSinceMs: params.pendingSinceMs, facts },
   );
   const comparison = selectReceiptOfficialComparison({
     officialCheck: reconciled,

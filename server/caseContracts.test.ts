@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { appRouter } from "./routers";
+import { appRouter, buildStructuredExtractionFallback } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import {
   buildCanonicalCaseContract,
@@ -234,6 +234,58 @@ describe("caseContracts", () => {
     expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
     expect(analysis.confirmedData.payrollNss).toBe("84129214965");
     expect(analysis.confirmedData.payrollEmployerRegistration).toBe("R1379389106");
+    expect(analysis.confirmedData.employerRfc ?? analysis.estimatedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc ?? analysis.estimatedData.workerRfc).not.toBe("ECC190605VA1");
+    expect(analysis.confirmedData.payrollCurp ?? null).toBeNull();
+  });
+
+  it("separa RFC del patrón y de la persona trabajadora en un CFDI de nómina", () => {
+    const textHint = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<cfdi:Comprobante xmlns:cfdi="http://www.sat.gob.mx/cfd/4" xmlns:nomina12="http://www.sat.gob.mx/nomina12" Total="4725.60">',
+      '<cfdi:Emisor Rfc="ECC190605VA1" Nombre="EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V." />',
+      '<cfdi:Receptor Rfc="UIPD9211257I0" Nombre="ULISES IRVIN PEREZ DOMINGUEZ" />',
+      "<cfdi:Complemento>",
+      '<nomina12:Nomina Version="1.2" Curp="XXXX010101HDFXXX00" NumSeguridadSocial="00000000000">',
+      '<nomina12:Emisor RegistroPatronal="R1379389106" />',
+      '<nomina12:Receptor Curp="UIPD921125HYNCLD03" NumSeguridadSocial="84129214965" />',
+      "</nomina12:Nomina>",
+      "</cfdi:Complemento>",
+      "</cfdi:Comprobante>",
+    ].join("");
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint,
+    });
+
+    expect(analysis.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.workerRfc).not.toBe(analysis.confirmedData.employerRfc);
+    expect(analysis.estimatedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.estimatedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.payrollNss).not.toBe("00000000000");
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$4725.60");
+    expect(analysis.estimatedData.workerName).toMatch(/ULISES IRVIN PEREZ DOMINGUEZ/i);
+    expect(String(analysis.estimatedData.workerName)).not.toMatch(/CAMREFLEX/i);
+    expect(analysis.confirmedData.payrollEmployerName).toMatch(/CAMREFLEX/i);
+
+    const extraction = buildStructuredExtractionFallback({
+      classification: classifyMexicanLaborDocument({
+        fileName: "recibo-nomina.xml",
+        mimeType: "application/xml",
+        textHint,
+      }),
+      preliminaryAnalysis: analysis,
+    });
+    const missing = extraction.missingFields.join(" ");
+    expect(missing).not.toMatch(/RFC del patrón|RFC patrón/i);
+    expect(missing).not.toMatch(/RFC de la persona trabajadora|RFC trabajador/i);
+    expect(extraction.fields.some((field) => field.key === "payrollCurp" && field.value === "UIPD921125HYNCLD03")).toBe(true);
+    expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "UIPD9211257I0")).toBe(true);
+    expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "ECC190605VA1")).toBe(false);
   });
 
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {

@@ -248,6 +248,18 @@ export function mergeWorkerOfficialIdentities(
   };
 }
 
+/** Mismo trabajador si coincide NSS, CURP o RFC. No usa el RFC del patrón. */
+export function fiscalIdentitiesMatch(
+  left?: WorkerOfficialIdentity | null,
+  right?: WorkerOfficialIdentity | null,
+): boolean {
+  if (!left || !right) return false;
+  if (left.nss && right.nss && left.nss === right.nss) return true;
+  if (left.curp && right.curp && left.curp === right.curp) return true;
+  if (left.rfc && right.rfc && left.rfc === right.rfc) return true;
+  return false;
+}
+
 function identityFlags(identity: WorkerOfficialIdentity): OfficialIdentityFlags {
   return {
     nss: Boolean(identity.nss),
@@ -333,7 +345,7 @@ export function buildOfficialCheckBridgePayload(params: {
     eventName: OFFICIAL_CHECK_EVENT,
     event: OFFICIAL_CHECK_EVENT,
     consentGranted: true,
-    sources: ["imss", "sat"],
+    sources: params.identity.curp ? ["imss", "sat", "infonavit"] : ["imss", "sat"],
     autonomousInput,
     worker,
     identity: worker,

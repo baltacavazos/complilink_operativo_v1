@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   humanizeMissingExtractionTarget,
   humanizeStructuredFieldLabel,
+  isPayrollExtractionTargetCovered,
   isWorkerSystemStructuredField,
 } from "./workerVisibleExtraction";
 
@@ -40,5 +41,23 @@ describe("workerVisibleExtraction", () => {
     expect(humanizeStructuredFieldLabel("infonavitWithheld")).toBe("Descuento Infonavit visible");
     expect(humanizeMissingExtractionTarget("INFONAVIT")).toBe("descuento o referencia de Infonavit");
     expect(humanizeMissingExtractionTarget("NSS")).toBe("NSS o retención de IMSS");
+    expect(humanizeMissingExtractionTarget("RFC patrón")).toBe("RFC del patrón");
+  });
+
+  it("no marca faltante el RFC del patrón si ya está leído, ni lo usa como RFC de la persona", () => {
+    const patronVisible = [{ key: "employerRfc", label: "RFC visible", value: "ECC190605VA1" }];
+    expect(isPayrollExtractionTargetCovered("RFC patrón", patronVisible)).toBe(true);
+    expect(isPayrollExtractionTargetCovered("RFC del patrón", patronVisible)).toBe(true);
+    expect(isPayrollExtractionTargetCovered("RFC trabajador", patronVisible)).toBe(false);
+    expect(isPayrollExtractionTargetCovered("RFC de la persona trabajadora", patronVisible)).toBe(false);
+
+    const ambos = [
+      ...patronVisible,
+      { key: "workerRfc", label: "RFC de la persona trabajadora", value: "UIPD9211257I0" },
+      { key: "payrollCurp", label: "CURP visible en el comprobante", value: "UIPD921125HYNCLD03" },
+    ];
+    expect(isPayrollExtractionTargetCovered("RFC trabajador", ambos)).toBe(true);
+    expect(isPayrollExtractionTargetCovered("CURP", ambos)).toBe(true);
+    expect(isPayrollExtractionTargetCovered("CURP", patronVisible)).toBe(false);
   });
 });

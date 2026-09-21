@@ -2478,6 +2478,8 @@ export function buildPayrollFactSignal(params: {
         : "No se alcanzó a leer con claridad la empresa o razón social que aparece en el recibo.",
     period ? `Periodo identificado: ${period}.` : "El periodo de pago no se alcanzó a leer completo.",
     workerRfc ? `RFC de la persona trabajadora: ${workerRfc}.` : null,
+    curp ? `CURP: ${curp}.` : null,
+    employerRfc ? `RFC del patrón: ${employerRfc}.` : null,
     payment ? `Pago que se alcanza a leer: ${payment}.` : "El monto pagado no se alcanzó a leer completo.",
     deductions
       ? deductionsAreZero
@@ -4335,6 +4337,7 @@ export default function Auditar() {
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
   const [officialCheckResult, setOfficialCheckResult] =
     useState<OfficialCheckSummary | null>(null);
+  const officialPendingSinceRef = useRef<number | null>(null);
   const [officialNowMs, setOfficialNowMs] = useState(() => Date.now());
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
   const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
@@ -5587,18 +5590,32 @@ export default function Auditar() {
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
   });
-  const officialPendingWatch =
+  const rawOfficialPending =
     officialCheckSummary?.overallStatus === "pendiente" ||
-    officialCheckSummary?.checks?.some(item => item.status === "pendiente");
-  useEffect(() => {
-    if (!officialPendingWatch) return;
-    setOfficialNowMs(Date.now());
-    const intervalId = window.setInterval(() => setOfficialNowMs(Date.now()), 5000);
-    return () => window.clearInterval(intervalId);
-  }, [officialPendingWatch, officialCheckSummary?.checkedAt]);
+    Boolean(
+      officialCheckSummary?.checks?.some(
+        item => item.status === "pendiente" || item.honesty === "pending",
+      ),
+    );
+  if (
+    revalidateSocialSecurityMutation.isPending ||
+    guestOfficialCheckMutation.isPending
+  ) {
+    officialPendingSinceRef.current = Date.now();
+  } else if (rawOfficialPending) {
+    if (officialPendingSinceRef.current == null) {
+      const stamped = officialCheckSummary?.checkedAt
+        ? new Date(officialCheckSummary.checkedAt).getTime()
+        : Number.NaN;
+      officialPendingSinceRef.current = Number.isFinite(stamped) ? stamped : Date.now();
+    }
+  } else {
+    officialPendingSinceRef.current = null;
+  }
   const officialCaseBriefing = buildOfficialCaseBriefing({
     officialCheck: officialCheckSummary,
     nowMs: officialNowMs,
+    pendingSinceMs: officialPendingSinceRef.current,
     facts: {
       period:
         lastUploadFactSignal.period ??
@@ -5629,6 +5646,11 @@ export default function Auditar() {
         guestFactSignal.workerRfc ??
         effectiveSocialSecurityValidation?.facts?.workerRfc ??
         readGuestOfficialFact("workerRfc"),
+      employerRfc:
+        lastUploadFactSignal.employerRfc ??
+        guestFactSignal.employerRfc ??
+        effectiveSocialSecurityValidation?.facts?.employerRfc ??
+        readGuestOfficialFact("employerRfc"),
     },
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
@@ -5646,6 +5668,19 @@ export default function Auditar() {
       setOfficialCheckConsent(true);
     }
   }, [officialCheckSummary]);
+  const officialPendingWatch =
+    rawOfficialPending ||
+    officialCaseBriefing.officialCheck?.overallStatus === "pendiente" ||
+    Boolean(officialCaseBriefing.officialCheck?.checks?.some(item => item.status === "pendiente")) ||
+    officialCaseBriefing.statusLines.some(line => /:\s*Pendiente\b/.test(line));
+  useEffect(() => {
+    if (!officialPendingWatch) return;
+    setOfficialNowMs(Date.now());
+    const intervalId = window.setInterval(() => setOfficialNowMs(Date.now()), 5000);
+    return () => window.clearInterval(intervalId);
+  }, [officialPendingWatch, officialCheckSummary?.checkedAt]);
+  const visibleOfficialChecks =
+    officialCaseBriefing.officialCheck?.checks ?? officialCheckSummary?.checks ?? [];
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
     () =>
@@ -6297,6 +6332,7 @@ export default function Auditar() {
     summary: officialCaseBriefing.officialCheck ?? officialCheckSummary,
     identity: officialReceiptIdentity,
     nowMs: officialNowMs,
+    pendingSinceMs: officialPendingSinceRef.current,
     facts: officialCaseBriefing.facts,
     missingIdentityDetail: canDispatchOfficialConsult(officialReceiptIdentity)
       ? null
@@ -7672,9 +7708,11 @@ export default function Auditar() {
           nss: officialCaseBriefing.facts.nss ?? undefined,
           curp: officialCaseBriefing.facts.curp ?? undefined,
           workerRfc: officialCaseBriefing.facts.workerRfc ?? undefined,
+          employerRfc: officialCaseBriefing.facts.employerRfc ?? undefined,
           netAmount: officialCaseBriefing.facts.netAmount ?? undefined,
           period: officialCaseBriefing.facts.period ?? undefined,
         },
+        pendingSinceMs: officialPendingSinceRef.current ?? undefined,
         conversationHistory: buildHeliosCopilotConversationHistoryInput({
           current: heliosCopilotMessages,
           nextPrompt: content,
@@ -9919,10 +9957,20 @@ export default function Auditar() {
                   <p className="mt-2 text-xs leading-5 text-teal-800">
                     {officialCheckHeadline ?? FIVE_SECOND_DISCLAIMER}
                   </p>
-                  {officialCheckSummary ? (
+                  {officialCaseBriefing.officialCheck || officialCheckSummary ? (
                     <p className="mt-2 text-xs leading-5 text-teal-950">
-                      {officialCheckSummary.overallDetail}
+                      {officialCaseBriefing.officialCheck?.overallDetail ?? officialCheckSummary?.overallDetail}
                     </p>
+                  ) : null}
+                  {visibleOfficialChecks.length ? (
+                    <ul className="mt-2 space-y-1 text-xs leading-5 text-teal-950">
+                      {visibleOfficialChecks.map(check => (
+                        <li key={`dossier-ss-${check.source}`}>
+                          {check.sourceLabel}: {check.label}
+                          {check.status === "no_se_pudo" ? `. ${check.detail}` : ""}
+                        </li>
+                      ))}
+                    </ul>
                   ) : null}
                   {effectiveSocialSecurityValidation?.explanations?.length ? (
                     <ul className="mt-3 space-y-1.5 text-xs leading-5 text-teal-950">
@@ -10349,16 +10397,17 @@ export default function Auditar() {
                     <p className="mt-1.5 text-xs leading-4 text-slate-500">
                       {officialCheckHeadline ?? socialSecurityLastCheckLabel}
                     </p>
-                    {officialCheckSummary ? (
+                    {officialCaseBriefing.officialCheck || officialCheckSummary ? (
                       <p className="mt-1.5 text-xs leading-4 text-slate-600">
-                        {officialCheckSummary.overallDetail}
+                        {officialCaseBriefing.officialCheck?.overallDetail ?? officialCheckSummary?.overallDetail}
                       </p>
                     ) : null}
-                    {officialCheckSummary?.checks?.length ? (
+                    {visibleOfficialChecks.length ? (
                       <ul className="mt-1.5 space-y-1 text-xs leading-4 text-slate-600">
-                        {officialCheckSummary.checks.map(check => (
+                        {visibleOfficialChecks.map(check => (
                           <li key={`ss-${check.source}`}>
                             {check.sourceLabel}: {check.label}
+                            {check.status === "no_se_pudo" ? `. ${check.detail}` : ""}
                           </li>
                         ))}
                       </ul>
