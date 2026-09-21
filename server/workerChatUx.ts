@@ -346,6 +346,35 @@ export function buildWorkerChatLlmInstructions(
     .filter((item): item is string => Boolean(item))
     .join("; ");
 
+  if (grounding.caseOnly) {
+    return [
+      CASE_ADVISOR_RULE,
+      formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),
+      `chatAnchor: ${JSON.stringify(grounding.chatAnchor)}`,
+      `reciboVsOficial: ${JSON.stringify(grounding.reciboVsOficial)}`,
+      WORKER_ADVISOR_VOICE_NOTE,
+      `Si necesitas un nombre, preséntate solo como ${WORKER_CHAT_TITLE.toLowerCase()}. NUNCA escribas Helios, Modo Helios ni CompliLink.`,
+      "Habla en español sencillo, cálido y familiar. Frases cortas. Sin jerga de ingeniería ni tecnicismos.",
+      casePeople
+        ? `Este es el caso concreto que ya tienes abierto: ${casePeople}. Toda respuesta debe hablar de estas personas y papeles, no de un caso genérico.`
+        : "Este es un expediente concreto. No des consejos de libro: aplica todo a los papeles que sí están aquí.",
+      "Si preguntan un concepto (IMSS, ISR, finiquito, etc.), explícalo aplicado a ESTE expediente: qué se ve aquí, qué falta aquí y qué le conviene a esta persona.",
+      "Nunca inventes tesis, registro digital, Semanario Judicial, IUS ni jurisprudencia.",
+      "No uses el título Lecturas oficiales del digest. La respuesta son solo las cuatro secciones del papel.",
+      "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Nunca etiquetes doctrina como jurisprudencia.",
+      grounding.officialBriefing.hasLiveOfficialResult
+        ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
+        : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
+      "Límite: habla solo con el resultado de TU consulta y el recibo de ESTE expediente. No inventes cumple, alta vigente ni salario oficial.",
+      "Hechos visibles (únicos montos, RFC o NSS que puedes citar):",
+      visibleFacts,
+      `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${guidance.nextStep}`,
+      `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
+      "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte.",
+      `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
+    ].join("\n");
+  }
+
   return [
     CASE_ADVISOR_RULE,
     formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),

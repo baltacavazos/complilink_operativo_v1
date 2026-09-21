@@ -151,7 +151,11 @@ import {
   scopeWorkerChatDocumentsForPlan,
 } from "./workerChatUx";
 import { emptyOfficialDigest } from "@shared/officialDigest";
-import { buildOfficialCaseBriefing, CASE_ADVISOR_RULE } from "@shared/officialCaseBriefing";
+import {
+  buildOfficialCaseBriefing,
+  CASE_ADVISOR_RULE,
+  formatOfficialCaseBriefingForPrompt,
+} from "@shared/officialCaseBriefing";
 import {
   capWorkerChatConversationHistory,
   sanitizeWorkerChatCopy,
@@ -3562,7 +3566,6 @@ export const appRouter = router({
           tenantId,
           caseId,
         });
-        const legalAcceptance = buildLegalAcceptanceSummary(detail.consents);
         const conversationHistory = normalizeHeliosCopilotConversationHistory(input.conversationHistory);
         const durableMemory = await getAdvisorMemoryForUser({
           userId: ctx.user.id,
@@ -3650,8 +3653,7 @@ export const appRouter = router({
                 },
                 {
                   role: "user",
-                    content: `Contexto del expediente:\n${buildHeliosCopilotContext({ detail, documents: chatDocuments, conversationHistory, durableMemory, missingDocuments })}\n\nConsulta y recibo de este caso:\n${JSON.stringify({
-                      officialCheck: socialSecurityForChat.officialCheck,
+                    content: `${formatOfficialCaseBriefingForPrompt(officialBriefing)}\n\nConsulta y recibo de este caso:\n${JSON.stringify({
                       chatAnchor: officialBriefing.chatAnchor,
                       reciboVsOficial: officialBriefing.reciboVsOficial,
                       officialStatuses: officialBriefing.statusLines,
@@ -3659,11 +3661,7 @@ export const appRouter = router({
                       comparison: officialBriefing.comparison,
                       receipt: officialBriefing.receiptLines,
                       missingIdentity: officialBriefing.missingIdentity,
-                    }, null, 2)}\n\nSeñales y bases ya presentes:\n${buildWorkerChatContextNote(workerChatGrounding)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- ${CASE_ADVISOR_RULE}\n- Estado de aceptación legal visible: ${
-                    legalAcceptance.isAccepted
-                      ? `vigente ${legalAcceptance.legalVersion} aceptada el ${legalAcceptance.acceptedAt ?? "sin timestamp visible"}`
-                      : `la aceptación vigente ${legalAcceptance.legalVersion} todavía no consta para este expediente`
-                  }.\n- Preferencia visible de tono: ${responseTone === "explained" ? "un poco más" : "corta"}.\n\nPregunta de la persona usuaria: ${input.prompt}`,
+                    }, null, 2)}\n\nVoz del asesor:\n${WORKER_ADVISOR_VOICE_NOTE}\n- ${CASE_ADVISOR_RULE}\n- Preferencia visible de tono: ${responseTone === "explained" ? "un poco más" : "corta"}.\n\nPregunta de la persona usuaria: ${input.prompt}`,
 
                 },
               ],

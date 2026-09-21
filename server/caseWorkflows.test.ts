@@ -1174,6 +1174,122 @@ describe("appRouter case workflows", () => {
     expect(result.answer).not.toMatch(/required_plan|current_plan|\|\||Helios|CompliLink/i);
   });
 
+  it("con resultado vivo el chat manda al modelo solo chatAnchor, reciboVsOficial y el recibo", async () => {
+    vi.mocked(db.getCaseDetailForUser).mockResolvedValue({
+      ...demoCaseDetail,
+      events: [
+        {
+          title: "Consulta IMSS y SAT",
+          eventAt: new Date("2026-09-21T15:30:00.000Z"),
+          metadata: JSON.stringify({
+            live_check: {
+              configured: true,
+              consentGranted: true,
+              overallStatus: "vivo",
+              overallLabel: "Vivo",
+              overallDetail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+              checkedAt: "2026-09-21T15:30:00.000Z",
+              identity: { nss: true, curp: false, rfc: true },
+              checks: [],
+              chatAnchor: {
+                imss: {
+                  fuente: "imss",
+                  estado: "live",
+                  fecha: "2026-09-21T15:30:00.000Z",
+                  hechos: ["Alta vigente: sí."],
+                  motivoFallo: null,
+                },
+                sat: {
+                  fuente: "sat",
+                  estado: "pending",
+                  fecha: "2026-09-21T15:30:00.000Z",
+                  hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+                  motivoFallo: null,
+                },
+                infonavit: {
+                  fuente: "infonavit",
+                  estado: "failed",
+                  fecha: "2026-09-21T15:30:00.000Z",
+                  hechos: ["Infonavit está en mantenimiento."],
+                  motivoFallo: "Infonavit está en mantenimiento.",
+                },
+              },
+              reciboVsOficial: { resultado: "hay_diferencia", motivo: "SBC distinto" },
+            },
+          }),
+        },
+      ],
+    } as never);
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-PAY-001",
+        originalName: "recibo_mayo.pdf",
+        documentType: "payroll_receipt",
+        classificationConfidence: 91,
+        consentStatus: "granted",
+        visibility: "case_team",
+        createdAt: new Date("2026-05-16T10:00:00.000Z"),
+        heliosOpinion: {
+          documentId: "DOC-PAY-001",
+          caseId: "CASE-BALT-1-DEMO001",
+          status: "completed",
+          mode: "mock",
+          summary: "El recibo muestra periodo y un descuento de IMSS.",
+          legalOpinion: "Hay señales de descuento IMSS en el papel.",
+          riskLevel: "medium",
+          recommendedNextStep: "Compara el descuento con tu siguiente recibo.",
+          recommendedActions: [],
+          legalFoundations: [],
+          keyFactsUsed: ["Periodo 1 al 15 de mayo", "NSS 12345678901"],
+          uncertainties: [],
+          confidenceScore: 80,
+          disclaimer: "Opinión preliminar asistida por sistema.",
+          generatedAt: "2026-05-16T10:00:00.000Z",
+          rawPayload: {
+            preliminaryAnalysis: {
+              confirmedData: {
+                payrollPeriod: "2026-05-01 al 2026-05-15",
+                payrollNss: "12345678901",
+                imssWithheld: "$120.50",
+              },
+            },
+          },
+        },
+      },
+    ] as never);
+    vi.mocked(invokeLLM).mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content:
+              "Respuesta clara: Esto vimos: hay diferencia.\nLo que sí se sabe: IMSS respondió hoy.\nLo que falta: SAT sigue pendiente.\nSiguiente paso: Anota periodo y montos y pide aclaración por escrito a patrón o RH.",
+          },
+        },
+      ],
+    } as never);
+
+    const caller = appRouter.createCaller(createProtectedContext({ role: "user" }));
+    const result = await caller.cases.heliosCopilotChat({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      prompt: "¿Me pagan bien?",
+    });
+
+    expect(invokeLLM).toHaveBeenCalledTimes(1);
+    const payload = JSON.stringify(vi.mocked(invokeLLM).mock.calls[0]?.[0]);
+    expect(payload).toContain("chatAnchor");
+    expect(payload).toContain("reciboVsOficial");
+    expect(payload).toContain("Alta vigente: sí.");
+    expect(payload).toMatch(/Esto vimos: hay diferencia/);
+    expect(payload).not.toMatch(/no consultamos en vivo/i);
+    expect(payload).not.toMatch(/Contexto del expediente/);
+    expect(payload).not.toMatch(/HMAC|APIMARKET/i);
+    expect(payload).toMatch(/NUNCA escribas Helios/);
+    expect(result.answer).toMatch(/Esto vimos: hay diferencia|hay diferencia/i);
+    expect(result.disclaimer).toBe(WORKER_CHAT_DISCLAIMER);
+    expect(result.disclaimer).not.toMatch(/no consultamos en vivo/i);
+  });
+
   it("revalidates IMSS and Infonavit with a Helios audit contract and traceable evidence", async () => {
     vi.mocked(db.listVisibleDocuments).mockResolvedValue([
       {
