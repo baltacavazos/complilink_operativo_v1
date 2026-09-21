@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 type WorkerOfficialResultProps = {
   presentation: InstituteSilencePresentation;
   onRetry: () => void;
+  onAsk: () => void;
   retryPending?: boolean;
   paperRead?: string | null;
 };
@@ -15,6 +16,7 @@ type WorkerOfficialResultProps = {
 export function WorkerOfficialResult({
   presentation,
   onRetry,
+  onAsk,
   retryPending = false,
   paperRead,
 }: WorkerOfficialResultProps) {
@@ -72,6 +74,14 @@ export function WorkerOfficialResult({
       >
         {presentation.retryLabel}
       </Button>
+      <button
+        type="button"
+        data-testid="official-check-chat-cta"
+        className="mt-3 block w-full bg-transparent text-center text-sm font-semibold text-[#161616] underline decoration-[#161616]/40 underline-offset-4"
+        onClick={onAsk}
+      >
+        {presentation.askLabel}
+      </button>
     </section>
   );
 }

@@ -8974,6 +8974,7 @@ export default function Auditar() {
             onRetry={() => {
               void handleGuestOfficialCheck();
             }}
+            onAsk={() => openHeliosCopilot()}
             paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
           />
           {guestReviewError ? (
@@ -9694,6 +9695,7 @@ export default function Auditar() {
                 onRetry={() => {
                   void handleRevalidateSocialSecurity();
                 }}
+                onAsk={() => openHeliosCopilot()}
               />
             ) : null}
             {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
@@ -9744,6 +9746,7 @@ export default function Auditar() {
                 onRetry={() => {
                   void handleRevalidateSocialSecurity();
                 }}
+                onAsk={() => openHeliosCopilot()}
                 paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
               />
             ) : null}
