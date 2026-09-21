@@ -322,7 +322,7 @@ function extractCfdiWorkerRfc(text: string) {
   const receptorRfc = extractXmlTags(text, "Receptor")
     .map((tag) => extractTagAttribute(tag, "Rfc")?.toUpperCase() ?? null)
     .find((value) => Boolean(value) && value !== employerRfc);
-  return receptorRfc ?? null;
+  return receptorRfc ?? extractLoosePersonRfc(text, employerRfc);
 }
 
 function extractCfdiWorkerName(text: string) {
@@ -419,6 +419,51 @@ function extractPayrollEmployerRegistration(text: string) {
   );
 }
 
+function compactIdentityToken(value: string) {
+  return value.toUpperCase().replace(/[^A-Z0-9Ñ&]/g, "");
+}
+
+/** NSS con espacios o guiones, como cuando el PDF parte el número en celdas. */
+function extractLooseLabeledNss(text: string) {
+  const match = text.match(
+    /(?:\bnss\b|n[úu]mero\s+de\s+seguridad\s+social|numseguridadsocial)(?:\s*[:.\-]?\s*)((?:\d[\s.\-]{0,2}){10,11})/i,
+  );
+  const digits = match?.[1]?.replace(/\D/g, "") ?? "";
+  return digits.length >= 10 && digits.length <= 11 ? digits : null;
+}
+
+function looksLikePersonRfc(value: string) {
+  return /^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/.test(value);
+}
+
+/** RFC de 13 de la persona. Ignora el de 12 del patrón y el del timbre. */
+function extractLoosePersonRfc(text: string, employerRfc: string | null) {
+  const tokens: string[] = [];
+  const upper = text.toUpperCase();
+  const label = /RFC\b(?:\s+DEL\s+(?:TRABAJADOR|RECEPTOR|EMPLEADO))?/g;
+  let labelMatch: RegExpExecArray | null;
+  while ((labelMatch = label.exec(upper))) {
+    const window = upper.slice(labelMatch.index + labelMatch[0].length, labelMatch.index + labelMatch[0].length + 28);
+    const compact = compactIdentityToken(window);
+    const thirteen = compact.slice(0, 13);
+    const twelve = compact.slice(0, 12);
+    if (looksLikePersonRfc(thirteen)) tokens.push(thirteen);
+    else if (/^[A-ZÑ&]{3}\d{6}[A-Z0-9]{3}$/.test(twelve)) tokens.push(twelve);
+  }
+  for (const bare of upper.matchAll(/\b([A-ZÑ&]{4}\d{6}[A-Z0-9]{3})\b/g)) {
+    tokens.push(bare[1]);
+  }
+  return tokens.find((token) => looksLikePersonRfc(token) && token !== employerRfc) ?? null;
+}
+
+function extractLooseCurp(text: string) {
+  const match = text.match(/CURP\b/i);
+  if (!match || match.index === undefined) return null;
+  const window = text.slice(match.index + match[0].length, match.index + match[0].length + 36);
+  const compact = compactIdentityToken(window).slice(0, 18);
+  return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/.test(compact) ? compact : null;
+}
+
 function extractPayrollNss(text: string) {
   const nssMatch = text.match(
     /(?:nss|n[úu]mero\s+de\s+seguridad\s+social)\s*[:\-]?\s*(\d{11})\b/i
@@ -430,6 +475,7 @@ function extractPayrollNss(text: string) {
     fromReceptor ??
     extractXmlAttribute(text, "NumSeguridadSocial") ??
     nssMatch?.[1] ??
+    extractLooseLabeledNss(text) ??
     extractNamedField(text, ["nss", "numero de seguridad social", "número de seguridad social"])
   );
 }
@@ -441,7 +487,7 @@ function extractPayrollCurp(text: string) {
   const labeled = text.match(
     /(?:\bcurp\b)\s*[:=]?\s*([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})\b/i
   )?.[1];
-  const value = (fromReceptor ?? extractXmlAttribute(text, "Curp") ?? labeled)?.toUpperCase() ?? null;
+  const value = (fromReceptor ?? extractXmlAttribute(text, "Curp") ?? labeled ?? extractLooseCurp(text))?.toUpperCase() ?? null;
   return {
     confirmed: fromReceptor || extractXmlAttribute(text, "Curp") ? value : null,
     estimated: fromReceptor || extractXmlAttribute(text, "Curp") ? null : value,

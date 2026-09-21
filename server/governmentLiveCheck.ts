@@ -131,7 +131,7 @@ export function normalizeRfc(value: unknown, options?: { allowGeneric?: boolean 
 }
 
 const NSS_LABELED_RE =
-  /(?:nss|n\.?\s*s\.?\s*s\.?|num(?:ero)?\s+(?:de\s+)?seguro\s+social|seguridad\s+social|numseguridadsocial)\D{0,24}(\d{10,11})/i;
+  /(?:nss|n\.?\s*s\.?\s*s\.?|num(?:ero)?\s+(?:de\s+)?seguro\s+social|seguridad\s+social|numseguridadsocial)[^0-9]{0,12}((?:\d[^0-9A-Za-z]{0,2}){10,11})/i;
 const NSS_BARE_RE = /\b(\d{11})\b/;
 const CURP_LABELED_RE = /(?:curp)\D{0,16}([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})/i;
 const CURP_BARE_RE = /\b([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})\b/;
@@ -229,12 +229,13 @@ export function collectWorkerOfficialIdentity(facts: {
     rfc: normalizeRfc(facts.workerRfc ?? facts.rfc, { allowGeneric: Boolean(facts.workerRfc) }),
   };
   const extracted = extractReceiptOfficialIdentity(facts.haystack ?? facts.text ?? facts);
-  const rfc = fromFacts.rfc ?? extracted.rfc;
   const employerRfc = normalizeRfc(facts.employerRfc, { allowGeneric: true });
+  const personRfc = (candidate: string | null) =>
+    candidate && candidate !== employerRfc ? candidate : null;
   return {
     nss: fromFacts.nss ?? extracted.nss,
     curp: fromFacts.curp ?? extracted.curp,
-    rfc: fromFacts.rfc ? rfc : rfc && rfc !== employerRfc ? rfc : null,
+    rfc: personRfc(fromFacts.rfc) ?? personRfc(extracted.rfc),
   };
 }
 

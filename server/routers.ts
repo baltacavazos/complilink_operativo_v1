@@ -132,6 +132,7 @@ import {
   fiscalIdentitiesMatch,
   getOfficialCheckAvailability,
   mergeWorkerOfficialIdentities,
+  normalizeRfc,
   readOfficialCheckFromMetadata,
   runOfficialGovernmentCheck,
 } from "./governmentLiveCheck";
@@ -379,16 +380,30 @@ function readAnalysisIdentity(record: {
   });
 }
 
-function identityFromClassificationPayload(payload: string) {
-  try {
-    const parsed = JSON.parse(payload) as {
+function readAnalysisEmployerRfc(record: {
+  confirmedData?: Record<string, unknown> | null;
+  estimatedData?: Record<string, unknown> | null;
+} | null | undefined) {
+  const confirmed: Record<string, unknown> = record?.confirmedData ?? {};
+  const estimated: Record<string, unknown> = record?.estimatedData ?? {};
+  return normalizeRfc(confirmed.employerRfc ?? estimated.employerRfc, { allowGeneric: true });
+}
+
+function parseClassificationPayload(payload: string) {
+  const parsed = JSON.parse(payload) as {
+    confirmedData?: Record<string, unknown> | null;
+    estimatedData?: Record<string, unknown> | null;
+    preliminaryAnalysis?: {
       confirmedData?: Record<string, unknown> | null;
       estimatedData?: Record<string, unknown> | null;
-      preliminaryAnalysis?: {
-        confirmedData?: Record<string, unknown> | null;
-        estimatedData?: Record<string, unknown> | null;
-      } | null;
-    };
+    } | null;
+  };
+  return parsed;
+}
+
+function identityFromClassificationPayload(payload: string) {
+  try {
+    const parsed = parseClassificationPayload(payload);
     return mergeWorkerOfficialIdentities(
       readAnalysisIdentity(parsed),
       readAnalysisIdentity(parsed.preliminaryAnalysis),
@@ -398,16 +413,35 @@ function identityFromClassificationPayload(payload: string) {
   }
 }
 
-async function readExpedienteWorkerIdentity(tenantId: string, caseId: string) {
-  const rows = await listCanonicalContractsByType({
-    tenantId,
-    caseId,
-    contractType: "classification",
-    status: "ready",
-  });
-  return mergeWorkerOfficialIdentities(
-    ...rows.map((row) => identityFromClassificationPayload(row.payload)),
-  );
+function employerRfcFromClassificationPayload(payload: string) {
+  try {
+    const parsed = parseClassificationPayload(payload);
+    return readAnalysisEmployerRfc(parsed) ?? readAnalysisEmployerRfc(parsed.preliminaryAnalysis);
+  } catch {
+    return null;
+  }
+}
+
+async function readExpedienteWorkerContext(tenantId: string, caseId: string) {
+  const [readyRows, draftRows] = await Promise.all([
+    listCanonicalContractsByType({
+      tenantId,
+      caseId,
+      contractType: "classification",
+      status: "ready",
+    }),
+    listCanonicalContractsByType({
+      tenantId,
+      caseId,
+      contractType: "classification",
+      status: "draft",
+    }),
+  ]);
+  const rows = [...readyRows, ...draftRows];
+  return {
+    identity: mergeWorkerOfficialIdentities(...rows.map((row) => identityFromClassificationPayload(row.payload))),
+    employerRfc: rows.map((row) => employerRfcFromClassificationPayload(row.payload)).find((rfc) => Boolean(rfc)) ?? null,
+  };
 }
 
 function sameVisibleName(left?: string | null, right?: string | null) {
@@ -422,6 +456,17 @@ function sameVisibleName(left?: string | null, right?: string | null) {
   return a.length >= 8 && a === b;
 }
 
+function personKeysConflict(
+  left?: { nss: string | null; curp: string | null; rfc: string | null } | null,
+  right?: { nss: string | null; curp: string | null; rfc: string | null } | null,
+) {
+  if (!left || !right) return false;
+  if (left.nss && right.nss && left.nss !== right.nss) return true;
+  if (left.curp && right.curp && left.curp !== right.curp) return true;
+  if (left.rfc && right.rfc && left.rfc !== right.rfc) return true;
+  return false;
+}
+
 function assertDocumentIdentityGuardrail(params: {
   ceoBypass: boolean;
   expectedWorkerName?: string | null;
@@ -429,12 +474,46 @@ function assertDocumentIdentityGuardrail(params: {
   detectedEmployerName?: string | null;
   expectedIdentity?: { nss: string | null; curp: string | null; rfc: string | null } | null;
   detectedIdentity?: { nss: string | null; curp: string | null; rfc: string | null } | null;
+  expectedEmployerRfc?: string | null;
+  detectedEmployerRfc?: string | null;
 }) {
   if (params.ceoBypass) {
     return;
   }
 
-  if (fiscalIdentitiesMatch(params.expectedIdentity, params.detectedIdentity)) {
+  const detectedEmployerRfc = normalizeRfc(params.detectedEmployerRfc, { allowGeneric: true });
+  const expectedEmployerRfc = normalizeRfc(params.expectedEmployerRfc, { allowGeneric: true });
+  const employerRfc = detectedEmployerRfc ?? expectedEmployerRfc;
+  const stripEmployer = (identity?: { nss: string | null; curp: string | null; rfc: string | null } | null) => {
+    if (!identity) return identity ?? null;
+    if (identity.rfc && employerRfc && identity.rfc === employerRfc) {
+      return { ...identity, rfc: null };
+    }
+    return identity;
+  };
+  const expectedIdentity = stripEmployer(params.expectedIdentity);
+  const detectedIdentity = stripEmployer(params.detectedIdentity);
+
+  if (fiscalIdentitiesMatch(expectedIdentity, detectedIdentity)) {
+    return;
+  }
+
+  const sameEmployer = Boolean(
+    detectedEmployerRfc && expectedEmployerRfc && detectedEmployerRfc === expectedEmployerRfc,
+  );
+  const storedRfcIsEmisor = Boolean(
+    params.expectedIdentity?.rfc && detectedEmployerRfc && params.expectedIdentity.rfc === detectedEmployerRfc,
+  );
+  const detectedHasWorker = Boolean(detectedIdentity?.nss || detectedIdentity?.curp || detectedIdentity?.rfc);
+  const expectedHasWorker = Boolean(expectedIdentity?.nss || expectedIdentity?.curp || expectedIdentity?.rfc);
+  // El RFC del emisor no identifica a otra persona. Si el expediente solo tiene al patrón,
+  // el XML del mismo patrón con RFC receptor, CURP o NSS sí entra.
+  if (
+    (sameEmployer || storedRfcIsEmisor) &&
+    detectedHasWorker &&
+    !expectedHasWorker &&
+    !personKeysConflict(expectedIdentity, detectedIdentity)
+  ) {
     return;
   }
 
@@ -4780,14 +4859,16 @@ export const appRouter = router({
             textHint: input.textHint,
           });
         const detectedWorkerName = getDetectedWorkerName(preliminaryAnalysis);
-        const expedienteIdentity = await readExpedienteWorkerIdentity(input.tenantId, input.caseId);
+        const expediente = await readExpedienteWorkerContext(input.tenantId, input.caseId);
         assertDocumentIdentityGuardrail({
           ceoBypass,
           expectedWorkerName: detail.case.employeeName,
           detectedWorkerName,
           detectedEmployerName: getDetectedEmployerName(preliminaryAnalysis),
-          expectedIdentity: expedienteIdentity,
+          expectedIdentity: expediente.identity,
           detectedIdentity: readAnalysisIdentity(preliminaryAnalysis),
+          expectedEmployerRfc: expediente.employerRfc,
+          detectedEmployerRfc: readAnalysisEmployerRfc(preliminaryAnalysis),
         });
         const createdAt = new Date();
 
@@ -5510,14 +5591,16 @@ export const appRouter = router({
           });
 
         const detectedWorkerName = getDetectedWorkerName(preliminaryAnalysis);
-        const expedienteIdentity = await readExpedienteWorkerIdentity(input.tenantId, input.caseId);
+        const expediente = await readExpedienteWorkerContext(input.tenantId, input.caseId);
         assertDocumentIdentityGuardrail({
           ceoBypass,
           expectedWorkerName: detail.case.employeeName,
           detectedWorkerName,
           detectedEmployerName: getDetectedEmployerName(preliminaryAnalysis),
-          expectedIdentity: expedienteIdentity,
+          expectedIdentity: expediente.identity,
           detectedIdentity: readAnalysisIdentity(preliminaryAnalysis),
+          expectedEmployerRfc: expediente.employerRfc,
+          detectedEmployerRfc: readAnalysisEmployerRfc(preliminaryAnalysis),
         });
         const processedAt = new Date();
 

@@ -535,6 +535,17 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       curp: null,
       rfc: "XAXX010101000",
     });
+    expect(
+      collectWorkerOfficialIdentity({
+        workerRfc: "ECC190605VA1",
+        employerRfc: "ECC190605VA1",
+        nss: "84 12 92 14 965",
+      }),
+    ).toEqual({
+      nss: "84129214965",
+      curp: null,
+      rfc: null,
+    });
   });
 
   it("despacha SAT con el RFC de la persona, Infonavit con CURP e IMSS con NSS", () => {

@@ -241,6 +241,28 @@ describe("caseContracts", () => {
     expect(analysis.confirmedData.payrollCurp ?? null).toBeNull();
   });
 
+  it("lee NSS, CURP y RFC de la persona aunque el PDF los separe, sin usar el RFC del patrón", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-cfdi.pdf",
+      mimeType: "application/pdf",
+      textHint: [
+        "Representación impresa de un CFDI RECIBO:10963 |",
+        "EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V. | RFC: ECC190605VA1 REG FISCAL: 601",
+        "REGISTRO PATRONAL: R1379389106",
+        "NSS 8412 9214 965",
+        "CURP: UIPD 921125 HYNCLD 03",
+        "RFC: UIPD 921125 7I0",
+        "PERIODO 2026-05-01 AL 2026-05-15",
+      ].join(" "),
+    });
+
+    expect(analysis.confirmedData.payrollNss ?? analysis.estimatedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.payrollCurp ?? analysis.estimatedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.confirmedData.workerRfc ?? analysis.estimatedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.employerRfc ?? analysis.estimatedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc ?? analysis.estimatedData.workerRfc).not.toBe("ECC190605VA1");
+  });
+
   it("separa RFC del patrón y de la persona trabajadora en el CFDI de nómina de referencia", () => {
     const textHint = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
     expect(textHint).toContain('cfdi:Emisor Rfc="ECC190605VA1"');
