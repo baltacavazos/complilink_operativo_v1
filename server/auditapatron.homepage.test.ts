@@ -5,7 +5,10 @@ import { describe, expect, it } from "vitest";
 describe("Auditapatron closeout experience", () => {
   const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
   const accessSource = readFileSync(resolve(process.cwd(), "client/src/pages/Access.tsx"), "utf8");
-  const auditFlowSource = readFileSync(resolve(process.cwd(), "client/src/pages/Auditar.tsx"), "utf8");
+  const auditFlowSource = [
+    readFileSync(resolve(process.cwd(), "client/src/pages/Auditar.tsx"), "utf8"),
+    readFileSync(resolve(process.cwd(), "client/src/lib/privacySignal.ts"), "utf8"),
+  ].join("\n");
   const legalSource = readFileSync(resolve(process.cwd(), "client/src/pages/LegalDocuments.tsx"), "utf8");
   const appSource = readFileSync(resolve(process.cwd(), "client/src/App.tsx"), "utf8");
   const pricingSource = readFileSync(resolve(process.cwd(), "client/src/lib/pricingExperience.ts"), "utf8");

@@ -355,7 +355,7 @@ describe("workerChatUx grounding", () => {
     );
     const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué dice mi consulta?" });
 
-    expect(grounding.officialBriefing.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(grounding.officialBriefing.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(answer).toMatch(/UIPD9211257I0/);
     expect(answer).toMatch(/IMSS e Infonavit aún no contestan/);
     expect(answer).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);

@@ -54,7 +54,9 @@
   --chart-5: var(--color-blue-800);
   --radius: 0.65rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
+  --foreground: #161616;
+  --ap-ink: #161616;
+  --ap-ink-soft: #222222;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.235 0.015 65);
   --popover: oklch(1 0 0);
@@ -653,27 +655,33 @@
     }
   }
 
-  /* /auditar: privacy bar contrast + quieter worker fields */
+  html:not(.dark) .audita-auditar {
+    --foreground: #161616;
+    color: #161616;
+  }
+
+  /* /auditar: la barra de privacidad queda clara con tinta oscura.
+     No se fuerza texto blanco: el sheet y el resultado ya viven en fondo claro. */
   .audita-auditar [data-ap-privacy-bar] {
-    border-color: rgb(15 23 42) !important;
-    background-color: rgb(15 23 42) !important;
-    color: rgb(248 250 252) !important;
-    box-shadow: var(--ap-shadow-soft);
+    border-color: #e4e4e4 !important;
+    background-color: #ffffff !important;
+    color: #161616 !important;
+    box-shadow: none;
   }
 
   .audita-auditar [data-ap-privacy-bar] [class*="text-"] {
-    color: rgb(226 232 240) !important;
+    color: #161616 !important;
   }
 
   .audita-auditar [data-ap-privacy-bar] [class*="text-slate-950"],
   .audita-auditar [data-ap-privacy-bar] [class*="text-slate-900"] {
-    color: rgb(248 250 252) !important;
+    color: #111111 !important;
   }
 
   .audita-auditar [data-ap-privacy-bar] span[class*="rounded-full"] {
-    background-color: rgba(248, 250, 252, 0.12) !important;
-    border-color: rgba(248, 250, 252, 0.22) !important;
-    color: rgb(248 250 252) !important;
+    background-color: #ffffff !important;
+    border-color: #e4e4e4 !important;
+    color: #161616 !important;
   }
 
   .audita-auditar [data-ap-upload-copy] {
@@ -818,19 +826,17 @@
   /* Dark / light readability — /auditar already remaps surfaces; keep Home/Access
      text on their light canvases and only lift result/privacy/worker contrast. */
   .dark .audita-auditar [data-ap-privacy-bar] {
-    background-color: rgba(2, 6, 23, 0.88) !important;
-    border-color: rgba(45, 212, 191, 0.34) !important;
-    color: rgb(226 232 240);
+    background-color: #ffffff !important;
+    border-color: #e4e4e4 !important;
+    color: #161616 !important;
   }
 
   .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-950"],
-  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-900"] {
-    color: rgb(248 250 252) !important;
-  }
-
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-900"],
   .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-700"],
-  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-600"] {
-    color: rgb(203 213 225) !important;
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-slate-600"],
+  .dark .audita-auditar [data-ap-privacy-bar] [class*="text-"] {
+    color: #161616 !important;
   }
 
   .dark .audita-auditar .ap-worker-field {
@@ -847,9 +853,9 @@
 
 @layer components {
   .ap-worker-chat {
-    --ap-chat-ink: rgb(15 23 42);
-    --ap-chat-muted: rgb(71 85 105);
-    --ap-chat-faint: rgb(100 116 139);
+    --ap-chat-ink: #161616;
+    --ap-chat-muted: #222222;
+    --ap-chat-faint: #333333;
     --ap-chat-line: rgba(15, 23, 42, 0.08);
     --ap-chat-wash: rgb(247 248 250);
     --ap-chat-bubble: rgb(244 246 248);
@@ -964,7 +970,7 @@
   }
 
   .ap-worker-chat .ap-chat-section-label {
-    color: var(--ap-chat-accent);
+    color: var(--ap-chat-ink);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -1021,9 +1027,9 @@
   .dark .ap-worker-chat [class*="bg-slate"],
   .dark .ap-worker-chat [class*="text-slate"],
   .dark .ap-worker-chat [class*="border-slate"] {
-    --ap-chat-ink: rgb(15 23 42);
-    --ap-chat-muted: rgb(71 85 105);
-    --ap-chat-faint: rgb(100 116 139);
+    --ap-chat-ink: #161616;
+    --ap-chat-muted: #222222;
+    --ap-chat-faint: #333333;
     --ap-chat-line: rgba(15, 23, 42, 0.08);
     --ap-chat-wash: rgb(247 248 250);
     --ap-chat-bubble: rgb(244 246 248);
@@ -1034,6 +1040,15 @@
     background-color: var(--ap-chat-wash) !important;
     color: var(--ap-chat-ink) !important;
     border-color: rgba(15, 23, 42, 0.08) !important;
+  }
+
+  .ap-worker-chat :is(p, li, h1, h2, h3, label, summary, [data-slot="sheet-title"], [data-slot="sheet-description"]) {
+    color: #161616;
+  }
+
+  .ap-worker-chat .ap-chat-bubble-user,
+  .ap-worker-chat .ap-chat-bubble-user :is(p, span) {
+    color: #ffffff;
   }
 
   .ap-worker-chat .ap-chat-header {
@@ -1149,5 +1164,96 @@
       line-height: 1.14 !important;
       overflow: visible;
     }
+  }
+}
+
+@layer components {
+  /**
+   * Superficies claras del trabajador: tinta casi negra.
+   * Gana al remap de .dark que pintaba texto blanco sobre menta o blanco.
+   */
+  .ap-light-surface,
+  .dark .ap-light-surface,
+  .dark .audita-auditar .ap-light-surface,
+  .dark .audita-auditar .ap-light-surface[class*="bg-white"],
+  .dark .audita-auditar .ap-light-surface[class*="bg-teal-50"],
+  .dark .audita-auditar .ap-light-surface[class*="bg-emerald-50"],
+  .dark .audita-auditar .ap-light-surface[class*="bg-slate-50"] {
+    color: var(--ap-ink, #161616) !important;
+  }
+
+  .ap-light-surface.ap-surface-mint,
+  .dark .audita-auditar .ap-light-surface.ap-surface-mint,
+  .dark .audita-auditar .ap-light-surface.ap-surface-mint[class*="bg-teal-50"],
+  .dark .audita-auditar .ap-light-surface.ap-surface-mint[class*="bg-emerald-50"] {
+    background-color: #f3faf6 !important;
+    background-image: none !important;
+    color: #161616 !important;
+    border-color: #d7ebe3 !important;
+  }
+
+  .dark .audita-auditar .ap-light-surface [class*="text-"],
+  .dark .ap-light-surface [class*="text-slate"],
+  .dark .ap-light-surface [class*="text-teal"],
+  .dark .ap-light-surface [class*="text-emerald"],
+  .dark .ap-light-surface [class*="text-cyan"],
+  .dark .ap-light-surface [class*="text-amber"],
+  .dark .ap-light-surface [class*="text-sky"] {
+    color: #161616 !important;
+  }
+
+  .ap-light-surface :is(h1, h2, h3, p, li, label, summary),
+  .dark .audita-auditar .ap-light-surface :is(h1, h2, h3, p, li, label, summary) {
+    color: #161616;
+  }
+
+  .ap-light-surface :is(button, a).ap-btn-on-dark,
+  .dark .audita-auditar .ap-light-surface :is(button, a).ap-btn-on-dark,
+  .dark .ap-light-surface :is(button, a).ap-btn-on-dark,
+  .ap-worker-chat :is(button, a).ap-btn-on-dark,
+  .dark .ap-worker-chat :is(button, a).ap-btn-on-dark {
+    background-color: #111111 !important;
+    color: #ffffff !important;
+  }
+
+  .dark .ap-worker-chat .ap-chat-bubble-assistant,
+  .dark .ap-worker-chat .ap-chat-bubble-assistant [class*="text-"],
+  .dark .ap-worker-chat .ap-chat-header,
+  .dark .ap-worker-chat .ap-chat-header [class*="text-slate"],
+  .dark .ap-worker-chat .ap-chat-header [class*="text-teal"] {
+    color: #161616 !important;
+  }
+
+  .dark .ap-worker-chat .ap-chat-bubble-user,
+  .dark .ap-worker-chat .ap-chat-bubble-user [class*="text-"] {
+    background-color: #111111 !important;
+    color: #ffffff !important;
+  }
+
+  .audita-auditar [data-ap-privacy-bar][data-privacy-ready="true"],
+  .dark .audita-auditar [data-ap-privacy-bar][data-privacy-ready="true"] {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    border-color: #e4e4e4 !important;
+    color: #161616 !important;
+    box-shadow: none !important;
+  }
+
+  .audita-auditar [data-ap-privacy-bar][data-privacy-ready="true"] [class*="text-"],
+  .dark .audita-auditar [data-ap-privacy-bar][data-privacy-ready="true"] [class*="text-"] {
+    color: #161616 !important;
+  }
+
+  html:not(.dark) :is(.audita-home, .audita-access, .audita-auditar, .audita-historial, .audita-pagos)
+    :is(p, li, h1, h2, h3, label, summary)[class*="text-emerald-9"],
+  html:not(.dark) :is(.audita-home, .audita-access, .audita-auditar, .audita-historial, .audita-pagos)
+    :is(p, li, h1, h2, h3, label, summary)[class*="text-teal-9"],
+  html:not(.dark) :is(.audita-home, .audita-access, .audita-auditar, .audita-historial, .audita-pagos)
+    :is(p, li, h1, h2, h3, label, summary)[class*="text-teal-8"],
+  html:not(.dark) :is(.audita-home, .audita-access, .audita-auditar, .audita-historial, .audita-pagos)
+    :is(p, li, h1, h2, h3, label, summary)[class*="text-cyan-9"],
+  html:not(.dark) :is(.audita-home, .audita-access, .audita-auditar, .audita-historial, .audita-pagos)
+    :is(p, li, h1, h2, h3, label, summary)[class*="text-amber-9"] {
+    color: #161616 !important;
   }
 }

@@ -11,6 +11,7 @@ import {
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
+import { WorkerOfficialResult } from "@/components/WorkerOfficialResult";
 import MobileAppShell from "@/components/MobileAppShell";
 import {
   canUseNativeDocumentInput,
@@ -66,6 +67,7 @@ import {
 } from "@shared/officialCaseBriefing";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
+import { resolveWorkerPrivacySignal } from "@/lib/privacySignal";
 import {
   platformStorageGetJSON,
   platformStorageRemove,
@@ -5752,7 +5754,7 @@ export default function Auditar() {
     documentsWithOpinion: heliosDocumentsCount,
   });
   const heliosCopilotIntro = useMemo(() => {
-    if (officialCaseBriefing.verdict?.chat) return officialCaseBriefing.verdict.chat;
+    if (officialCaseBriefing.verdict?.opener) return officialCaseBriefing.verdict.opener;
     if (officialCaseBriefing.instituteSilence) return INSTITUTE_SILENCE_CHAT;
     const intro = buildAsesorContinuityIntro({
       memoryGreeting:
@@ -6237,75 +6239,32 @@ export default function Auditar() {
     lastUpload?.engineDispatch?.status ?? undefined,
     lastUpload?.engineDispatch?.reason ?? undefined
   );
-  const privacySignal = useMemo(() => {
-    if (pendingDraft) {
-      return {
-        badge: "Sin guardar",
-        title: "Privacidad activa en borrador",
-        detail:
-          "Tu archivo sigue en revisión privada. Solo entra al expediente si tú lo confirmas.",
-        company: "Empresa sin acceso",
-        control: "Tú decides si guardar",
-        trace: "Rastro solo al confirmar",
-        cardClass: "border-teal-200 bg-teal-50/95",
-        badgeClass: "border-teal-200 bg-white text-teal-900",
-        eyebrowClass: "text-teal-800",
-      };
-    }
-
-    if (
-      lastUpload?.engineDispatch?.status === "sent" ||
-      visibleHeliosOpinion?.status === "processing" ||
-      visibleHeliosOpinion?.status === "sent"
-    ) {
-      return {
-        badge: "Protegido",
-        title: "Privacidad activa mientras analizamos",
-        detail:
-          "El documento ya quedó protegido mientras vuelve la lectura. Aquí ves si sigue en análisis o si ya quedó listo.",
-        company: "Empresa sin acceso",
-        control: "Sin cambios automáticos",
-        trace: "Seguimiento visible aquí",
-        cardClass: "border-sky-200 bg-sky-50/95",
-        badgeClass: "border-sky-200 bg-white text-sky-900",
-        eyebrowClass: "text-sky-800",
-      };
-    }
-
-    if (documents.length > 0 || engineStatus.tone === "success") {
-      return {
-        badge: "Resguardado",
-        title: "Privacidad activa dentro del expediente",
-        detail:
-          "El archivo ya está en tu expediente privado y aquí ves su estado sin tener que adivinar qué pasó.",
-        company: "Empresa sin acceso",
-        control: "Tú conservas el mando",
-        trace: "Versión y estado visibles",
-        cardClass: "border-emerald-200 bg-emerald-50/95",
-        badgeClass: "border-emerald-200 bg-white text-emerald-900",
-        eyebrowClass: "text-emerald-800",
-      };
-    }
-
-    return {
-      badge: "Lista",
-      title: "Privacidad activa desde el primer intento",
-      detail:
-        "Puedes subir un archivo, revisar el primer resultado y decidir después si te conviene guardarlo.",
-      company: "Empresa sin acceso",
-      control: "Tú confirmas si se guarda",
-      trace: "Rastro visible al confirmar",
-      cardClass: "border-teal-200 bg-teal-50/90",
-      badgeClass: "border-teal-200 bg-white text-teal-900",
-      eyebrowClass: "text-teal-800",
-    };
-  }, [
-    documents.length,
-    engineStatus.tone,
-    lastUpload?.engineDispatch?.status,
-    pendingDraft,
-    visibleHeliosOpinion?.status,
-  ]);
+  const privacySignal = useMemo(
+    () =>
+      resolveWorkerPrivacySignal({
+        pendingDraft: Boolean(pendingDraft),
+        analyzing:
+          lastUpload?.engineDispatch?.status === "sent" ||
+          visibleHeliosOpinion?.status === "processing" ||
+          visibleHeliosOpinion?.status === "sent",
+        saved: documents.length > 0 || engineStatus.tone === "success",
+        officialResultReady: Boolean(
+          officialCaseBriefing.verdict ||
+            officialCaseBriefing.hasOfficialConsulta ||
+            officialCaseBriefing.officialCheck?.checkedAt,
+        ),
+      }),
+    [
+      documents.length,
+      engineStatus.tone,
+      lastUpload?.engineDispatch?.status,
+      officialCaseBriefing.hasOfficialConsulta,
+      officialCaseBriefing.officialCheck?.checkedAt,
+      officialCaseBriefing.verdict,
+      pendingDraft,
+      visibleHeliosOpinion?.status,
+    ],
+  );
   const uploadInsight = lastUpload
     ? getUploadInsight(lastUpload.classification.documentType)
     : null;
@@ -7677,7 +7636,7 @@ export default function Auditar() {
       setLegalGateError(null);
       const result = await revalidateSocialSecurityMutation.mutateAsync({
         ...caseDetailInput,
-        consentGranted: officialCheckConsent,
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -8411,7 +8370,7 @@ export default function Auditar() {
       setGuestReviewError("Primero sube un recibo para consultar IMSS y SAT.");
       return;
     }
-    if (!officialCheckConsent) {
+    if (!officialCheckConsent && !officialCheckDisplay.silence) {
       setGuestReviewError("Marca el permiso para consultar IMSS y SAT.");
       return;
     }
@@ -8420,7 +8379,7 @@ export default function Auditar() {
       setGuestReviewError(null);
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken: guestReview.guestPreviewToken,
-        consentGranted: officialCheckConsent,
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -8995,6 +8954,39 @@ export default function Auditar() {
     );
   }
 
+  if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview && officialCheckDisplay.silence) {
+    return (
+      <main
+        data-testid="worker-result-only"
+        className="audita-auditar min-h-screen bg-white px-3 py-6 text-[#111111] sm:px-4 sm:py-8"
+      >
+        <div className="container mx-auto max-w-xl">
+          <input
+            ref={guestFileInputRef}
+            type="file"
+            accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
+            onChange={handleGuestFileChange}
+            className="hidden"
+          />
+          <WorkerOfficialResult
+            presentation={officialCheckDisplay.silence}
+            retryPending={guestOfficialCheckMutation.isPending}
+            onRetry={() => {
+              void handleGuestOfficialCheck();
+            }}
+            paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
+          />
+          {guestReviewError ? (
+            <Alert className="mt-4 border-rose-200 bg-rose-50">
+              <AlertTitle>No pudimos completar esto</AlertTitle>
+              <AlertDescription>{guestReviewError}</AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
+      </main>
+    );
+  }
+
   if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview) {
     return (
       <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
@@ -9007,19 +8999,19 @@ export default function Auditar() {
             onChange={handleGuestFileChange}
             className="hidden"
           />
-          <section className="mt-5 rounded-[2rem] border border-emerald-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-8">
+          <section className="ap-light-surface mt-5 rounded-[2rem] border border-emerald-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-8">
             <div className="flex items-center gap-3">
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
-                <p className="text-sm font-semibold tracking-tight text-emerald-900">Resultado inicial</p>
-                <p className="mt-1 text-sm text-slate-700">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
+                <p className="text-sm font-semibold tracking-tight text-[#161616]">Resultado inicial</p>
+                <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
-            {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
+            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
+            {officialCheckDisplay.status === "pendiente" ? null : (
               <>
-                <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-slate-900">{guestFiveSecond.nextStepLine}</p>
-                <p className="mt-3 text-sm leading-6 text-slate-600">{guestFiveSecond.disclaimer}</p>
+                <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
+                <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
               </>
             )}
             <div className="mt-5 grid gap-4">
@@ -9045,51 +9037,37 @@ export default function Auditar() {
               </div>
             </div>
             <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
-            <div data-testid="official-check-card" className="mt-5 rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
-              {officialCheckDisplay.silence ? (
-                <div data-testid="official-check-silence">
-                  <p className="text-sm font-semibold text-teal-950">Qué pasó</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.whatHappened}</p>
-                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué significa para ti</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.meaning}</p>
-                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué hacer ahora</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.nextStep}</p>
-                  <p className="mt-2 text-xs leading-5 text-slate-600">{officialCheckDisplay.silence.smallPrint}</p>
-                </div>
-              ) : (
-                <>
-                  <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
-                    {officialCheckDisplay.headline}
-                  </p>
-                  <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
-                    {officialCheckDisplay.detail}
-                  </p>
-                </>
-              )}
-              {officialCheckDisplay.silence ? (
-                <p data-testid="official-check-headline" className="sr-only">{officialCheckDisplay.headline}</p>
+            <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left">
+                <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-[#161616]">
+                  {officialCheckDisplay.headline}
+                </p>
+                <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
+                  {officialCheckDisplay.detail}
+                </p>
+              {officialCaseBriefing.statusLines.length ? (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
+                  <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                    {officialCaseBriefing.statusLines.map(line => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </details>
               ) : null}
-              {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).length ? (
-                <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                  {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).map(line => (
-                    <li key={line}>{line}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {!officialCheckDisplay.silence && officialCaseBriefing.hechoLines.length ? (
+              {officialCaseBriefing.hechoLines.length ? (
                 <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                   {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
               ) : null}
-              {!officialCheckDisplay.silence && officialCaseBriefing.hasOfficialConsulta && officialCaseBriefing.comparison.seen !== "no_se_pudo" ? (
-                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
+              {officialCaseBriefing.hasOfficialConsulta && officialCaseBriefing.comparison.seen !== "no_se_pudo" ? (
+                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                   <p>{officialCaseBriefing.comparison.seenLine}</p>
                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
                 </div>
               ) : null}
-              <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
+              <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-[#161616]">
                 <input
                   type="checkbox"
                   className="mt-1"
@@ -9101,7 +9079,7 @@ export default function Auditar() {
               <Button
                 type="button"
                 data-testid="official-check-cta"
-                className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                className="ap-btn-on-dark mt-3 h-11 rounded-full bg-[#111111] px-4 text-white hover:bg-[#222222]"
                 disabled={guestOfficialCheckMutation.isPending || !officialCheckConsent}
                 onClick={() => {
                   void handleGuestOfficialCheck();
@@ -9263,6 +9241,8 @@ export default function Auditar() {
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-10 text-slate-950 sm:py-8">
       <div className="container mx-auto max-w-6xl">
+        {officialCheckDisplay.silence ? null : (
+        <>
         <MobileAppShell
           current="auditar"
           title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
@@ -9342,12 +9322,16 @@ export default function Auditar() {
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
             {shouldCompactPostUploadExperience ? null : null}
-   </div>
+          </div>
         </div>
+        </>
+        )}
 
+        {privacySignal.ready ? null : (
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
           <div
             data-ap-privacy-bar
+            data-privacy-ready="false"
             className={`rounded-[1.15rem] border px-4 py-3 shadow-[0_16px_38px_-30px_rgba(15,23,42,0.4)] backdrop-blur ${privacySignal.cardClass}`}
           >
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -9379,6 +9363,7 @@ export default function Auditar() {
             </div>
           </div>
         </section>
+        )}
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -9651,7 +9636,7 @@ export default function Auditar() {
           baseLabel="/auditar"
         />
 
-        {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
+        {showWorkspaceSectionSelector && !auth.canToggleUserView && !officialCheckDisplay.silence ? (
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -9702,8 +9687,17 @@ export default function Auditar() {
 
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
           <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
-            {documents.length > 0 && !pendingDraft && !lastUpload ? (
-              <div data-testid="official-check-card" className="w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
+            {documents.length > 0 && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
+              <WorkerOfficialResult
+                presentation={officialCheckDisplay.silence}
+                retryPending={revalidateSocialSecurityMutation.isPending}
+                onRetry={() => {
+                  void handleRevalidateSocialSecurity();
+                }}
+              />
+            ) : null}
+            {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
+              <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
                 <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
                   {officialCheckDisplay.headline}
                 </p>
@@ -9722,7 +9716,7 @@ export default function Auditar() {
                 <Button
                   type="button"
                   data-testid="official-check-cta"
-                  className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                  className="ap-btn-on-dark mt-3 h-11 rounded-full bg-[#111111] px-4 text-white hover:bg-[#222222]"
                   disabled={revalidateSocialSecurityMutation.isPending || !officialCheckConsent}
                   onClick={() => {
                     void handleRevalidateSocialSecurity();
@@ -9735,7 +9729,7 @@ export default function Auditar() {
                     type="button"
                     data-testid="official-check-chat-cta"
                     variant="outline"
-                    className="mt-2 h-11 rounded-full border-teal-200 bg-white px-4 text-teal-950 hover:bg-teal-100"
+                    className="mt-2 h-auto bg-transparent px-0 text-sm font-semibold text-[#161616] underline shadow-none hover:bg-transparent"
                     onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                   >
                     {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
@@ -9743,8 +9737,18 @@ export default function Auditar() {
                 ) : null}
               </div>
             ) : null}
-            {shouldCompactPostUploadExperience && lastUpload ? (
-              <div className="w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
+            {shouldCompactPostUploadExperience && lastUpload && officialCheckDisplay.silence ? (
+              <WorkerOfficialResult
+                presentation={officialCheckDisplay.silence}
+                retryPending={revalidateSocialSecurityMutation.isPending}
+                onRetry={() => {
+                  void handleRevalidateSocialSecurity();
+                }}
+                paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
+              />
+            ) : null}
+            {shouldCompactPostUploadExperience && lastUpload && !officialCheckDisplay.silence ? (
+              <div className="ap-light-surface w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-white px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
                 <div className={`flex flex-col gap-2 ${shouldCompactPostUploadExperience ? "" : "lg:flex-row lg:items-center lg:justify-between"}`}>
                   <div className="min-w-0">
                     {shouldCompactPostUploadExperience ? null : (
@@ -9756,13 +9760,6 @@ export default function Auditar() {
                         </span>
                       </div>
                     )}
-                    {shouldCompactPostUploadExperience ? (
-                      <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
-                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700 shadow-sm">
-                          {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
-                        </span>
-                      </div>
-                    ) : null}
                     <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
                       {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
                         <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
@@ -9770,7 +9767,7 @@ export default function Auditar() {
                       <div className="min-w-0">
                         <h2
                           data-testid="five-second-verdict-seen"
-                          className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
+                          className={`font-semibold tracking-[-0.05em] text-[#111111] ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
                         >
                           {shouldCompactPostUploadExperience
                             ? officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente"
@@ -9779,68 +9776,51 @@ export default function Auditar() {
                             : lastUploadVerdict.label}
                         </h2>
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
-                          <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-slate-900 sm:text-lg">
+                          <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">
                             {lastUploadFiveSecond.nextStepLine}
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
+                          <p className="mt-2 text-sm leading-6 text-[#1a1a1a]">
                             {lastUploadFiveSecond.disclaimer}
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
-                          <>
-                            <details className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                              <summary className="cursor-pointer text-sm font-semibold tracking-tight text-slate-800">
-                                Ver lo que se leyó en el papel
-                              </summary>
-                              <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                                {lastUploadResultHeadline}. {lastUploadResultLead}
-                              </p>
-                              <p className="mt-3 text-sm leading-6 text-slate-900">
-                                {lastUploadFactSignal.attention}
-                              </p>
-                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
-                                  <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
-                                </div>
-                                <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                                  <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
-                                </div>
+                          <details data-compact-official-detail="true" className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
+                            <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#161616]">
+                              Ver detalle
+                            </summary>
+                            <p className="mt-2 text-sm leading-6 text-[#161616]">
+                              {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}. {lastUploadResultHeadline}. {lastUploadResultLead}
+                            </p>
+                            <p className="mt-3 text-sm leading-6 text-[#161616]">
+                              {lastUploadFactSignal.attention}
+                            </p>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                              <div className="rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3 text-left">
+                                <p className="text-sm font-semibold tracking-tight text-[#111111]">IMSS según este documento</p>
+                                <p className="mt-1 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.imss}</p>
                               </div>
-                            </details>
-                            <div data-testid="official-check-card" className="mt-3 rounded-[1rem] border border-teal-200 bg-teal-50/80 px-3 py-3 text-left">
-                              {officialCheckDisplay.silence ? (
-                                <div data-testid="official-check-silence">
-                                  <p className="text-sm font-semibold text-teal-950">Qué pasó</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.whatHappened}</p>
-                                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué significa para ti</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.meaning}</p>
-                                  <p className="mt-3 text-sm font-semibold text-teal-950">Qué hacer ahora</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-800">{officialCheckDisplay.silence.nextStep}</p>
-                                  <p className="mt-2 text-xs leading-5 text-slate-600">{officialCheckDisplay.silence.smallPrint}</p>
-                                  <p data-testid="official-check-headline" className="sr-only">{officialCheckDisplay.headline}</p>
-                                </div>
-                              ) : (
-                                <>
-                                  <p data-testid="official-check-headline" className={`font-semibold tracking-tight text-teal-950 ${officialCheckDisplay.status === "pendiente" ? "sr-only" : "text-sm"}`}>
+                              <div className="rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3 text-left">
+                                <p className="text-sm font-semibold tracking-tight text-[#111111]">Impuestos y retenciones</p>
+                                <p className="mt-1 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.retentions}</p>
+                              </div>
+                            </div>
+                            <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-3 rounded-[1rem] border px-3 py-3 text-left">
+                                  <p data-testid="official-check-headline" className={`font-semibold tracking-tight text-[#161616] ${officialCheckDisplay.status === "pendiente" ? "sr-only" : "text-sm"}`}>
                                     {officialCheckDisplay.headline}
                                   </p>
-                                  <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                                  <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
                                     {officialCheckDisplay.detail}
                                   </p>
-                                </>
-                              )}
-                              {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).length ? (
-                                <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                                  {(officialCheckDisplay.silence ? officialCheckDisplay.silence.sourceLines : officialCaseBriefing.statusLines).map(line => (
+                              {officialCaseBriefing.statusLines.length ? (
+                                <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                                  {officialCaseBriefing.statusLines.map(line => (
                                     <li key={line}>{line}</li>
                                   ))}
                                 </ul>
                               ) : null}
-                              {!officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hechoLines.length ? (
+                              {officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hechoLines.length ? (
                                 <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
                                     <li key={line}>{line}</li>
@@ -9865,7 +9845,7 @@ export default function Auditar() {
                               <Button
                                 type="button"
                                 data-testid="official-check-cta"
-                                className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                                className="ap-btn-on-dark mt-3 h-11 rounded-full bg-[#111111] px-4 text-white hover:bg-[#222222]"
                                 disabled={revalidateSocialSecurityMutation.isPending || !officialCheckConsent}
                                 onClick={() => {
                                   void handleRevalidateSocialSecurity();
@@ -9878,14 +9858,14 @@ export default function Auditar() {
                                   type="button"
                                   data-testid="official-check-chat-cta"
                                   variant="outline"
-                                  className="mt-2 h-11 rounded-full border-teal-200 bg-white px-4 text-teal-950 hover:bg-teal-100"
+                                  className="mt-2 h-auto bg-transparent px-0 text-sm font-semibold text-[#161616] underline shadow-none hover:bg-transparent"
                                   onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                                 >
                                   {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
                                 </Button>
                               ) : null}
                             </div>
-                          </>
+                          </details>
                         ) : null}
                       </div>
                     </div>
@@ -14796,17 +14776,15 @@ Reforzar con otro documento
                 messages={heliosCopilotConversation}
                 isLoading={heliosCopilotMutation.isPending}
                 suggestedPrompts={
-                  officialCaseBriefing.instituteSilence
-                    ? ["¿Qué implica esto para mi pago?"]
-                    : heliosCopilotSuggestedPrompts
+                  officialCaseBriefing.verdict ? [] : heliosCopilotSuggestedPrompts
                 }
                 suggestedPromptsContext={
-                  officialCaseBriefing.instituteSilence
-                    ? "Puedes preguntar qué implica para tu pago."
+                  officialCaseBriefing.verdict
+                    ? null
                     : heliosCopilotSuggestedPromptsContext
                 }
                 caseTitle={
-                  officialCaseBriefing.instituteSilence
+                  officialCaseBriefing.verdict
                     ? "Tu consulta de hoy"
                     : caseDetailQuery.data?.case.title
                 }
@@ -14825,7 +14803,7 @@ Reforzar con otro documento
                   ) ?? WORKER_CHAT_DISCLAIMER
                 }
                 summary={
-                  officialCaseBriefing.instituteSilence
+                  officialCaseBriefing.verdict || officialCaseBriefing.hasOfficialConsulta
                     ? null
                     : warmVisibleNamingCopy(
                         heliosCopilotMutation.data?.answer ??
@@ -14842,23 +14820,17 @@ Reforzar con otro documento
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
                 officialTitles={[]}
                 officialSourcesNote={null}
+                hideCaseChips={Boolean(
+                  officialCaseBriefing.verdict ||
+                    officialCaseBriefing.hasOfficialConsulta ||
+                    officialCheckDisplay.silence
+                )}
                 officialStatusChips={
-                  officialCheckDisplay.silence?.sourceLines?.length
-                    ? officialCheckDisplay.silence.sourceLines
+                  officialCaseBriefing.verdict || officialCaseBriefing.hasOfficialConsulta
+                    ? []
                     : officialCaseBriefing.statusLines
                 }
-                officialComparison={
-                  officialCaseBriefing.instituteSilence ||
-                  officialCaseBriefing.verdict?.kind === "mixed" ||
-                  officialCaseBriefing.comparison.seen === "no_se_pudo"
-                    ? null
-                    : officialCaseBriefing.hasOfficialConsulta
-                      ? {
-                          seenLine: officialCaseBriefing.comparison.seenLine,
-                          nextStep: officialCaseBriefing.comparison.nextStepLine,
-                        }
-                      : null
-                }
+                officialComparison={null}
                 hasOfficialConsulta={officialCaseBriefing.hasOfficialConsulta}
                 consultCtaLabel={officialCheckDisplay.buttonLabel}
                 onConsultOfficial={() => {
@@ -14871,14 +14843,12 @@ Reforzar con otro documento
                   officialCaseBriefing.verdict
                     ? {
                         eyebrow: "Tu consulta de hoy",
-                        description: officialCaseBriefing.verdict.kind === "mixed"
-                          ? "Te digo qué contestó cada oficina hoy."
-                          : "Te digo qué pasó hoy con IMSS, SAT e Infonavit.",
+                        description: "Sobre este caso, en pocas palabras.",
                         quickHighlights: [],
                         capabilityBadge: "Solo esta consulta",
                         documentBadge: "Tu recibo ya se leyó",
                         promptsHeading: "Si quieres preguntar",
-                        emptyStateMessage: officialCaseBriefing.verdict.chat,
+                        emptyStateMessage: officialCaseBriefing.verdict.opener,
                       }
                     : {
                         emptyStateMessage: officialCaseBriefing.hasOfficialConsulta
@@ -16146,9 +16116,14 @@ Reforzar con otro documento
         </DrawerContent>
       </Drawer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || officialCheckDisplay.silence || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
-          <div data-ap-privacy-bar className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}>
+          {privacySignal.ready ? null : (
+          <div
+            data-ap-privacy-bar
+            data-privacy-ready="false"
+            className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}
+          >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 pr-1">
                 <p className={`text-[10px] font-semibold tracking-tight ${privacySignal.eyebrowClass}`}>
@@ -16163,6 +16138,7 @@ Reforzar con otro documento
               </span>
             </div>
           </div>
+          )}
           {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
             <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               {workspaceSectionCards.map(item => {

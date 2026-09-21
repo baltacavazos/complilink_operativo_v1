@@ -102,7 +102,10 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
   });
 
   it("sube el contraste de la barra de privacidad y calma los campos del trabajador", () => {
-    const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
+    const auditar = [
+      readRepoFile("client", "src", "pages", "Auditar.tsx"),
+      readRepoFile("client", "src", "lib", "privacySignal.ts"),
+    ].join("\n");
     const css = readRepoFile("client", "src", "index.css");
 
     expect(auditar).toContain("data-ap-privacy-bar");

@@ -641,7 +641,15 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       },
     });
 
-    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
+    expect(display.headline).not.toMatch(/\bVivo\b|\bFalló\b|\d{2}\/\d{2}\/\d{4}/);
+    const openerSentences = display.silence?.opener.split(/[.!?]/).filter((part) => part.trim()) ?? [];
+    expect(openerSentences.length).toBeGreaterThanOrEqual(3);
+    expect(openerSentences.length).toBeLessThanOrEqual(4);
+    expect(display.silence?.opener).not.toMatch(/Vivo|Falló|UIPD|RFC|NSS|certificado/i);
+    expect(display.silence?.opener).not.toContain(display.headline);
+    expect(display.silence?.opener).not.toContain("Tu recibo sí se leyó");
+    expect(display.silence?.opener).not.toContain("Vuelve a consultar");
     expect(display.headline).not.toBe(INSTITUTE_SILENCE_VERDICT);
     expect(display.silence?.whatHappened).toMatch(/El SAT sí contestó hoy/);
     expect(display.silence?.whatHappened).toMatch(/en mantenimiento/);

@@ -110,7 +110,7 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("Ver toda la bóveda");
     expect(auditar).toContain("focusRecommendedUpload()");
     expect(auditar).toContain('className="mt-4 rounded-full bg-teal-600 text-white hover:bg-teal-700"');
-    expect(auditar).toContain('text-sm font-semibold tracking-tight text-emerald-900">Resultado inicial');
+    expect(auditar).toContain('text-sm font-semibold tracking-tight text-[#161616]">Resultado inicial');
     expect(auditar).toContain('label: "Bien"');
     expect(auditar).toContain('label: "Atención"');
     expect(auditar).toContain('label: "Crítico"');

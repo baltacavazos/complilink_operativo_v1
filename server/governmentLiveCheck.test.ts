@@ -787,7 +787,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
     expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
     expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
-    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
@@ -906,7 +906,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
     expect(result.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
     expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
-    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
@@ -955,7 +955,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
     expect(parsed?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(/UIPD9211257I0/);
-    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Certificados|RFC: UIPD9211257I0/);
     expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
   });
@@ -1009,7 +1009,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
     expect(result.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
     expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
-    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
     expect(JSON.stringify(display)).not.toMatch(/acceso gratuito|proveedor|elige un plan/i);

@@ -18,7 +18,8 @@ describe("AuditaPatrón Apple polish tip #2 — confianza y claridad", () => {
     expect(auditar).toContain("formatHumanStatusWord");
     expect(auditar).toContain("humanizeWorkerVisibleScalar");
     expect(auditar).toContain("text-sm font-semibold tracking-tight text-slate-800");
-    expect(auditar).toContain("text-sm font-semibold tracking-tight text-emerald-900");
+    expect(auditar).toContain("text-sm font-semibold tracking-tight text-[#161616]");
+    expect(auditar).toContain("ap-light-surface");
     expect(auditar).toContain("text-sm font-semibold tracking-tight text-amber-900");
     expect(auditar).not.toContain("text-xs font-semibold uppercase tracking-[0.16em] text-slate-600\">Impuestos y retenciones");
   });

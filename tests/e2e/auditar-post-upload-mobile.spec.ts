@@ -15,6 +15,8 @@ test.describe("Veredicto móvil post-upload en /auditar", () => {
     await expect(page.getByTestId("five-second-verdict-seen")).toBeVisible();
     await expect(page.getByTestId("five-second-verdict-seen")).toContainText("Esto vimos:");
     await expect(page.getByTestId("five-second-verdict-next")).toContainText("Qué hacer ahora:");
+    const compactDetail = page.locator("details[data-compact-official-detail='true']");
+    await compactDetail.locator("summary").click();
     await expect(page.getByTestId("official-check-card")).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Subir CFDI del mismo periodo" })
