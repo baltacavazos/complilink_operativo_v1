@@ -44,6 +44,57 @@ export type OfficialIdentityFlags = {
   rfc: boolean;
 };
 
+export const OFFICIAL_CHAT_ANCHOR_STATES = ["live", "pending", "failed"] as const;
+export type OfficialChatAnchorEstado = (typeof OFFICIAL_CHAT_ANCHOR_STATES)[number];
+
+export type OfficialChatAnchorSource = {
+  fuente: OfficialCheckSource;
+  estado: OfficialChatAnchorEstado;
+  fecha: string | null;
+  hechos: string[];
+  motivoFallo: string | null;
+};
+
+export type OfficialChatAnchor = {
+  sat: OfficialChatAnchorSource;
+  imss: OfficialChatAnchorSource;
+  infonavit: OfficialChatAnchorSource;
+};
+
+export const RECIBO_VS_OFICIAL_RESULTS = ["bien", "hay_diferencia", "no_se_pudo"] as const;
+export type ReciboVsOficialResultado = (typeof RECIBO_VS_OFICIAL_RESULTS)[number];
+
+export type ReciboVsOficialCampo = {
+  campo: string;
+  recibo?: string | null;
+  oficial?: string | null;
+  resultado: ReciboVsOficialResultado;
+};
+
+export type ReciboVsOficial = {
+  resultado: ReciboVsOficialResultado;
+  motivo: string;
+  campos?: ReciboVsOficialCampo[];
+};
+
+/** Misma fuente de verdad: tarjeta + chat. Nunca inventar «cumple». */
+export const RECEIPT_OFFICIAL_COMPARISON_COPY = {
+  bien: {
+    seenLine: "Cuadra con tu recibo.",
+    nextStep: "Guarda este resultado con la fecha.",
+  },
+  hay_diferencia: {
+    seenLine: "Hay diferencia entre tu recibo y la respuesta de hoy.",
+    nextStep: "Anota periodo y montos y pide aclaración por escrito a patrón o RH.",
+  },
+  no_se_pudo: {
+    seenLine: "No se pudo comparar tu recibo con la respuesta oficial.",
+    nextStep: "Da permiso, revisa NSS, CURP y RFC, y pulsa Consultar IMSS y SAT otra vez.",
+  },
+} as const;
+
+export const ADVISOR_CHAT_NEVER_INVENT = ["cumple", "alta vigente", "salario oficial"] as const;
+
 export type OfficialSourceCheck = {
   source: OfficialCheckSource;
   sourceLabel: string;
@@ -52,6 +103,9 @@ export type OfficialSourceCheck = {
   detail: string;
   checkedAt: string | null;
   used: OfficialIdentityFlags;
+  honesty?: OfficialChatAnchorEstado | null;
+  hechos?: string[];
+  motivoFallo?: string | null;
 };
 
 export type OfficialCheckSummary = {
@@ -63,7 +117,168 @@ export type OfficialCheckSummary = {
   checkedAt: string | null;
   identity: OfficialIdentityFlags;
   checks: OfficialSourceCheck[];
+  chatAnchor?: OfficialChatAnchor | null;
+  reciboVsOficial?: ReciboVsOficial | null;
 };
+
+export function honestyToOfficialStatus(
+  honesty?: string | null,
+  missingFields?: string[] | null,
+): OfficialCheckStatus | null {
+  const value = String(honesty ?? "").trim().toLowerCase();
+  if (!value) return null;
+  if (value === "live" || value === "vivo") return "vivo";
+  if (value === "pending" || value === "pendiente") return "pendiente";
+  if (
+    value === "failed" ||
+    value === "no_se_pudo" ||
+    value === "fallo" ||
+    value === "falló"
+  ) {
+    return missingFields && missingFields.length > 0 ? "sin_datos" : "no_se_pudo";
+  }
+  return null;
+}
+
+export function officialStatusToHonesty(status: OfficialCheckStatus): OfficialChatAnchorEstado {
+  if (status === "vivo") return "live";
+  if (status === "no_se_pudo" || status === "sin_datos") return "failed";
+  return "pending";
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function asText(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  if (typeof value !== "string") return null;
+  const next = value.replace(/\s+/g, " ").trim();
+  return next.length > 0 ? next : null;
+}
+
+function sanitizeHechos(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => asText(item))
+    .filter((item): item is string => Boolean(item))
+    .map((item) => item.replace(/\bcumple(?:n|r)?\b/gi, "respondió"))
+    .slice(0, 3);
+}
+
+function pendingChatSource(fuente: OfficialCheckSource): OfficialChatAnchorSource {
+  const label = fuente === "sat" ? "SAT" : fuente === "imss" ? "IMSS" : "Infonavit";
+  return {
+    fuente,
+    estado: "pending",
+    fecha: null,
+    hechos: [`Todavía no hay una respuesta oficial nueva de ${label}.`],
+    motivoFallo: null,
+  };
+}
+
+export function readChatAnchorSource(
+  value: unknown,
+  fuente: OfficialCheckSource,
+): OfficialChatAnchorSource {
+  const record = asRecord(value);
+  if (!record) return pendingChatSource(fuente);
+  const missing = Array.isArray(record.missingFields)
+    ? record.missingFields.map((item) => String(item))
+    : [];
+  const estado =
+    record.estado === "live" || record.estado === "pending" || record.estado === "failed"
+      ? record.estado
+      : officialStatusToHonesty(
+          honestyToOfficialStatus(asText(record.honesty) ?? asText(record.status), missing) ??
+            "pendiente",
+        );
+  const hechos = sanitizeHechos(record.hechos);
+  const motivoFallo =
+    estado === "failed"
+      ? asText(record.motivoFallo) ?? asText(record.workerReason) ?? asText(record.reason)
+      : null;
+  return {
+    fuente,
+    estado,
+    fecha: asText(record.fecha) ?? asText(record.checkedAt) ?? asText(record.date),
+    hechos: hechos.length > 0 ? hechos : pendingChatSource(fuente).hechos,
+    motivoFallo,
+  };
+}
+
+export function readChatAnchor(value: unknown): OfficialChatAnchor | null {
+  const record = asRecord(value);
+  if (!record) return null;
+  if (!record.sat && !record.imss && !record.infonavit) return null;
+  return {
+    sat: readChatAnchorSource(record.sat, "sat"),
+    imss: readChatAnchorSource(record.imss, "imss"),
+    infonavit: readChatAnchorSource(record.infonavit, "infonavit"),
+  };
+}
+
+export function readReciboVsOficial(value: unknown): ReciboVsOficial | null {
+  if (value == null) return null;
+  if (value === "bien" || value === "hay_diferencia" || value === "no_se_pudo") {
+    return { resultado: value, motivo: "" };
+  }
+  const record = asRecord(value);
+  if (!record) return null;
+  const resultado = record.resultado ?? record.result ?? record.signal;
+  if (resultado !== "bien" && resultado !== "hay_diferencia" && resultado !== "no_se_pudo") {
+    return null;
+  }
+  const campos = Array.isArray(record.campos)
+    ? record.campos.flatMap((item) => {
+        const row = asRecord(item);
+        if (!row) return [];
+        const campoResult = row.resultado;
+        if (
+          campoResult !== "bien" &&
+          campoResult !== "hay_diferencia" &&
+          campoResult !== "no_se_pudo"
+        ) {
+          return [];
+        }
+        return [
+          {
+            campo: asText(row.campo) ?? "monto",
+            recibo: asText(row.recibo),
+            oficial: asText(row.oficial),
+            resultado: campoResult,
+          } satisfies ReciboVsOficialCampo,
+        ];
+      })
+    : undefined;
+  return {
+    resultado,
+    motivo: asText(record.motivo) ?? "",
+    campos,
+  };
+}
+
+export function hasLiveOfficialResult(summary?: OfficialCheckSummary | null): boolean {
+  if (!summary) return false;
+  if (summary.chatAnchor) {
+    return [summary.chatAnchor.sat, summary.chatAnchor.imss, summary.chatAnchor.infonavit].some(
+      (item) => item.estado === "live",
+    );
+  }
+  return (
+    summary.overallStatus === "vivo" ||
+    summary.checks.some((item) => item.status === "vivo" || item.honesty === "live")
+  );
+}
+
+export function buildReceiptOfficialComparisonCopy(
+  resultado: ReciboVsOficialResultado | null | undefined,
+): { seen: ReciboVsOficialResultado; seenLine: string; nextStep: string } {
+  const seen = resultado ?? "no_se_pudo";
+  const copy = RECEIPT_OFFICIAL_COMPARISON_COPY[seen];
+  return { seen, seenLine: copy.seenLine, nextStep: copy.nextStep };
+}
 
 export function formatOfficialCheckDate(iso: string | null | undefined) {
   if (!iso) return null;
@@ -119,6 +334,7 @@ export function resolveOfficialCheckDisplay(params: {
   consentGranted: boolean;
   isPending?: boolean;
   summary?: OfficialCheckSummary | null;
+  missingIdentityDetail?: string | null;
 }): OfficialCheckDisplay {
   if (params.isPending) {
     return {
@@ -142,6 +358,16 @@ export function resolveOfficialCheckDisplay(params: {
         detail: honest.overallDetail,
         buttonLabel: honest.overallLabel,
         status: honest.overallStatus,
+        showPermissionCopy: false,
+      };
+    }
+
+    if (params.missingIdentityDetail) {
+      return {
+        headline: OFFICIAL_CHECK_STATUS_LABEL.sin_datos,
+        detail: params.missingIdentityDetail,
+        buttonLabel: OFFICIAL_CHECK_STATUS_LABEL.sin_datos,
+        status: "sin_datos",
         showPermissionCopy: false,
       };
     }

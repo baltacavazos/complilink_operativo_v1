@@ -313,6 +313,65 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(pending?.overallLabel).toBe("Pendiente");
   });
 
+  it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            sat: {
+              obligation: "sat",
+              honesty: "pending",
+              status: "pending",
+              workerLabel: "Pendiente",
+              workerReason: "Todavía no hay una respuesta oficial nueva de SAT.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: [],
+              hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+            },
+            imss: {
+              obligation: "imss",
+              honesty: "live",
+              status: "live",
+              workerLabel: "Hay respuesta oficial",
+              workerReason: "Ya hay una respuesta oficial de IMSS con fecha.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: [],
+              hechos: ["Alta vigente: sí.", "Salario registrado: $450.25."],
+            },
+            infonavit: {
+              obligation: "infonavit",
+              honesty: "failed",
+              status: "failed",
+              workerLabel: "No se pudo consultar",
+              workerReason: "Infonavit está en mantenimiento.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: [],
+              hechos: ["Infonavit está en mantenimiento."],
+            },
+          },
+          chatAnchor: {
+            sat: { fuente: "sat", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Todavía no hay una respuesta oficial nueva de SAT."], motivoFallo: null },
+            imss: { fuente: "imss", estado: "live", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Alta vigente: sí.", "Salario registrado: $450.25."], motivoFallo: null },
+            infonavit: { fuente: "infonavit", estado: "failed", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Infonavit está en mantenimiento."], motivoFallo: "Infonavit está en mantenimiento." },
+          },
+          reciboVsOficial: { resultado: "hay_diferencia", motivo: "El SBC no coincide." },
+        },
+      },
+      nowIso: "2026-09-21T12:00:00.000Z",
+      identity: { nss: true, curp: false, rfc: true },
+    });
+
+    expect(parsed?.overallStatus).toBe("vivo");
+    expect(parsed?.chatAnchor?.imss.estado).toBe("live");
+    expect(parsed?.chatAnchor?.imss.hechos).toEqual(["Alta vigente: sí.", "Salario registrado: $450.25."]);
+    expect(parsed?.chatAnchor?.infonavit.motivoFallo).toMatch(/mantenimiento/);
+    expect(parsed?.reciboVsOficial?.resultado).toBe("hay_diferencia");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.hechos?.[0]).toMatch(/Alta vigente/);
+    expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC/i);
+    expect(JSON.stringify(parsed)).toMatch(/No significa que tu patrón cumple/);
+  });
+
   it("no lee APIMARKET_* ni las trata como configuración", async () => {
     const fetchImpl = vi.fn();
     const result = await runOfficialGovernmentCheck({

@@ -975,9 +975,9 @@ describe("appRouter case workflows", () => {
       tenantId: "balt-1",
       caseId: "CASE-BALT-1-DEMO001",
     });
-    expect(invokeLLM).toHaveBeenCalledTimes(1);
+    expect(invokeLLM).not.toHaveBeenCalled();
     expect(result).toMatchObject({
-      disclaimer: "Esto no es asesoría legal. No soy abogado. Solo leo lo que ya aparece en tus documentos. No consulta IMSS, SAT ni Infonavit en vivo.",
+      disclaimer: WORKER_CHAT_DISCLAIMER,
       confidenceScore: 74,
       sourceDocumentCount: 1,
       supportingDocuments: expect.arrayContaining([
@@ -995,20 +995,10 @@ describe("appRouter case workflows", () => {
     expect(result.answer).toContain("Lo que sí se sabe");
     expect(result.answer).toContain("Lo que falta");
     expect(result.answer).toContain("Siguiente paso");
+    expect(result.answer).toMatch(/resultado de TU consulta|Consultar IMSS y SAT/i);
     expect(result.answer).toMatch(/no es asesoría legal/i);
     expect(result.answer).not.toMatch(/Helios|tesis|validamos ante el IMSS/i);
-    expect(invokeLLM).toHaveBeenCalledWith(
-      expect.objectContaining({
-        messages: expect.arrayContaining([
-          expect.objectContaining({
-            role: "system",
-            content: expect.stringMatching(/nunca inventes tesis/i),
-          }),
-        ]),
-      }),
-    );
     expect(result.officialTitles).toEqual([]);
-    expect(result.suggestedPrompts).toContain("¿Qué dice mi contrato?");
     expect(result.suggestedPrompts.join(" ")).not.toMatch(/Helios|CompliLink/i);
     expect(result.supportingDocuments[0]?.detail).toMatch(/Lectura visible: esta lectura generó una lectura preliminar útil del contrato/);
     expect(result.supportingDocuments[1]?.detail).toContain("Soporte IMSS");
@@ -1114,14 +1104,7 @@ describe("appRouter case workflows", () => {
       prompt: "¿Qué dice mi recibo?",
     });
 
-    expect(invokeLLM).toHaveBeenCalledTimes(1);
-    const llmInput = vi.mocked(invokeLLM).mock.calls[0]?.[0] as {
-      messages?: Array<{ role?: string; content?: string }>;
-    };
-    const userMessage = llmInput.messages?.find((item) => item.role === "user")?.content ?? "";
-    expect(userMessage).toContain("DOC-PAY-001");
-    expect(userMessage).not.toContain("DOC-CFDI-001");
-
+    expect(invokeLLM).not.toHaveBeenCalled();
     expect(result.sourceDocumentCount).toBe(1);
     expect(result.answer).toContain("Respuesta clara");
     expect(result.answer).toContain("Lo que sí se sabe");
@@ -1172,7 +1155,7 @@ describe("appRouter case workflows", () => {
         {
           message: {
             content:
-              "Respuesta clara: Sobre horas extra solo puedo citar lecturas oficiales del digest.\nLo que sí se sabe: El recibo no trae horas extra.\nLo que falta: Falta un papel que muestre las horas.\nSiguiente paso: Compara con tu siguiente recibo.",
+              "Respuesta clara: En tu recibo no se ven horas extra y aún no hay resultado de IMSS o SAT.\nLo que sí se sabe: El recibo no trae horas extra.\nLo que falta: Aún no hay resultado de IMSS o SAT.\nSiguiente paso: Pregunta por los montos del recibo o consulta IMSS y SAT.",
           },
         },
       ],
@@ -1185,14 +1168,10 @@ describe("appRouter case workflows", () => {
       prompt: "¿Qué dice la ley sobre horas extra?",
     });
 
-    expect(result.officialTitles.length).toBeGreaterThan(0);
-    expect(result.officialTitles.length).toBeLessThanOrEqual(3);
-    expect(result.officialTitles.some((item) => item.url.includes("2032611"))).toBe(true);
-    expect(result.officialTitles.some((item) => item.kindLabel.includes("Doctrina"))).toBe(true);
-    expect(result.answer).toContain("Lecturas oficiales");
-    expect(result.answer).toMatch(/TIEMPO EXTRAORDINARIO|jornada laboral/i);
+    expect(result.officialTitles).toEqual([]);
+    expect(result.answer).not.toMatch(/Lecturas oficiales|TIEMPO EXTRAORDINARIO|jurisprudencia/i);
+    expect(result.answer).toMatch(/a[uú]n no hay resultado|recibo|IMSS|SAT/i);
     expect(result.answer).not.toMatch(/required_plan|current_plan|\|\||Helios|CompliLink/i);
-    expect(result.officialTitles.some((item) => item.url.includes("9999999"))).toBe(false);
   });
 
   it("revalidates IMSS and Infonavit with a Helios audit contract and traceable evidence", async () => {
@@ -1507,15 +1486,14 @@ describe("appRouter case workflows", () => {
     expect(result.answer).toContain("Lo que sí se sabe");
     expect(result.answer).toContain("Lo que falta");
     expect(result.answer).toContain("Siguiente paso");
-    expect(result.answer).toMatch(/IMSS \$120\.50|NSS 12345678901|recibo/i);
-    expect(result.answer).toMatch(/no confirma el alta oficial/i);
+    expect(result.answer).toMatch(/resultado de TU consulta|Consultar IMSS y SAT|recibo/i);
     expect(result.answer).not.toMatch(/too_big|ZodError|conversationHistory/i);
     expect(result.answer).not.toMatch(/consulta en vivo|portal oficial|validamos ante el IMSS/i);
     expect(result.answer).toContain(WORKER_CHAT_DISCLAIMER);
     expect(result.answer).not.toMatch(/Lecturas oficiales|Subcontrataci[oó]n|Diario Oficial/i);
     expect(result.officialTitles).toEqual([]);
     expect(result.officialSourcesNote).toBeNull();
-    expect(invokeLLM).toHaveBeenCalledTimes(1);
+    expect(invokeLLM).not.toHaveBeenCalled();
   });
 
   it("injects durable per-case memory, isolates case A from case B, and reloads the prior memory", async () => {
@@ -1583,12 +1561,7 @@ describe("appRouter case workflows", () => {
       prompt: "¿Qué riesgo ves en mi contrato con Empresa Norte?",
     });
 
-    const firstAMessage = (
-      vi.mocked(invokeLLM).mock.calls.at(-1)?.[0] as {
-        messages?: Array<{ role?: string; content?: string }>;
-      }
-    ).messages?.find((item) => item.role === "user")?.content ?? "";
-    expect(firstAMessage).toContain("durableMemory");
+    expect(invokeLLM).not.toHaveBeenCalled();
     expect(firstA.advisorMemory?.greeting).toMatch(/María|Empresa Norte/i);
     expect(db.upsertAdvisorMemory).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -1605,13 +1578,7 @@ describe("appRouter case workflows", () => {
       prompt: "¿Qué dice mi recibo de Taller Sur?",
     });
 
-    const firstBMessage = (
-      vi.mocked(invokeLLM).mock.calls.at(-1)?.[0] as {
-        messages?: Array<{ role?: string; content?: string }>;
-      }
-    ).messages?.find((item) => item.role === "user")?.content ?? "";
-    expect(firstBMessage).toContain("durableMemory");
-    expect(firstBMessage).not.toMatch(/Empresa Norte|contrato_maria|CASE-A/i);
+    expect(invokeLLM).not.toHaveBeenCalled();
     expect(firstB.advisorMemory?.greeting).toMatch(/Juan|Taller Sur/i);
     expect(firstB.advisorMemory?.greeting).not.toMatch(/María|Empresa Norte/i);
 

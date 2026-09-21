@@ -1,4 +1,21 @@
 import {
+  CASE_ADVISOR_RULE,
+  buildNoLiveOfficialAnswer,
+  buildOfficialCaseBriefing,
+  buildOfficialChatStarterQuestions,
+  buildPayWellFallback,
+  formatOfficialCaseBriefingForPrompt,
+  isPayWellQuestion,
+  type OfficialCaseBriefing,
+  type OfficialBriefingFacts,
+} from "@shared/officialCaseBriefing";
+import {
+  hasLiveOfficialResult,
+  type OfficialChatAnchor,
+  type OfficialCheckSummary,
+  type ReciboVsOficial,
+} from "@shared/officialCheckCopy";
+import {
   emptyOfficialDigest,
   shouldAttachOfficialDigest,
   shortenOfficialTitle,
@@ -40,7 +57,7 @@ export type WorkerChatLegalFoundation = {
 };
 
 export type WorkerChatGrounding = {
-  liveImssValidation: false;
+  liveImssValidation: boolean;
   validationMode: "document_signals";
   documentsCount: number;
   documentType: string | null;
@@ -69,6 +86,11 @@ export type WorkerChatGrounding = {
   employerName: string | null;
   caseTitle: string | null;
   riskLevel: string | null;
+  officialCheck: OfficialCheckSummary | null;
+  chatAnchor: OfficialChatAnchor | null;
+  reciboVsOficial: ReciboVsOficial | null;
+  officialBriefing: OfficialCaseBriefing;
+  caseOnly: boolean;
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -121,6 +143,11 @@ export function buildWorkerChatGrounding(params: {
   employerName?: string | null;
   caseTitle?: string | null;
   riskLevel?: string | null;
+  officialCheck?: OfficialCheckSummary | null;
+  officialBriefing?: OfficialCaseBriefing | null;
+  chatAnchor?: OfficialChatAnchor | null;
+  reciboVsOficial?: ReciboVsOficial | null;
+  caseOnly?: boolean;
 }): WorkerChatGrounding {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
@@ -133,9 +160,23 @@ export function buildWorkerChatGrounding(params: {
     asText(params.missingDocument?.reason) ??
     null;
   const review = describeWorkerReviewSource(params.opinion);
+  const officialBriefing =
+    params.officialBriefing ??
+    buildOfficialCaseBriefing({
+      officialCheck: params.officialCheck ?? null,
+      facts: labor.facts as OfficialBriefingFacts,
+      chatAnchor: params.chatAnchor ?? params.officialCheck?.chatAnchor ?? null,
+      reciboVsOficial: params.reciboVsOficial ?? params.officialCheck?.reciboVsOficial ?? null,
+    });
+  const caseOnly = params.caseOnly ?? !(params.officialDigest && params.officialDigest.citations.length > 0);
 
   return {
-    liveImssValidation: false,
+    liveImssValidation: hasLiveOfficialResult(officialBriefing.officialCheck) || officialBriefing.hasLiveOfficialResult,
+    officialCheck: params.officialCheck ?? officialBriefing.officialCheck,
+    chatAnchor: officialBriefing.chatAnchor,
+    reciboVsOficial: officialBriefing.reciboVsOficial,
+    officialBriefing,
+    caseOnly,
     validationMode: "document_signals",
     documentsCount: params.documents.length,
     documentType: labor.snapshots[0]?.documentType ?? asText(params.documents[0]?.documentType),
@@ -171,10 +212,14 @@ export function resolveWorkerChatGuidance(
   grounding: WorkerChatGrounding,
   prompt?: string | null,
 ): WorkerChatLaborGuidance {
-  return buildLaborFiscalChatGuidance(grounding, prompt);
+  return buildLaborFiscalChatGuidance(
+    { ...grounding, caseChatPrimary: grounding.caseOnly },
+    prompt,
+  );
 }
 
 export function buildWorkerChatSuggestedPrompts(grounding: WorkerChatGrounding): string[] {
+  const officialStarters = buildOfficialChatStarterQuestions(grounding.officialBriefing);
   const context: WorkerChatStarterContext = {
     documentType: grounding.documentType,
     documentsCount: grounding.documentsCount,
@@ -183,7 +228,9 @@ export function buildWorkerChatSuggestedPrompts(grounding: WorkerChatGrounding):
     hasInfonavitSignal: grounding.hasInfonavitSignal,
     missingDocumentLabel: grounding.missingDocumentLabel,
     recommendedNextStep: grounding.recommendedNextStep,
-    resultCardQuestions: grounding.resultCardQuestions,
+    resultCardQuestions: grounding.caseOnly ? [] : grounding.resultCardQuestions,
+    hasOfficialConsulta: grounding.officialBriefing.hasOfficialConsulta,
+    officialStarters,
   };
   return buildWorkerStarterQuestions(context);
 }
@@ -208,14 +255,50 @@ export function buildWorkerChatFallbackAnswer(
     });
   }
 
-  const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
-  const includeOfficialSources = shouldAttachOfficialDigest(options?.prompt);
+  if (grounding.caseOnly && !grounding.officialBriefing.hasLiveOfficialResult) {
+    const blocked = isPayWellQuestion(options?.prompt)
+      ? buildPayWellFallback(grounding.officialBriefing)
+      : buildNoLiveOfficialAnswer(grounding.officialBriefing);
+    return formatWorkerChatAnswer({
+      answer: blocked.clearAnswer,
+      known: blocked.known,
+      missing: blocked.missing,
+      nextStep: blocked.nextStep,
+      includeOfficialSources: false,
+      prompt: options?.prompt,
+      disclaimer: grounding.disclaimer,
+      multiDocUpsell: grounding.multiDocUpsell,
+    });
+  }
 
+  if (isPayWellQuestion(options?.prompt)) {
+    const pay = buildPayWellFallback(grounding.officialBriefing);
+    return formatWorkerChatAnswer({
+      answer: pay.clearAnswer,
+      known: pay.known,
+      missing: pay.missing,
+      nextStep: pay.nextStep,
+      includeOfficialSources: false,
+      prompt: options?.prompt,
+      disclaimer: grounding.disclaimer,
+      multiDocUpsell: grounding.multiDocUpsell,
+    });
+  }
+
+  const briefing = grounding.officialBriefing;
+  const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
+  const known =
+    briefing.hechoLines.length > 0
+      ? briefing.hechoLines.slice(0, 6).join(" ")
+      : briefing.statusLines.join(". ") || briefing.headline;
   return formatWorkerChatAnswer({
-    answer: guidance.clearAnswer,
-    known: guidance.known,
-    missing: guidance.missing,
-    nextStep: guidance.nextStep,
+    answer: `${briefing.comparison.seenLine} ${briefing.statusLines.join(". ")}`.trim(),
+    known: known ?? "Hay un resultado de TU consulta en este expediente.",
+    missing:
+      briefing.comparison.seen === "no_se_pudo"
+        ? briefing.missingIdentityDetail ?? "La consulta no trajo un monto comparable."
+        : "La consulta no confirma que el patrón cumpla.",
+    nextStep: briefing.comparison.nextStep,
     officialSources: includeOfficialSources ? grounding.officialDigest.citations : null,
     officialSourcesNote: includeOfficialSources ? grounding.officialDigest.honestyNote : null,
     includeOfficialSources,
@@ -230,7 +313,7 @@ export function buildWorkerChatLlmInstructions(
   options?: { prompt?: string | null },
 ): string {
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
-  const includeOfficialSources = shouldAttachOfficialDigest(options?.prompt);
+  const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
   const foundations =
     grounding.legalFoundations.length > 0
       ? grounding.legalFoundations
@@ -264,6 +347,10 @@ export function buildWorkerChatLlmInstructions(
     .join("; ");
 
   return [
+    CASE_ADVISOR_RULE,
+    formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),
+    `chatAnchor: ${JSON.stringify(grounding.chatAnchor)}`,
+    `reciboVsOficial: ${JSON.stringify(grounding.reciboVsOficial)}`,
     WORKER_ADVISOR_VOICE_NOTE,
     `Si necesitas un nombre, preséntate solo como ${WORKER_CHAT_TITLE.toLowerCase()}. NUNCA escribas Helios, Modo Helios ni CompliLink.`,
     "Habla en español sencillo, cálido y familiar. Frases cortas. Sin jerga de ingeniería ni tecnicismos.",
@@ -283,14 +370,18 @@ export function buildWorkerChatLlmInstructions(
     includeOfficialSources
       ? `Si citas lecturas oficiales, usa el título recortado tal como aparece aquí y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}. No completes el rubro ni inventes IUS.`
       : `No uses el título ${WORKER_CHAT_SOURCES_HEADING}. La respuesta son solo las cuatro secciones del papel.`,
-    "Nunca digas que consultaste IMSS, SAT o Infonavit en vivo, ni que confirmaste un alta oficial.",
-    `Modo de lectura: ${grounding.validationMode}. Validación IMSS en vivo: no.`,
+    grounding.officialBriefing.hasLiveOfficialResult
+      ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
+      : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
+    `Modo de lectura: ${grounding.officialBriefing.hasLiveOfficialResult ? "recibo + resultado de TU consulta" : "sin resultado vivo"}.`,
     `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
       guidance.prefersRemoteOpinion
         ? "Hay revisión avanzada usable. Prefiere su resumen, opinión y siguiente paso. No los sustituyas por una plantilla local."
         : "Esta es la ruta local. Profundiza con las señales visibles, sin inventar consulta oficial."
     }`,
-    `Límite: ${DOCUMENT_SIGNAL_DISCLAIMER}`,
+    grounding.caseOnly
+      ? "Límite: habla solo con el resultado de TU consulta y el recibo de ESTE expediente. No inventes cumple, alta vigente ni salario oficial."
+      : `Límite: ${DOCUMENT_SIGNAL_DISCLAIMER}`,
     "Hechos visibles (únicos montos, RFC o NSS que puedes citar):",
     visibleFacts,
     "Bases legales ya presentes en la lectura (únicas que puedes mencionar, en palabras simples):",
@@ -311,8 +402,31 @@ export function sanitizeWorkerChatAnswer(
   options?: { prompt?: string | null },
 ): string {
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
+  const briefing = grounding.officialBriefing;
+  const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
+  if (grounding.caseOnly) {
+    return formatWorkerChatAnswer({
+      answer: cleaned,
+      known:
+        briefing.hechoLines.slice(0, 6).join(" ") ||
+        briefing.statusLines.join(". ") ||
+        briefing.headline,
+      missing:
+        briefing.comparison.seen === "no_se_pudo"
+          ? briefing.missingIdentityDetail ?? "La consulta no trajo un monto comparable."
+          : "La consulta no confirma que el patrón cumpla.",
+      nextStep: briefing.hasLiveOfficialResult
+        ? briefing.comparison.nextStep
+        : briefing.comparison.nextStep,
+      officialSources: null,
+      officialSourcesNote: null,
+      includeOfficialSources: false,
+      prompt: options?.prompt,
+      disclaimer: grounding.disclaimer,
+      multiDocUpsell: grounding.multiDocUpsell,
+    });
+  }
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
-  const includeOfficialSources = shouldAttachOfficialDigest(options?.prompt);
   return formatWorkerChatAnswer({
     answer: cleaned,
     known: guidance.known,
@@ -360,8 +474,18 @@ export function buildWorkerChatContextNote(grounding: WorkerChatGrounding): stri
       employerName: grounding.employerName,
       caseTitle: grounding.caseTitle,
       riskLevel: grounding.riskLevel,
-      guidance:
-        "Habla como asesor laboral de ESTE expediente. Ancla cada respuesta en la persona, el patrón y los papeles de este caso. Si falta un dato, dilo. No inventes consulta oficial ni jurisprudencia. Nunca uses Helios. Si hay revisión avanzada, prefierela.",
+      officialBriefing: {
+        hasOfficialConsulta: grounding.officialBriefing.hasOfficialConsulta,
+        hasLiveOfficialResult: grounding.officialBriefing.hasLiveOfficialResult,
+        statusLines: grounding.officialBriefing.statusLines,
+        hechoLines: grounding.officialBriefing.hechoLines,
+        comparison: grounding.officialBriefing.comparison,
+        receiptLines: grounding.officialBriefing.receiptLines,
+        missingIdentity: grounding.officialBriefing.missingIdentity,
+      },
+      chatAnchor: grounding.chatAnchor,
+      reciboVsOficial: grounding.reciboVsOficial,
+      guidance: CASE_ADVISOR_RULE,
     },
     null,
     2,

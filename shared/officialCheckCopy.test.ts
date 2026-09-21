@@ -8,8 +8,13 @@ import {
   OFFICIAL_CHECK_READY_HEADLINE,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  RECEIPT_OFFICIAL_COMPARISON_COPY,
   assertNoInternalBrands,
+  hasLiveOfficialResult,
+  honestyToOfficialStatus,
   pickHonestOfficialCheck,
+  readChatAnchor,
+  readReciboVsOficial,
   resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
 } from "./officialCheckCopy";
@@ -70,6 +75,18 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.detail).not.toMatch(/Helios|CompliLink|HMAC/i);
   });
 
+  it("con checkbox y sin NSS/CURP/RFC muestra Faltan datos, no Falta tu permiso", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: summary("sin_permiso"),
+      missingIdentityDetail: "Falta tu NSS, CURP y RFC en el recibo para consultar.",
+    });
+    expect(display.headline).toBe("Faltan datos");
+    expect(display.buttonLabel).toBe("Faltan datos");
+    expect(display.detail).toMatch(/Falta tu NSS, CURP y RFC/);
+    expect(display.headline).not.toMatch(/Falta tu permiso/i);
+  });
+
   it("con checkbox y en curso muestra Consultando..., no Falta tu permiso", () => {
     const display = resolveOfficialCheckDisplay({
       consentGranted: true,
@@ -127,5 +144,31 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       consentGranted: true,
       candidates: [summary("sin_permiso"), null],
     })).toBeNull();
+  });
+
+  it("lee chatAnchor y reciboVsOficial del contrato CLK sin inventar cumple", () => {
+    expect(honestyToOfficialStatus("live")).toBe("vivo");
+    expect(honestyToOfficialStatus("failed", ["nss"])).toBe("sin_datos");
+    expect(honestyToOfficialStatus("failed")).toBe("no_se_pudo");
+
+    const anchor = readChatAnchor({
+      sat: { fuente: "sat", estado: "pending", fecha: null, hechos: ["Todavía no hay una respuesta oficial nueva de SAT."], motivoFallo: null },
+      imss: { fuente: "imss", estado: "live", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Alta vigente: sí."], motivoFallo: null },
+      infonavit: { fuente: "infonavit", estado: "failed", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Infonavit no respondió."], motivoFallo: "Infonavit está en mantenimiento." },
+    });
+    expect(anchor?.imss.estado).toBe("live");
+    expect(anchor?.imss.hechos[0]).toBe("Alta vigente: sí.");
+    expect(anchor?.infonavit.motivoFallo).toMatch(/mantenimiento/);
+
+    expect(readReciboVsOficial("bien")?.resultado).toBe("bien");
+    expect(readReciboVsOficial({ resultado: "hay_diferencia", motivo: "SBC" })?.resultado).toBe("hay_diferencia");
+    expect(readReciboVsOficial(null)).toBeNull();
+
+    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine).toBe("Cuadra con tu recibo.");
+    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.nextStep).toMatch(/patrón o RH/);
+    expect(JSON.stringify(RECEIPT_OFFICIAL_COMPARISON_COPY)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
+
+    expect(hasLiveOfficialResult(summary("vivo"))).toBe(true);
+    expect(hasLiveOfficialResult(summary("pendiente"))).toBe(false);
   });
 });

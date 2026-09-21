@@ -33,7 +33,6 @@ import {
   WORKER_CHAT_DISCLAIMER,
   WORKER_CHAT_NEXT_HEADING,
   WORKER_CHAT_RETRY_ERROR,
-  buildWorkerStarterQuestions,
   capWorkerChatConversationHistory,
   extractWorkerClearAnswer,
   extractWorkerWhatToDoNow,
@@ -52,6 +51,11 @@ import {
   resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
+import {
+  WORKER_CHAT_NO_CONSULTA_EMPTY,
+  buildOfficialCaseBriefing,
+  buildOfficialChatStarterQuestions,
+} from "@shared/officialCaseBriefing";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
@@ -5551,6 +5555,29 @@ export default function Auditar() {
     lastUpload?.socialSecurityValidation ?? null;
   const effectiveSocialSecurityValidation =
     uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
+  const officialCheckSummary = pickHonestOfficialCheck({
+    consentGranted: officialCheckConsent,
+    candidates: [
+      officialCheckResult,
+      socialSecurityValidation?.officialCheck,
+      uploadSocialSecurityValidation?.officialCheck,
+    ],
+  });
+  const officialCaseBriefing = buildOfficialCaseBriefing({
+    officialCheck: officialCheckSummary,
+    facts: {
+      period: effectiveSocialSecurityValidation?.facts?.period,
+      netAmount: effectiveSocialSecurityValidation?.facts?.netAmount,
+      imssWithheld: effectiveSocialSecurityValidation?.facts?.imssWithheld,
+      isrWithheld: effectiveSocialSecurityValidation?.facts?.isrWithheld,
+      infonavitWithheld: effectiveSocialSecurityValidation?.facts?.infonavitWithheld,
+      nss: effectiveSocialSecurityValidation?.facts?.nss,
+      curp: effectiveSocialSecurityValidation?.facts?.curp,
+      workerRfc: effectiveSocialSecurityValidation?.facts?.workerRfc,
+    },
+    chatAnchor: officialCheckSummary?.chatAnchor ?? null,
+    reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
+  });
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
     () =>
@@ -5617,59 +5644,18 @@ export default function Auditar() {
     documents[documents.length - 1]?.documentType ??
     "";
   const heliosCopilotSuggestedPrompts = useMemo(() => {
-    const serverPrompts = heliosCopilotMutation.data?.suggestedPrompts ?? [];
-    const cardPrompts =
-      visibleHeliosOpinion?.resultCard?.suggestedQuestions ?? [];
-    const contextualPrompts = getDocumentContextualShortcuts(
-      heliosCopilotPromptContextDocumentType
-    )
-      .map(item => item.prompt)
-      .filter((item): item is string => Boolean(item));
-    const localPrompts = buildWorkerStarterQuestions({
-      documentType: heliosCopilotPromptContextDocumentType || null,
-      documentsCount: documents.length,
-      hasImssSignal: Boolean(
-        caseDetailQuery.data?.socialSecurityValidation?.hasImssSignal
-      ),
-      hasFiscalSignal: Boolean(
-        caseDetailQuery.data?.socialSecurityValidation?.hasFiscalSignal
-      ),
-      hasInfonavitSignal: Boolean(
-        caseDetailQuery.data?.socialSecurityValidation?.hasInfonavitSignal
-      ),
-      recommendedNextStep:
-        visibleHeliosOpinion?.resultCard?.nextStepSummary ||
-        visibleHeliosOpinion?.recommendedNextStep ||
-        null,
-      resultCardQuestions: cardPrompts,
-    });
-
-    return Array.from(
-      new Set([
-        ...cardPrompts,
-        ...localPrompts,
-        ...serverPrompts,
-        ...contextualPrompts,
-      ])
-    ).slice(0, 4);
+    const officialStarters = buildOfficialChatStarterQuestions(officialCaseBriefing);
+    const serverPrompts = officialCaseBriefing.hasOfficialConsulta
+      ? (heliosCopilotMutation.data?.suggestedPrompts ?? [])
+      : [];
+    return Array.from(new Set([...officialStarters, ...serverPrompts])).slice(0, 4);
   }, [
-    caseDetailQuery.data?.socialSecurityValidation?.hasFiscalSignal,
-    caseDetailQuery.data?.socialSecurityValidation?.hasImssSignal,
-    caseDetailQuery.data?.socialSecurityValidation?.hasInfonavitSignal,
-    documents,
     heliosCopilotMutation.data?.suggestedPrompts,
-    heliosCopilotPromptContextDocumentType,
-    visibleHeliosOpinion?.recommendedNextStep,
-    visibleHeliosOpinion?.resultCard?.nextStepSummary,
-    visibleHeliosOpinion?.resultCard?.suggestedQuestions,
+    officialCaseBriefing,
   ]);
-  const heliosCopilotSuggestedPromptsContext = useMemo(() => {
-    if (heliosCopilotPromptContextDocumentType) {
-      return `Preguntas simples sobre tu ${getSimpleDocumentTypeLabel(heliosCopilotPromptContextDocumentType).toLowerCase()}.`;
-    }
-
-    return "Preguntas simples para empezar. Elige una o escribe la tuya.";
-  }, [heliosCopilotPromptContextDocumentType]);
+  const heliosCopilotSuggestedPromptsContext = officialCaseBriefing.hasOfficialConsulta
+    ? "Preguntas sobre el resultado de TU consulta."
+    : "Primero consulta IMSS y SAT.";
   const heliosCopilotHistoryContext = useMemo(() => {
     if (remoteAdvisorMemory?.greeting || heliosCopilotMessages.length > 0) {
       return "Retomo lo que ya platicamos de este expediente, aunque abras el chat en otro momento. Sigo con esta persona, este patrón y estos papeles.";
@@ -6240,18 +6226,14 @@ export default function Auditar() {
     classificationConfidence: lastUpload?.classification.classificationConfidence,
     riskLevel: lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel,
   });
-  const officialCheckSummary = pickHonestOfficialCheck({
-    consentGranted: officialCheckConsent,
-    candidates: [
-      officialCheckResult,
-      socialSecurityValidation?.officialCheck,
-      uploadSocialSecurityValidation?.officialCheck,
-    ],
-  });
   const officialCheckDisplay = resolveOfficialCheckDisplay({
     consentGranted: officialCheckConsent,
     isPending: revalidateSocialSecurityMutation.isPending,
     summary: officialCheckSummary,
+    missingIdentityDetail:
+      officialCaseBriefing.missingIdentity.length === 3
+        ? officialCaseBriefing.missingIdentityDetail
+        : null,
   });
   const officialCheckHeadline = officialCheckDisplay.headline;
   const lastUploadResultHeadline = toHumanResultTitle(
@@ -9513,14 +9495,18 @@ export default function Auditar() {
                               <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                                 {officialCheckDisplay.detail}
                               </p>
-                              {officialCheckConsent && officialCheckSummary?.checks?.length ? (
+                              {officialCheckConsent && officialCaseBriefing.statusLines.length ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                                  {officialCheckSummary.checks.map(check => (
-                                    <li key={check.source}>
-                                      {check.sourceLabel}: {check.label}
-                                    </li>
+                                  {officialCaseBriefing.statusLines.map(line => (
+                                    <li key={line}>{line}</li>
                                   ))}
                                 </ul>
+                              ) : null}
+                              {officialCheckConsent && officialCaseBriefing.hasOfficialConsulta ? (
+                                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
+                                  <p>{officialCaseBriefing.comparison.seenLine}</p>
+                                  <p>{officialCaseBriefing.comparison.nextStepLine}</p>
+                                </div>
                               ) : null}
                               <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
                                 <input
@@ -14465,8 +14451,30 @@ Reforzar con otro documento
                   heliosCopilotSupportingDocuments
                 }
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
-                officialTitles={heliosCopilotMutation.data?.officialTitles ?? []}
-                officialSourcesNote={heliosCopilotMutation.data?.officialSourcesNote ?? null}
+                officialTitles={[]}
+                officialSourcesNote={null}
+                officialStatusChips={officialCaseBriefing.statusLines}
+                officialComparison={
+                  officialCaseBriefing.hasOfficialConsulta
+                    ? {
+                        seenLine: officialCaseBriefing.comparison.seenLine,
+                        nextStep: officialCaseBriefing.comparison.nextStep,
+                      }
+                    : null
+                }
+                hasOfficialConsulta={officialCaseBriefing.hasOfficialConsulta}
+                consultCtaLabel={officialCheckDisplay.buttonLabel}
+                onConsultOfficial={() => {
+                  setHeliosCopilotOpen(false);
+                  if (officialCheckConsent) {
+                    void handleRevalidateSocialSecurity();
+                  }
+                }}
+                uiCopy={{
+                  emptyStateMessage: officialCaseBriefing.hasOfficialConsulta
+                    ? "Pregúntame del resultado de TU consulta y de tu recibo."
+                    : WORKER_CHAT_NO_CONSULTA_EMPTY,
+                }}
                 responseTone={preferredTone}
                 onResponseToneChange={setPreferredTone}
                 onFocusSuggestedDocument={() => {

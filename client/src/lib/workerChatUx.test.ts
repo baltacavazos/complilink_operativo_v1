@@ -301,7 +301,7 @@ describe("chat UX helpers", () => {
     expect(WORKER_CHAT_SHEET_COPY.eyebrow).toBe("Tu expediente, en palabras simples");
     expect(WORKER_CHAT_ASK_CTA).toBe("Preguntar al asesor");
     expect(WORKER_CHAT_SHEET_COPY.promptsHeading).toBe("Empieza por aquí");
-    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Te acompaña en tu caso");
+    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Solo este expediente");
     expect(WORKER_CHAT_SHEET_COPY.quickHighlights).toEqual([
       "Respuesta clara",
       "Lo que sí se sabe",
@@ -315,7 +315,11 @@ describe("chat UX helpers", () => {
     ).toBe(false);
     expect(WORKER_CHAT_DISCLAIMER).toMatch(/no es asesoría legal/i);
     expect(WORKER_CHAT_DISCLAIMER).toMatch(/no soy abogado/i);
-    expect(WORKER_CHAT_DISCLAIMER).toMatch(/no consulta IMSS/i);
+    expect(WORKER_CHAT_DISCLAIMER).toMatch(/resultado de TU consulta/i);
+    expect(WORKER_CHAT_DISCLAIMER).not.toMatch(/no consultamos en vivo/i);
+    expect(WORKER_CHAT_DISCLAIMER).toMatch(/no inventamos que tu patr[oó]n cumple/i);
+    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Solo este expediente");
+    expect(WORKER_CHAT_SHEET_COPY.documentBadge).toBe("Resultado de TU consulta");
   });
 
   it("prioriza las preguntas del resultCard y pinta las cuatro secciones", () => {
