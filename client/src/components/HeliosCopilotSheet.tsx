@@ -246,11 +246,11 @@ export function HeliosCopilotSheet({
                   </span>
                 ) : null}
               </p>
-              {visibleSummary ? (
-                <p className="text-sm leading-6 text-slate-700">
+              {hideCaseChips || !visibleSummary ? null : (
+                <p className="text-sm leading-6 text-[#161616]">
                   {visibleSummary}
                 </p>
-              ) : null}
+              )}
               {hideCaseChips ? null : (
               <div className="flex flex-wrap gap-1.5" data-testid="ap-chat-official-chips">
                 {officialStatusChips.length > 0 ? (
@@ -276,12 +276,12 @@ export function HeliosCopilotSheet({
                 ) : null}
               </div>
               )}
-              {officialComparison ? (
+              {hideCaseChips || !officialComparison ? null : (
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3 py-2.5" data-testid="ap-chat-official-comparison">
                   <p className="text-sm font-semibold text-slate-950">{officialComparison.seenLine}</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-700">{officialComparison.nextStep}</p>
+                  <p className="mt-1 text-sm leading-6 text-[#161616]">{officialComparison.nextStep}</p>
                 </div>
-              ) : null}
+              )}
               {onConsultOfficial && !hasOfficialConsulta ? (
                 <Button
                   type="button"

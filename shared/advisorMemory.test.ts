@@ -119,6 +119,8 @@ describe("advisor memory voice and model", () => {
     });
     expect(greeting).toMatch(/Hola de nuevo, María/);
     expect(greeting).toContain("Empresa Norte");
+    expect(greeting.length).toBeLessThanOrEqual(280);
+    expect(greeting.split(/[.!?]/).filter((part) => part.trim()).length).toBeLessThanOrEqual(4);
     expect(greeting).not.toMatch(/Helios|CompliLink|GPT|mini/i);
 
     const intro = buildAsesorContinuityIntro({

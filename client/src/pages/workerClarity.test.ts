@@ -10,7 +10,17 @@ const sheet = readFileSync(new URL("../components/HeliosCopilotSheet.tsx", impor
 
 describe("contraste y claridad del resultado", () => {
   it("deja tinta casi negra en superficies claras y blanco solo en botón oscuro", () => {
+    expect(css).toContain("--foreground: #161616");
     expect(css).toContain("--ap-ink: #161616");
+    expect(css).toContain("html:not(.dark) .audita-auditar");
+    expect(css).toContain(".ap-worker-chat :is(p, li, h1, h2, h3, label, summary");
+    const privacyBar = css.slice(
+      css.indexOf(".audita-auditar [data-ap-privacy-bar]"),
+      css.indexOf(".audita-auditar [data-ap-upload-copy]"),
+    );
+    expect(privacyBar).toContain("background-color: #ffffff !important");
+    expect(privacyBar).toContain("color: #161616 !important");
+    expect(privacyBar).not.toContain("248 250 252");
     expect(css).toContain(".ap-light-surface");
     expect(css).toContain(".ap-btn-on-dark");
     expect(css).toContain("color: #ffffff !important");
@@ -45,7 +55,17 @@ describe("contraste y claridad del resultado", () => {
     expect(auditar).not.toContain("Privacidad activa mientras analizamos");
     expect(auditar).toContain("verdict?.opener");
     expect(auditar).toContain("hideCaseChips");
-    expect(sheet).toContain("hideCaseChips");
+    expect(auditar).toContain('data-compact-official-detail="true"');
+    expect(auditar).toContain("officialComparison={null}");
+    const compactAt = auditar.indexOf('data-compact-official-detail="true"');
+    const compactRegion = auditar.slice(compactAt - 12, auditar.indexOf("handlePrimaryVerdictCta", compactAt));
+    expect(compactRegion.match(/<details/g)?.length).toBe(1);
+    expect(compactRegion).toContain('data-testid="official-check-card"');
+    expect(compactRegion).toContain('data-testid="official-check-hechos"');
+    expect(compactRegion).toContain('data-testid="official-check-chat-cta"');
+    expect(compactRegion).not.toMatch(/<details[^>]*\sopen/);
+    expect(sheet).toContain("hideCaseChips || !officialComparison");
+    expect(sheet).toContain("hideCaseChips || !visibleSummary");
   });
 
   it("el silencio total cabe en cuatro frases y no lleva fichas técnicas", () => {

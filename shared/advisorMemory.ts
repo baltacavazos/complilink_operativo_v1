@@ -7,7 +7,8 @@ import {
 export const ADVISOR_MEMORY_MODEL = "gpt-6-astra";
 export const ADVISOR_MEMORY_MAX_LIST_ITEMS = 5;
 export const ADVISOR_MEMORY_MAX_ITEM_CHARS = 240;
-export const ADVISOR_MEMORY_MAX_GREETING_CHARS = 420;
+export const ADVISOR_MEMORY_MAX_GREETING_CHARS = 280;
+export const ADVISOR_MEMORY_MAX_GREETING_SENTENCES = 4;
 export const ADVISOR_MEMORY_MAX_TURNS = 6;
 
 export type AdvisorMemoryScope = {
@@ -72,6 +73,15 @@ export function firstGivenName(value?: string | null): string | null {
   if (typeof value !== "string") return null;
   const first = value.replace(/\s+/g, " ").trim().split(" ")[0] ?? "";
   return first.length >= 2 ? first : null;
+}
+
+function capGreetingSentences(value: string): string {
+  const sentences = value
+    .split(/(?<=[.!?])\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .slice(0, ADVISOR_MEMORY_MAX_GREETING_SENTENCES);
+  return sentences.join(" ");
 }
 
 function capMemoryText(value: unknown, maxLength: number): string | null {
@@ -171,7 +181,7 @@ export function buildAdvisorGreeting(params: {
   }
 
   return (
-    capMemoryText(parts.join(" "), ADVISOR_MEMORY_MAX_GREETING_CHARS) ??
+    capMemoryText(capGreetingSentences(parts.join(" ")), ADVISOR_MEMORY_MAX_GREETING_CHARS) ??
     "Hola. Seguimos con este expediente."
   );
 }
@@ -184,13 +194,22 @@ export function buildAsesorContinuityIntro(params: {
   employerEntity?: string | null;
   documentsCount: number;
 }): string {
-  const memoryGreeting = capMemoryText(params.memoryGreeting, ADVISOR_MEMORY_MAX_GREETING_CHARS);
+  const memoryGreeting = capMemoryText(
+    params.memoryGreeting ? capGreetingSentences(params.memoryGreeting) : null,
+    ADVISOR_MEMORY_MAX_GREETING_CHARS,
+  );
   if (memoryGreeting) return memoryGreeting;
 
-  const opinionIntro = capMemoryText(params.opinionIntro, ADVISOR_MEMORY_MAX_GREETING_CHARS);
+  const opinionIntro = capMemoryText(
+    params.opinionIntro ? capGreetingSentences(params.opinionIntro) : null,
+    ADVISOR_MEMORY_MAX_GREETING_CHARS,
+  );
   if (opinionIntro) return opinionIntro;
 
-  const opinionSummary = capMemoryText(params.opinionSummary, ADVISOR_MEMORY_MAX_GREETING_CHARS);
+  const opinionSummary = capMemoryText(
+    params.opinionSummary ? capGreetingSentences(params.opinionSummary) : null,
+    ADVISOR_MEMORY_MAX_GREETING_CHARS,
+  );
   if (opinionSummary) {
     return `${opinionSummary}\n\nPregúntame en palabras simples. Te digo lo que sí se ve, lo que falta y el siguiente paso.`;
   }

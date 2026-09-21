@@ -9760,13 +9760,6 @@ export default function Auditar() {
                         </span>
                       </div>
                     )}
-                    {shouldCompactPostUploadExperience ? (
-                      <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
-                        <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700 shadow-sm">
-                          {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
-                        </span>
-                      </div>
-                    ) : null}
                     <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
                       {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
                         <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
@@ -9774,7 +9767,7 @@ export default function Auditar() {
                       <div className="min-w-0">
                         <h2
                           data-testid="five-second-verdict-seen"
-                          className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
+                          className={`font-semibold tracking-[-0.05em] text-[#111111] ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
                         >
                           {shouldCompactPostUploadExperience
                             ? officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente"
@@ -9783,38 +9776,36 @@ export default function Auditar() {
                             : lastUploadVerdict.label}
                         </h2>
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
-                          <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-slate-900 sm:text-lg">
+                          <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">
                             {lastUploadFiveSecond.nextStepLine}
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
-                          <p className="mt-2 text-sm leading-6 text-slate-600">
+                          <p className="mt-2 text-sm leading-6 text-[#1a1a1a]">
                             {lastUploadFiveSecond.disclaimer}
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
-                          <>
-                            <details className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                              <summary className="cursor-pointer text-sm font-semibold tracking-tight text-slate-800">
-                                Ver lo que se leyó en el papel
-                              </summary>
-                              <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                                {lastUploadResultHeadline}. {lastUploadResultLead}
-                              </p>
-                              <p className="mt-3 text-sm leading-6 text-slate-900">
-                                {lastUploadFactSignal.attention}
-                              </p>
-                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
-                                  <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
-                                </div>
-                                <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                                  <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
-                                  <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
-                                </div>
+                          <details data-compact-official-detail="true" className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
+                            <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#161616]">
+                              Ver detalle
+                            </summary>
+                            <p className="mt-2 text-sm leading-6 text-[#161616]">
+                              {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}. {lastUploadResultHeadline}. {lastUploadResultLead}
+                            </p>
+                            <p className="mt-3 text-sm leading-6 text-[#161616]">
+                              {lastUploadFactSignal.attention}
+                            </p>
+                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                              <div className="rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3 text-left">
+                                <p className="text-sm font-semibold tracking-tight text-[#111111]">IMSS según este documento</p>
+                                <p className="mt-1 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.imss}</p>
                               </div>
-                            </details>
+                              <div className="rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3 text-left">
+                                <p className="text-sm font-semibold tracking-tight text-[#111111]">Impuestos y retenciones</p>
+                                <p className="mt-1 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.retentions}</p>
+                              </div>
+                            </div>
                             <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-3 rounded-[1rem] border px-3 py-3 text-left">
                                   <p data-testid="official-check-headline" className={`font-semibold tracking-tight text-[#161616] ${officialCheckDisplay.status === "pendiente" ? "sr-only" : "text-sm"}`}>
                                     {officialCheckDisplay.headline}
@@ -9823,14 +9814,11 @@ export default function Auditar() {
                                     {officialCheckDisplay.detail}
                                   </p>
                               {officialCaseBriefing.statusLines.length ? (
-                                <details className="mt-2">
-                                  <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
-                                  <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-                                    {officialCaseBriefing.statusLines.map(line => (
-                                      <li key={line}>{line}</li>
-                                    ))}
-                                  </ul>
-                                </details>
+                                <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                                  {officialCaseBriefing.statusLines.map(line => (
+                                    <li key={line}>{line}</li>
+                                  ))}
+                                </ul>
                               ) : null}
                               {officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hechoLines.length ? (
                                 <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
@@ -9877,7 +9865,7 @@ export default function Auditar() {
                                 </Button>
                               ) : null}
                             </div>
-                          </>
+                          </details>
                         ) : null}
                       </div>
                     </div>
@@ -14815,7 +14803,7 @@ Reforzar con otro documento
                   ) ?? WORKER_CHAT_DISCLAIMER
                 }
                 summary={
-                  officialCaseBriefing.verdict
+                  officialCaseBriefing.verdict || officialCaseBriefing.hasOfficialConsulta
                     ? null
                     : warmVisibleNamingCopy(
                         heliosCopilotMutation.data?.answer ??
@@ -14832,24 +14820,17 @@ Reforzar con otro documento
                 nextSuggestedDocument={heliosCopilotNextSuggestedDocument}
                 officialTitles={[]}
                 officialSourcesNote={null}
-                hideCaseChips={Boolean(officialCaseBriefing.verdict)}
+                hideCaseChips={Boolean(
+                  officialCaseBriefing.verdict ||
+                    officialCaseBriefing.hasOfficialConsulta ||
+                    officialCheckDisplay.silence
+                )}
                 officialStatusChips={
-                  officialCaseBriefing.verdict
+                  officialCaseBriefing.verdict || officialCaseBriefing.hasOfficialConsulta
                     ? []
                     : officialCaseBriefing.statusLines
                 }
-                officialComparison={
-                  officialCaseBriefing.instituteSilence ||
-                  officialCaseBriefing.verdict?.kind === "mixed" ||
-                  officialCaseBriefing.comparison.seen === "no_se_pudo"
-                    ? null
-                    : officialCaseBriefing.hasOfficialConsulta
-                      ? {
-                          seenLine: officialCaseBriefing.comparison.seenLine,
-                          nextStep: officialCaseBriefing.comparison.nextStepLine,
-                        }
-                      : null
-                }
+                officialComparison={null}
                 hasOfficialConsulta={officialCaseBriefing.hasOfficialConsulta}
                 consultCtaLabel={officialCheckDisplay.buttonLabel}
                 onConsultOfficial={() => {
