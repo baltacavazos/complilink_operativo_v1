@@ -123,8 +123,8 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).not.toContain("Resultado listo");
     expect(auditarSource).toContain('"flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start"');
     expect(auditarSource).toContain('"text-[1.85rem] leading-[1.02] sm:text-[2.3rem]"');
-    expect(auditarSource).toContain("Esto vimos");
-    expect(auditarSource).toContain("Qué hacer ahora");
+    expect(auditarSource).toContain('data-testid="five-second-verdict-seen"');
+    expect(auditarSource).toContain('data-testid="five-second-verdict-next"');
     expect(auditarSource).toContain("Un solo paso claro primero. El detalle del papel queda abajo, si lo quieres ver.");
     expect(auditarSource).toContain('"mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600"');
     expect(auditarSource).toContain('primaryLastUploadShortcut?.label ?? "Ver qué sigue"');
