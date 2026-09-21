@@ -8954,6 +8954,39 @@ export default function Auditar() {
     );
   }
 
+  if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview && officialCheckDisplay.silence) {
+    return (
+      <main
+        data-testid="worker-result-only"
+        className="audita-auditar min-h-screen bg-white px-3 py-6 text-[#111111] sm:px-4 sm:py-8"
+      >
+        <div className="container mx-auto max-w-xl">
+          <input
+            ref={guestFileInputRef}
+            type="file"
+            accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
+            onChange={handleGuestFileChange}
+            className="hidden"
+          />
+          <WorkerOfficialResult
+            presentation={officialCheckDisplay.silence}
+            retryPending={guestOfficialCheckMutation.isPending}
+            onRetry={() => {
+              void handleGuestOfficialCheck();
+            }}
+            paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
+          />
+          {guestReviewError ? (
+            <Alert className="mt-4 border-rose-200 bg-rose-50">
+              <AlertTitle>No pudimos completar esto</AlertTitle>
+              <AlertDescription>{guestReviewError}</AlertDescription>
+            </Alert>
+          ) : null}
+        </div>
+      </main>
+    );
+  }
+
   if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview) {
     return (
       <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
@@ -8974,24 +9007,7 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            {officialCheckDisplay.silence ? (
-              <div className="mt-5">
-                <WorkerOfficialResult
-                  presentation={officialCheckDisplay.silence}
-                  retryPending={guestOfficialCheckMutation.isPending}
-                  onRetry={() => {
-                    void handleGuestOfficialCheck();
-                  }}
-                  onAsk={() => openHeliosCopilot()}
-                  onUploadAnother={() => guestFileInputRef.current?.click()}
-                  paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
-                />
-              </div>
-            ) : (
-              <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
-            )}
-            {officialCheckDisplay.silence ? null : (
-            <>
+            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
             {officialCheckDisplay.status === "pendiente" ? null : (
               <>
                 <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
@@ -9072,8 +9088,6 @@ export default function Auditar() {
                 {officialCheckDisplay.buttonLabel}
               </Button>
             </div>
-            </>
-            )}
             {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos completar esto</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
             <p className="mt-5 text-sm leading-6 text-slate-700">Guardar esta revisión es opcional. Puedes consultar IMSS y SAT ahora y crear una cuenta después si quieres conservar el resultado.</p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -9227,6 +9241,8 @@ export default function Auditar() {
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-10 text-slate-950 sm:py-8">
       <div className="container mx-auto max-w-6xl">
+        {officialCheckDisplay.silence ? null : (
+        <>
         <MobileAppShell
           current="auditar"
           title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
@@ -9306,19 +9322,18 @@ export default function Auditar() {
 
           <div className="mt-4 flex flex-col items-stretch gap-2 sm:mt-0 sm:flex-wrap sm:items-center sm:justify-end">
             {shouldCompactPostUploadExperience ? null : null}
-   </div>
+          </div>
         </div>
+        </>
+        )}
 
+        {privacySignal.ready ? null : (
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
           <div
             data-ap-privacy-bar
-            data-privacy-ready={privacySignal.ready ? "true" : "false"}
+            data-privacy-ready="false"
             className={`rounded-[1.15rem] border px-4 py-3 shadow-[0_16px_38px_-30px_rgba(15,23,42,0.4)] backdrop-blur ${privacySignal.cardClass}`}
           >
-            {privacySignal.ready ? (
-              <p className="text-sm font-semibold text-[#161616]">Tu empresa no ve esto.</p>
-            ) : (
-            <>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <div className={`inline-flex items-center gap-2 text-[11px] font-semibold tracking-tight ${privacySignal.eyebrowClass}`}>
@@ -9346,10 +9361,9 @@ export default function Auditar() {
                 </span>
               </div>
             </div>
-            </>
-            )}
           </div>
         </section>
+        )}
 
         {bootstrapMutation.isPending ? (
           <div className="mt-8 rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
@@ -9622,7 +9636,7 @@ export default function Auditar() {
           baseLabel="/auditar"
         />
 
-        {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
+        {showWorkspaceSectionSelector && !auth.canToggleUserView && !officialCheckDisplay.silence ? (
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
@@ -9680,8 +9694,6 @@ export default function Auditar() {
                 onRetry={() => {
                   void handleRevalidateSocialSecurity();
                 }}
-                onAsk={() => openHeliosCopilot()}
-                onUploadAnother={() => setUploadSourceOpen(true)}
               />
             ) : null}
             {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
@@ -9732,8 +9744,6 @@ export default function Auditar() {
                 onRetry={() => {
                   void handleRevalidateSocialSecurity();
                 }}
-                onAsk={() => openHeliosCopilot()}
-                onUploadAnother={() => setUploadSourceOpen(true)}
                 paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
               />
             ) : null}
@@ -14778,9 +14788,7 @@ Reforzar con otro documento
                 messages={heliosCopilotConversation}
                 isLoading={heliosCopilotMutation.isPending}
                 suggestedPrompts={
-                  officialCaseBriefing.verdict
-                    ? ["¿Qué implica esto para mi pago?"]
-                    : heliosCopilotSuggestedPrompts
+                  officialCaseBriefing.verdict ? [] : heliosCopilotSuggestedPrompts
                 }
                 suggestedPromptsContext={
                   officialCaseBriefing.verdict
@@ -16127,16 +16135,14 @@ Reforzar con otro documento
         </DrawerContent>
       </Drawer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || officialCheckDisplay.silence || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
+          {privacySignal.ready ? null : (
           <div
             data-ap-privacy-bar
-            data-privacy-ready={privacySignal.ready ? "true" : "false"}
+            data-privacy-ready="false"
             className={`mb-3 rounded-[1.05rem] border px-3.5 py-2.5 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)] ${privacySignal.cardClass}`}
           >
-            {privacySignal.ready ? (
-              <p className="text-sm font-semibold text-[#161616]">Tu empresa no ve esto.</p>
-            ) : (
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0 pr-1">
                 <p className={`text-[10px] font-semibold tracking-tight ${privacySignal.eyebrowClass}`}>
@@ -16150,8 +16156,8 @@ Reforzar con otro documento
                 {privacySignal.badge}
               </span>
             </div>
-            )}
           </div>
+          )}
           {showWorkspaceSectionSelector && !auth.canToggleUserView ? (
             <div className="mb-3 grid grid-cols-3 gap-2 rounded-[1.15rem] border border-slate-200 bg-slate-50/95 p-2 shadow-[0_16px_30px_-28px_rgba(15,23,42,0.42)]">
               {workspaceSectionCards.map(item => {

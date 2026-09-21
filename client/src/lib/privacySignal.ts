@@ -12,8 +12,8 @@ export type WorkerPrivacySignal = {
 };
 
 /**
- * Si ya hay consulta o resultado, no se dice «mientras analizamos».
- * Una sola línea: la empresa no ve el expediente.
+ * Si ya hay consulta o resultado, no se muestra «Privacidad activa» ni «mientras analizamos».
+ * Esa barra solo existe mientras todavía no hay resultado.
  */
 export function resolveWorkerPrivacySignal(input: {
   pendingDraft: boolean;
@@ -23,15 +23,15 @@ export function resolveWorkerPrivacySignal(input: {
 }): WorkerPrivacySignal {
   if (input.officialResultReady) {
     return {
-      badge: "Privado",
-      title: "Tu empresa no ve esto.",
-      detail: "Tu empresa no ve esto.",
-      company: "Tu empresa no ve esto.",
-      control: "Tú conservas el mando",
-      trace: "Solo en tu expediente",
-      cardClass: "border-slate-200 bg-white",
-      badgeClass: "border-slate-200 bg-white text-[#161616]",
-      eyebrowClass: "text-[#161616]",
+      badge: "",
+      title: "",
+      detail: "",
+      company: "",
+      control: "",
+      trace: "",
+      cardClass: "hidden",
+      badgeClass: "hidden",
+      eyebrowClass: "hidden",
       ready: true,
     };
   }

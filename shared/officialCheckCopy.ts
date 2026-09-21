@@ -49,6 +49,9 @@ export const INSTITUTE_SILENCE_RETRY = "Probar de nuevo mañana";
 export const INSTITUTE_SILENCE_ASK = "Preguntar qué implica para mi pago";
 export const INSTITUTE_SILENCE_CHAT =
   "Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.";
+/** Apertura del chat: no repite el veredicto ni las tres líneas de la tarjeta. */
+export const WORKER_RESULT_CHAT_OPENER =
+  "Esto es de tu consulta de hoy. Si te preocupa el sueldo, te lo explico en corto. No voy a repetir lo que ya dice la tarjeta. Dime qué duda te quedó.";
 export const INSTITUTE_WAITING_HEADLINE =
   "Todavía esperamos respuesta de IMSS, SAT e Infonavit";
 export const INSTITUTE_WAITING_DETAIL =
@@ -150,12 +153,8 @@ export function buildInstituteSilencePresentation(
   };
 }
 
-function instituteSilenceOpener(sources?: OfficialCheckSource[] | null): string {
-  const unique = uniqueOfficialSources(sources);
-  const who =
-    unique.length === 0 || unique.length >= 3 ? "IMSS, SAT e Infonavit" : formatOfficialSourceList(unique);
-  const verb = unique.length === 1 ? "no contestó" : "no contestaron";
-  return `Hoy ${who} ${verb}. Tu recibo ya está leído, y aún no se puede saber si tu patrón está bien dado de alta. Pregúntame qué implica para tu pago.`;
+function instituteSilenceOpener(_sources?: OfficialCheckSource[] | null): string {
+  return WORKER_RESULT_CHAT_OPENER;
 }
 
 function capitalizeSpanish(value: string): string {
@@ -313,7 +312,7 @@ function mixedOfficialPresentation(live: OfficialSourceOutcome[], silent: Offici
     askLabel: INSTITUTE_SILENCE_ASK,
     sourceLines,
     chat: mixedOfficialChat(live, silent),
-    opener: `${liveBit} sí ${liveShort}; ${silentNames} no. Eso no dice si tu patrón está bien dado de alta. Si quieres, pregúntame qué implica para tu pago.`,
+    opener: WORKER_RESULT_CHAT_OPENER,
   };
 }
 

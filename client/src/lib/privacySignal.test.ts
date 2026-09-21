@@ -11,9 +11,7 @@ describe("privacidad cuando ya hay resultado", () => {
     });
 
     expect(signal.ready).toBe(true);
-    expect(signal.title).toBe("Tu empresa no ve esto.");
-    expect(signal.detail).not.toMatch(/mientras analizamos/);
-    expect(JSON.stringify(signal)).not.toMatch(/mientras analizamos/);
+    expect(JSON.stringify(signal)).not.toMatch(/Privacidad activa|mientras analizamos|Tu empresa no ve esto/);
   });
 
   it("mientras no hay resultado, el análisis sigue protegido", () => {

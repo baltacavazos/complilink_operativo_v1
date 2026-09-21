@@ -22,19 +22,29 @@ describe("contraste y claridad del resultado", () => {
     expect(result).not.toContain("text-emerald-");
   });
 
-  it("pinta un veredicto, tres líneas y un solo botón; el detalle técnico va cerrado", () => {
+  it("pinta un veredicto, tres líneas, detalle cerrado y un solo botón", () => {
+    const detailAt = result.indexOf(">Ver detalle<");
+    const ctaAt = result.indexOf('data-testid="official-check-cta"');
     expect(result).toContain("Qué pasó");
     expect(result).toContain("Qué significa");
     expect(result).toContain("Qué hacer");
-    expect(result).toContain("Ver detalle");
-    expect(result).toContain('data-testid="official-check-cta"');
-    expect(result).toContain('data-testid="official-check-chat-cta"');
-    expect(result).toContain("Subir otro recibo");
+    expect(detailAt).toBeGreaterThan(0);
+    expect(ctaAt).toBeGreaterThan(detailAt);
+    expect(result).not.toMatch(/<details[^>]*\sopen/);
+    expect(result).not.toContain('data-testid="official-check-chat-cta"');
+    expect(result).not.toContain("Subir otro recibo");
+    expect(result.match(/text-white/g)?.length).toBe(1);
+    expect(result).toContain("ap-btn-on-dark");
+    expect(result.match(/data-testid="official-check-cta"/g)?.length).toBe(1);
     expect(result).not.toContain("bg-teal-700");
     expect(auditar).toContain("WorkerOfficialResult");
+    expect(auditar).toContain('data-testid="worker-result-only"');
+    expect(auditar).toContain("officialCheckDisplay.silence ? null");
+    expect(auditar).toContain("privacySignal.ready ? null");
+    expect(auditar).not.toContain("Tu empresa no ve esto.");
+    expect(auditar).not.toContain("Privacidad activa mientras analizamos");
     expect(auditar).toContain("verdict?.opener");
     expect(auditar).toContain("hideCaseChips");
-    expect(auditar).toContain("Tu empresa no ve esto.");
     expect(sheet).toContain("hideCaseChips");
   });
 
@@ -44,6 +54,10 @@ describe("contraste y claridad del resultado", () => {
     expect(sentences.length).toBeLessThanOrEqual(4);
     expect(sentences.length).toBeGreaterThanOrEqual(3);
     expect(silence.opener).not.toMatch(/\bVivo\b|\bFalló\b|RFC|NSS|certificado/);
+    expect(silence.opener).not.toContain(silence.verdict);
+    expect(silence.opener).not.toContain("Pedimos la información");
+    expect(silence.opener).not.toContain("Tu recibo sí se leyó");
+    expect(silence.opener).not.toContain("Vuelve a consultar");
     expect(silence.verdict).not.toMatch(/\bFalló\b|\bVivo\b/);
   });
 
