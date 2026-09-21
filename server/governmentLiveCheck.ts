@@ -326,11 +326,20 @@ function emptySummary(status: OfficialCheckStatus, identity: WorkerOfficialIdent
   };
 }
 
+function fitBridgeField(value: string | null | undefined, min: number, max: number) {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  if (trimmed.length < min || trimmed.length > max) return undefined;
+  return trimmed;
+}
+
 export function buildOfficialCheckBridgePayload(params: {
   identity: WorkerOfficialIdentity;
   nowIso: string;
   idempotencyKey?: string;
   correlationId?: string;
+  traceId?: string | null;
+  caseId?: string | null;
+  sourceDocumentId?: string | null;
 }) {
   const autonomousInput: Record<string, string> = {};
   if (params.identity.nss) autonomousInput.nss = params.identity.nss;
@@ -359,7 +368,10 @@ export function buildOfficialCheckBridgePayload(params: {
     sourceModule: "auditapatron_official_check",
     requestedAt: params.nowIso,
     idempotencyKey: params.idempotencyKey,
-    correlationId: params.correlationId,
+    correlationId: fitBridgeField(params.correlationId, 4, 180) ?? fitBridgeField(params.traceId, 4, 180),
+    traceId: fitBridgeField(params.traceId, 8, 180),
+    sourceCaseId: fitBridgeField(params.caseId, 1, 120),
+    sourceDocumentId: fitBridgeField(params.sourceDocumentId, 1, 120),
   };
 }
 
@@ -954,6 +966,9 @@ export async function runOfficialGovernmentCheck(params: {
   sleep?: (ms: number) => Promise<void>;
   idempotencyKey?: string;
   correlationId?: string;
+  traceId?: string | null;
+  caseId?: string | null;
+  sourceDocumentId?: string | null;
 }): Promise<OfficialCheckSummary> {
   const env = params.env ?? process.env;
   const identity = {
@@ -998,6 +1013,9 @@ export async function runOfficialGovernmentCheck(params: {
     nowIso,
     idempotencyKey: params.idempotencyKey,
     correlationId: params.correlationId,
+    traceId: params.traceId,
+    caseId: params.caseId,
+    sourceDocumentId: params.sourceDocumentId,
   });
 
   const targetUrls = resolveOfficialCheckTargetUrls(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? engine.webhookUrl));

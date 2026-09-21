@@ -5,6 +5,8 @@ import {
   addCaseEvent,
   addOperationalAlert,
   createAuditLog,
+  findLaborCaseByTraceOrId,
+  findLatestCaseDocument,
   getDocumentById,
   registerCompliLinkWebhookEvent,
   resolveCompliLinkDocument,
@@ -151,6 +153,139 @@ function extractSourceDocumentId(payload: Partial<CompliLinkReturnEnvelope>) {
     toStringFromUnknown(metadataRecord?.sourceDocumentUuid) ??
     null
   );
+}
+
+const RAW_PAYLOAD_STORE_LIMIT = 60_000;
+const OFFICIAL_CHECK_ALIAS_EVENTS = new Set([
+  "official_check",
+  "official.check.requested",
+  "official.check.completed",
+  "official.check.returned",
+]);
+
+function clipStoredRawPayload(rawBody: string) {
+  return rawBody.length <= RAW_PAYLOAD_STORE_LIMIT ? rawBody : rawBody.slice(0, RAW_PAYLOAD_STORE_LIMIT);
+}
+
+function readReturnContractPieces(root: Record<string, unknown>) {
+  const current = toRecord(root.currentResponseEvent);
+  const currentResult = toRecord(current?.result);
+  const result = toRecord(root.result) ?? toRecord(root.analysisResults) ?? currentResult;
+  const officialCheck =
+    toRecord(result?.officialCheck) ??
+    toRecord(root.officialCheck) ??
+    toRecord(currentResult?.officialCheck);
+  return { current, result, officialCheck };
+}
+
+function hasOfficialCheckContract(officialCheck: Record<string, unknown> | null) {
+  return Boolean(officialCheck && (officialCheck.sat || officialCheck.imss || officialCheck.infonavit));
+}
+
+export function adaptCompliLinkReturnBody(body: unknown): Record<string, unknown> {
+  const root = toRecord(body);
+  if (!root) return {};
+
+  const { current, result, officialCheck } = readReturnContractPieces(root);
+  const hasOfficialCheck = hasOfficialCheckContract(officialCheck);
+  const hasReturnContract = Boolean(current) || root.contractVersion === "auditapatron_return_contract_v1";
+  if (!hasReturnContract && !hasOfficialCheck) return root;
+
+  const topEvent = toNonEmptyString(root.event) ?? toNonEmptyString(root.eventName);
+  const nestedEvent = toNonEmptyString(current?.eventName) ?? toNonEmptyString(current?.event);
+  let event =
+    (topEvent && isSupportedCompliLinkReturnEvent(topEvent) ? topEvent : null) ??
+    (nestedEvent && isSupportedCompliLinkReturnEvent(nestedEvent) ? nestedEvent : null) ??
+    nestedEvent ??
+    topEvent;
+
+  if (
+    hasOfficialCheck &&
+    event !== AUDITAPATRON_OUTBOUND_EVENT &&
+    (!event || !isSupportedCompliLinkReturnEvent(event) || OFFICIAL_CHECK_ALIAS_EVENTS.has(event))
+  ) {
+    event = "document.processed.v1";
+  }
+
+  const metadataRecord = toRecord(root.metadata);
+  const documentId =
+    toStringFromUnknown(root.documentId) ??
+    toStringFromUnknown(current?.documentId) ??
+    toStringFromUnknown(root.sourceDocumentId) ??
+    toStringFromUnknown(metadataRecord?.sourceDocumentId);
+  const correlationId =
+    toStringFromUnknown(root.correlationId) ??
+    toStringFromUnknown(current?.correlationId) ??
+    toStringFromUnknown(metadataRecord?.correlationId);
+  const traceId =
+    toStringFromUnknown(root.traceId) ??
+    toStringFromUnknown(current?.traceId) ??
+    toStringFromUnknown(metadataRecord?.traceId);
+  const eventId =
+    toStringFromUnknown(root.eventId) ??
+    toStringFromUnknown(current?.eventId) ??
+    toStringFromUnknown(root.idempotencyKey);
+  const caseId =
+    toStringFromUnknown(root.sourceCaseId) ??
+    toStringFromUnknown(current?.sourceCaseId) ??
+    toStringFromUnknown(metadataRecord?.caseId) ??
+    toStringFromUnknown(metadataRecord?.sourceCaseId);
+
+  const stored: Record<string, unknown> = { ...root };
+  for (const key of ["canonicalExamples", "eventCatalog", "advisorChat", "webhook", "deliverySemantics"]) {
+    delete stored[key];
+  }
+
+  return {
+    ...stored,
+    event,
+    eventName: event,
+    ...(documentId ? { documentId } : {}),
+    ...(eventId ? { eventId, idempotencyKey: toStringFromUnknown(root.idempotencyKey) ?? eventId } : {}),
+    ...(toStringFromUnknown(root.compliLinkId) || eventId
+      ? { compliLinkId: toStringFromUnknown(root.compliLinkId) ?? eventId }
+      : {}),
+    ...(correlationId ? { correlationId } : {}),
+    ...(traceId ? { traceId } : {}),
+    ...(caseId ? { sourceCaseId: caseId } : {}),
+    timestamp:
+      toStringFromUnknown(root.timestamp) ??
+      toStringFromUnknown(current?.emittedAt) ??
+      null,
+    status:
+      toStringFromUnknown(root.status) ??
+      toStringFromUnknown(current?.businessStatus) ??
+      toStringFromUnknown(result?.processingStatus) ??
+      null,
+    analysisResults: toRecord(root.analysisResults) ?? null,
+    result: result ?? null,
+    officialCheck: officialCheck ?? null,
+    currentResponseEvent: current ?? null,
+    metadata: {
+      ...(metadataRecord ?? {}),
+      ...(correlationId ? { correlationId } : {}),
+      ...(traceId ? { traceId } : {}),
+      ...(caseId ? { caseId } : {}),
+      ...(officialCheck ? { officialCheck } : {}),
+    },
+  };
+}
+
+function liveCheckFromReturnPayload(payload: Record<string, unknown>, nowIso: string) {
+  const hasOfficialCheck = hasOfficialCheckContract(toRecord(payload.officialCheck));
+  return officialCheckFromBridgeReturn({
+    payload: {
+      event: payload.event,
+      ...(hasOfficialCheck ? { action: "official_check" } : {}),
+      result: payload.result ?? payload.analysisResults ?? null,
+      officialCheck: payload.officialCheck ?? null,
+      currentResponseEvent: payload.currentResponseEvent ?? null,
+      analysisResults: payload.analysisResults ?? null,
+      extractedFields: payload.extractedFields ?? null,
+      metadata: payload.metadata ?? null,
+    },
+    nowIso,
+  });
 }
 
 function extractDocumentNumericId(payload: Partial<CompliLinkReturnEnvelope>) {
@@ -543,7 +678,7 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
       return;
     }
 
-    const payload = (req.body ?? {}) as AuditaPatronUploadWebhookPayload;
+    const payload = adaptCompliLinkReturnBody(req.body ?? {}) as AuditaPatronUploadWebhookPayload;
     const normalized = normalizeIncomingUploadPayload(payload);
     const classified = classifyAuditaPatronBridgeEvent(normalized.event);
 
@@ -572,7 +707,7 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
 
     if (classified.kind === "return") {
       const outcome = await ingestCompliLinkReturnPayload({
-        payload: (req.body ?? {}) as Partial<CompliLinkReturnEnvelope>,
+        payload,
         rawBody,
         signatureHeader: req.header("X-AuditaPatron-Signature"),
         timestampHeader: req.header("X-AuditaPatron-Timestamp"),
@@ -644,60 +779,180 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
   }
 }
 
+function officialCheckAck(params: {
+  receivedAt: Date;
+  correlationId: string | null;
+  traceId: string | null;
+  eventId: string | null;
+  documentId?: string | null;
+  caseId?: string | null;
+}) {
+  return {
+    received: true,
+    intakeId: params.eventId ?? params.correlationId ?? params.receivedAt.toISOString(),
+    documentId: params.documentId ?? null,
+    caseId: params.caseId ?? null,
+    processingStatus: "accepted",
+    traceId: params.traceId,
+    correlationId: params.correlationId,
+    remoteEventId: params.eventId,
+    receivedAt: params.receivedAt.toISOString(),
+    responseContract: RESPONSE_CONTRACT,
+  };
+}
+
 export async function ingestCompliLinkReturnPayload(params: {
-  payload: Partial<CompliLinkReturnEnvelope>;
+  payload: Partial<CompliLinkReturnEnvelope> | Record<string, unknown>;
   rawBody: string;
   signatureHeader?: string | null;
   timestampHeader?: string | null;
 }) {
-  const { payload, rawBody, signatureHeader, timestampHeader } = params;
+  const adapted = adaptCompliLinkReturnBody(params.payload);
+  const payload = adapted as Partial<CompliLinkReturnEnvelope> & Record<string, unknown>;
+  const { rawBody, signatureHeader, timestampHeader } = params;
+  const hasOfficialCheck = hasOfficialCheckContract(toRecord(payload.officialCheck));
+  const eventName = typeof payload.event === "string" ? payload.event : "";
+  const explicitDocumentId = toStringFromUnknown(payload.documentId);
 
-  if (!payload.event || !payload.documentId) {
+  if (!eventName || (!explicitDocumentId && !hasOfficialCheck)) {
     return {
       ok: false as const,
       statusCode: 400,
       body: {
         received: false,
         issues: [
-          ...(!payload.event ? buildWebhookIssues("missing_field", "The event field is required.", "event") : []),
-          ...(!payload.documentId ? buildWebhookIssues("missing_field", "The documentId field is required.", "documentId") : []),
+          ...(!eventName ? buildWebhookIssues("missing_field", "The event field is required.", "event") : []),
+          ...(!explicitDocumentId && !hasOfficialCheck
+            ? buildWebhookIssues("missing_field", "The documentId field is required.", "documentId")
+            : []),
         ],
         responseContract: RESPONSE_CONTRACT,
       },
     };
   }
 
-  if (!isSupportedCompliLinkReturnEvent(payload.event)) {
+  if (!isSupportedCompliLinkReturnEvent(eventName)) {
     logUnknownBridgeEvent({
-      event: payload.event,
+      event: eventName,
       endpoint: "complilink-return",
-      documentId: typeof payload.documentId === "string" ? payload.documentId : null,
+      documentId: explicitDocumentId,
     });
     return {
       ok: false as const,
       statusCode: 400,
       body: {
         received: false,
-        issues: buildWebhookIssues("unknown_event", `Unsupported event '${payload.event}'.`, "event"),
+        issues: buildWebhookIssues("unknown_event", `Unsupported event '${eventName}'.`, "event"),
         responseContract: RESPONSE_CONTRACT,
       },
     };
   }
 
+  payload.event = eventName;
   const correlationId = extractCorrelationId(payload);
   const traceId = extractTraceId(payload) ?? correlationId;
   const sourceDocumentId = extractSourceDocumentId(payload);
   const documentNumericId = extractDocumentNumericId(payload);
   const eventId = extractEventId(payload);
-  const resolvedDocument = await resolveCompliLinkDocument({
-    documentId: typeof payload.documentId === "string" ? payload.documentId : String(payload.documentId),
-    sourceDocumentId,
-    documentNumericId,
-    remoteDocumentId: payload.documentId,
-    correlationId,
-    traceId,
-    eventId,
-  });
+  let resolvedDocument =
+    explicitDocumentId || sourceDocumentId || correlationId || traceId || eventId
+      ? await resolveCompliLinkDocument({
+          documentId: explicitDocumentId,
+          sourceDocumentId,
+          documentNumericId,
+          remoteDocumentId: explicitDocumentId,
+          correlationId,
+          traceId,
+          eventId,
+        })
+      : null;
+
+  const receivedAt = new Date();
+
+  if (!resolvedDocument && hasOfficialCheck) {
+    const caseRow = await findLaborCaseByTraceOrId([
+      correlationId,
+      traceId,
+      toStringFromUnknown(payload.sourceCaseId),
+      toStringFromUnknown(toRecord(payload.metadata)?.caseId),
+    ]);
+    if (caseRow) {
+      resolvedDocument = await findLatestCaseDocument({
+        tenantId: caseRow.tenantId,
+        caseId: caseRow.caseId,
+      });
+    }
+
+    if (!resolvedDocument) {
+      const liveCheck = liveCheckFromReturnPayload(payload, receivedAt.toISOString());
+      if (caseRow) {
+        await upsertCanonicalContract({
+          tenantId: caseRow.tenantId,
+          caseId: caseRow.caseId,
+          traceId: caseRow.traceId,
+          contractType: "audit",
+          schemaVersion: "helios_social_security_v1",
+          payload: JSON.stringify({
+            engine: "helios",
+            scope: "social_security",
+            source: "complilink_return_contract_v1",
+            correlationId,
+            eventId,
+            receivedAt: receivedAt.toISOString(),
+            officialCheck: liveCheck,
+            live_check: liveCheck,
+          }),
+          status: "ready",
+        });
+        await addCaseEvent({
+          tenantId: caseRow.tenantId,
+          caseId: caseRow.caseId,
+          traceId: caseRow.traceId,
+          eventType: "note_added",
+          title: "Consulta IMSS y SAT",
+          description: liveCheck?.overallDetail ?? "Llegó el resultado de la consulta oficial.",
+          metadata: JSON.stringify({
+            revalidation_scope: "social_security",
+            live_check: liveCheck,
+            correlation_id: correlationId,
+            event_id: eventId,
+            generated_at: receivedAt.toISOString(),
+          }),
+          eventAt: receivedAt,
+        });
+        return {
+          ok: true as const,
+          statusCode: 200,
+          body: officialCheckAck({
+            receivedAt,
+            correlationId,
+            traceId: caseRow.traceId,
+            eventId,
+            caseId: caseRow.caseId,
+          }),
+        };
+      }
+
+      console.info("[AuditaPatron inbound] retorno official_check aceptado sin expediente local", {
+        correlationId,
+        traceId,
+        eventId,
+        sat: liveCheck?.checks.find((item) => item.source === "sat")?.status ?? null,
+        imss: liveCheck?.checks.find((item) => item.source === "imss")?.status ?? null,
+        infonavit: liveCheck?.checks.find((item) => item.source === "infonavit")?.status ?? null,
+      });
+      return {
+        ok: true as const,
+        statusCode: 200,
+        body: officialCheckAck({
+          receivedAt,
+          correlationId,
+          traceId,
+          eventId,
+        }),
+      };
+    }
+  }
 
   if (!resolvedDocument) {
     return {
@@ -707,7 +962,7 @@ export async function ingestCompliLinkReturnPayload(params: {
         received: false,
         issues: buildWebhookIssues(
           "document_not_found",
-          `No local document exists for '${String(payload.documentId)}' and no dispatch correlation/sourceDocumentId match was found.`,
+          `No local document exists for '${explicitDocumentId ?? ""}' and no dispatch correlation/sourceDocumentId match was found.`,
           "documentId",
         ),
         responseContract: RESPONSE_CONTRACT,
@@ -715,8 +970,9 @@ export async function ingestCompliLinkReturnPayload(params: {
     };
   }
 
+  if (!payload.documentId) payload.documentId = resolvedDocument.documentId;
+
   const document = resolvedDocument;
-  const receivedAt = new Date();
   const eventKey = buildWebhookEventKey({
     payload,
     rawBody,
@@ -734,7 +990,7 @@ export async function ingestCompliLinkReturnPayload(params: {
     correlationId,
     sourceTimestamp: payload.timestamp ?? timestampHeader ?? null,
     sourceSignature: signatureHeader ?? null,
-    rawPayload: rawBody,
+    rawPayload: clipStoredRawPayload(rawBody),
     status: "processing",
   });
 
@@ -819,16 +1075,7 @@ export async function ingestCompliLinkReturnPayload(params: {
       guardrailsFlags: payload.guardrailsFlags ?? [],
       metadata: payload.metadata ?? null,
       receivedAt: receivedAt.toISOString(),
-      live_check: officialCheckFromBridgeReturn({
-        payload: {
-          event: payload.event,
-          analysisResults: payload.analysisResults ?? null,
-          extractedFields: payload.extractedFields ?? null,
-          metadata: payload.metadata ?? null,
-          result: payload.analysisResults ?? null,
-        },
-        nowIso: receivedAt.toISOString(),
-      }),
+      live_check: liveCheckFromReturnPayload(payload, receivedAt.toISOString()),
     };
 
     await upsertCanonicalContract({
@@ -841,7 +1088,7 @@ export async function ingestCompliLinkReturnPayload(params: {
       status: "ready",
     });
 
-    if (payload.event === "document.processed.v1") {
+    if (payload.event === "document.processed.v1" && !hasOfficialCheck) {
       const remoteHeliosOpinionContract = buildRemoteHeliosOpinionContract({
         tenantId: document.tenantId,
         caseId: document.caseId,

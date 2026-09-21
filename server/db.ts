@@ -2557,6 +2557,43 @@ export async function resolveCompliLinkDocument(params: {
   return null;
 }
 
+export async function findLaborCaseByTraceOrId(candidates: Array<string | null | undefined>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const unique: string[] = [];
+  const seen = new Set<string>();
+  for (const value of candidates) {
+    const trimmed = typeof value === "string" ? value.trim() : "";
+    if (trimmed.length < 4 || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    unique.push(trimmed);
+  }
+  if (unique.length === 0) return null;
+
+  const rows = await db
+    .select()
+    .from(laborCases)
+    .where(or(...unique.flatMap((value) => [eq(laborCases.traceId, value), eq(laborCases.caseId, value)])))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+export async function findLatestCaseDocument(params: { tenantId: string; caseId: string }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const rows = await db
+    .select()
+    .from(caseDocuments)
+    .where(and(eq(caseDocuments.tenantId, params.tenantId), eq(caseDocuments.caseId, params.caseId)))
+    .orderBy(desc(caseDocuments.createdAt))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
 export async function registerCompliLinkWebhookEvent(entry: InsertCompliLinkWebhookEvent) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
