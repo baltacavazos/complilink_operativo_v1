@@ -12,12 +12,12 @@ test.describe("Veredicto móvil post-upload en /auditar", () => {
 
     await expect(page.getByTestId("post-upload-harness")).toBeHidden();
     await expect(page.getByTestId("auditar-result-reveal")).toBeHidden();
+    await expect(page.getByTestId("five-second-verdict-seen")).toBeVisible();
+    await expect(page.getByTestId("five-second-verdict-seen")).toContainText("Esto vimos:");
+    await expect(page.getByTestId("five-second-verdict-next")).toContainText("Qué hacer ahora:");
+    await expect(page.getByTestId("official-check-card")).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Recibo de nómina confirmado" })
-    ).toBeVisible();
-    await expect(page.getByText("Ya está en tu expediente.")).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Comparar nómina y CFDI" })
+      page.getByRole("button", { name: "Subir CFDI del mismo periodo" })
     ).toBeVisible();
   });
 });

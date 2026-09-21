@@ -25,7 +25,7 @@ export const HOME_HERO_HEADLINE =
   "Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?";
 
 export const HOME_HERO_SUBHEAD =
-  "Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar.";
+  "Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar. Si das permiso, también podemos consultar IMSS y SAT.";
 
 export const HOME_HERO_SECTION_TITLE = "Qué revisas con AuditaPatrón";
 

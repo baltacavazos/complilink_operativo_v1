@@ -51,11 +51,26 @@ Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FO
 | `VITE_FRONTEND_FORGE_API_URL` | Legacy UI Manus |
 | `VITE_FRONTEND_FORGE_API_KEY` | Legacy UI Manus |
 
+## Consulta IMSS / SAT (puente Helios / CompliLink)
+
+AuditaPatrón **no** cablea `APIMARKET_*` ni `CAPSOLVER_*`. Esas llaves viven en el servicio **CompliLink** (cerebro Helios), no en este Railway.
+
+La consulta del trabajador dispara **la URL configurada**, sin reescribir la ruta. Auth del puente ya está viva (Bearer = `AUDITAPATRON_ENGINE_HMAC_SECRET`, alineado con el `BRIDGE_TOKEN` de CompliLink).
+
+En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`):
+
+| Variable | Notas |
+| --- | --- |
+| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Canónica: `https://complilink.mx/api/integrations/auditapatron/bridge`. No hardcodear otro host. Evitar `www`. |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)` y Bearer. Nunca en Git. |
+
+Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con datos → «Vivo». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «Falló». Nunca «cumple». **No** agregar `APIMARKET_*` aquí.
+
 ## Bridge AuditaPatrón
 
 | Variable | Notas |
 | --- | --- |
-| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Bridge externo |
+| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Bridge / motor remoto (documentos + consulta oficial) |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma; nunca en Git |
 
 ## IA

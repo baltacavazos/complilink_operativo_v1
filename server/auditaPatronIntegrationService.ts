@@ -238,33 +238,212 @@ function buildLoopbackWebhookUrl(webhookUrl: string) {
   }
 }
 
+export const HELIOS_BRIDGE_PATH = "/api/internal/helios/bridge";
+export const CANONICAL_COMPLILINK_HOST = "complilink.mx";
+
+export function canonicalizeEngineWebhookUrl(webhookUrl: string): string {
+  const trimmed = webhookUrl.trim();
+  if (!trimmed) return "";
+
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.hostname === "www.complilink.mx") {
+      parsed.hostname = CANONICAL_COMPLILINK_HOST;
+    } else if (parsed.hostname.startsWith("www.")) {
+      parsed.hostname = parsed.hostname.slice(4);
+    }
+    return parsed.toString();
+  } catch {
+    return trimmed;
+  }
+}
+
+export function deriveHeliosBridgeUrl(engineWebhookUrl: string): string {
+  const canonical = canonicalizeEngineWebhookUrl(engineWebhookUrl);
+  if (!canonical) return "";
+
+  try {
+    const parsed = new URL(canonical);
+    parsed.pathname = HELIOS_BRIDGE_PATH;
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return "";
+  }
+}
+
+export function isRedirectStatus(status: number) {
+  return status === 301 || status === 302 || status === 303 || status === 307 || status === 308;
+}
+
 function normalizeWebhookUrlCandidates(config: AuditaPatronEngineConfig) {
   const candidates: string[] = [];
   const push = (value?: string | null) => {
-    const normalized = value?.trim();
+    const normalized = canonicalizeEngineWebhookUrl(value ?? "");
     if (!normalized || candidates.includes(normalized)) return;
     candidates.push(normalized);
   };
 
+  // Apex first. www.complilink.mx redirects and drops HMAC/Bearer headers.
   push(config.webhookUrl);
   for (const fallbackUrl of config.fallbackWebhookUrls ?? []) {
     push(fallbackUrl);
   }
 
-  try {
-    const parsed = new URL(config.webhookUrl);
-    if (parsed.hostname.startsWith("www.")) {
-      const withoutWww = new URL(parsed.toString());
-      withoutWww.hostname = parsed.hostname.replace(/^www\./, "");
-      push(withoutWww.toString());
-    }
-  } catch {
-    // Ignore malformed URL here; the send function will surface a clearer error later.
-  }
-
-  push(buildLoopbackWebhookUrl(config.webhookUrl));
+  push(buildLoopbackWebhookUrl(canonicalizeEngineWebhookUrl(config.webhookUrl) || config.webhookUrl));
 
   return candidates;
+}
+
+export function buildSignedEngineHeaders(params: {
+  timestamp: string;
+  body: string;
+  hmacSecret: string;
+  bearerToken?: string;
+}) {
+  const signature = buildAuditaPatronEngineSignature(params.timestamp, params.body, params.hmacSecret);
+  const bearer = (params.bearerToken ?? params.hmacSecret).trim();
+  return {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    Authorization: `Bearer ${bearer}`,
+    "X-AuditaPatron-Signature": signature,
+    "X-AuditaPatron-Timestamp": params.timestamp,
+  };
+}
+
+export type SignedEnginePostResult = {
+  ok: boolean;
+  httpStatus: number | null;
+  reason: string | null;
+  errorMessage?: string;
+  responseBody: string | null;
+  responseJson: unknown;
+  signedBody: string;
+  timestamp: string;
+  targetUrl: string;
+  attempts: number;
+};
+
+/**
+ * POST signed with the exact raw JSON that is sent. Never re-stringify after signing.
+ * Never follow redirects (www → apex drops HMAC headers — Tester: «Helios bridge HMAC failed»).
+ */
+export async function postSignedAuditaPatronEngine(params: {
+  url: string;
+  payload: unknown;
+  hmacSecret: string;
+  bearerToken?: string;
+  timeoutMs?: number;
+  maxAttempts?: number;
+  fetchImpl?: typeof fetch;
+  sleep?: (ms: number) => Promise<void>;
+  now?: Date;
+}): Promise<SignedEnginePostResult> {
+  const fetchImpl = params.fetchImpl ?? fetch;
+  const sleepFn = params.sleep ?? sleep;
+  const timeoutMs = params.timeoutMs ?? 12_000;
+  const maxAttempts = Math.max(1, params.maxAttempts ?? 2);
+  const signedBody = typeof params.payload === "string" ? params.payload : JSON.stringify(params.payload);
+  let targetUrl = canonicalizeEngineWebhookUrl(params.url);
+  let lastStatus: number | null = null;
+  let lastBody: string | null = null;
+  let lastJson: unknown = null;
+  let lastReason: string | null = null;
+  let lastError: string | undefined;
+  let timestamp = buildUnixTimestamp(params.now);
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    timestamp = buildUnixTimestamp(params.now);
+    const headers = buildSignedEngineHeaders({
+      timestamp,
+      body: signedBody,
+      hmacSecret: params.hmacSecret,
+      bearerToken: params.bearerToken,
+    });
+
+    try {
+      const response = await fetchImpl(targetUrl, {
+        method: "POST",
+        headers,
+        body: signedBody,
+        redirect: "manual",
+        signal: createFetchSignal(timeoutMs),
+      });
+
+      lastStatus = response.status;
+
+      if (isRedirectStatus(response.status)) {
+        lastReason = "redirect_without_hmac_headers";
+        const location = response.headers.get("location");
+        if (location) {
+          try {
+            const rewritten = canonicalizeEngineWebhookUrl(new URL(location, targetUrl).toString());
+            if (rewritten && rewritten !== targetUrl) {
+              targetUrl = rewritten;
+              if (attempt < maxAttempts) continue;
+            }
+          } catch {
+            // keep the redirect as a hard failure
+          }
+        }
+        break;
+      }
+
+      lastBody = sanitizeResponseBody(await response.text());
+      lastJson = safeJsonParse(lastBody);
+
+      if (response.ok) {
+        return {
+          ok: true,
+          httpStatus: response.status,
+          reason: null,
+          responseBody: lastBody,
+          responseJson: lastJson,
+          signedBody,
+          timestamp,
+          targetUrl,
+          attempts: attempt,
+        };
+      }
+
+      const haystack = `${lastBody ?? ""}`.toLowerCase();
+      if (response.status === 403) {
+        lastReason = /hmac/.test(haystack) ? "hmac_failed" : "authentication_failed";
+        break;
+      }
+
+      if ((response.status === 429 || response.status >= 500) && attempt < maxAttempts) {
+        lastReason = "retryable_http";
+        await sleepFn(160 * attempt);
+        continue;
+      }
+
+      lastReason = response.status >= 500 ? "server_error" : "rejected";
+      break;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      lastReason = /timeout|timed out|aborted/i.test(lastError) ? "timeout" : "network_error";
+      if (attempt < maxAttempts) {
+        await sleepFn(160 * attempt);
+        continue;
+      }
+    }
+  }
+
+  return {
+    ok: false,
+    httpStatus: lastStatus,
+    reason: lastReason,
+    errorMessage: lastError,
+    responseBody: lastBody,
+    responseJson: lastJson,
+    signedBody,
+    timestamp,
+    targetUrl,
+    attempts: maxAttempts,
+  };
 }
 
 function deriveBridgeHealthUrl(webhookUrl: string) {
@@ -643,10 +822,14 @@ export function buildAuditaPatronEnginePayload(params: {
     auditId: params.auditId ?? params.caseContract.trace_id,
     caseId: params.caseId ?? params.documentContract.case_id,
     dispatchId: params.dispatchId,
+    correlationId,
     sha256: params.documentContract.sha256,
     fileSizeBytes: params.documentContract.size_bytes,
     documentType: params.documentContract.document_type,
     sharedEnvelopeDocumentCount: params.sharedEngineEnvelope?.document_contracts?.length ?? 1,
+    nss: toOptionalString(params.metadata?.nss) ?? null,
+    curp: toOptionalString(params.metadata?.curp) ?? null,
+    rfc: toOptionalString(params.metadata?.rfc) ?? toOptionalString(params.metadata?.workerRfc) ?? null,
   } satisfies Record<string, unknown>;
 
   return {
@@ -858,8 +1041,16 @@ export async function sendDocumentToAuditaPatronEngine(
             "X-AuditaPatron-Timestamp": finalTimestamp,
           },
           body,
+          redirect: "manual",
           signal: createFetchSignal(),
         });
+
+        if (isRedirectStatus(response.status)) {
+          lastHttpStatus = response.status;
+          lastReason = "redirect_without_hmac_headers";
+          lastResponseBody = sanitizeResponseBody(response.headers.get("location"));
+          break;
+        }
 
         lastHttpStatus = response.status;
         const rawResponseBody = await response.text();

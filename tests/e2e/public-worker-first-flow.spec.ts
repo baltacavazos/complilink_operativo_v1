@@ -26,10 +26,8 @@ test.describe("flujo público base para trabajador", () => {
     await page.goto("/auditar?postUploadHarness=1", { waitUntil: "networkidle" });
 
     await expect(page.getByTestId("post-upload-harness")).toBeHidden();
-    await expect(
-      page.getByRole("heading", { name: "Recibo de nómina confirmado" })
-    ).toBeVisible();
-    await expect(page.getByText("Ya quedó listo para revisar.")).toBeVisible();
+    await expect(page.getByTestId("five-second-verdict-seen")).toContainText("Esto vimos:");
+    await expect(page.getByTestId("five-second-verdict-next")).toContainText("Qué hacer ahora:");
     await expect(
       page.getByRole("button", { name: "Subir CFDI del mismo periodo" })
     ).toBeVisible();

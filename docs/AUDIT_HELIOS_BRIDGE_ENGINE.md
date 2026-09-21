@@ -39,6 +39,7 @@ auditaPatronReturnWebhook.ingestCompliLinkReturnPayload()
 | Dirección | Evento | Dónde se acepta |
 | --- | --- | --- |
 | Saliente | `document.uploaded` | Tras guardar, `sendDocumentToAuditaPatronEngine` |
+| Saliente | `document.uploaded` + `operationalContext.{nss,curp,rfc,correlationId}` | Extraídos del recibo al despachar al engine canónico `https://complilink.mx/api/integrations/auditapatron/bridge` |
 | Entrante | `document.processed.v1` | `/api/auditapatron/webhook` y `/api/auditapatron/complilink-webhook` |
 | Entrante | `document.rejected.v1` | mismos endpoints |
 | Entrante | `document.retry_requested.v1` | mismos endpoints |
@@ -49,7 +50,8 @@ Cualquier otro nombre se rechaza con `unknown_event` y se registra en log. No se
 
 | Superficie | Archivo | Qué hace |
 | --- | --- | --- |
-| Cliente bridge saliente | `server/auditaPatronIntegrationService.ts` | Firma HMAC, Bearer, reintentos 5xx/red, health **suave**, catálogo de eventos, acuse `auditapatron.bridge.ack.v1` |
+| Cliente bridge saliente | `server/auditaPatronIntegrationService.ts` | Firma HMAC del **raw JSON enviado**, Bearer, **no sigue redirects**, reescribe `www` → apex, reintentos 5xx/red, health **suave**, acuse `auditapatron.bridge.ack.v1` |
+| Consulta IMSS/SAT | `server/governmentLiveCheck.ts` | POST a la URL del engine (HMAC + Bearer). **No** usa `APIMARKET_*`. 200 con datos → vivo; 5xx/acuse → pendiente; 403/404 → no se pudo |
 | Intake + retorno | `POST /api/auditapatron/webhook` | HMAC. `document.uploaded` se reenvía; los eventos v1 se ingieren |
 | Retorno | `POST /api/auditapatron/complilink-webhook` | HMAC **o** secreto compartido; idempotencia por `eventKey` con replay seguro |
 | Opinión Helios | `server/heliosIntegrationService.ts` | URL presente → remoto. Envío OK → `processing`. Envío fallido → `error` en español, **sin dictamen inventado**. Sin URL → plantilla `mock` (no es el cerebro en vivo) |
@@ -73,6 +75,7 @@ Cualquier otro nombre se rechaza con `unknown_event` y se registra en log. No se
 - Si `AUDITAPATRON_ENGINE_WEBHOOK_URL` está definida → remoto (en progreso + despacho).
 - Si no → plantilla local mock. **No es el cerebro en vivo.**
 - Railway web tiene: `AUDITAPATRON_ENGINE_WEBHOOK_URL`, `AUDITAPATRON_ENGINE_HMAC_SECRET`, `OPENAI_API_KEY`, `GEMINI_API_KEY`.
+- Host canónico: `complilink.mx`. `www.complilink.mx` redirige y pierde HMAC («Helios bridge HMAC failed»).
 - `OPENAI_API_KEY` / `GEMINI_API_KEY` no activan el cerebro remoto. Solo pueden mejorar la narrativa local del recibo o CFDI cuando el puente no está o no devolvió lectura.
 - **No** usa `API_KEY_HELIOS`. Esa clave no decide el modo ni la completitud del puente.
 

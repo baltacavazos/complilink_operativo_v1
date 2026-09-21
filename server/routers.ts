@@ -122,9 +122,24 @@ import {
 } from "./laborFiscalNarrative";
 import {
   DOCUMENT_SIGNAL_DISCLAIMER,
+  extractStructuredLaborFiscalFacts,
   pickPreferredWorkerOpinion,
   summarizeLaborFiscalSignals,
 } from "./laborFiscalSignals";
+import {
+  collectWorkerOfficialIdentity,
+  getOfficialCheckAvailability,
+  readOfficialCheckFromMetadata,
+  runOfficialGovernmentCheck,
+} from "./governmentLiveCheck";
+import {
+  OFFICIAL_CHECK_BUTTON,
+  OFFICIAL_CHECK_CONSENT,
+  OFFICIAL_CHECK_STATUS_DETAIL,
+  OFFICIAL_CHECK_STATUS_LABEL,
+  buildOfficialCheckHeadline,
+  type OfficialCheckSummary,
+} from "@shared/officialCheckCopy";
 import {
   buildWorkerChatContextNote,
   buildWorkerChatFallbackAnswer,
@@ -1869,6 +1884,15 @@ function documentMentionsInfonavit(document: {
   return summarizeLaborFiscalSignals([document]).hasInfonavitSignal;
 }
 
+function officialIdentityForEngineDispatch(document: {
+  documentType?: string | null;
+  originalName?: string | null;
+  preliminaryAnalysis?: unknown;
+  heliosOpinion?: unknown;
+}) {
+  return collectWorkerOfficialIdentity(extractStructuredLaborFiscalFacts(document));
+}
+
 function buildSocialSecurityValidationSummary(params: {
   documents: Array<{
     documentType: string;
@@ -1896,6 +1920,33 @@ function buildSocialSecurityValidationSummary(params: {
 
   const lastRevalidation = revalidationHistory[0] ?? null;
   const lastRecordedCoverage = lastRevalidation?.coverageScore ?? null;
+  const lastLiveCheck =
+    [...params.events]
+      .sort((left, right) => new Date(right.eventAt).getTime() - new Date(left.eventAt).getTime())
+      .map((event) => readOfficialCheckFromMetadata(parseEventMetadata(event.metadata)))
+      .find((item): item is OfficialCheckSummary => Boolean(item)) ?? null;
+  const officialAvailability = getOfficialCheckAvailability();
+  const officialIdentity = collectWorkerOfficialIdentity(laborFiscal.facts);
+  const officialCheck: OfficialCheckSummary =
+    lastLiveCheck ??
+    ({
+      configured: officialAvailability.any,
+      consentGranted: false,
+      overallStatus: officialAvailability.any ? "sin_permiso" : "no_configurado",
+      overallLabel: officialAvailability.any
+        ? OFFICIAL_CHECK_STATUS_LABEL.sin_permiso
+        : OFFICIAL_CHECK_STATUS_LABEL.no_configurado,
+      overallDetail: officialAvailability.any
+        ? OFFICIAL_CHECK_STATUS_DETAIL.sin_permiso
+        : OFFICIAL_CHECK_STATUS_DETAIL.no_configurado,
+      checkedAt: null,
+      identity: {
+        nss: Boolean(officialIdentity.nss),
+        curp: Boolean(officialIdentity.curp),
+        rfc: Boolean(officialIdentity.rfc),
+      },
+      checks: [],
+    } satisfies OfficialCheckSummary);
 
   const coverageScore = Math.max(
     18,
@@ -1975,9 +2026,12 @@ function buildSocialSecurityValidationSummary(params: {
     statusLabel,
     summary,
     recommendedNextStep,
-    actionLabel: "Revisar señales visibles de IMSS e Infonavit",
-    disclaimer: DOCUMENT_SIGNAL_DISCLAIMER,
-    liveImssValidation: false,
+    actionLabel: officialAvailability.any ? OFFICIAL_CHECK_BUTTON : "Revisar señales visibles de IMSS e Infonavit",
+    disclaimer: officialCheck.checkedAt ? officialCheck.overallDetail : DOCUMENT_SIGNAL_DISCLAIMER,
+    liveImssValidation: officialCheck.overallStatus === "vivo",
+    officialCheck,
+    officialCheckHeadline: buildOfficialCheckHeadline(officialCheck),
+    officialCheckConsent: OFFICIAL_CHECK_CONSENT,
     validationMode: laborFiscal.validationMode,
     imssDocumentsCount,
     infonavitSignalsCount,
@@ -3675,11 +3729,12 @@ export const appRouter = router({
         z.object({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
+          consentGranted: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         const commerceStatus = await getUserCommerceStatus(ctx.user);
-        if (!commerceStatus.entitlements.canUseRevalidations) {
+        if (!input.consentGranted && !commerceStatus.entitlements.canUseRevalidations) {
           throwUpgradeRequired({
             featureLabel: "Revisión de señales IMSS e Infonavit",
             requiredPlan: "pro",
@@ -3701,6 +3756,12 @@ export const appRouter = router({
           events: detail.events,
         });
         const recordedAt = new Date();
+        const officialCheck = await runOfficialGovernmentCheck({
+          identity: collectWorkerOfficialIdentity(socialSecurityValidation.facts),
+          consentGranted: Boolean(input.consentGranted),
+          now: recordedAt,
+        });
+        const liveRan = Boolean(input.consentGranted) && officialCheck.configured;
         const revalidationContract = {
           engine: "helios" as const,
           scope: "social_security" as const,
@@ -3708,11 +3769,15 @@ export const appRouter = router({
           caseId: input.caseId,
           traceId: detail.case.traceId,
           generatedAt: recordedAt.toISOString(),
-          status: socialSecurityValidation.hasImssSignal || socialSecurityValidation.hasInfonavitSignal ? "document_signals" : "partial",
-          liveImssValidation: false,
-          validationMode: socialSecurityValidation.validationMode ?? "document_signals",
-          summary: socialSecurityValidation.summary,
-          statusLabel: socialSecurityValidation.statusLabel,
+          status: liveRan
+            ? officialCheck.overallStatus
+            : socialSecurityValidation.hasImssSignal || socialSecurityValidation.hasInfonavitSignal
+              ? "document_signals"
+              : "partial",
+          liveImssValidation: officialCheck.overallStatus === "vivo",
+          validationMode: liveRan ? "live_query" : socialSecurityValidation.validationMode ?? "document_signals",
+          summary: liveRan ? officialCheck.overallDetail : socialSecurityValidation.summary,
+          statusLabel: liveRan ? officialCheck.overallLabel : socialSecurityValidation.statusLabel,
           coverageScore: socialSecurityValidation.coverageScore,
           recommendedNextStep: socialSecurityValidation.recommendedNextStep,
           recommendedDocument: {
@@ -3722,6 +3787,7 @@ export const appRouter = router({
           },
           hasNewClarity: socialSecurityValidation.hasNewClarity,
           clarityDelta: socialSecurityValidation.clarityDelta,
+          officialCheck,
           signals: {
             imssDocumentsCount: socialSecurityValidation.imssDocumentsCount,
             infonavitSignalsCount: socialSecurityValidation.infonavitSignalsCount,
@@ -3745,13 +3811,13 @@ export const appRouter = router({
           traceId: detail.case.traceId,
           actorUserId: ctx.user.id,
           eventType: "note_added",
-          title: "Revalidación IMSS/Infonavit actualizada",
-          description: socialSecurityValidation.summary,
+          title: liveRan ? "Consulta IMSS y SAT" : "Revalidación IMSS/Infonavit actualizada",
+          description: liveRan ? officialCheck.overallDetail : socialSecurityValidation.summary,
           metadata: JSON.stringify({
             engine: "helios",
             revalidation_scope: "social_security",
-            summary: socialSecurityValidation.summary,
-            status_label: socialSecurityValidation.statusLabel,
+            summary: liveRan ? officialCheck.overallDetail : socialSecurityValidation.summary,
+            status_label: liveRan ? officialCheck.overallLabel : socialSecurityValidation.statusLabel,
             coverage_score: socialSecurityValidation.coverageScore,
             imss_documents_count: socialSecurityValidation.imssDocumentsCount,
             infonavit_signals_count: socialSecurityValidation.infonavitSignalsCount,
@@ -3762,6 +3828,7 @@ export const appRouter = router({
             has_new_clarity: socialSecurityValidation.hasNewClarity,
             clarity_delta: socialSecurityValidation.clarityDelta,
             generated_at: recordedAt.toISOString(),
+            live_check: officialCheck,
           }),
           eventAt: recordedAt,
         });
@@ -3779,8 +3846,12 @@ export const appRouter = router({
 
         return {
           ...socialSecurityValidation,
+          officialCheck,
+          officialCheckHeadline: buildOfficialCheckHeadline(officialCheck),
+          officialCheckConsent: OFFICIAL_CHECK_CONSENT,
+          liveImssValidation: officialCheck.overallStatus === "vivo",
           lastRevalidatedAt: recordedAt.toISOString(),
-          lastRevalidationSummary: socialSecurityValidation.summary,
+          lastRevalidationSummary: liveRan ? officialCheck.overallDetail : socialSecurityValidation.summary,
         };
       }),
     persistAuditarViewState: protectedProcedure
@@ -4322,6 +4393,11 @@ export const appRouter = router({
             title: safeFileName,
             document_name: safeFileName,
             guest_preview_id: payload.guestPreviewId,
+            ...officialIdentityForEngineDispatch({
+              documentType: classification.documentType,
+              originalName: safeFileName,
+              preliminaryAnalysis,
+            }),
           },
         });
 
@@ -4898,6 +4974,11 @@ export const appRouter = router({
               getRecordStringValue(preliminaryAnalysis.estimatedData, "period") ??
               null,
             descriptiveDocType: classification.normalizedDocType,
+            ...officialIdentityForEngineDispatch({
+              documentType: classification.normalizedDocType,
+              originalName: documentRecord.originalName,
+              preliminaryAnalysis,
+            }),
           },
         });
 
@@ -5458,6 +5539,11 @@ export const appRouter = router({
               getRecordStringValue(preliminaryAnalysis.estimatedData, "period") ??
               null,
             descriptiveDocType: classification.normalizedDocType,
+            ...officialIdentityForEngineDispatch({
+              documentType: classification.normalizedDocType,
+              originalName: documentRecord.originalName,
+              preliminaryAnalysis,
+            }),
           },
         });
 

@@ -22,6 +22,7 @@ export type LaborFiscalStructuredFacts = {
   employerRfc: string | null;
   workerRfc: string | null;
   nss: string | null;
+  curp: string | null;
   employerRegistration: string | null;
   isrWithheld: string | null;
   imssWithheld: string | null;
@@ -76,6 +77,7 @@ const FACT_ALIASES: Record<keyof LaborFiscalStructuredFacts, string[]> = {
   employerRfc: ["employerrfc", "rfcpayrollissuer", "rfcemisor", "rfcpatron"],
   workerRfc: ["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker"],
   nss: ["payrollnss", "nss", "numseguridadsocial", "numerodeseguridadsocial"],
+  curp: ["payrollcurp", "curp", "clavunica", "claveunicaregistropoblacion"],
   employerRegistration: ["payrollemployerregistration", "registropatronal", "regpatronal"],
   isrWithheld: ["isrwithheld", "isr", "retencionisr"],
   imssWithheld: ["imsswithheld", "cuotaimss", "retencionimss"],
@@ -175,6 +177,7 @@ function emptyFacts(): LaborFiscalStructuredFacts {
     employerRfc: null,
     workerRfc: null,
     nss: null,
+    curp: null,
     employerRegistration: null,
     isrWithheld: null,
     imssWithheld: null,
@@ -197,6 +200,7 @@ export function extractStructuredLaborFiscalFacts(
     employerRfc: readAliasedFact(document, FACT_ALIASES.employerRfc),
     workerRfc: readAliasedFact(document, FACT_ALIASES.workerRfc),
     nss: readAliasedFact(document, FACT_ALIASES.nss),
+    curp: readAliasedFact(document, FACT_ALIASES.curp),
     employerRegistration: readAliasedFact(document, FACT_ALIASES.employerRegistration),
     isrWithheld: readAliasedFact(document, FACT_ALIASES.isrWithheld),
     imssWithheld: readAliasedFact(document, FACT_ALIASES.imssWithheld),
@@ -256,14 +260,15 @@ export function explainLaborFiscalFacts(facts: LaborFiscalStructuredFacts): Labo
     });
   }
 
-  if (facts.nss || facts.employerRegistration) {
+  if (facts.nss || facts.employerRegistration || facts.curp) {
     const nssPart = facts.nss ? `se ve el NSS ${facts.nss}` : "no se alcanzó a leer el NSS";
     const registrationPart = facts.employerRegistration
       ? `se ve el registro patronal ${facts.employerRegistration}`
       : null;
+    const curpPart = facts.curp ? `se ve la CURP ${facts.curp}` : null;
     explanations.push({
       label: "IMSS en el papel",
-      summary: `${nssPart}${registrationPart ? ` y ${registrationPart}` : ""}. Esto sale de tus papeles; no confirma alta, vigencia ni semanas cotizadas ante IMSS.`,
+      summary: `${nssPart}${registrationPart ? ` y ${registrationPart}` : ""}${curpPart ? `. También ${curpPart}` : ""}. Esto sale de tus papeles; no confirma alta, vigencia ni semanas cotizadas ante IMSS.`,
     });
   }
 
