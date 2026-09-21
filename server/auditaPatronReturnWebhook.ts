@@ -22,6 +22,7 @@ import {
   verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
 import { inspectAuditaPatronBridgeInventory } from "./auditaPatronBridgeInventory";
+import { officialCheckFromBridgeReturn } from "./governmentLiveCheck";
 import { buildRemoteHeliosOpinionContract } from "./heliosIntegrationService";
 
 const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
@@ -379,12 +380,17 @@ function logUnknownBridgeEvent(params: { event: string | null; endpoint: string;
   });
 }
 
-function buildEventDescriptor(payload: CompliLinkReturnEnvelope) {
+function buildEventDescriptor(payload: CompliLinkReturnEnvelope, officialCheck?: { checks?: Array<{ sourceLabel: string; label: string }> } | null) {
   if (payload.event === "document.processed.v1") {
+    const statusLine = officialCheck?.checks
+      ?.map((item) => `${item.sourceLabel}: ${item.label}`)
+      .join(". ");
     return {
       eventType: "document_classified" as const,
       title: "Documento revisado",
-      description: "Ya hay un resultado de lectura para este documento en tu expediente.",
+      description: statusLine
+        ? `Ya hay un resultado de lectura. ${statusLine}.`
+        : "Ya hay un resultado de lectura para este documento en tu expediente.",
     };
   }
 
@@ -813,6 +819,16 @@ export async function ingestCompliLinkReturnPayload(params: {
       guardrailsFlags: payload.guardrailsFlags ?? [],
       metadata: payload.metadata ?? null,
       receivedAt: receivedAt.toISOString(),
+      live_check: officialCheckFromBridgeReturn({
+        payload: {
+          event: payload.event,
+          analysisResults: payload.analysisResults ?? null,
+          extractedFields: payload.extractedFields ?? null,
+          metadata: payload.metadata ?? null,
+          result: payload.analysisResults ?? null,
+        },
+        nowIso: receivedAt.toISOString(),
+      }),
     };
 
     await upsertCanonicalContract({
@@ -847,7 +863,10 @@ export async function ingestCompliLinkReturnPayload(params: {
       });
     }
 
-    const descriptor = buildEventDescriptor(payload as CompliLinkReturnEnvelope);
+    const descriptor = buildEventDescriptor(
+      payload as CompliLinkReturnEnvelope,
+      canonicalReturnPayload.live_check,
+    );
 
     await addCaseEvent({
       tenantId: document.tenantId,

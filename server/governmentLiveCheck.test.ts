@@ -15,12 +15,12 @@ import {
   collectWorkerOfficialIdentity,
   getOfficialCheckAvailability,
   isOfficialCheckConfigured,
+  officialCheckFromBridgeReturn,
   runOfficialGovernmentCheck,
 } from "./governmentLiveCheck";
 
 const ENGINE_ENV = {
-  AUDITAPATRON_ENGINE_WEBHOOK_URL:
-    "https://web-production-f1d10.up.railway.app/api/integrations/auditapatron/bridge",
+  AUDITAPATRON_ENGINE_WEBHOOK_URL: "https://complilink.mx/api/integrations/auditapatron/bridge",
   AUDITAPATRON_ENGINE_HMAC_SECRET: "bridge-hmac-secret-123456",
 };
 
@@ -108,9 +108,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
 
     expect(result.overallStatus).toBe("vivo");
-    expect(result.overallLabel).toBe("Consulta hecha");
+    expect(result.overallLabel).toBe("Vivo");
     expect(result.overallDetail).toMatch(/no significa que tu patrón cumple/i);
-    expect(buildOfficialCheckHeadline(result)).toBe("Consulta hecha · 21/09/2026");
+    expect(buildOfficialCheckHeadline(result)).toBe("Vivo · 21/09/2026");
     expect(JSON.stringify(result)).not.toMatch(/APIMarket|Helios|CompliLink|connector/i);
 
     const posted = readPosted(fetchImpl);
@@ -169,7 +169,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
 
     expect(result.overallStatus).toBe("no_se_pudo");
-    expect(result.overallLabel).toBe("No se pudo");
+    expect(result.overallLabel).toBe("Falló");
     expect(result.overallDetail).toMatch(/todavía no hay una respuesta de IMSS o SAT/i);
     expect(result.overallDetail).not.toMatch(/Provider|Helios|cumple/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
@@ -230,6 +230,35 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(result.overallStatus).toBe("pendiente");
     expect(result.overallDetail).not.toMatch(/cumple/i);
+  });
+
+  it("lee IMSS/SAT/Infonavit honestos de document.processed.v1, sin jerga", () => {
+    const vivo = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        analysisResults: {
+          imss: "vivo",
+          sat: "pendiente",
+          infonavit: "falló",
+        },
+      },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+
+    expect(vivo?.checks.map((item) => `${item.sourceLabel}: ${item.label}`)).toEqual([
+      "IMSS: Vivo",
+      "SAT: Pendiente",
+      "Infonavit: Falló",
+    ]);
+    expect(JSON.stringify(vivo)).not.toMatch(/APIMarket|Helios|CompliLink|connector|document\.processed/i);
+    expect(vivo?.overallStatus).toBe("vivo");
+
+    const pending = officialCheckFromBridgeReturn({
+      payload: { event: "document.processed.v1", analysisResults: { clauseCount: 9 } },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+    expect(pending?.overallStatus).toBe("pendiente");
+    expect(pending?.overallLabel).toBe("Pendiente");
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {

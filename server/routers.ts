@@ -122,6 +122,7 @@ import {
 } from "./laborFiscalNarrative";
 import {
   DOCUMENT_SIGNAL_DISCLAIMER,
+  extractStructuredLaborFiscalFacts,
   pickPreferredWorkerOpinion,
   summarizeLaborFiscalSignals,
 } from "./laborFiscalSignals";
@@ -1881,6 +1882,15 @@ function documentMentionsInfonavit(document: {
   heliosOpinion?: unknown;
 }) {
   return summarizeLaborFiscalSignals([document]).hasInfonavitSignal;
+}
+
+function officialIdentityForEngineDispatch(document: {
+  documentType?: string | null;
+  originalName?: string | null;
+  preliminaryAnalysis?: unknown;
+  heliosOpinion?: unknown;
+}) {
+  return collectWorkerOfficialIdentity(extractStructuredLaborFiscalFacts(document));
 }
 
 function buildSocialSecurityValidationSummary(params: {
@@ -4383,6 +4393,11 @@ export const appRouter = router({
             title: safeFileName,
             document_name: safeFileName,
             guest_preview_id: payload.guestPreviewId,
+            ...officialIdentityForEngineDispatch({
+              documentType: classification.documentType,
+              originalName: safeFileName,
+              preliminaryAnalysis,
+            }),
           },
         });
 
@@ -4959,6 +4974,11 @@ export const appRouter = router({
               getRecordStringValue(preliminaryAnalysis.estimatedData, "period") ??
               null,
             descriptiveDocType: classification.normalizedDocType,
+            ...officialIdentityForEngineDispatch({
+              documentType: classification.normalizedDocType,
+              originalName: documentRecord.originalName,
+              preliminaryAnalysis,
+            }),
           },
         });
 
@@ -5519,6 +5539,11 @@ export const appRouter = router({
               getRecordStringValue(preliminaryAnalysis.estimatedData, "period") ??
               null,
             descriptiveDocType: classification.normalizedDocType,
+            ...officialIdentityForEngineDispatch({
+              documentType: classification.normalizedDocType,
+              originalName: documentRecord.originalName,
+              preliminaryAnalysis,
+            }),
           },
         });
 

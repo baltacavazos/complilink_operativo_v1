@@ -61,10 +61,10 @@ En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`)
 
 | Variable | Notas |
 | --- | --- |
-| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Destino exacto. Hoy: `https://web-production-f1d10.up.railway.app/api/integrations/auditapatron/bridge`. No cambiar a `/api/internal/helios/bridge`. Evitar `www`. |
+| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Canónica: `https://complilink.mx/api/integrations/auditapatron/bridge`. No hardcodear otro host. Evitar `www`. |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)` y Bearer. Nunca en Git. |
 
-Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con respuesta del instituto → «Consulta hecha». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «No se pudo». Nunca «cumple». **No** agregar `APIMARKET_*` aquí.
+Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con datos → «Vivo». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «Falló». Nunca «cumple». **No** agregar `APIMARKET_*` aquí.
 
 ## Bridge AuditaPatrón
 

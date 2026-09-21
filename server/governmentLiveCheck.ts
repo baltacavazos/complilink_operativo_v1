@@ -21,6 +21,7 @@ export const OFFICIAL_CHECK_EVENT = "official.check.requested";
 const SOURCE_LABEL = {
   imss: "IMSS",
   sat: "SAT",
+  infonavit: "Infonavit",
 } as const;
 
 export type GovernmentLiveEnv = Record<string, string | undefined>;
@@ -262,9 +263,140 @@ function workerDetailForBridgeResult(
   posted: SignedEnginePostResult,
 ): string {
   if (posted.httpStatus === 404) {
-    return "No se pudo consultar. Todavía no hay una respuesta de IMSS o SAT para estos datos.";
+    return "Falló la consulta. Todavía no hay una respuesta de IMSS o SAT para estos datos.";
   }
   return OFFICIAL_CHECK_STATUS_DETAIL[status];
+}
+
+function normalizeReturnedOfficialStatus(value: unknown): OfficialCheckStatus | null {
+  if (value == null) return null;
+  if (typeof value === "object" && !Array.isArray(value)) {
+    const record = value as Record<string, unknown>;
+    return (
+      normalizeReturnedOfficialStatus(record.status) ??
+      normalizeReturnedOfficialStatus(record.state) ??
+      normalizeReturnedOfficialStatus(record.result) ??
+      normalizeReturnedOfficialStatus(record.outcome)
+    );
+  }
+
+  const text = String(value).trim().toLowerCase();
+  if (!text) return null;
+  if (text === "vivo" || text === "live" || text === "ok" || /vigente|registrad|alta|hecho/.test(text)) {
+    return "vivo";
+  }
+  if (text === "pendiente" || text === "pending" || /queued|processing|retry|timeout|mantenimiento/.test(text)) {
+    return "pendiente";
+  }
+  if (
+    text === "no_se_pudo" ||
+    text === "fallo" ||
+    text === "falló" ||
+    text === "failed" ||
+    /fail|error|not_found|rejected|denied/.test(text)
+  ) {
+    return "no_se_pudo";
+  }
+  return null;
+}
+
+function readNestedOfficialSource(
+  roots: Array<Record<string, unknown> | null>,
+  source: OfficialSourceCheck["source"],
+): OfficialCheckStatus | null {
+  const keys = {
+    imss: ["imss", "imssStatus", "imss_status"],
+    sat: ["sat", "satStatus", "sat_status"],
+    infonavit: ["infonavit", "infonavitStatus", "infonavit_status"],
+  }[source];
+
+  for (const root of roots) {
+    if (!root) continue;
+    const sources = asRecord(root.sources);
+    for (const key of keys) {
+      const direct = normalizeReturnedOfficialStatus(root[key] ?? sources?.[key]);
+      if (direct) return direct;
+    }
+  }
+  return null;
+}
+
+export function officialCheckFromBridgeReturn(params: {
+  payload: Record<string, unknown> | null | undefined;
+  identity?: OfficialIdentityFlags;
+  nowIso?: string;
+}): OfficialCheckSummary | null {
+  const root = asRecord(params.payload);
+  if (!root) return null;
+
+  const eventName = String(root.event ?? root.eventName ?? "");
+  if (eventName && eventName !== "document.processed.v1") {
+    if (eventName === "document.rejected.v1") {
+      const failed: OfficialCheckStatus = "no_se_pudo";
+      return {
+        configured: true,
+        consentGranted: true,
+        overallStatus: failed,
+        overallLabel: OFFICIAL_CHECK_STATUS_LABEL[failed],
+        overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[failed],
+        checkedAt: params.nowIso ?? null,
+        identity: params.identity ?? { nss: false, curp: false, rfc: false },
+        checks: [
+          sourceCheck("imss", failed, { checkedAt: params.nowIso ?? null }),
+          sourceCheck("sat", failed, { checkedAt: params.nowIso ?? null }),
+          sourceCheck("infonavit", failed, { checkedAt: params.nowIso ?? null }),
+        ],
+      };
+    }
+    return null;
+  }
+
+  const result = asRecord(root.result) ?? asRecord(root.analysisResults) ?? root;
+  const extracted = asRecord(root.extractedFields);
+  const metadata = asRecord(root.metadata);
+  const official = asRecord(result?.official) ?? asRecord(metadata?.official) ?? asRecord(metadata?.live_check);
+  const roots = [official, result, extracted, metadata, root];
+
+  const imss = readNestedOfficialSource(roots, "imss");
+  const sat = readNestedOfficialSource(roots, "sat");
+  const infonavit = readNestedOfficialSource(roots, "infonavit");
+  if (!imss && !sat && !infonavit) {
+    if (eventName === "document.processed.v1") {
+      return {
+        configured: true,
+        consentGranted: true,
+        overallStatus: "pendiente",
+        overallLabel: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+        overallDetail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+        checkedAt: params.nowIso ?? null,
+        identity: params.identity ?? { nss: false, curp: false, rfc: false },
+        checks: [
+          sourceCheck("imss", "pendiente", { checkedAt: params.nowIso ?? null }),
+          sourceCheck("sat", "pendiente", { checkedAt: params.nowIso ?? null }),
+          sourceCheck("infonavit", "pendiente", { checkedAt: params.nowIso ?? null }),
+        ],
+      };
+    }
+    return null;
+  }
+
+  const nowIso = params.nowIso ?? null;
+  const checks = [
+    sourceCheck("imss", imss ?? "pendiente", { checkedAt: nowIso }),
+    sourceCheck("sat", sat ?? "pendiente", { checkedAt: nowIso }),
+    sourceCheck("infonavit", infonavit ?? "pendiente", { checkedAt: nowIso }),
+  ];
+  const overallStatus = rollupStatus(checks.map((item) => item.status));
+  return {
+    configured: true,
+    consentGranted: true,
+    overallStatus,
+    overallLabel: OFFICIAL_CHECK_STATUS_LABEL[overallStatus],
+    overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[overallStatus],
+    checkedAt: nowIso,
+    identity: params.identity ?? { nss: false, curp: false, rfc: false },
+    checks,
+  };
 }
 
 export async function runOfficialGovernmentCheck(params: {
@@ -334,12 +466,17 @@ export async function runOfficialGovernmentCheck(params: {
   const overallStatus = classifyBridgeOfficialCheck(posted);
   const imssStatus = readSourceStatusFromResult(posted.responseJson, "imss") ?? overallStatus;
   const satStatus = readSourceStatusFromResult(posted.responseJson, "sat") ?? overallStatus;
+  const infonavitStatus = readSourceStatusFromResult(posted.responseJson, "infonavit") ?? overallStatus;
   const checks = [
     sourceCheck("imss", identity.nss || identity.curp ? imssStatus : "sin_datos", {
       checkedAt: nowIso,
       used,
     }),
     sourceCheck("sat", identity.rfc || identity.curp ? satStatus : "sin_datos", {
+      checkedAt: nowIso,
+      used,
+    }),
+    sourceCheck("infonavit", identity.nss || identity.curp ? infonavitStatus : "sin_datos", {
       checkedAt: nowIso,
       used,
     }),

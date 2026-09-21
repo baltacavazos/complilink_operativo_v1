@@ -3,7 +3,7 @@
  * Español plano. Nunca "cumple". Nunca marcas internas en UI.
  */
 
-export const OFFICIAL_CHECK_SOURCES = ["imss", "sat"] as const;
+export const OFFICIAL_CHECK_SOURCES = ["imss", "sat", "infonavit"] as const;
 export type OfficialCheckSource = (typeof OFFICIAL_CHECK_SOURCES)[number];
 
 export const OFFICIAL_CHECK_STATUSES = [
@@ -21,9 +21,9 @@ export const OFFICIAL_CHECK_CONSENT =
   "Doy permiso para consultar IMSS y SAT con mi NSS, CURP o RFC que ya aparecen en mis papeles. Solo para ver si hay una respuesta de hoy. No inventamos que tu patrón cumple.";
 
 export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = {
-  vivo: "Consulta hecha",
+  vivo: "Vivo",
   pendiente: "Pendiente",
-  no_se_pudo: "No se pudo",
+  no_se_pudo: "Falló",
   no_configurado: "Aún no configurado",
   sin_datos: "Faltan datos",
   sin_permiso: "Falta tu permiso",
@@ -32,7 +32,7 @@ export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = 
 export const OFFICIAL_CHECK_STATUS_DETAIL: Record<OfficialCheckStatus, string> = {
   vivo: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
   pendiente: "El instituto no respondió hoy. Inténtalo más tarde.",
-  no_se_pudo: "No se pudo consultar. Inténtalo más tarde.",
+  no_se_pudo: "Falló la consulta. Inténtalo más tarde.",
   no_configurado: "Aún no configurado. Por ahora solo leemos tus papeles.",
   sin_datos: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
   sin_permiso: "Falta tu permiso para consultar IMSS y SAT.",

@@ -9487,6 +9487,15 @@ export default function Auditar() {
                                 {officialCheckSummary?.overallDetail ??
                                   "Si das permiso, consultamos IMSS y SAT con tu NSS, CURP o RFC. Si no hay respuesta, te lo decimos. No inventamos que tu patrón cumple."}
                               </p>
+                              {officialCheckSummary?.checks?.length ? (
+                                <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
+                                  {officialCheckSummary.checks.map(check => (
+                                    <li key={check.source}>
+                                      {check.sourceLabel}: {check.label}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : null}
                               <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
                                 <input
                                   type="checkbox"
@@ -10157,6 +10166,15 @@ export default function Auditar() {
                       <p className="mt-1.5 text-xs leading-4 text-slate-600">
                         {officialCheckSummary.overallDetail}
                       </p>
+                    ) : null}
+                    {officialCheckSummary?.checks?.length ? (
+                      <ul className="mt-1.5 space-y-1 text-xs leading-4 text-slate-600">
+                        {officialCheckSummary.checks.map(check => (
+                          <li key={`ss-${check.source}`}>
+                            {check.sourceLabel}: {check.label}
+                          </li>
+                        ))}
+                      </ul>
                     ) : null}
                     {effectiveSocialSecurityValidation?.explanations?.length ? (
                       <ul className="mt-2 space-y-1 text-xs leading-4 text-slate-600">

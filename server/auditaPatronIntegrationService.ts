@@ -822,10 +822,14 @@ export function buildAuditaPatronEnginePayload(params: {
     auditId: params.auditId ?? params.caseContract.trace_id,
     caseId: params.caseId ?? params.documentContract.case_id,
     dispatchId: params.dispatchId,
+    correlationId,
     sha256: params.documentContract.sha256,
     fileSizeBytes: params.documentContract.size_bytes,
     documentType: params.documentContract.document_type,
     sharedEnvelopeDocumentCount: params.sharedEngineEnvelope?.document_contracts?.length ?? 1,
+    nss: toOptionalString(params.metadata?.nss) ?? null,
+    curp: toOptionalString(params.metadata?.curp) ?? null,
+    rfc: toOptionalString(params.metadata?.rfc) ?? toOptionalString(params.metadata?.workerRfc) ?? null,
   } satisfies Record<string, unknown>;
 
   return {

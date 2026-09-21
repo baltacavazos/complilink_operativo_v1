@@ -426,6 +426,14 @@ describe("auditaPatronReturnWebhook", () => {
       schemaVersion: "v1",
       status: "ready",
     });
+    const parsedReturnContract = JSON.parse(String(genericAuditContract?.payload ?? "{}"));
+    expect(parsedReturnContract.live_check?.overallStatus).toBe("pendiente");
+    expect(parsedReturnContract.live_check?.checks?.map((item: { sourceLabel: string; label: string }) => `${item.sourceLabel}: ${item.label}`)).toEqual([
+      "IMSS: Pendiente",
+      "SAT: Pendiente",
+      "Infonavit: Pendiente",
+    ]);
+    expect(JSON.stringify(parsedReturnContract.live_check)).not.toMatch(/Helios|CompliLink|APIMarket|connector/i);
     expect(heliosAuditContract).toMatchObject({
       contractType: "audit",
       schemaVersion: "helios_v1",
@@ -438,6 +446,12 @@ describe("auditaPatronReturnWebhook", () => {
       status: "completed",
     });
 
+    expect(dbMocks.addCaseEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Documento revisado",
+        description: expect.stringMatching(/IMSS: Pendiente/),
+      }),
+    );
     expect(firstInsert?.eventKey).toBe("event:evt-bridge-001");
     expect(firstInsert?.eventKey).toBe(secondInsert?.eventKey);
     expect(firstInsert).toMatchObject({

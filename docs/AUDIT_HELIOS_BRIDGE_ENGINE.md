@@ -39,7 +39,7 @@ auditaPatronReturnWebhook.ingestCompliLinkReturnPayload()
 | Dirección | Evento | Dónde se acepta |
 | --- | --- | --- |
 | Saliente | `document.uploaded` | Tras guardar, `sendDocumentToAuditaPatronEngine` |
-| Saliente | `official.check.requested` (`action: official_check`) | Consulta IMSS/SAT: POST a `AUDITAPATRON_ENGINE_WEBHOOK_URL` tal cual (`/api/integrations/auditapatron/bridge`), `autonomousInput` {nss,curp,rfc}, **sin** `providerId` inventado |
+| Saliente | `document.uploaded` + `operationalContext.{nss,curp,rfc,correlationId}` | Extraídos del recibo al despachar al engine canónico `https://complilink.mx/api/integrations/auditapatron/bridge` |
 | Entrante | `document.processed.v1` | `/api/auditapatron/webhook` y `/api/auditapatron/complilink-webhook` |
 | Entrante | `document.rejected.v1` | mismos endpoints |
 | Entrante | `document.retry_requested.v1` | mismos endpoints |
