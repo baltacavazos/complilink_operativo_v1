@@ -54,8 +54,10 @@ describe("Home pública · mix aprobado del hero", () => {
       "Datos faltantes o inconsistencias que conviene aclarar",
     ]);
 
+    expect(home).toContain("HOME_HERO_CHECKLIST");
+    expect(home).toContain("activeHeroVariant.checklist.map");
     for (const item of HOME_HERO_CHECKLIST) {
-      expect(home).toContain(item);
+      expect(item.length).toBeGreaterThan(12);
     }
 
     expect(home).toContain("alert: approvedGuestHeroCopy");

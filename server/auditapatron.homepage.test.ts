@@ -16,7 +16,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
     expect(homeSource).toContain("Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
-    expect(homeSource).toContain("Resultado real desde el primer archivo");
+    expect(homeSource).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
     expect(homeSource).toContain("Primero ves si te sirve; después decides si lo guardas en tu expediente.");
     expect(homeSource).toContain("Tres pasos. Una lectura clara.");
     expect(homeSource).toContain("Control visible desde el primer archivo.");
@@ -107,7 +107,7 @@ describe("Auditapatron closeout experience", () => {
     expect(auditFlowSource).toContain("Borrador primero");
     expect(auditFlowSource).toContain("Rastro legal visible");
     expect(auditFlowSource).toContain("Control de privacidad");
-    expect(auditFlowSource).toContain("Señal visible de control");
+    expect(auditFlowSource).toContain("Privacidad activa desde el primer intento");
     expect(auditFlowSource).toContain("No tienes que adivinar qué pasó con tu archivo.");
     expect(auditFlowSource).toContain("Guardar en mi bóveda privada");
     expect(auditFlowSource).toContain("Descargar reporte PDF");

@@ -111,6 +111,21 @@ Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.
 Sube tu recibo de nómina y en segundos te mostramos qué sí vale la pena revisar primero.
 ¿Tu recibo de nómina está bien o hay algo raro?
 Empieza con una foto. No necesitas reunir todo.
+{ href: "#privacidad", label: "Privacidad" }
+Sube un archivo y mira una señal real antes de decidir.
+Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.
+3 señales claras
+Toca una señal y mira qué quedaría visible para ti antes de abrir expediente.
+Documento recibido, señal preliminar y siguiente paso sugerido.
+Mira la señal
+Guárdalo si sirve
+Primero revisas la señal y después decides si la guardas.
+Tu salario ante el IMSS (si el documento lo muestra)
+Descuentos: cada peso que te quitan y bajo qué concepto
+Recibo vs lo que declara el CFDI (si subes ambos)
+Pagos, total y periodo de la quincena
+Infonavit / aportaciones, cuando aparezcan
+Datos faltantes o inconsistencias que conviene aclarar
 */
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {

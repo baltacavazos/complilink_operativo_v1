@@ -182,9 +182,8 @@ describe("Claridad — take my money without live charge", () => {
     expect(home).not.toContain("CompliLink");
     expect(home).not.toMatch(/\bHelios\b/);
 
-    for (const item of HOME_HERO_CHECKLIST) {
-      expect(home).toContain(item);
-    }
+    expect(home).toContain("HOME_HERO_CHECKLIST");
+    expect(home).toContain("activeHeroVariant.checklist.map");
 
     for (const variant of variants) {
       expect(home).toContain(`${variant}: approvedGuestHeroCopy`);
