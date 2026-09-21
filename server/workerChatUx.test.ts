@@ -183,6 +183,71 @@ describe("workerChatUx grounding", () => {
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
+  it("si Falló, el asesor culpa al instituto y no a AuditaPatrón", () => {
+    const officialCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "no_se_pudo",
+      overallLabel: "Falló",
+      overallDetail: "No hubo respuesta usable en esta consulta. Inténtalo más tarde.",
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: true, curp: false, rfc: false },
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "no_se_pudo",
+          label: "Falló",
+          detail: "No hubo respuesta usable en esta consulta. Inténtalo más tarde.",
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: true, curp: false, rfc: false },
+          honesty: "failed",
+          hechos: ["El instituto no respondió hoy"],
+          motivoFallo: "El instituto no respondió hoy",
+        },
+      ],
+      chatAnchor: {
+        imss: {
+          fuente: "imss",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["El instituto no respondió hoy"],
+          motivoFallo: "El instituto no respondió hoy",
+        },
+        sat: {
+          fuente: "sat",
+          estado: "pending",
+          fecha: null,
+          hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+          motivoFallo: null,
+        },
+        infonavit: {
+          fuente: "infonavit",
+          estado: "pending",
+          fecha: null,
+          hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+          motivoFallo: null,
+        },
+      },
+    };
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+      officialCheck,
+      caseOnly: true,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué pasó con mi consulta?" });
+    const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué pasó con mi consulta?" });
+
+    expect(answer).toMatch(/Falló|IMSS/);
+    expect(answer).toMatch(/instituto|no contestó/);
+    expect(answer).toMatch(/no de AuditaPatrón/);
+    expect(answer).not.toMatch(/respuesta usable|fallo de AuditaPatrón|cruza el descuento/i);
+    expect(instructions).toMatch(/el fallo no es de AuditaPatrón/i);
+    expect(instructions).toMatch(/Sin tips laborales genéricos/);
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
   it("si preguntan ¿me pagan bien? ancla al recibo y no inventa consulta", () => {
     const grounding = buildWorkerChatGrounding({
       documents: [payrollDocument],

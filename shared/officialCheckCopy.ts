@@ -29,10 +29,135 @@ export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = 
   sin_permiso: "Falta tu permiso",
 };
 
+export const OFFICIAL_SOURCE_LABEL: Record<OfficialCheckSource, string> = {
+  imss: "IMSS",
+  sat: "SAT",
+  infonavit: "Infonavit",
+};
+
+export const OFFICIAL_FAILED_BLAME = "El fallo es del instituto, no de AuditaPatrón.";
+export const OFFICIAL_FAILED_BLAME_PLURAL = "El fallo es de ellos, no de AuditaPatrón.";
+export const OFFICIAL_FAILED_NEXT_STEP =
+  "Inténtalo más tarde. El instituto no contestó; el fallo es de ellos, no de AuditaPatrón.";
+export const OFFICIAL_FAILED_MISSING =
+  "El instituto no contestó. El fallo es del instituto, no de AuditaPatrón.";
+
+function uniqueOfficialSources(sources?: OfficialCheckSource[] | null): OfficialCheckSource[] {
+  const seen = new Set<OfficialCheckSource>();
+  const next: OfficialCheckSource[] = [];
+  for (const source of sources ?? []) {
+    if (!OFFICIAL_CHECK_SOURCES.includes(source) || seen.has(source)) continue;
+    seen.add(source);
+    next.push(source);
+  }
+  return next;
+}
+
+export function formatOfficialSourceList(sources?: OfficialCheckSource[] | null): string {
+  const labels = uniqueOfficialSources(sources).map((source) => OFFICIAL_SOURCE_LABEL[source]);
+  if (labels.length === 0) return "el instituto";
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} y ${labels[1]}`;
+  return `${labels[0]}, ${labels[1]} e ${labels[2]}`;
+}
+
+function consultedTodayPhrase(sources?: OfficialCheckSource[] | null): string {
+  const unique = uniqueOfficialSources(sources);
+  if (unique.length === 0) return "Consultamos al instituto hoy.";
+  if (unique.length === 1) return `Consultamos al ${OFFICIAL_SOURCE_LABEL[unique[0]]} hoy.`;
+  return `Consultamos a ${formatOfficialSourceList(unique)} hoy.`;
+}
+
+/** Detalle canónico de Falló. Si solo falló una, la nombra. Si fallaron varias, un solo párrafo. */
+export function buildOfficialFailedDetail(sources?: OfficialCheckSource[] | null): string {
+  const unique = uniqueOfficialSources(sources);
+  if (unique.length <= 1) {
+    return `${consultedTodayPhrase(unique)} El instituto no contestó (o está en mantenimiento). ${OFFICIAL_FAILED_BLAME} Inténtalo más tarde.`;
+  }
+  return `${consultedTodayPhrase(unique)} Esos institutos no contestaron (o están en mantenimiento). ${OFFICIAL_FAILED_BLAME_PLURAL} Inténtalo más tarde.`;
+}
+
+export function buildOfficialMaintenanceDetail(sources?: OfficialCheckSource[] | null): string {
+  const unique = uniqueOfficialSources(sources);
+  if (unique.length <= 1) {
+    return `${consultedTodayPhrase(unique)} El instituto está en mantenimiento. ${OFFICIAL_FAILED_BLAME} Inténtalo más tarde.`;
+  }
+  return `${consultedTodayPhrase(unique)} Esos institutos están en mantenimiento. ${OFFICIAL_FAILED_BLAME_PLURAL} Inténtalo más tarde.`;
+}
+
+export function buildOfficialFailedMotivo(
+  source: OfficialCheckSource,
+  kind: "timeout" | "mantenimiento" | "generic" = "generic",
+): string {
+  const name = OFFICIAL_SOURCE_LABEL[source];
+  if (kind === "mantenimiento") {
+    return `El ${name} está en mantenimiento. ${OFFICIAL_FAILED_BLAME}`;
+  }
+  return `El ${name} no contestó. ${OFFICIAL_FAILED_BLAME}`;
+}
+
+export function looksLikeInstituteMaintenance(text?: string | null): boolean {
+  return /mantenimiento/i.test(String(text ?? ""));
+}
+
+export function rewriteOfficialFailedMotivo(
+  source: OfficialCheckSource,
+  text?: string | null,
+): string {
+  if (looksLikeInstituteMaintenance(text)) {
+    return buildOfficialFailedMotivo(source, "mantenimiento");
+  }
+  return buildOfficialFailedMotivo(source, looksLikeNoOfficialResponse(text) ? "timeout" : "generic");
+}
+
+export function rewriteOfficialFailedHechos(
+  source: OfficialCheckSource,
+  hechos: string[],
+): string[] {
+  if (hechos.length === 0) return [buildOfficialFailedMotivo(source)];
+  return hechos.map((item) =>
+    looksLikeNoOfficialResponse(item) || looksLikeInstituteMaintenance(item)
+      ? rewriteOfficialFailedMotivo(source, item)
+      : item,
+  );
+}
+
+export function listFailedOfficialSources(
+  checks?: Array<{ source: OfficialCheckSource; status: OfficialCheckStatus }> | null,
+): OfficialCheckSource[] {
+  return uniqueOfficialSources(
+    (checks ?? []).filter((item) => item.status === "no_se_pudo").map((item) => item.source),
+  );
+}
+
+export function listFailedOfficialSourcesFromAnchor(
+  anchor?: OfficialChatAnchor | null,
+): OfficialCheckSource[] {
+  if (!anchor) return [];
+  return uniqueOfficialSources(
+    (["imss", "sat", "infonavit"] as const).filter((source) => {
+      const item = anchor[source];
+      return item.estado === "failed" && listOfficialMissingFieldKeys(item.missingFields).length === 0;
+    }),
+  );
+}
+
+/** Reescribe un Falló guardado (o vago) para que culpe al instituto, no a la app. */
+export function honestOfficialFailedDetail(
+  summary?: Pick<OfficialCheckSummary, "overallStatus" | "overallDetail" | "checks" | "chatAnchor"> | null,
+): string {
+  if (!summary || summary.overallStatus !== "no_se_pudo") {
+    return summary?.overallDetail ?? buildOfficialFailedDetail();
+  }
+  const fromChecks = listFailedOfficialSources(summary.checks);
+  const fromAnchor = listFailedOfficialSourcesFromAnchor(summary.chatAnchor);
+  return buildOfficialFailedDetail(fromChecks.length > 0 ? fromChecks : fromAnchor);
+}
+
 export const OFFICIAL_CHECK_STATUS_DETAIL: Record<OfficialCheckStatus, string> = {
   vivo: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
   pendiente: "Todavía no hay una respuesta oficial nueva. Inténtalo más tarde.",
-  no_se_pudo: "No hubo respuesta usable en esta consulta. Inténtalo más tarde.",
+  no_se_pudo: buildOfficialFailedDetail(),
   no_configurado: "Aún no configurado. Por ahora solo leemos tus papeles.",
   sin_datos: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
   sin_permiso: "Falta tu permiso para consultar IMSS y SAT.",
@@ -97,6 +222,7 @@ export const RECEIPT_OFFICIAL_COMPARISON_COPY = {
   no_se_pudo: {
     seenLine: "Esto vimos: no se pudo",
     nextStep: "Da permiso, revisa NSS, CURP y RFC, y pulsa Consultar IMSS y SAT otra vez.",
+    instituteNextStep: OFFICIAL_FAILED_NEXT_STEP,
   },
 } as const;
 
@@ -150,7 +276,7 @@ export function listOfficialMissingFieldKeys(values?: unknown): string[] {
 }
 
 export function looksLikeNoOfficialResponse(text?: string | null): boolean {
-  return /no respondi[oó]|\btimeout\b|\btimed?\s*out\b|service unavailable/i.test(
+  return /no respondi[oó]|no contest[oó]|\btimeout\b|\btimed?\s*out\b|service unavailable|error del servidor/i.test(
     String(text ?? ""),
   );
 }
@@ -250,15 +376,27 @@ export function readChatAnchorSource(
   if (estado === "pending" && missing.length === 0 && noResponse) {
     estado = "failed";
   }
-  const motivoFallo =
+  const rawMotivo =
     estado === "failed" || missing.length > 0
       ? motivoFalloText ?? (noResponse ? hechos.find((item) => looksLikeNoOfficialResponse(item)) ?? null : null)
       : null;
+  const motivoFallo =
+    missing.length > 0
+      ? rawMotivo
+      : estado === "failed"
+        ? rewriteOfficialFailedMotivo(fuente, rawMotivo)
+        : null;
+  const resolvedHechos =
+    estado === "failed" && missing.length === 0
+      ? rewriteOfficialFailedHechos(fuente, hechos)
+      : hechos.length > 0
+        ? hechos
+        : pendingChatSource(fuente).hechos;
   return {
     fuente,
     estado,
     fecha: asText(record.fecha) ?? asText(record.checkedAt) ?? asText(record.date),
-    hechos: hechos.length > 0 ? hechos : pendingChatSource(fuente).hechos,
+    hechos: resolvedHechos,
     motivoFallo,
     missingFields: missing,
   };
@@ -338,14 +476,19 @@ export function formatReceiptOfficialNextStepLine(nextStep: string) {
 
 export function buildReceiptOfficialComparisonCopy(
   resultado: ReciboVsOficialResultado | null | undefined,
+  options?: { instituteFailed?: boolean },
 ): { seen: ReciboVsOficialResultado; seenLine: string; nextStep: string; nextStepLine: string } {
   const seen = resultado ?? "no_se_pudo";
   const copy = RECEIPT_OFFICIAL_COMPARISON_COPY[seen];
+  const nextStep =
+    seen === "no_se_pudo" && options?.instituteFailed
+      ? RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.instituteNextStep
+      : copy.nextStep;
   return {
     seen,
     seenLine: formatReceiptOfficialSeenLine(seen),
-    nextStep: copy.nextStep,
-    nextStepLine: formatReceiptOfficialNextStepLine(copy.nextStep),
+    nextStep,
+    nextStepLine: formatReceiptOfficialNextStepLine(nextStep),
   };
 }
 
@@ -366,9 +509,11 @@ export function buildOfficialCheckHeadline(summary: Pick<OfficialCheckSummary, "
 }
 
 export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando...";
+export const OFFICIAL_CHECK_LOADING_DETAIL =
+  "Estamos consultando IMSS y SAT. Si el instituto no contesta, te lo decimos. Eso no es un fallo de AuditaPatrón.";
 export const OFFICIAL_CHECK_READY_HEADLINE = "Consulta IMSS y SAT";
 export const OFFICIAL_CHECK_READY_DETAIL =
-  "Con tu permiso consultamos IMSS y SAT. Si no hay respuesta, te lo decimos. No inventamos que tu patrón cumple.";
+  "Con tu permiso consultamos IMSS y SAT. Si el instituto no contesta, te lo decimos. El fallo sería del instituto, no de AuditaPatrón. No inventamos que tu patrón cumple.";
 
 export type OfficialCheckDisplayStatus = OfficialCheckStatus | "consultando" | "listo";
 
@@ -417,7 +562,7 @@ export function resolveOfficialCheckDisplay(params: {
   if (params.isPending) {
     return {
       headline: OFFICIAL_CHECK_LOADING_LABEL,
-      detail: "Estamos consultando IMSS y SAT. Si no hay respuesta, te lo decimos.",
+      detail: OFFICIAL_CHECK_LOADING_DETAIL,
       buttonLabel: OFFICIAL_CHECK_LOADING_LABEL,
       status: "consultando",
       showPermissionCopy: false,
@@ -443,7 +588,9 @@ export function resolveOfficialCheckDisplay(params: {
         detail:
           honest.overallStatus === "sin_datos" && params.missingIdentityDetail
             ? params.missingIdentityDetail
-            : honest.overallDetail,
+            : honest.overallStatus === "no_se_pudo"
+              ? honestOfficialFailedDetail(honest)
+              : honest.overallDetail,
         buttonLabel: honest.overallLabel,
         status: honest.overallStatus,
         showPermissionCopy: false,

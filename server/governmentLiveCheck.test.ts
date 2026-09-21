@@ -203,7 +203,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.overallStatus).toBe("no_se_pudo");
     expect(result.overallLabel).toBe(OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo);
     expect(result.overallDetail).toMatch(/inténtalo más tarde/i);
-    expect(result.overallDetail).not.toMatch(/HMAC|Helios|cumple/i);
+    expect(result.overallDetail).toMatch(/instituto|IMSS|SAT/);
+    expect(result.overallDetail).toMatch(/no de AuditaPatrón/);
+    expect(result.overallDetail).not.toMatch(/HMAC|Helios|cumple|respuesta usable/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(String(fetchImpl.mock.calls[0]?.[0])).toBe(ENGINE_ENV.AUDITAPATRON_ENGINE_WEBHOOK_URL);
@@ -223,8 +225,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(result.overallStatus).toBe("no_se_pudo");
     expect(result.overallLabel).toBe("Falló");
-    expect(result.overallDetail).toMatch(/todavía no hay una respuesta de IMSS o SAT/i);
-    expect(result.overallDetail).not.toMatch(/Provider|Helios|cumple/i);
+    expect(result.overallDetail).toMatch(/Consultamos a IMSS y SAT hoy/);
+    expect(result.overallDetail).toMatch(/no de AuditaPatrón/);
+    expect(result.overallDetail).not.toMatch(/Provider|Helios|cumple|respuesta usable/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
   });
 
@@ -246,7 +249,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(pending.overallStatus).toBe("pendiente");
     expect(pending.overallLabel).toBe(OFFICIAL_CHECK_STATUS_LABEL.pendiente);
     expect(pending.checkedAt).toBe("2026-09-21T12:00:00.000Z");
-    expect(pending.overallDetail).not.toMatch(/cumple/i);
+    expect(pending.overallDetail).toMatch(/mantenimiento/);
+    expect(pending.overallDetail).toMatch(/no de AuditaPatrón/);
+    expect(pending.overallDetail).not.toMatch(/cumple|respuesta usable/i);
     expect(fetch503).toHaveBeenCalledTimes(2);
 
     const fetchTimeout = vi
@@ -262,7 +267,10 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(timedOut.overallStatus).toBe("no_se_pudo");
     expect(timedOut.overallLabel).toBe("Falló");
-    expect(timedOut.overallDetail).toMatch(/no hubo respuesta/i);
+    expect(timedOut.overallDetail).toMatch(/Consultamos/);
+    expect(timedOut.overallDetail).toMatch(/no contestó|instituto/);
+    expect(timedOut.overallDetail).toMatch(/no de AuditaPatrón/);
+    expect(timedOut.overallDetail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
     expect(timedOut.checkedAt).toBeTruthy();
     expect(fetchTimeout).toHaveBeenCalledTimes(2);
   });
@@ -523,8 +531,12 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(parsed?.overallLabel).toBe("Falló");
     expect(parsed?.chatAnchor?.imss.estado).toBe("failed");
     expect(parsed?.chatAnchor?.imss.fecha).toBe("2026-09-21T12:00:00.000Z");
-    expect(parsed?.chatAnchor?.imss.motivoFallo).toMatch(/no respondió/);
-    expect(parsed?.overallDetail).not.toMatch(/El instituto no respondió hoy/);
+    expect(parsed?.chatAnchor?.imss.motivoFallo).toMatch(/no contestó/);
+    expect(parsed?.chatAnchor?.imss.motivoFallo).toMatch(/no de AuditaPatrón/);
+    expect(parsed?.overallDetail).toMatch(/Consultamos/);
+    expect(parsed?.overallDetail).toMatch(/IMSS|Infonavit|instituto/);
+    expect(parsed?.overallDetail).toMatch(/no de AuditaPatrón/);
+    expect(parsed?.overallDetail).not.toMatch(/El instituto no respondió hoy|respuesta usable/);
     expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
   });
 

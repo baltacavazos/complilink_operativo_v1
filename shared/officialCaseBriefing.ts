@@ -9,6 +9,7 @@ import {
   OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  OFFICIAL_FAILED_MISSING,
   buildOfficialCheckHeadline,
   buildReceiptOfficialComparisonCopy,
   formatOfficialCheckDate,
@@ -16,9 +17,12 @@ import {
   honestyToOfficialStatus,
   inferOfficialMissingFieldKeys,
   isPermissionBlockedStatus,
+  listFailedOfficialSources,
+  listFailedOfficialSourcesFromAnchor,
   listOfficialMissingFieldKeys,
   looksLikeNoOfficialResponse,
   officialStatusToHonesty,
+  rewriteOfficialFailedMotivo,
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
   type OfficialCheckSummary,
@@ -30,6 +34,9 @@ import {
 
 export const CASE_ADVISOR_RULE =
   "Responde solo con base en este expediente y estas consultas. Si no hay dato oficial, di que aún no hay resultado / faltan datos — no inventes. Nunca inventes cumple, alta vigente ni salario oficial.";
+
+export const CASE_ADVISOR_FALLO_RULE =
+  "Si el estado es Falló: AuditaPatrón sí consultó. Quien no contestó (o está en mantenimiento) es el instituto — IMSS, SAT o Infonavit. El fallo no es de AuditaPatrón. Sin tips laborales genéricos.";
 
 export const WORKER_CHAT_NO_CONSULTA_EMPTY =
   "Aún no hay resultado de TU consulta. Pulsa Consultar IMSS y SAT.";
@@ -172,9 +179,11 @@ export function formatChatAnchorStatusLine(
       : (mapped ?? "pendiente");
   const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
   const fail =
-    (status === "no_se_pudo" || status === "sin_datos") && source.motivoFallo
+    status === "sin_datos" && source.motivoFallo
       ? ` · ${source.motivoFallo}`
-      : "";
+      : status === "no_se_pudo"
+        ? ` · ${rewriteOfficialFailedMotivo(source.fuente, source.motivoFallo)}`
+        : "";
   const label = OFFICIAL_CHECK_STATUS_LABEL[status];
   return date
     ? `${sourceLabel(source.fuente)}: ${label} · ${date}${fail}`
@@ -227,6 +236,13 @@ export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
   ].filter((item): item is string => Boolean(item));
 }
 
+export function briefingHasInstituteFailure(briefing: OfficialCaseBriefing): boolean {
+  if (briefing.officialCheck?.overallStatus === "no_se_pudo") return true;
+  if (listFailedOfficialSources(briefing.officialCheck?.checks).length > 0) return true;
+  if (listFailedOfficialSourcesFromAnchor(briefing.chatAnchor).length > 0) return true;
+  return briefing.statusLines.some((line) => /: Falló/.test(line));
+}
+
 function consultAttempted(check?: OfficialCheckSummary | null): boolean {
   if (!check || isPermissionBlockedStatus(check.overallStatus)) return false;
   if (check.chatAnchor) return true;
@@ -275,7 +291,14 @@ export function selectReceiptOfficialComparison(params: {
   } else if (params.hasDifferenceSignal) {
     seen = "hay_diferencia";
   }
-  const copy = buildReceiptOfficialComparisonCopy(seen);
+  const failedSources = [
+    ...listFailedOfficialSources(check?.checks),
+    ...listFailedOfficialSourcesFromAnchor(check?.chatAnchor),
+  ];
+  const instituteFailed =
+    seen === "no_se_pudo" &&
+    (failedSources.length > 0 || check?.overallStatus === "no_se_pudo");
+  const copy = buildReceiptOfficialComparisonCopy(seen, { instituteFailed });
   return {
     seen,
     seenLine: copy.seenLine,
@@ -359,6 +382,7 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
     "Hechos de TU consulta (únicos que puedes citar; máximo 3 por fuente):",
     hechos,
     `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStepLine}`,
+    CASE_ADVISOR_FALLO_RULE,
     "Montos y datos del recibo (únicos números del papel):",
     receipt,
     `Identidad para consultar: ${missing}`,
@@ -392,7 +416,7 @@ export function buildPayWellFallback(briefing: OfficialCaseBriefing): {
     known: [statuses, receipt, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" "),
     missing:
       briefing.comparison.seen === "no_se_pudo"
-        ? briefing.missingIdentityDetail ?? "La consulta de hoy no trajo un resultado comparable."
+        ? briefing.missingIdentityDetail ?? OFFICIAL_FAILED_MISSING
         : "La consulta no confirma que el pago sea el correcto.",
     nextStep: briefing.comparison.nextStep,
   };
@@ -429,13 +453,16 @@ export function buildNoLiveOfficialAnswer(briefing: OfficialCaseBriefing): {
   }
 
   const statuses = briefing.statusLines.join(". ");
+  const failed = briefingHasInstituteFailure(briefing);
   return {
     clearAnswer: statuses
-      ? `${statuses}. Pulsa ${OFFICIAL_CHECK_BUTTON}.`
+      ? failed
+        ? `${statuses} AuditaPatrón sí consultó. ${OFFICIAL_FAILED_MISSING}`
+        : `${statuses}. Pulsa ${OFFICIAL_CHECK_BUTTON}.`
       : WORKER_CHAT_NO_CONSULTA_EMPTY,
     known: [statuses, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" ") || "Hay una consulta, pero sin un resultado vivo.",
-    missing: briefing.missingIdentityDetail ?? "Todavía no hay un resultado vivo de IMSS, SAT o Infonavit.",
-    nextStep: OFFICIAL_CHECK_BUTTON,
+    missing: briefing.missingIdentityDetail ?? (failed ? OFFICIAL_FAILED_MISSING : "Todavía no hay un resultado vivo de IMSS, SAT o Infonavit."),
+    nextStep: failed ? briefing.comparison.nextStep : OFFICIAL_CHECK_BUTTON,
   };
 }
 
