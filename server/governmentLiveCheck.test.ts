@@ -13,6 +13,7 @@ import {
 import {
   OFFICIAL_CHECK_ACTION,
   collectWorkerOfficialIdentity,
+  extractReceiptOfficialIdentity,
   getOfficialCheckAvailability,
   isOfficialCheckConfigured,
   officialCheckFromBridgeReturn,
@@ -227,7 +228,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
   });
 
-  it("degrada 503 y timeout a pendiente", async () => {
+  it("mantenimiento queda Pendiente con fecha; timeout o sin respuesta es Falló", async () => {
     const fetch503 = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ success: false, message: "Este endpoint se encuentra en mantenimiento" }), {
         status: 503,
@@ -259,7 +260,10 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       fetchImpl: fetchTimeout as unknown as typeof fetch,
       sleep: async () => undefined,
     });
-    expect(timedOut.overallStatus).toBe("pendiente");
+    expect(timedOut.overallStatus).toBe("no_se_pudo");
+    expect(timedOut.overallLabel).toBe("Falló");
+    expect(timedOut.overallDetail).toMatch(/no hubo respuesta/i);
+    expect(timedOut.checkedAt).toBeTruthy();
     expect(fetchTimeout).toHaveBeenCalledTimes(2);
   });
 
@@ -281,7 +285,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
 
     expect(result.overallStatus).toBe("pendiente");
-    expect(result.overallDetail).not.toMatch(/cumple/i);
+    expect(result.checkedAt).toBeTruthy();
+    expect(result.overallDetail).toMatch(/Todavía no hay una respuesta oficial nueva/);
+    expect(result.overallDetail).not.toMatch(/no respondió|cumple/i);
   });
 
   it("lee IMSS/SAT/Infonavit honestos de document.processed.v1, sin jerga", () => {
@@ -311,6 +317,86 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(pending?.overallStatus).toBe("pendiente");
     expect(pending?.overallLabel).toBe("Pendiente");
+  });
+
+  it("si el puente queda pending por NSS/CURP/RFC, marca Faltan datos con fecha y qué falta", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            sat: {
+              obligation: "sat",
+              honesty: "pending",
+              status: "pending",
+              workerLabel: "Faltan datos",
+              workerReason: "Falta el RFC para consultar SAT.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: ["rfc"],
+              hechos: ["Falta el RFC para consultar SAT."],
+            },
+            imss: {
+              obligation: "imss",
+              honesty: "pending",
+              status: "pending",
+              workerLabel: "Faltan datos",
+              workerReason: "Falta el NSS para consultar IMSS.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: ["nss"],
+              hechos: ["Falta el NSS para consultar IMSS."],
+            },
+            infonavit: {
+              obligation: "infonavit",
+              honesty: "failed",
+              status: "missing_identifiers",
+              workerLabel: "Faltan datos",
+              workerReason: "Falta el NSS para consultar Infonavit.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: ["nss"],
+              hechos: ["Falta el NSS para consultar Infonavit."],
+            },
+          },
+          chatAnchor: {
+            sat: { fuente: "sat", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el RFC para consultar SAT."], motivoFallo: null },
+            imss: { fuente: "imss", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el NSS para consultar IMSS."], motivoFallo: null },
+            infonavit: { fuente: "infonavit", estado: "failed", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el NSS para consultar Infonavit."], motivoFallo: "Falta el NSS para consultar Infonavit." },
+          },
+          reciboVsOficial: { resultado: "no_se_pudo", motivo: "Faltan datos para comparar." },
+        },
+      },
+      nowIso: "2026-09-21T12:00:00.000Z",
+      identity: { nss: false, curp: true, rfc: false },
+    });
+
+    expect(parsed?.overallStatus).toBe("sin_datos");
+    expect(parsed?.overallLabel).toBe("Faltan datos");
+    expect(parsed?.overallDetail).toBe("Falta tu NSS y RFC en el recibo para consultar.");
+    expect(parsed?.checkedAt).toBe("2026-09-21T12:00:00.000Z");
+    expect(parsed?.identity).toEqual({ nss: false, curp: true, rfc: false });
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("sin_datos");
+    expect(parsed?.reciboVsOficial?.resultado).toBe("no_se_pudo");
+    expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
+  });
+
+  it("saca NSS, CURP y RFC del texto del recibo", () => {
+    const fromText = extractReceiptOfficialIdentity(
+      "Recibo de nómina. NSS 12345678901 CURP DILE970625HBCZPM01 RFC del trabajador VECJ880326XXX. RFC del patrón ECC190605VA1.",
+    );
+    expect(fromText).toEqual({
+      nss: "12345678901",
+      curp: "DILE970625HBCZPM01",
+      rfc: "VECJ880326XXX",
+    });
+    expect(
+      collectWorkerOfficialIdentity({
+        employerRfc: "ECC190605VA1",
+        text: "NumSeguridadSocial 84129214965 Curp DILE970625HBCZPM01 RfcReceptor VECJ880326XXX",
+      }),
+    ).toMatchObject({
+      nss: "84129214965",
+      curp: "DILE970625HBCZPM01",
+      rfc: "VECJ880326XXX",
+    });
   });
 
   it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {
@@ -370,6 +456,76 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(parsed?.checks.find((item) => item.source === "imss")?.hechos?.[0]).toMatch(/Alta vigente/);
     expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC/i);
     expect(JSON.stringify(parsed)).toMatch(/No significa que tu patrón cumple/);
+  });
+
+  it("si el instituto no respondió, es Falló con fecha y motivo — no Pendiente eterno", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            imss: {
+              honesty: "pending",
+              status: "pending",
+              workerReason: "El instituto no respondió hoy",
+              checkedAt: null,
+              hechos: ["El instituto no respondió hoy"],
+            },
+            sat: {
+              honesty: "pending",
+              status: "pending",
+              workerReason: "Falta el RFC para consultar SAT.",
+              missingFields: ["rfc"],
+              hechos: ["Falta el RFC para consultar SAT."],
+            },
+            infonavit: {
+              honesty: "pending",
+              status: "pending",
+              workerReason: "El instituto no respondió hoy",
+              hechos: ["El instituto no respondió hoy"],
+            },
+          },
+          chatAnchor: {
+            imss: {
+              fuente: "imss",
+              estado: "pending",
+              fecha: null,
+              hechos: ["El instituto no respondió hoy"],
+              motivoFallo: "El instituto no respondió hoy",
+            },
+            sat: {
+              fuente: "sat",
+              estado: "pending",
+              fecha: null,
+              hechos: ["Falta el RFC para consultar SAT."],
+              motivoFallo: "Falta el RFC para consultar SAT.",
+              missingFields: ["rfc"],
+            },
+            infonavit: {
+              fuente: "infonavit",
+              estado: "pending",
+              fecha: null,
+              hechos: ["El instituto no respondió hoy"],
+              motivoFallo: "El instituto no respondió hoy",
+            },
+          },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: false },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+
+    expect(parsed?.checkedAt).toBe("2026-09-21T12:00:00.000Z");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
+    expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("sin_datos");
+    expect(parsed?.overallStatus).toBe("no_se_pudo");
+    expect(parsed?.overallLabel).toBe("Falló");
+    expect(parsed?.chatAnchor?.imss.estado).toBe("failed");
+    expect(parsed?.chatAnchor?.imss.fecha).toBe("2026-09-21T12:00:00.000Z");
+    expect(parsed?.chatAnchor?.imss.motivoFallo).toMatch(/no respondió/);
+    expect(parsed?.overallDetail).not.toMatch(/El instituto no respondió hoy/);
+    expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {

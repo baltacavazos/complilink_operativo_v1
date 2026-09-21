@@ -14,7 +14,10 @@ import {
   formatOfficialCheckDate,
   hasLiveOfficialResult,
   honestyToOfficialStatus,
+  inferOfficialMissingFieldKeys,
   isPermissionBlockedStatus,
+  listOfficialMissingFieldKeys,
+  looksLikeNoOfficialResponse,
   officialStatusToHonesty,
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
@@ -105,6 +108,45 @@ export function officialIdentityGapDetail(identity: OfficialIdentityFlags): stri
   return "Falta tu NSS, CURP y RFC en el recibo para consultar.";
 }
 
+export function applyMissingFieldsToIdentity(
+  identity: OfficialIdentityFlags,
+  missingFields?: unknown,
+): OfficialIdentityFlags {
+  const missing = listOfficialMissingFieldKeys(missingFields);
+  if (missing.length === 0) return identity;
+  return {
+    nss: missing.includes("nss") ? false : identity.nss,
+    curp: missing.includes("curp") ? false : identity.curp,
+    rfc: missing.includes("rfc") ? false : identity.rfc,
+  };
+}
+
+export function collectOfficialMissingFieldKeys(params: {
+  officialCheck?: OfficialCheckSummary | null;
+  chatAnchor?: OfficialChatAnchor | null;
+}): string[] {
+  const keys: string[] = [];
+  const push = (values?: unknown) => {
+    for (const key of listOfficialMissingFieldKeys(values)) {
+      if (!keys.includes(key)) keys.push(key);
+    }
+  };
+  for (const check of params.officialCheck?.checks ?? []) {
+    push(check.missingFields);
+    push(inferOfficialMissingFieldKeys(check.motivoFallo));
+    push(inferOfficialMissingFieldKeys((check.hechos ?? []).join(" ")));
+  }
+  const anchor = params.chatAnchor ?? params.officialCheck?.chatAnchor;
+  if (anchor) {
+    for (const source of [anchor.imss, anchor.sat, anchor.infonavit]) {
+      push(source.missingFields);
+      push(inferOfficialMissingFieldKeys(source.motivoFallo));
+      push(inferOfficialMissingFieldKeys(source.hechos.join(" ")));
+    }
+  }
+  return keys;
+}
+
 export function formatOfficialStatusLine(params: {
   sourceLabel: string;
   status: OfficialCheckStatus;
@@ -119,10 +161,20 @@ function sourceLabel(fuente: OfficialChatAnchorSource["fuente"]): string {
   return fuente === "sat" ? "SAT" : fuente === "imss" ? "IMSS" : "Infonavit";
 }
 
-export function formatChatAnchorStatusLine(source: OfficialChatAnchorSource): string {
-  const status = honestyToOfficialStatus(source.estado) ?? "pendiente";
-  const date = formatOfficialCheckDate(source.fecha);
-  const fail = source.estado === "failed" && source.motivoFallo ? ` · ${source.motivoFallo}` : "";
+export function formatChatAnchorStatusLine(
+  source: OfficialChatAnchorSource,
+  fallbackDate?: string | null,
+): string {
+  const mapped = honestyToOfficialStatus(source.estado, source.missingFields);
+  const status =
+    mapped === "pendiente" && looksLikeNoOfficialResponse(source.motivoFallo ?? source.hechos.join(" "))
+      ? "no_se_pudo"
+      : (mapped ?? "pendiente");
+  const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
+  const fail =
+    (status === "no_se_pudo" || status === "sin_datos") && source.motivoFallo
+      ? ` · ${source.motivoFallo}`
+      : "";
   const label = OFFICIAL_CHECK_STATUS_LABEL[status];
   return date
     ? `${sourceLabel(source.fuente)}: ${label} · ${date}${fail}`
@@ -133,7 +185,7 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
   if (!summary || isPermissionBlockedStatus(summary.overallStatus)) return [];
   if (summary.chatAnchor) {
     return [summary.chatAnchor.imss, summary.chatAnchor.sat, summary.chatAnchor.infonavit].map(
-      formatChatAnchorStatusLine,
+      (source) => formatChatAnchorStatusLine(source, summary.checkedAt),
     );
   }
   if (summary.checks.length > 0) {
@@ -212,7 +264,7 @@ export function selectReceiptOfficialComparison(params: {
       seen: "no_se_pudo",
       seenLine: copy.seenLine,
       nextStep: copy.nextStep,
-      nextStepLine: copy.nextStep,
+      nextStepLine: copy.nextStepLine,
       hasOfficialConsulta: false,
     };
   }
@@ -228,7 +280,7 @@ export function selectReceiptOfficialComparison(params: {
     seen,
     seenLine: copy.seenLine,
     nextStep: copy.nextStep,
-    nextStepLine: copy.nextStep,
+    nextStepLine: copy.nextStepLine,
     hasOfficialConsulta: true,
   };
 }
@@ -249,7 +301,10 @@ export function buildOfficialCaseBriefing(params: {
       : params.reciboVsOficial) ??
     officialCheck?.reciboVsOficial ??
     null;
-  const identity = officialCheck?.identity ?? identityFlagsFromFacts(facts);
+  const identity = applyMissingFieldsToIdentity(
+    officialCheck?.identity ?? identityFlagsFromFacts(facts),
+    collectOfficialMissingFieldKeys({ officialCheck, chatAnchor }),
+  );
   const missingIdentity = listMissingOfficialIdentityLabels(identity);
   const comparison = selectReceiptOfficialComparison({
     officialCheck,
@@ -303,7 +358,7 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
     official,
     "Hechos de TU consulta (únicos que puedes citar; máximo 3 por fuente):",
     hechos,
-    `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStep}`,
+    `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStepLine}`,
     "Montos y datos del recibo (únicos números del papel):",
     receipt,
     `Identidad para consultar: ${missing}`,
@@ -397,6 +452,7 @@ export function chatAnchorFromOfficialCheck(summary: OfficialCheckSummary | null
       fecha: check?.checkedAt ?? summary.checkedAt,
       hechos: check?.hechos?.slice(0, 3) ?? [],
       motivoFallo: check?.motivoFallo ?? null,
+      missingFields: check?.missingFields ?? [],
     };
   };
   return {

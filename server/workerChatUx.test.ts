@@ -76,6 +76,58 @@ describe("workerChatUx grounding", () => {
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
   });
 
+  it("en el caso el prompt del modelo solo usa chatAnchor, recibo y TU consulta", () => {
+    const officialCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "vivo",
+      overallLabel: "Vivo",
+      overallDetail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: true, curp: false, rfc: true },
+      checks: [],
+      chatAnchor: {
+        imss: {
+          fuente: "imss",
+          estado: "live",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Alta vigente: sí."],
+          motivoFallo: null,
+        },
+        sat: {
+          fuente: "sat",
+          estado: "pending",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+          motivoFallo: null,
+        },
+        infonavit: {
+          fuente: "infonavit",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Infonavit está en mantenimiento."],
+          motivoFallo: "Infonavit está en mantenimiento.",
+        },
+      },
+      reciboVsOficial: { resultado: "hay_diferencia", motivo: "SBC distinto" },
+    };
+    const instructions = buildWorkerChatLlmInstructions(
+      buildWorkerChatGrounding({
+        documents: [payrollDocument],
+        opinion: payrollDocument.heliosOpinion,
+        officialCheck,
+        caseOnly: true,
+      }),
+    );
+    expect(instructions).toContain("chatAnchor");
+    expect(instructions).toContain("reciboVsOficial");
+    expect(instructions).toMatch(/Esto vimos: hay diferencia/);
+    expect(instructions).toMatch(/resultado de TU consulta/);
+    expect(instructions).not.toMatch(/no consultamos en vivo/i);
+    expect(instructions).not.toMatch(/Esto no consulta IMSS, SAT ni Infonavit en vivo/);
+    expect(instructions).toContain(WORKER_CHAT_DISCLAIMER);
+  });
+
   it("con chatAnchor vivo ancla comparación y hechos de ESTE expediente", () => {
     const officialCheck: OfficialCheckSummary = {
       configured: true,
@@ -293,7 +345,7 @@ describe("workerChatUx grounding", () => {
     expect(instructions).toMatch(/nunca inventes tesis/i);
     expect(instructions).toMatch(/Responde solo con base en este expediente y estas consultas/i);
     expect(instructions).toMatch(/a[uú]n no hay resultado/i);
-    expect(instructions).toMatch(/Acreditación de pagos y deducciones/);
+    expect(instructions).toContain("pagos y deducciones");
     expect(instructions).toContain(WORKER_CHAT_DISCLAIMER);
     expect(instructions).toMatch(/resultado de TU consulta/i);
     expect(instructions).toMatch(/este expediente/i);

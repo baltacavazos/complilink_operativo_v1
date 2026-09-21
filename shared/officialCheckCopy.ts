@@ -31,8 +31,8 @@ export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = 
 
 export const OFFICIAL_CHECK_STATUS_DETAIL: Record<OfficialCheckStatus, string> = {
   vivo: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
-  pendiente: "El instituto no respondió hoy. Inténtalo más tarde.",
-  no_se_pudo: "Falló la consulta. Inténtalo más tarde.",
+  pendiente: "Todavía no hay una respuesta oficial nueva. Inténtalo más tarde.",
+  no_se_pudo: "No hubo respuesta usable en esta consulta. Inténtalo más tarde.",
   no_configurado: "Aún no configurado. Por ahora solo leemos tus papeles.",
   sin_datos: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
   sin_permiso: "Falta tu permiso para consultar IMSS y SAT.",
@@ -53,6 +53,7 @@ export type OfficialChatAnchorSource = {
   fecha: string | null;
   hechos: string[];
   motivoFallo: string | null;
+  missingFields?: string[];
 };
 
 export type OfficialChatAnchor = {
@@ -77,18 +78,24 @@ export type ReciboVsOficial = {
   campos?: ReciboVsOficialCampo[];
 };
 
+export const RECEIPT_OFFICIAL_COMPARISON_SEEN_LABEL: Record<ReciboVsOficialResultado, string> = {
+  bien: "bien",
+  hay_diferencia: "hay diferencia",
+  no_se_pudo: "no se pudo",
+};
+
 /** Misma fuente de verdad: tarjeta + chat. Nunca inventar «cumple». */
 export const RECEIPT_OFFICIAL_COMPARISON_COPY = {
   bien: {
-    seenLine: "Cuadra con tu recibo.",
+    seenLine: "Esto vimos: bien",
     nextStep: "Guarda este resultado con la fecha.",
   },
   hay_diferencia: {
-    seenLine: "Hay diferencia entre tu recibo y la respuesta de hoy.",
+    seenLine: "Esto vimos: hay diferencia",
     nextStep: "Anota periodo y montos y pide aclaración por escrito a patrón o RH.",
   },
   no_se_pudo: {
-    seenLine: "No se pudo comparar tu recibo con la respuesta oficial.",
+    seenLine: "Esto vimos: no se pudo",
     nextStep: "Da permiso, revisa NSS, CURP y RFC, y pulsa Consultar IMSS y SAT otra vez.",
   },
 } as const;
@@ -106,6 +113,7 @@ export type OfficialSourceCheck = {
   honesty?: OfficialChatAnchorEstado | null;
   hechos?: string[];
   motivoFallo?: string | null;
+  missingFields?: string[];
 };
 
 export type OfficialCheckSummary = {
@@ -121,13 +129,51 @@ export type OfficialCheckSummary = {
   reciboVsOficial?: ReciboVsOficial | null;
 };
 
+export function listOfficialMissingFieldKeys(values?: unknown): string[] {
+  if (!Array.isArray(values)) return [];
+  const keys: string[] = [];
+  for (const item of values) {
+    const compact = String(item ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+    if (!compact) continue;
+    if ((compact === "nss" || compact.includes("nss") || compact.includes("numseguridad")) && !keys.includes("nss")) {
+      keys.push("nss");
+    } else if ((compact === "curp" || compact.includes("curp")) && !keys.includes("curp")) {
+      keys.push("curp");
+    } else if ((compact === "rfc" || compact.includes("rfc")) && !keys.includes("rfc")) {
+      keys.push("rfc");
+    }
+  }
+  return keys;
+}
+
+export function looksLikeNoOfficialResponse(text?: string | null): boolean {
+  return /no respondi[oó]|\btimeout\b|\btimed?\s*out\b|service unavailable/i.test(
+    String(text ?? ""),
+  );
+}
+
+export function inferOfficialMissingFieldKeys(text?: string | null): string[] {
+  const haystack = String(text ?? "").toLowerCase();
+  if (!haystack) return [];
+  const keys: string[] = [];
+  if (/\bfalta(?:n)?\b[^.]{0,40}\bnss\b|\bnss\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("nss");
+  if (/\bfalta(?:n)?\b[^.]{0,40}\bcurp\b|\bcurp\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("curp");
+  if (/\bfalta(?:n)?\b[^.]{0,40}\brfc\b|\brfc\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("rfc");
+  return keys;
+}
+
 export function honestyToOfficialStatus(
   honesty?: string | null,
   missingFields?: string[] | null,
 ): OfficialCheckStatus | null {
   const value = String(honesty ?? "").trim().toLowerCase();
-  if (!value) return null;
+  const missing = listOfficialMissingFieldKeys(missingFields);
   if (value === "live" || value === "vivo") return "vivo";
+  if (missing.length > 0) return "sin_datos";
+  if (!value) return null;
   if (value === "pending" || value === "pendiente") return "pendiente";
   if (
     value === "failed" ||
@@ -135,7 +181,7 @@ export function honestyToOfficialStatus(
     value === "fallo" ||
     value === "falló"
   ) {
-    return missingFields && missingFields.length > 0 ? "sin_datos" : "no_se_pudo";
+    return "no_se_pudo";
   }
   return null;
 }
@@ -175,6 +221,7 @@ function pendingChatSource(fuente: OfficialCheckSource): OfficialChatAnchorSourc
     fecha: null,
     hechos: [`Todavía no hay una respuesta oficial nueva de ${label}.`],
     motivoFallo: null,
+    missingFields: [],
   };
 }
 
@@ -184,20 +231,28 @@ export function readChatAnchorSource(
 ): OfficialChatAnchorSource {
   const record = asRecord(value);
   if (!record) return pendingChatSource(fuente);
-  const missing = Array.isArray(record.missingFields)
-    ? record.missingFields.map((item) => String(item))
-    : [];
-  const estado =
+  const hechos = sanitizeHechos(record.hechos);
+  const motivoFalloText =
+    asText(record.motivoFallo) ?? asText(record.workerReason) ?? asText(record.reason);
+  const missing = [
+    ...listOfficialMissingFieldKeys(record.missingFields),
+    ...inferOfficialMissingFieldKeys(hechos.join(" ")),
+    ...inferOfficialMissingFieldKeys(motivoFalloText),
+  ].filter((item, index, all) => all.indexOf(item) === index);
+  let estado =
     record.estado === "live" || record.estado === "pending" || record.estado === "failed"
       ? record.estado
       : officialStatusToHonesty(
           honestyToOfficialStatus(asText(record.honesty) ?? asText(record.status), missing) ??
             "pendiente",
         );
-  const hechos = sanitizeHechos(record.hechos);
+  const noResponse = looksLikeNoOfficialResponse(`${motivoFalloText ?? ""} ${hechos.join(" ")}`);
+  if (estado === "pending" && missing.length === 0 && noResponse) {
+    estado = "failed";
+  }
   const motivoFallo =
-    estado === "failed"
-      ? asText(record.motivoFallo) ?? asText(record.workerReason) ?? asText(record.reason)
+    estado === "failed" || missing.length > 0
+      ? motivoFalloText ?? (noResponse ? hechos.find((item) => looksLikeNoOfficialResponse(item)) ?? null : null)
       : null;
   return {
     fuente,
@@ -205,6 +260,7 @@ export function readChatAnchorSource(
     fecha: asText(record.fecha) ?? asText(record.checkedAt) ?? asText(record.date),
     hechos: hechos.length > 0 ? hechos : pendingChatSource(fuente).hechos,
     motivoFallo,
+    missingFields: missing,
   };
 }
 
@@ -272,12 +328,25 @@ export function hasLiveOfficialResult(summary?: OfficialCheckSummary | null): bo
   );
 }
 
+export function formatReceiptOfficialSeenLine(seen: ReciboVsOficialResultado) {
+  return `Esto vimos: ${RECEIPT_OFFICIAL_COMPARISON_SEEN_LABEL[seen]}`;
+}
+
+export function formatReceiptOfficialNextStepLine(nextStep: string) {
+  return `Qué hacer ahora: ${nextStep}`;
+}
+
 export function buildReceiptOfficialComparisonCopy(
   resultado: ReciboVsOficialResultado | null | undefined,
-): { seen: ReciboVsOficialResultado; seenLine: string; nextStep: string } {
+): { seen: ReciboVsOficialResultado; seenLine: string; nextStep: string; nextStepLine: string } {
   const seen = resultado ?? "no_se_pudo";
   const copy = RECEIPT_OFFICIAL_COMPARISON_COPY[seen];
-  return { seen, seenLine: copy.seenLine, nextStep: copy.nextStep };
+  return {
+    seen,
+    seenLine: formatReceiptOfficialSeenLine(seen),
+    nextStep: copy.nextStep,
+    nextStepLine: formatReceiptOfficialNextStepLine(copy.nextStep),
+  };
 }
 
 export function formatOfficialCheckDate(iso: string | null | undefined) {
@@ -320,8 +389,17 @@ export function pickHonestOfficialCheck(params: {
   candidates: Array<OfficialCheckSummary | null | undefined>;
 }): OfficialCheckSummary | null {
   const present = params.candidates.filter((item): item is OfficialCheckSummary => Boolean(item));
-  if (params.consentGranted) {
-    return present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ?? null;
+  const consulted = present.find(
+    (item) =>
+      !isPermissionBlockedStatus(item.overallStatus) &&
+      Boolean(item.checkedAt || item.chatAnchor || item.reciboVsOficial),
+  );
+  if (params.consentGranted || consulted) {
+    return (
+      consulted ??
+      present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ??
+      null
+    );
   }
   return present[0] ?? null;
 }
@@ -346,16 +424,26 @@ export function resolveOfficialCheckDisplay(params: {
     };
   }
 
+  const consultAlreadyVisible = Boolean(
+    params.summary &&
+      !isPermissionBlockedStatus(params.summary.overallStatus) &&
+      (params.summary.checkedAt || params.summary.chatAnchor || params.summary.reciboVsOficial),
+  );
+  const consentGranted = params.consentGranted || consultAlreadyVisible;
+
   const honest =
-    params.consentGranted && isPermissionBlockedStatus(params.summary?.overallStatus)
+    consentGranted && isPermissionBlockedStatus(params.summary?.overallStatus)
       ? null
       : (params.summary ?? null);
 
-  if (params.consentGranted) {
+  if (consentGranted) {
     if (honest && !isPermissionBlockedStatus(honest.overallStatus)) {
       return {
         headline: buildOfficialCheckHeadline(honest),
-        detail: honest.overallDetail,
+        detail:
+          honest.overallStatus === "sin_datos" && params.missingIdentityDetail
+            ? params.missingIdentityDetail
+            : honest.overallDetail,
         buttonLabel: honest.overallLabel,
         status: honest.overallStatus,
         showPermissionCopy: false,

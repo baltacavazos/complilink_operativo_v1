@@ -128,6 +128,24 @@ describe("laborFiscalSignals", () => {
       isrWithheld: "$0.00",
       imssWithheld: "$0.00",
     });
+
+    const fromPaper = extractLaborFiscalSignalsFromDocument({
+      documentType: "payroll_receipt",
+      originalName: "recibo.pdf",
+      preliminaryAnalysis: {
+        confirmedData: {
+          summary: "NSS 12345678901 CURP DILE970625HBCZPM01 RFC del trabajador VECJ880326XXX periodo 1 al 15 de mayo",
+          NumSeguridadSocial: "12345678901",
+          Curp: "DILE970625HBCZPM01",
+          RfcReceptor: "VECJ880326XXX",
+          employerRfc: "ECC190605VA1",
+        },
+      },
+    });
+    expect(fromPaper.facts.nss).toBe("12345678901");
+    expect(fromPaper.facts.curp).toBe("DILE970625HBCZPM01");
+    expect(fromPaper.facts.workerRfc).toBe("VECJ880326XXX");
+    expect(fromPaper.facts.employerRfc).toBe("ECC190605VA1");
     expect(snapshot.explanations.map((item) => item.summary).join(" ")).toMatch(/periodo que se alcanza a leer/i);
     expect(snapshot.explanations.map((item) => item.summary).join(" ")).toMatch(/RFC del patrón/i);
     expect(snapshot.explanations.map((item) => item.summary).join(" ")).toMatch(/NSS 84129214965/);
