@@ -9,6 +9,7 @@ import {
   buildPayWellFallback,
   formatOfficialCaseBriefingForPrompt,
   isPayWellQuestion,
+  formatChatAnchorStatusLine,
   officialIdentityGapDetail,
   selectReceiptOfficialComparison,
 } from "./officialCaseBriefing";
@@ -163,6 +164,19 @@ describe("briefing del caso para el asesor", () => {
     expect(pendingMissing.missingIdentityDetail).toBe("Falta tu NSS en el recibo para consultar.");
     expect(pendingMissing.comparison.seenLine).toBe("Esto vimos: no se pudo");
     expect(pendingMissing.comparison.nextStepLine).toMatch(/^Qué hacer ahora:/);
+
+    const noResponse = formatChatAnchorStatusLine(
+      {
+        fuente: "imss",
+        estado: "pending",
+        fecha: null,
+        hechos: ["IMSS no respondió en esta consulta."],
+        motivoFallo: "IMSS no respondió en esta consulta.",
+      },
+      "2026-09-21T12:00:00.000Z",
+    );
+    expect(noResponse).toMatch(/IMSS: Falló · 21\/09\/2026/);
+    expect(noResponse).toMatch(/no respondió/);
 
     const comparison = selectReceiptOfficialComparison({
       officialCheck: official("sin_datos", {

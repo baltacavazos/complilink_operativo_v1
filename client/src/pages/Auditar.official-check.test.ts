@@ -17,6 +17,10 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain('data-testid="official-check-headline"');
     expect(source).toContain('data-testid="official-check-cta"');
     expect(source).toContain("setOfficialCheckResult(result.officialCheck)");
+    expect(source).toContain("setOfficialCheckConsent(true)");
+    expect(source).toContain('data-testid="official-check-chat-cta"');
+    expect(source).toContain('data-testid="official-check-hechos"');
+    expect(source).toContain("openHeliosCopilot");
     expect(source).toContain("officialCaseBriefing.comparison.seenLine");
     expect(source).toContain("officialCaseBriefing.comparison.nextStepLine");
     expect(source).not.toMatch(/Helios bridge HMAC|HMAC authentication failed/);

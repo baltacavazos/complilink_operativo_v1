@@ -17,6 +17,7 @@ import {
   inferOfficialMissingFieldKeys,
   isPermissionBlockedStatus,
   listOfficialMissingFieldKeys,
+  looksLikeNoOfficialResponse,
   officialStatusToHonesty,
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
@@ -160,9 +161,16 @@ function sourceLabel(fuente: OfficialChatAnchorSource["fuente"]): string {
   return fuente === "sat" ? "SAT" : fuente === "imss" ? "IMSS" : "Infonavit";
 }
 
-export function formatChatAnchorStatusLine(source: OfficialChatAnchorSource): string {
-  const status = honestyToOfficialStatus(source.estado, source.missingFields) ?? "pendiente";
-  const date = formatOfficialCheckDate(source.fecha);
+export function formatChatAnchorStatusLine(
+  source: OfficialChatAnchorSource,
+  fallbackDate?: string | null,
+): string {
+  const mapped = honestyToOfficialStatus(source.estado, source.missingFields);
+  const status =
+    mapped === "pendiente" && looksLikeNoOfficialResponse(source.motivoFallo ?? source.hechos.join(" "))
+      ? "no_se_pudo"
+      : (mapped ?? "pendiente");
+  const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
   const fail =
     (status === "no_se_pudo" || status === "sin_datos") && source.motivoFallo
       ? ` · ${source.motivoFallo}`
@@ -177,7 +185,7 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
   if (!summary || isPermissionBlockedStatus(summary.overallStatus)) return [];
   if (summary.chatAnchor) {
     return [summary.chatAnchor.imss, summary.chatAnchor.sat, summary.chatAnchor.infonavit].map(
-      formatChatAnchorStatusLine,
+      (source) => formatChatAnchorStatusLine(source, summary.checkedAt),
     );
   }
   if (summary.checks.length > 0) {

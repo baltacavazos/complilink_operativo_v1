@@ -31,8 +31,8 @@ export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = 
 
 export const OFFICIAL_CHECK_STATUS_DETAIL: Record<OfficialCheckStatus, string> = {
   vivo: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
-  pendiente: "El instituto no respondió hoy. Inténtalo más tarde.",
-  no_se_pudo: "Falló la consulta. Inténtalo más tarde.",
+  pendiente: "Todavía no hay una respuesta oficial nueva. Inténtalo más tarde.",
+  no_se_pudo: "No hubo respuesta usable en esta consulta. Inténtalo más tarde.",
   no_configurado: "Aún no configurado. Por ahora solo leemos tus papeles.",
   sin_datos: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
   sin_permiso: "Falta tu permiso para consultar IMSS y SAT.",
@@ -149,6 +149,12 @@ export function listOfficialMissingFieldKeys(values?: unknown): string[] {
   return keys;
 }
 
+export function looksLikeNoOfficialResponse(text?: string | null): boolean {
+  return /no respondi[oó]|\btimeout\b|\btimed?\s*out\b|service unavailable/i.test(
+    String(text ?? ""),
+  );
+}
+
 export function inferOfficialMissingFieldKeys(text?: string | null): string[] {
   const haystack = String(text ?? "").toLowerCase();
   if (!haystack) return [];
@@ -233,16 +239,20 @@ export function readChatAnchorSource(
     ...inferOfficialMissingFieldKeys(hechos.join(" ")),
     ...inferOfficialMissingFieldKeys(motivoFalloText),
   ].filter((item, index, all) => all.indexOf(item) === index);
-  const estado =
+  let estado =
     record.estado === "live" || record.estado === "pending" || record.estado === "failed"
       ? record.estado
       : officialStatusToHonesty(
           honestyToOfficialStatus(asText(record.honesty) ?? asText(record.status), missing) ??
             "pendiente",
         );
+  const noResponse = looksLikeNoOfficialResponse(`${motivoFalloText ?? ""} ${hechos.join(" ")}`);
+  if (estado === "pending" && missing.length === 0 && noResponse) {
+    estado = "failed";
+  }
   const motivoFallo =
     estado === "failed" || missing.length > 0
-      ? motivoFalloText
+      ? motivoFalloText ?? (noResponse ? hechos.find((item) => looksLikeNoOfficialResponse(item)) ?? null : null)
       : null;
   return {
     fuente,
@@ -379,8 +389,17 @@ export function pickHonestOfficialCheck(params: {
   candidates: Array<OfficialCheckSummary | null | undefined>;
 }): OfficialCheckSummary | null {
   const present = params.candidates.filter((item): item is OfficialCheckSummary => Boolean(item));
-  if (params.consentGranted) {
-    return present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ?? null;
+  const consulted = present.find(
+    (item) =>
+      !isPermissionBlockedStatus(item.overallStatus) &&
+      Boolean(item.checkedAt || item.chatAnchor || item.reciboVsOficial),
+  );
+  if (params.consentGranted || consulted) {
+    return (
+      consulted ??
+      present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ??
+      null
+    );
   }
   return present[0] ?? null;
 }
@@ -405,12 +424,19 @@ export function resolveOfficialCheckDisplay(params: {
     };
   }
 
+  const consultAlreadyVisible = Boolean(
+    params.summary &&
+      !isPermissionBlockedStatus(params.summary.overallStatus) &&
+      (params.summary.checkedAt || params.summary.chatAnchor || params.summary.reciboVsOficial),
+  );
+  const consentGranted = params.consentGranted || consultAlreadyVisible;
+
   const honest =
-    params.consentGranted && isPermissionBlockedStatus(params.summary?.overallStatus)
+    consentGranted && isPermissionBlockedStatus(params.summary?.overallStatus)
       ? null
       : (params.summary ?? null);
 
-  if (params.consentGranted) {
+  if (consentGranted) {
     if (honest && !isPermissionBlockedStatus(honest.overallStatus)) {
       return {
         headline: buildOfficialCheckHeadline(honest),

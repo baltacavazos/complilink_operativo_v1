@@ -120,6 +120,16 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(vivo.status).toBe("vivo");
     expect(pendiente.headline).toBe("Pendiente");
     expect(pendiente.buttonLabel).toBe("Pendiente");
+    expect(pendiente.detail).toMatch(/Todavía no hay una respuesta oficial nueva/);
+    expect(pendiente.detail).not.toMatch(/no respondió/);
+
+    const afterConsult = resolveOfficialCheckDisplay({
+      consentGranted: false,
+      summary: summary("pendiente", { checkedAt: "2026-09-21T15:30:00.000Z" }),
+    });
+    expect(afterConsult.headline).toBe("Pendiente · 21/09/2026");
+    expect(afterConsult.headline).not.toMatch(/Falta tu permiso/i);
+    expect(afterConsult.showPermissionCopy).toBe(false);
     expect(fallo.headline).toBe("Falló");
     expect(fallo.buttonLabel).toBe("Falló");
 
@@ -153,6 +163,16 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       consentGranted: true,
       candidates: [summary("sin_permiso"), null],
     })).toBeNull();
+
+    const afterRemount = pickHonestOfficialCheck({
+      consentGranted: false,
+      candidates: [
+        summary("sin_permiso"),
+        summary("pendiente", { checkedAt: "2026-09-21T15:30:00.000Z" }),
+      ],
+    });
+    expect(afterRemount?.overallStatus).toBe("pendiente");
+    expect(afterRemount?.checkedAt).toBe("2026-09-21T15:30:00.000Z");
   });
 
   it("lee chatAnchor y reciboVsOficial del contrato CLK sin inventar cumple", () => {
@@ -170,6 +190,34 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(anchor?.imss.estado).toBe("live");
     expect(anchor?.imss.hechos[0]).toBe("Alta vigente: sí.");
     expect(anchor?.infonavit.motivoFallo).toMatch(/mantenimiento/);
+
+    const noResponse = readChatAnchor({
+      imss: {
+        fuente: "imss",
+        estado: "pending",
+        fecha: null,
+        hechos: ["El instituto no respondió hoy"],
+        motivoFallo: "El instituto no respondió hoy",
+      },
+      sat: {
+        fuente: "sat",
+        estado: "pending",
+        fecha: null,
+        hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+        motivoFallo: null,
+      },
+      infonavit: {
+        fuente: "infonavit",
+        estado: "pending",
+        fecha: null,
+        hechos: ["El instituto no respondió hoy"],
+        motivoFallo: null,
+      },
+    });
+    expect(noResponse?.imss.estado).toBe("failed");
+    expect(noResponse?.imss.motivoFallo).toMatch(/no respondió/);
+    expect(noResponse?.infonavit.estado).toBe("failed");
+    expect(noResponse?.sat.estado).toBe("pending");
 
     expect(readReciboVsOficial("bien")?.resultado).toBe("bien");
     expect(readReciboVsOficial({ resultado: "hay_diferencia", motivo: "SBC" })?.resultado).toBe("hay_diferencia");

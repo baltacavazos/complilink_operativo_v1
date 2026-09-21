@@ -5,6 +5,7 @@ import {
   honestyToOfficialStatus,
   inferOfficialMissingFieldKeys,
   listOfficialMissingFieldKeys,
+  looksLikeNoOfficialResponse,
   officialStatusToHonesty,
   readChatAnchor,
   readChatAnchorSource,
@@ -321,7 +322,7 @@ function collectHaystack(value: unknown): string {
   }
 }
 
-const PENDING_HINT = /mantenimiento|temporarily unavailable|service unavailable|timeout|timed out|retry|queued|pending|en curso|en progreso/;
+const PENDING_HINT = /mantenimiento|temporarily unavailable|retry|queued|pending|en curso|en progreso/;
 const LIVE_HINT =
   /\b(imss|sat|vigencia|semanas|cotiz|rfc|nss|curp|alta|baja|constancia|situacion fiscal|situación fiscal|connector|historial)\b/;
 
@@ -356,29 +357,42 @@ function readSourceStatusFromResult(
     if (normalized === "vivo" || normalized === "pendiente" || normalized === "no_se_pudo") {
       return normalized;
     }
+    if (looksLikeNoOfficialResponse(normalized)) return "no_se_pudo";
     if (PENDING_HINT.test(normalized)) return "pendiente";
     if (normalized) return "vivo";
   }
   if (direct && typeof direct === "object") {
     const status = String((direct as { status?: unknown }).status ?? "").toLowerCase();
+    const haystack = collectHaystack(direct);
     if (status === "vivo" || status === "pendiente" || status === "no_se_pudo") return status;
-    if (PENDING_HINT.test(status) || PENDING_HINT.test(collectHaystack(direct))) return "pendiente";
+    if (looksLikeNoOfficialResponse(status) || looksLikeNoOfficialResponse(haystack)) return "no_se_pudo";
+    if (PENDING_HINT.test(status) || PENDING_HINT.test(haystack)) return "pendiente";
     return "vivo";
   }
   return null;
 }
 
 export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): OfficialCheckStatus {
+  const haystack = `${collectHaystack(result.responseJson)} ${result.reason ?? ""}`;
   if (result.ok) {
     if (looksLikeLiveInstituteResult(result.responseJson)) return "vivo";
     return "pendiente";
   }
 
-  if (result.reason === "timeout" || result.reason === "retryable_http" || result.reason === "server_error") {
+  if (/mantenimiento/.test(haystack)) {
     return "pendiente";
   }
-  if (result.httpStatus === 429 || (result.httpStatus !== null && result.httpStatus >= 500)) {
+  if (result.reason === "timeout" || looksLikeNoOfficialResponse(haystack)) {
+    return "no_se_pudo";
+  }
+  if (result.reason === "retryable_http" || result.reason === "server_error") {
+    return /mantenimiento/.test(haystack) ? "pendiente" : "no_se_pudo";
+  }
+  if (result.httpStatus === 429) {
     return "pendiente";
+  }
+  if (result.httpStatus !== null && result.httpStatus >= 500) {
+    return /mantenimiento/.test(haystack) ? "pendiente" : "no_se_pudo";
   }
   if (result.httpStatus === 404) {
     return "no_se_pudo";
@@ -402,6 +416,9 @@ function workerDetailForBridgeResult(
   if (posted.httpStatus === 404) {
     return "Falló la consulta. Todavía no hay una respuesta de IMSS o SAT para estos datos.";
   }
+  if (status === "no_se_pudo" && (posted.reason === "timeout" || looksLikeNoOfficialResponse(collectHaystack(posted.responseJson)))) {
+    return "No hubo respuesta en esta consulta. Inténtalo más tarde.";
+  }
   return OFFICIAL_CHECK_STATUS_DETAIL[status];
 }
 
@@ -422,17 +439,18 @@ function normalizeReturnedOfficialStatus(value: unknown): OfficialCheckStatus | 
   if (text === "vivo" || text === "live" || text === "ok" || /vigente|registrad|alta|hecho/.test(text)) {
     return "vivo";
   }
-  if (text === "pendiente" || text === "pending" || /queued|processing|retry|timeout|mantenimiento/.test(text)) {
-    return "pendiente";
-  }
   if (
     text === "no_se_pudo" ||
     text === "fallo" ||
     text === "falló" ||
     text === "failed" ||
+    looksLikeNoOfficialResponse(text) ||
     /fail|error|not_found|rejected|denied/.test(text)
   ) {
     return "no_se_pudo";
+  }
+  if (text === "pendiente" || text === "pending" || /queued|processing|retry|mantenimiento/.test(text)) {
+    return "pendiente";
   }
   return null;
 }
@@ -481,7 +499,11 @@ function readOfficialObligationCheck(
     record ? String(record.honesty ?? record.estado ?? record.status ?? "") : null,
     missing,
   );
-  const status = fromHonesty ?? fallback ?? "pendiente";
+  const mapped = fromHonesty ?? fallback ?? "pendiente";
+  const status =
+    mapped === "pendiente" && looksLikeNoOfficialResponse(`${motivoText ?? ""} ${hechos.join(" ")}`)
+      ? "no_se_pudo"
+      : mapped;
   const anchor = record ? readChatAnchorSource(record, source) : null;
   const motivoFallo =
     status === "no_se_pudo" || status === "sin_datos"
@@ -608,14 +630,29 @@ export function officialCheckFromBridgeReturn(params: {
     ),
   ];
   const overallStatus = rollupStatus(checks.map((item) => item.status));
-  const mergeMissing = (source: NonNullable<OfficialChatAnchor>[string], check: OfficialSourceCheck) => ({
-    ...source,
-    missingFields: [
-      ...listOfficialMissingFieldKeys(source.missingFields),
-      ...listOfficialMissingFieldKeys(check.missingFields),
-    ].filter((item, index, all) => all.indexOf(item) === index),
-    fecha: source.fecha ?? check.checkedAt,
-  });
+  const mergeMissing = (source: NonNullable<OfficialChatAnchor>[string], check: OfficialSourceCheck) => {
+    const merged = readChatAnchorSource(
+      {
+        ...source,
+        honesty: check.honesty ?? source.estado,
+        estado: check.status === "no_se_pudo" ? "failed" : check.status === "vivo" ? "live" : source.estado,
+        workerReason: source.motivoFallo ?? check.motivoFallo,
+        motivoFallo: source.motivoFallo ?? check.motivoFallo,
+        hechos: source.hechos.length > 0 ? source.hechos : check.hechos,
+        missingFields: [
+          ...listOfficialMissingFieldKeys(source.missingFields),
+          ...listOfficialMissingFieldKeys(check.missingFields),
+        ],
+        fecha: source.fecha ?? check.checkedAt,
+        checkedAt: source.fecha ?? check.checkedAt,
+      },
+      source.fuente,
+    );
+    return {
+      ...merged,
+      fecha: merged.fecha ?? check.checkedAt ?? nowIso,
+    };
+  };
   const resolvedAnchor: OfficialChatAnchor | null =
     chatAnchor
       ? {

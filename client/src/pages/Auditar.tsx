@@ -47,6 +47,7 @@ import {
 } from "@shared/fiveSecondVerdict";
 import {
   OFFICIAL_CHECK_CONSENT,
+  isPermissionBlockedStatus,
   pickHonestOfficialCheck,
   resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
@@ -5578,6 +5579,18 @@ export default function Auditar() {
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
   });
+  useEffect(() => {
+    if (
+      officialCheckSummary &&
+      !isPermissionBlockedStatus(officialCheckSummary.overallStatus) &&
+      (officialCheckSummary.consentGranted ||
+        officialCheckSummary.checkedAt ||
+        officialCheckSummary.chatAnchor ||
+        officialCheckSummary.reciboVsOficial)
+    ) {
+      setOfficialCheckConsent(true);
+    }
+  }, [officialCheckSummary]);
   const heliosDocumentSnapshots = caseDetailQuery.data?.heliosDocuments ?? [];
   const heliosDocumentSnapshotById = useMemo(
     () =>
@@ -7532,6 +7545,9 @@ export default function Auditar() {
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
+        if (result.officialCheck.consentGranted || result.officialCheck.overallStatus !== "sin_permiso") {
+          setOfficialCheckConsent(true);
+        }
         setLastUpload((current) => {
           if (!current) return current;
           return {
@@ -9496,8 +9512,7 @@ export default function Auditar() {
                               <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                                 {officialCheckDisplay.detail}
                               </p>
-                              {officialCheckConsent &&
-                              officialCaseBriefing.statusLines.length &&
+                              {officialCaseBriefing.statusLines.length &&
                               officialCheckSummary?.overallStatus !== "sin_datos" ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCaseBriefing.statusLines.map(line => (
@@ -9505,7 +9520,14 @@ export default function Auditar() {
                                   ))}
                                 </ul>
                               ) : null}
-                              {officialCheckConsent && officialCaseBriefing.hasOfficialConsulta ? (
+                              {officialCaseBriefing.hechoLines.length ? (
+                                <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
+                                  {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
+                                    <li key={line}>{line}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
+                              {officialCaseBriefing.hasOfficialConsulta ? (
                                 <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
                                   <p>{officialCaseBriefing.comparison.seenLine}</p>
                                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
@@ -9531,6 +9553,17 @@ export default function Auditar() {
                               >
                                 {officialCheckDisplay.buttonLabel}
                               </Button>
+                              {officialCaseBriefing.hasOfficialConsulta ? (
+                                <Button
+                                  type="button"
+                                  data-testid="official-check-chat-cta"
+                                  variant="outline"
+                                  className="mt-2 h-11 rounded-full border-teal-200 bg-white px-4 text-teal-950 hover:bg-teal-100"
+                                  onClick={() => openHeliosCopilot()}
+                                >
+                                  {WORKER_CHAT_ASK_CTA}
+                                </Button>
+                              ) : null}
                             </div>
                           </>
                         ) : null}
