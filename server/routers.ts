@@ -142,7 +142,6 @@ import {
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
-  buildWorkerChatContextNote,
   buildWorkerChatFallbackAnswer,
   buildWorkerChatGrounding,
   buildWorkerChatLlmInstructions,
