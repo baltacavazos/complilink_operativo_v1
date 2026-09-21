@@ -214,6 +214,21 @@ describe("dato factual del recibo", () => {
     expect(signal.headline).toContain("RFC ECC190605VA1");
     expect(signal.facts).toContain("RFC: ECC190605VA1");
     expect(signal.facts).toContain("RFC de la persona trabajadora: XOXX010101000");
+
+    const digesto = buildPayrollFactSignal({
+      documentType: "cfdi",
+      confirmedData: {
+        employerRfc: "ECC190605VA1",
+        receptor_rfc: "UIPD9211257I0",
+        curp: "UIPD921125HYNCLD03",
+        payrollNss: "84129214965",
+        payrollNetAmount: "$4,725.60",
+      },
+    });
+    expect(digesto.workerRfc).toBe("UIPD9211257I0");
+    expect(digesto.employerRfc).toBe("ECC190605VA1");
+    expect(digesto.facts).toContain("RFC de la persona trabajadora: UIPD9211257I0");
+    expect(digesto.facts).not.toMatch(/Falta un RFC|RFC real/i);
     expect(signal.facts).toContain("Periodo identificado: 2026-04-30");
     expect(signal.facts).toContain("El monto pagado no se alcanzó a leer completo");
     expect(signal.facts).toContain("No se alcanzó a leer con claridad el total de deducciones");

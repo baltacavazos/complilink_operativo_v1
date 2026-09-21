@@ -3,6 +3,7 @@ import {
   CASE_ADVISOR_RULE,
   briefingHasInstituteFailure,
   buildNoLiveOfficialAnswer,
+  alignVisibleChatWithBriefing,
   buildOfficialCaseBriefing,
   buildOfficialChatStarterQuestions,
   buildPayWellFallback,
@@ -153,6 +154,7 @@ export function buildWorkerChatGrounding(params: {
   chatAnchor?: OfficialChatAnchor | null;
   reciboVsOficial?: ReciboVsOficial | null;
   caseOnly?: boolean;
+  nowMs?: number;
 }): WorkerChatGrounding {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
@@ -186,6 +188,7 @@ export function buildWorkerChatGrounding(params: {
       params.officialCheck?.reciboVsOficial ??
       params.officialBriefing?.reciboVsOficial ??
       null,
+    nowMs: params.nowMs,
   });
   const caseOnly = params.caseOnly ?? !(params.officialDigest && params.officialDigest.citations.length > 0);
 
@@ -233,14 +236,18 @@ function receiptIdentityFromGrounding(grounding: WorkerChatGrounding) {
     curp: grounding.officialBriefing.facts.curp ?? grounding.laborFacts.curp,
     workerRfc: grounding.officialBriefing.facts.workerRfc ?? grounding.laborFacts.workerRfc,
     rfc: grounding.officialBriefing.facts.workerRfc ?? grounding.laborFacts.workerRfc,
+    employerRfc: grounding.officialBriefing.facts.employerRfc ?? grounding.laborFacts.employerRfc,
   });
 }
 
 function sanitizeChatIdentityCopy(answer: string, grounding: WorkerChatGrounding) {
-  return stripContradictoryMissingIdentityCopy(
-    answer,
-    receiptIdentityFromGrounding(grounding),
-    grounding.officialBriefing.facts,
+  return alignVisibleChatWithBriefing(
+    stripContradictoryMissingIdentityCopy(
+      answer,
+      receiptIdentityFromGrounding(grounding),
+      grounding.officialBriefing.facts,
+    ),
+    grounding.officialBriefing,
   );
 }
 

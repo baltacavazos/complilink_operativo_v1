@@ -50,11 +50,13 @@ import {
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
   pickHonestOfficialCheck,
+  resolveBriefingWorkerRfc,
   resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
   WORKER_CHAT_NO_CONSULTA_EMPTY,
+  alignVisibleChatWithBriefing,
   buildOfficialCaseBriefing,
   buildOfficialChatStarterQuestions,
   identityFlagsFromFacts,
@@ -2414,8 +2416,24 @@ export function buildPayrollFactSignal(params: {
     "nombrepatron",
     "payrollemployername",
   ]);
-  const employerRfc = readValue(["employerrfc", "rfcpayrollissuer", "rfcpayrollpayer", "rfcemisor"]);
-  const workerRfc = readValue(["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker"]);
+  const employerRfc = readValue(["employerrfc", "rfcpayrollissuer", "rfcpayrollpayer", "rfcemisor", "rfcpatron"]);
+  const workerRfc = resolveBriefingWorkerRfc(
+    [
+      readValue([
+        "workerrfc",
+        "rfctrabajador",
+        "rfcreceptor",
+        "rfcworker",
+        "rfcempleado",
+        "rfcreceptorcfdi",
+        "receptorrfc",
+        "rfcdeltrabajador",
+      ]),
+      confirmedData,
+      estimatedData,
+    ],
+    employerRfc,
+  );
   const period = readValue([
     "period",
     "periodo",
@@ -5590,6 +5608,24 @@ export default function Auditar() {
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
   });
+  const officialEmployerRfc =
+    lastUploadFactSignal.employerRfc ??
+    guestFactSignal.employerRfc ??
+    effectiveSocialSecurityValidation?.facts?.employerRfc ??
+    readGuestOfficialFact("employerRfc");
+  const officialWorkerRfc = resolveBriefingWorkerRfc(
+    [
+      lastUploadFactSignal.workerRfc,
+      guestFactSignal.workerRfc,
+      effectiveSocialSecurityValidation?.facts?.workerRfc,
+      readGuestOfficialFact("workerRfc", "rfcReceptor", "receptorRfc", "receptor_rfc"),
+      lastUpload?.preliminaryAnalysis?.confirmedData,
+      lastUpload?.preliminaryAnalysis?.estimatedData,
+      guestOfficialFacts,
+      guestOfficialEstimated,
+    ],
+    officialEmployerRfc,
+  );
   const rawOfficialPending =
     officialCheckSummary?.overallStatus === "pendiente" ||
     Boolean(
@@ -5641,16 +5677,8 @@ export default function Auditar() {
         guestFactSignal.curp ??
         effectiveSocialSecurityValidation?.facts?.curp ??
         readGuestOfficialFact("payrollCurp", "curp"),
-      workerRfc:
-        lastUploadFactSignal.workerRfc ??
-        guestFactSignal.workerRfc ??
-        effectiveSocialSecurityValidation?.facts?.workerRfc ??
-        readGuestOfficialFact("workerRfc"),
-      employerRfc:
-        lastUploadFactSignal.employerRfc ??
-        guestFactSignal.employerRfc ??
-        effectiveSocialSecurityValidation?.facts?.employerRfc ??
-        readGuestOfficialFact("employerRfc"),
+      employerRfc: officialEmployerRfc,
+      workerRfc: officialWorkerRfc,
     },
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
@@ -5767,12 +5795,24 @@ export default function Auditar() {
     return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu expediente.";
   }, [remoteAdvisorMemory?.greeting, heliosCopilotMessages.length]);
 
+  const alignedCopilotMessages = useMemo(
+    () =>
+      heliosCopilotMessages.map(message =>
+        message.role === "assistant"
+          ? {
+              ...message,
+              content: alignVisibleChatWithBriefing(message.content, officialCaseBriefing),
+            }
+          : message,
+      ),
+    [heliosCopilotMessages, officialCaseBriefing],
+  );
   const heliosCopilotConversation = useMemo<HeliosCopilotMessage[]>(
     () => [
-      { role: "assistant", content: heliosCopilotIntro },
-      ...heliosCopilotMessages,
+      { role: "assistant", content: alignVisibleChatWithBriefing(heliosCopilotIntro, officialCaseBriefing) },
+      ...alignedCopilotMessages,
     ],
-    [heliosCopilotIntro, heliosCopilotMessages]
+    [alignedCopilotMessages, heliosCopilotIntro, officialCaseBriefing]
   );
   const heliosCopilotSupportingDocuments = useMemo(() => {
     const prioritizedDocuments = [...documents].sort((left, right) => {
@@ -7713,8 +7753,22 @@ export default function Auditar() {
           period: officialCaseBriefing.facts.period ?? undefined,
         },
         pendingSinceMs: officialPendingSinceRef.current ?? undefined,
+        cardOfficialCheck:
+          officialCaseBriefing.officialCheck?.overallStatus === "no_se_pudo"
+            ? {
+                overallStatus: "no_se_pudo" as const,
+                checkedAt: officialCaseBriefing.officialCheck.checkedAt,
+                identity: officialCaseBriefing.officialCheck.identity,
+                checks: officialCaseBriefing.officialCheck.checks.map(item => ({
+                  source: item.source,
+                  status: item.status,
+                  checkedAt: item.checkedAt,
+                  detail: item.detail,
+                })),
+              }
+            : undefined,
         conversationHistory: buildHeliosCopilotConversationHistoryInput({
-          current: heliosCopilotMessages,
+          current: alignedCopilotMessages,
           nextPrompt: content,
         }),
       },
@@ -7855,7 +7909,7 @@ export default function Auditar() {
   );
   const heliosCopilotHistoryItems = useMemo(() => {
     const recentConversation = buildHeliosCopilotConversationHistoryItems(
-      heliosCopilotMessages
+      alignedCopilotMessages
     );
 
     const recentDossierEntries = dossierHistoryEntries
@@ -7868,7 +7922,7 @@ export default function Auditar() {
       }));
 
     return [...recentConversation, ...recentDossierEntries].slice(0, 3);
-  }, [dossierHistoryEntries, heliosCopilotMessages]);
+  }, [alignedCopilotMessages, dossierHistoryEntries]);
   const selectedComparisonLeft = comparisonDocuments.find(
     item => item.documentId === selectedComparisonLeftId
   );

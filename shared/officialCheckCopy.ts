@@ -189,11 +189,81 @@ export function looksLikeOfficialCurp(value?: unknown): boolean {
   return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/i.test(String(value ?? "").trim());
 }
 
-export function looksLikeRealWorkerRfc(value?: unknown): boolean {
-  if (typeof value !== "string") return false;
-  const normalized = value.trim().toUpperCase().replace(/[^A-Z0-9Ñ&]/g, "");
-  if (normalized.length < 12 || normalized.length > 13) return false;
-  return !isGenericSatRfc(normalized);
+const PERSON_WORKER_RFC_RE = /^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/;
+const GENERIC_SAT_RFC_SCAN_RE = /\b(XAXX010101000|XEXX010101000)\b/;
+
+function collectRfcHaystacks(value: unknown, into: string[], depth = 0) {
+  if (depth > 5 || value == null) return;
+  if (typeof value === "string" || typeof value === "number") {
+    const text = String(value).trim();
+    if (text) into.push(text);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) collectRfcHaystacks(item, into, depth + 1);
+    return;
+  }
+  if (typeof value === "object") {
+    for (const item of Object.values(value as Record<string, unknown>)) {
+      collectRfcHaystacks(item, into, depth + 1);
+    }
+  }
+}
+
+export function normalizeRfcToken(value?: unknown): string | null {
+  if (typeof value !== "string" && typeof value !== "number") return null;
+  const normalized = String(value).trim().toUpperCase().replace(/[^A-Z0-9Ñ&]/g, "");
+  if (normalized.length < 12 || normalized.length > 13) return null;
+  return normalized;
+}
+
+/** RFC de persona (13). No cuenta el del patrón ni XAXX/XEXX. */
+export function pickPersonWorkerRfc(values: unknown[], employerRfc?: unknown): string | null {
+  const employer = normalizeRfcToken(employerRfc);
+  const haystacks: string[] = [];
+  for (const value of values) collectRfcHaystacks(value, haystacks);
+  const found: string[] = [];
+  for (const raw of haystacks) {
+    const direct = normalizeRfcToken(raw);
+    if (direct && PERSON_WORKER_RFC_RE.test(direct)) found.push(direct);
+    const scan = /\b([A-ZÑ&]{4}\d{6}[A-Z0-9]{3})\b/g;
+    const upper = raw.toUpperCase();
+    let match: RegExpExecArray | null;
+    while ((match = scan.exec(upper))) {
+      found.push(match[1]);
+    }
+  }
+  for (const token of found) {
+    if (!PERSON_WORKER_RFC_RE.test(token) || isGenericSatRfc(token)) continue;
+    if (employer && token === employer) continue;
+    return token;
+  }
+  return null;
+}
+
+/** Conserva XAXX/XEXX para poder pedir un RFC de persona. Si hay persona, esa gana. */
+export function resolveBriefingWorkerRfc(values: unknown[], employerRfc?: unknown): string | null {
+  const person = pickPersonWorkerRfc(values, employerRfc);
+  if (person) return person;
+  const haystacks: string[] = [];
+  for (const value of values) collectRfcHaystacks(value, haystacks);
+  for (const raw of haystacks) {
+    const direct = normalizeRfcToken(raw);
+    if (direct && isGenericSatRfc(direct)) return direct;
+    const embedded = raw.toUpperCase().match(GENERIC_SAT_RFC_SCAN_RE);
+    if (embedded?.[1]) return embedded[1];
+  }
+  return null;
+}
+
+export function looksLikeRealWorkerRfc(value?: unknown, employerRfc?: unknown): boolean {
+  return Boolean(pickPersonWorkerRfc([value], employerRfc));
+}
+
+/** RFC de 12 o 13 que no es XAXX/XEXX. Sirve para reconocer el del patrón. */
+function looksLikeNonGenericRfc(value?: unknown): boolean {
+  const token = normalizeRfcToken(value);
+  return Boolean(token && !isGenericSatRfc(token));
 }
 
 /** IMSS=NSS, SAT=RFC real (XAXX no cuenta), Infonavit=CURP. */
@@ -202,11 +272,14 @@ export function identityFlagsFromReceiptValues(values?: {
   curp?: unknown;
   rfc?: unknown;
   workerRfc?: unknown;
+  employerRfc?: unknown;
 } | null): OfficialIdentityFlags {
   return {
     nss: looksLikeOfficialNss(values?.nss),
     curp: looksLikeOfficialCurp(values?.curp),
-    rfc: looksLikeRealWorkerRfc(values?.workerRfc ?? values?.rfc),
+    rfc: Boolean(
+      pickPersonWorkerRfc([values?.workerRfc, values?.rfc], values?.employerRfc),
+    ),
   };
 }
 
@@ -251,10 +324,12 @@ export function rewriteOfficialIdentityHechos(
 export function stripContradictoryMissingIdentityCopy(
   text: string,
   identity?: OfficialIdentityFlags | null,
-  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null,
+  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null,
 ): string {
   const nssVisible = Boolean(identity?.nss) || looksLikeOfficialNss(facts?.nss);
-  const rfcVisible = Boolean(identity?.rfc) || looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc);
+  const rfcVisible =
+    Boolean(identity?.rfc) ||
+    looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc, facts?.employerRfc);
   if (!nssVisible && !rfcVisible) return text;
   let next = text;
   if (nssVisible) {
@@ -266,9 +341,12 @@ export function stripContradictoryMissingIdentityCopy(
       .replace(/Falta tu NSS\b/gi, "Tu NSS ya aparece en el recibo");
   }
   if (rfcVisible) {
-    next = next.replace(/Falta tu RFC en el recibo para consultar\.?/gi, "");
+    next = next
+      .replace(/Falta tu RFC en el recibo para consultar\.?/gi, "")
+      .replace(/[^.!\n]*RFC real[^.!\n]*[.!?]?/gi, "")
+      .replace(/[^.!\n]*Falta un RFC[^.!\n]*[.!?]?/gi, "");
   }
-  return next.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+  return next.replace(/[ \t]{2,}/g, " ").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 
 export const OFFICIAL_CHAT_ANCHOR_STATES = ["live", "pending", "failed"] as const;
@@ -452,7 +530,9 @@ export function officialDispatchGapDetail(
   facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null,
 ): string {
   const nssVisible = Boolean(identity?.nss) || looksLikeOfficialNss(facts?.nss);
-  const rfcVisible = Boolean(identity?.rfc) || looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc);
+  const rfcVisible =
+    Boolean(identity?.rfc) ||
+    looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc, facts?.employerRfc);
   const missing: string[] = [];
   if (!nssVisible) missing.push("NSS");
   if (!rfcVisible) missing.push("RFC");
@@ -475,7 +555,10 @@ export function officialSourceGapDetail(
     if (looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc)) {
       return OFFICIAL_CHECK_STATUS_DETAIL.pendiente;
     }
-    if (looksLikeRealWorkerRfc(facts?.employerRfc) && !looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc)) {
+    if (
+      looksLikeNonGenericRfc(facts?.employerRfc) &&
+      !looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc, facts?.employerRfc)
+    ) {
       return "Falta el RFC de la persona trabajadora para consultar SAT.";
     }
     return "Falta un RFC real en el recibo para consultar SAT.";
@@ -559,6 +642,82 @@ function sourceFromAnchor(
   };
 }
 
+export type CardOfficialCheckSnapshot = {
+  overallStatus: OfficialCheckStatus;
+  checkedAt?: string | null;
+  identity: OfficialIdentityFlags;
+  checks?: Array<{
+    source: OfficialCheckSource;
+    status: OfficialCheckStatus;
+    checkedAt?: string | null;
+    detail?: string | null;
+  }>;
+};
+
+/**
+ * La tarjeta ya reconcilió Falló. El chat no se queda en el snapshot viejo
+ * de Pendiente o Faltan datos. No sube un Vivo que el servidor no tenga.
+ */
+export function mergeCardFailedOfficialCheck(
+  server: OfficialCheckSummary | null | undefined,
+  card: CardOfficialCheckSnapshot | null | undefined,
+): OfficialCheckSummary | null {
+  if (!card || card.overallStatus !== "no_se_pudo") return server ?? null;
+  const base: OfficialCheckSummary = server ?? {
+    configured: true,
+    consentGranted: true,
+    overallStatus: "no_se_pudo",
+    overallLabel: OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo,
+    overallDetail: buildOfficialFailedDetail(),
+    checkedAt: card.checkedAt ?? null,
+    identity: card.identity,
+    checks: [],
+  };
+  const identity = mergeOfficialIdentityFlags(base.identity, card.identity);
+  const sources: OfficialCheckSource[] = ["imss", "sat", "infonavit"];
+  const checks = sources.flatMap((source) => {
+    const fromServer = base.checks.find((item) => item.source === source) ?? null;
+    const fromCard = card.checks?.find((item) => item.source === source) ?? null;
+    const cardFailed = fromCard ? fromCard.status === "no_se_pudo" : card.overallStatus === "no_se_pudo";
+    const serverStatus = fromServer?.status;
+    const serverWeaker = !serverStatus || serverStatus === "pendiente" || serverStatus === "sin_datos";
+    if (!cardFailed || !serverWeaker) {
+      return fromServer ? [fromServer] : [];
+    }
+    if (fromCard && fromCard.status !== "no_se_pudo") {
+      return fromServer ? [fromServer] : [];
+    }
+    const motivo = rewriteOfficialFailedMotivo(source, fromServer?.motivoFallo ?? fromCard?.detail);
+    return [
+      {
+        source,
+        sourceLabel: OFFICIAL_SOURCE_LABEL[source],
+        status: "no_se_pudo" as const,
+        label: OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo,
+        detail: motivo,
+        checkedAt: fromCard?.checkedAt ?? card.checkedAt ?? fromServer?.checkedAt ?? base.checkedAt,
+        used: usedOfficialIdentityForSource(source, identity),
+        honesty: "failed" as const,
+        hechos: fromServer?.hechos ?? [motivo],
+        motivoFallo: motivo,
+        missingFields: [],
+      } satisfies OfficialSourceCheck,
+    ];
+  });
+  const failedSources = checks.filter((item) => item.status === "no_se_pudo").map((item) => item.source);
+  const keepLive = base.overallStatus === "vivo";
+  const overallStatus = keepLive ? "vivo" : "no_se_pudo";
+  return {
+    ...base,
+    identity,
+    checks: checks.length > 0 ? checks : base.checks,
+    checkedAt: card.checkedAt ?? base.checkedAt,
+    overallStatus,
+    overallLabel: OFFICIAL_CHECK_STATUS_LABEL[overallStatus],
+    overallDetail: keepLive ? base.overallDetail : buildOfficialFailedDetail(failedSources),
+  };
+}
+
 /**
  * Recibo gana: si ya hay NSS/RFC, no se pinta Faltan datos en esa fuente
  * ni en el overall. Solo Faltan datos si no se puede despachar IMSS/SAT.
@@ -569,15 +728,17 @@ export function reconcileOfficialCheckWithIdentity(
   options?: {
     nowMs?: number;
     pendingSinceMs?: number | null;
-    facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null;
+    facts?: { nss?: unknown; curp?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null;
   },
 ): OfficialCheckSummary | null {
   if (!summary) return null;
   const factIdentity = options?.facts
     ? identityFlagsFromReceiptValues({
         nss: options.facts.nss,
+        curp: options.facts.curp,
         rfc: options.facts.rfc,
         workerRfc: options.facts.workerRfc,
+        employerRfc: options.facts.employerRfc,
       })
     : undefined;
   const mergedIdentity = mergeOfficialIdentityFlags(summary.identity, identity, factIdentity);
