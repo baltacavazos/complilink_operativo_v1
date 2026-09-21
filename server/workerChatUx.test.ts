@@ -148,9 +148,49 @@ describe("workerChatUx grounding", () => {
     expect(answer).not.toMatch(/IMSS y SAT: Faltan datos/);
     expect(answer).toMatch(/No inventamos que tu patr[oó]n cumple/);
     expect(answer.replace(/No inventamos que tu patr[oó]n cumple/g, "")).not.toMatch(/\bcumple\b/i);
-    expect(instructions).not.toMatch(/Falta tu NSS/);
+    expect(
+      instructions
+        .split("\n")
+        .filter((line) => !/PROHIBIDO escribir/.test(line))
+        .join("\n"),
+    ).not.toMatch(/Falta tu NSS/);
+    expect(instructions).toMatch(/NSS en recibo: 12345678901/);
+    expect(instructions).toMatch(/PROHIBIDO escribir «Falta tu NSS»/);
     expect(instructions).not.toMatch(/IMSS y SAT: Faltan datos/);
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+  });
+
+  it("lastUpload NSS sin flags del servidor impide la cita exacta y la recorta si el modelo la inventa", () => {
+    const invented = sanitizeWorkerChatAnswer(
+      "Falta tu NSS y RFC en el recibo para consultar.",
+      buildWorkerChatGrounding({
+        documents: [{ documentType: "payroll_receipt", originalName: "recibo.pdf" }],
+        officialBriefing: {
+          hasOfficialConsulta: true,
+          hasLiveOfficialResult: false,
+          officialCheck: null,
+          chatAnchor: null,
+          reciboVsOficial: null,
+          statusLines: ["IMSS: Pendiente"],
+          hechoLines: [],
+          headline: "Pendiente",
+          missingIdentity: ["CURP", "RFC"],
+          missingIdentityDetail: "El RFC del recibo es genérico; SAT necesita un RFC real para consultar.",
+          receiptLines: ["NSS en recibo: 12345678901"],
+          comparison: {
+            seen: "no_se_pudo",
+            seenLine: RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.seenLine,
+            nextStep: RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.nextStep,
+            nextStepLine: `Qué hacer ahora: ${RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.nextStep}`,
+            hasOfficialConsulta: true,
+          },
+          facts: { nss: "12345678901", workerRfc: "XAXX010101000", netAmount: "$12,450" },
+        },
+        caseOnly: true,
+      }),
+    );
+    expect(invented).not.toMatch(/Falta tu NSS/);
+    expect(invented).not.toContain("Falta tu NSS y RFC en el recibo para consultar.");
   });
 
   it("en el caso el prompt del modelo solo usa chatAnchor, recibo y TU consulta", () => {

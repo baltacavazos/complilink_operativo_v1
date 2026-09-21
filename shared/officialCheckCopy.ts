@@ -251,17 +251,21 @@ export function rewriteOfficialIdentityHechos(
 export function stripContradictoryMissingIdentityCopy(
   text: string,
   identity?: OfficialIdentityFlags | null,
+  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null,
 ): string {
-  if (!identity?.nss && !identity?.rfc) return text;
+  const nssVisible = Boolean(identity?.nss) || looksLikeOfficialNss(facts?.nss);
+  const rfcVisible = Boolean(identity?.rfc) || looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc);
+  if (!nssVisible && !rfcVisible) return text;
   let next = text;
-  if (identity.nss) {
+  if (nssVisible) {
     next = next
       .replace(/IMSS y SAT:\s*Faltan datos(?:\s*·\s*\d{2}\/\d{2}\/\d{4})?/gi, "IMSS: Pendiente")
       .replace(/Falta tu NSS, CURP y RFC en el recibo para consultar\.?/gi, "")
+      .replace(/Falta tu NSS y RFC en el recibo para consultar\.?/gi, "")
       .replace(/Falta tu NSS(?: y CURP)?(?: y RFC)? en el recibo para consultar\.?/gi, "")
       .replace(/Falta tu NSS\b/gi, "Tu NSS ya aparece en el recibo");
   }
-  if (identity.rfc) {
+  if (rfcVisible) {
     next = next.replace(/Falta tu RFC en el recibo para consultar\.?/gi, "");
   }
   return next.replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
@@ -422,13 +426,36 @@ export function mergeOfficialIdentityFlags(
   };
 }
 
-export function officialDispatchGapDetail(identity?: OfficialIdentityFlags | null): string {
+export const FALTA_NSS_Y_RFC_EXACT = "Falta tu NSS y RFC en el recibo para consultar.";
+export const OFFICIAL_PENDING_STALE_MS = 60_000;
+
+export function isStaleOfficialPending(
+  checkedAt?: string | null,
+  nowMs: number = Date.now(),
+): boolean {
+  if (!checkedAt) return false;
+  const at = new Date(checkedAt).getTime();
+  return Number.isFinite(at) && nowMs - at > OFFICIAL_PENDING_STALE_MS;
+}
+
+export function officialDispatchGapDetail(
+  identity?: OfficialIdentityFlags | null,
+  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null,
+): string {
+  const nssVisible = Boolean(identity?.nss) || looksLikeOfficialNss(facts?.nss);
+  const rfcVisible = Boolean(identity?.rfc) || looksLikeRealWorkerRfc(facts?.workerRfc ?? facts?.rfc);
   const missing: string[] = [];
-  if (!identity?.nss) missing.push("NSS");
-  if (!identity?.rfc) missing.push("RFC");
+  if (!nssVisible) missing.push("NSS");
+  if (!rfcVisible) missing.push("RFC");
   if (missing.length === 0) return OFFICIAL_CHECK_STATUS_DETAIL.sin_datos;
+  if (nssVisible && !rfcVisible) {
+    if (isGenericSatRfc(facts?.workerRfc ?? facts?.rfc)) {
+      return "El RFC del recibo es genérico; SAT necesita un RFC real para consultar.";
+    }
+    return officialSourceGapDetail("sat");
+  }
   if (missing.length === 1) return `Falta tu ${missing[0]} en el recibo para consultar.`;
-  return `Falta tu ${missing[0]} y ${missing[1]} en el recibo para consultar.`;
+  return FALTA_NSS_Y_RFC_EXACT;
 }
 
 export function officialSourceGapDetail(source: OfficialCheckSource): string {
@@ -518,9 +545,17 @@ function sourceFromAnchor(
 export function reconcileOfficialCheckWithIdentity(
   summary: OfficialCheckSummary | null | undefined,
   identity?: OfficialIdentityFlags | null,
+  options?: { nowMs?: number; facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null },
 ): OfficialCheckSummary | null {
   if (!summary) return null;
-  const mergedIdentity = mergeOfficialIdentityFlags(summary.identity, identity);
+  const factIdentity = options?.facts
+    ? identityFlagsFromReceiptValues({
+        nss: options.facts.nss,
+        rfc: options.facts.rfc,
+        workerRfc: options.facts.workerRfc,
+      })
+    : undefined;
+  const mergedIdentity = mergeOfficialIdentityFlags(summary.identity, identity, factIdentity);
   const canDispatch = canDispatchOfficialConsult(mergedIdentity);
 
   if (
@@ -617,13 +652,6 @@ export function reconcileOfficialCheckWithIdentity(
       missingFields: missingOfficialFieldsForSource(fuente, mergedIdentity),
     };
   };
-  const syncedAnchor = chatAnchor
-    ? {
-        imss: syncAnchorSource("imss", chatAnchor.imss),
-        sat: syncAnchorSource("sat", chatAnchor.sat),
-        infonavit: syncAnchorSource("infonavit", chatAnchor.infonavit),
-      }
-    : chatAnchor;
 
   let overallStatus = summary.overallStatus;
   if (checks.length > 0 && !isPermissionBlockedStatus(overallStatus) && overallStatus !== "no_configurado") {
@@ -639,9 +667,39 @@ export function reconcileOfficialCheckWithIdentity(
     overallStatus = "sin_datos";
   }
 
+  const nowMs = options?.nowMs ?? Date.now();
+  const livePresent = hasLiveOfficialResult({ ...summary, checks, chatAnchor: chatAnchor ?? summary.chatAnchor });
+  if (!livePresent) {
+    checks = checks.map((item) => {
+      if (item.status !== "pendiente") return item;
+      if (!isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs)) return item;
+      return {
+        ...item,
+        status: "no_se_pudo" as const,
+        label: OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo,
+        detail: rewriteOfficialFailedMotivo(item.source, item.motivoFallo ?? item.detail),
+        honesty: "failed" as const,
+        motivoFallo: rewriteOfficialFailedMotivo(item.source, item.motivoFallo),
+      };
+    });
+    if (overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs)) {
+      overallStatus = "no_se_pudo";
+    } else if (checks.length > 0 && !isPermissionBlockedStatus(overallStatus) && overallStatus !== "no_configurado") {
+      overallStatus = rollupOfficialCheckStatus(checks.map((item) => item.status));
+    }
+  }
+
+  const syncedAnchor = chatAnchor
+    ? {
+        imss: syncAnchorSource("imss", chatAnchor.imss),
+        sat: syncAnchorSource("sat", chatAnchor.sat),
+        infonavit: syncAnchorSource("infonavit", chatAnchor.infonavit),
+      }
+    : chatAnchor;
+
   const overallDetail =
     overallStatus === "sin_datos"
-      ? officialDispatchGapDetail(mergedIdentity)
+      ? officialDispatchGapDetail(mergedIdentity, options?.facts)
       : overallStatus === "no_se_pudo"
         ? honestOfficialFailedDetail({
             ...summary,
@@ -984,6 +1042,8 @@ export function resolveOfficialCheckDisplay(params: {
   summary?: OfficialCheckSummary | null;
   missingIdentityDetail?: string | null;
   identity?: OfficialIdentityFlags | null;
+  nowMs?: number;
+  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown } | null;
 }): OfficialCheckDisplay {
   if (params.isPending) {
     return {
@@ -997,7 +1057,10 @@ export function resolveOfficialCheckDisplay(params: {
 
   const identity = mergeOfficialIdentityFlags(params.identity, params.summary?.identity);
   const canDispatch = canDispatchOfficialConsult(identity);
-  const reconciled = reconcileOfficialCheckWithIdentity(params.summary, identity);
+  const reconciled = reconcileOfficialCheckWithIdentity(params.summary, identity, {
+    nowMs: params.nowMs,
+    facts: params.facts,
+  });
   const consultAlreadyVisible = Boolean(
     reconciled &&
       !isPermissionBlockedStatus(reconciled.overallStatus) &&

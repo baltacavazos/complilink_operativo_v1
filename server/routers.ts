@@ -3561,6 +3561,15 @@ export const appRouter = router({
           caseId: z.string().min(3),
           prompt: z.string().trim().min(3).max(2000),
           responseTone: z.enum(["brief", "explained"]).optional(),
+          receiptFacts: z
+            .object({
+              nss: z.string().trim().max(32).optional(),
+              curp: z.string().trim().max(32).optional(),
+              workerRfc: z.string().trim().max(20).optional(),
+              netAmount: z.string().trim().max(40).optional(),
+              period: z.string().trim().max(80).optional(),
+            })
+            .optional(),
           conversationHistory: z.preprocess(
             (value) => (value == null ? undefined : capWorkerChatConversationHistory(value)),
             z
@@ -3631,7 +3640,20 @@ export const appRouter = router({
         });
         const officialBriefing = buildOfficialCaseBriefing({
           officialCheck: socialSecurityForChat.officialCheck,
-          facts: socialSecurityForChat.facts ?? laborSignals.facts,
+          facts: {
+            ...(socialSecurityForChat.facts ?? laborSignals.facts),
+            nss: input.receiptFacts?.nss || laborSignals.facts.nss || socialSecurityForChat.facts?.nss,
+            curp: input.receiptFacts?.curp || laborSignals.facts.curp || socialSecurityForChat.facts?.curp,
+            workerRfc:
+              input.receiptFacts?.workerRfc ||
+              laborSignals.facts.workerRfc ||
+              socialSecurityForChat.facts?.workerRfc,
+            netAmount:
+              input.receiptFacts?.netAmount ||
+              laborSignals.facts.netAmount ||
+              socialSecurityForChat.facts?.netAmount,
+            period: input.receiptFacts?.period || laborSignals.facts.period || socialSecurityForChat.facts?.period,
+          },
           chatAnchor: socialSecurityForChat.officialCheck?.chatAnchor ?? null,
           reciboVsOficial: socialSecurityForChat.officialCheck?.reciboVsOficial ?? null,
         });

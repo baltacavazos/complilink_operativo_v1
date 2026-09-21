@@ -24,6 +24,10 @@ import {
   readChatAnchor,
   readReciboVsOficial,
   resolveOfficialCheckDisplay,
+  FALTA_NSS_Y_RFC_EXACT,
+  OFFICIAL_PENDING_STALE_MS,
+  officialDispatchGapDetail,
+  stripContradictoryMissingIdentityCopy,
   type OfficialCheckSummary,
 } from "./officialCheckCopy";
 
@@ -377,5 +381,67 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.status).not.toBe("sin_datos");
     expect(display.headline).toMatch(/Pendiente|Vivo|Falló|Consulta IMSS y SAT/);
     expect(JSON.stringify(display)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
+  });
+
+  it("NSS visible en lastUpload/OCR nunca genera «Falta tu NSS y RFC en el recibo para consultar.»", () => {
+    const emptyIdentity = { nss: false, curp: false, rfc: false };
+    const visibleNss = { nss: "12345678901", workerRfc: "XAXX010101000" };
+    expect(officialDispatchGapDetail(emptyIdentity, visibleNss)).not.toBe(FALTA_NSS_Y_RFC_EXACT);
+    expect(officialDispatchGapDetail(emptyIdentity, visibleNss)).not.toMatch(/Falta tu NSS/);
+    expect(officialDispatchGapDetail(emptyIdentity)).toBe(FALTA_NSS_Y_RFC_EXACT);
+
+    const stripped = stripContradictoryMissingIdentityCopy(
+      FALTA_NSS_Y_RFC_EXACT,
+      emptyIdentity,
+      visibleNss,
+    );
+    expect(stripped).not.toMatch(/Falta tu NSS/);
+    expect(stripped).not.toBe(FALTA_NSS_Y_RFC_EXACT);
+  });
+
+  it("Pendiente sin acuse oficial por más de 60s pasa a Falló y culpa al instituto", () => {
+    const started = new Date("2026-09-21T15:30:00.000Z").getTime();
+    const pending = summary("pendiente", {
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: true, curp: false, rfc: false },
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "pendiente",
+          label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+          detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: true, curp: false, rfc: false },
+          honesty: "pending",
+          hechos: [],
+        },
+      ],
+    });
+
+    const stillPending = reconcileOfficialCheckWithIdentity(pending, { nss: true, curp: false, rfc: false }, {
+      nowMs: started + OFFICIAL_PENDING_STALE_MS,
+    });
+    expect(stillPending?.overallStatus).toBe("pendiente");
+    expect(stillPending?.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
+
+    const stale = reconcileOfficialCheckWithIdentity(pending, { nss: true, curp: false, rfc: false }, {
+      nowMs: started + OFFICIAL_PENDING_STALE_MS + 1,
+    });
+    expect(stale?.overallStatus).toBe("no_se_pudo");
+    expect(stale?.overallLabel).toBe("Falló");
+    expectFailedCopyBlamesInstitute(stale?.overallDetail ?? "");
+    expect(stale?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: pending,
+      identity: { nss: true, curp: false, rfc: false },
+      nowMs: started + 70_000,
+    });
+    expect(display.status).toBe("no_se_pudo");
+    expect(display.headline).toMatch(/Falló/);
+    expect(display.buttonLabel).toBe("Falló");
+    expectFailedCopyBlamesInstitute(display.detail);
   });
 });

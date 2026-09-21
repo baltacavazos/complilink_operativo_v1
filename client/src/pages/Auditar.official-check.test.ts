@@ -32,6 +32,10 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("canDispatchOfficialConsult(officialReceiptIdentity)");
     expect(source).toContain("lastUploadFactSignal.nss");
     expect(source).toContain("lastUploadFactSignal.workerRfc");
+    expect(source).toContain("receiptFacts:");
+    expect(source).toContain("officialCaseBriefing.facts.nss");
+    expect(source).toContain("officialNowMs");
+    expect(source).toContain("nowMs: officialNowMs");
     expect(source).not.toMatch(/Helios bridge HMAC|HMAC authentication failed/);
     expect(source).not.toMatch(/APIMARKET/);
   });

@@ -166,12 +166,12 @@ export function buildWorkerChatGrounding(params: {
     null;
   const review = describeWorkerReviewSource(params.opinion);
   const receiptFacts: OfficialBriefingFacts = {
-    ...(params.officialBriefing?.facts ?? {}),
     ...labor.facts,
-    nss: labor.facts.nss ?? params.officialBriefing?.facts.nss ?? null,
-    curp: labor.facts.curp ?? params.officialBriefing?.facts.curp ?? null,
-    workerRfc: labor.facts.workerRfc ?? params.officialBriefing?.facts.workerRfc ?? null,
-    netAmount: labor.facts.netAmount ?? params.officialBriefing?.facts.netAmount ?? null,
+    ...(params.officialBriefing?.facts ?? {}),
+    nss: params.officialBriefing?.facts.nss ?? labor.facts.nss ?? null,
+    curp: params.officialBriefing?.facts.curp ?? labor.facts.curp ?? null,
+    workerRfc: params.officialBriefing?.facts.workerRfc ?? labor.facts.workerRfc ?? null,
+    netAmount: params.officialBriefing?.facts.netAmount ?? labor.facts.netAmount ?? null,
   };
   const officialBriefing = buildOfficialCaseBriefing({
     officialCheck: params.officialCheck ?? params.officialBriefing?.officialCheck ?? null,
@@ -237,7 +237,11 @@ function receiptIdentityFromGrounding(grounding: WorkerChatGrounding) {
 }
 
 function sanitizeChatIdentityCopy(answer: string, grounding: WorkerChatGrounding) {
-  return stripContradictoryMissingIdentityCopy(answer, receiptIdentityFromGrounding(grounding));
+  return stripContradictoryMissingIdentityCopy(
+    answer,
+    receiptIdentityFromGrounding(grounding),
+    grounding.officialBriefing.facts,
+  );
 }
 
 export function resolveWorkerChatGuidance(
