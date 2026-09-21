@@ -53,6 +53,7 @@ const WORKER_FIELD_LABELS: Record<string, string> = {
   payrollPerceptions: "Total de percepciones",
   payrollDeductions: "Total de deducciones",
   payrollNss: "NSS visible en el comprobante",
+  payrollCurp: "CURP visible en el comprobante",
   payrollEmployerRegistration: "Registro patronal visible",
   isrWithheld: "Retención de ISR visible",
   imssWithheld: "Retención de IMSS visible",
@@ -95,15 +96,52 @@ export function humanizeStructuredFieldLabel(key: string) {
     .replace(/^./, (value) => value.toUpperCase());
 }
 
+function foldExtractionKey(value?: string | null) {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/gi, "")
+    .toLowerCase();
+}
+
+export function isPayrollExtractionTargetCovered(
+  target: string,
+  fields: Array<{ key?: string | null; label?: string | null; value?: unknown }>,
+) {
+  const compactTarget = foldExtractionKey(target);
+  const present = fields.filter((field) => String(field.value ?? "").trim().length > 0);
+  const keys = new Set(present.map((field) => foldExtractionKey(field.key)));
+  if (
+    compactTarget === "rfcpatron" ||
+    compactTarget === "rfcdelpatron" ||
+    compactTarget === "rfcempleador" ||
+    compactTarget === "rfcvisible"
+  ) {
+    return keys.has("employerrfc");
+  }
+  if (
+    compactTarget === "rfctrabajador" ||
+    compactTarget === "rfcdelapersonatrabajadora" ||
+    compactTarget === "rfcreceptor"
+  ) {
+    return keys.has("workerrfc");
+  }
+  if (compactTarget === "curp") {
+    return keys.has("payrollcurp") || keys.has("curp");
+  }
+  const human = humanizeMissingExtractionTarget(target).toLowerCase();
+  return present.some((field) => `${field.key ?? ""}|${field.label ?? ""}`.toLowerCase().includes(human));
+}
+
 export function humanizeMissingExtractionTarget(target: string) {
   const normalized = target.replace(/\s+/g, " ").trim();
-  const compact = compactKey(normalized);
+  const compact = foldExtractionKey(normalized);
 
   if (compact === "infonavit") return "descuento o referencia de Infonavit";
   if (compact === "imss" || compact === "nss") return "NSS o retención de IMSS";
   if (compact === "isr" || compact === "impuestosobrelarenta") return "retención de ISR";
-  if (compact === "rfcpatron" || compact === "rfcempleador") return "RFC del patrón";
-  if (compact === "rfctrabajador") return "RFC de la persona trabajadora";
+  if (compact === "rfcpatron" || compact === "rfcdelpatron" || compact === "rfcempleador") return "RFC del patrón";
+  if (compact === "rfctrabajador" || compact === "rfcdelapersonatrabajadora") return "RFC de la persona trabajadora";
   if (compact === "periodo") return "periodo de pago";
   if (compact === "salario") return "salario o monto visible";
   if (compact === "percepciones") return "total de percepciones";

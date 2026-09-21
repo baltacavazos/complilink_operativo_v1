@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 
 import {
@@ -10,8 +11,10 @@ import {
   buildAuditaPatronEngineSignature,
   canonicalizeEngineWebhookUrl,
 } from "./auditaPatronIntegrationService";
+import { buildPreliminaryLaborAnalysis } from "./caseContracts";
 import {
   OFFICIAL_CHECK_ACTION,
+  buildOfficialCheckBridgePayload,
   collectWorkerOfficialIdentity,
   extractReceiptOfficialIdentity,
   mergeWorkerOfficialIdentities,
@@ -531,6 +534,42 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nss: "12345678901",
       curp: null,
       rfc: "XAXX010101000",
+    });
+  });
+
+  it("despacha SAT con el RFC de la persona, Infonavit con CURP e IMSS con NSS", () => {
+    const textHint = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint,
+    });
+    const identity = collectWorkerOfficialIdentity({
+      nss: analysis.confirmedData.payrollNss,
+      curp: analysis.confirmedData.payrollCurp,
+      workerRfc: analysis.confirmedData.workerRfc,
+      employerRfc: analysis.confirmedData.employerRfc,
+    });
+    expect(identity).toEqual({
+      nss: "84129214965",
+      curp: "UIPD921125HYNCLD03",
+      rfc: "UIPD9211257I0",
+    });
+    expect(identity.rfc).not.toBe("ECC190605VA1");
+    expect(identity.curp).toBeTruthy();
+
+    const payload = buildOfficialCheckBridgePayload({
+      identity,
+      nowIso: "2026-09-21T15:30:00.000Z",
+    });
+    expect(payload.sources).toEqual(["imss", "sat", "infonavit"]);
+    expect(payload.nss).toBe("84129214965");
+    expect(payload.curp).toBe("UIPD921125HYNCLD03");
+    expect(payload.rfc).toBe("UIPD9211257I0");
+    expect(payload.autonomousInput).toEqual({
+      nss: "84129214965",
+      curp: "UIPD921125HYNCLD03",
+      rfc: "UIPD9211257I0",
     });
   });
 

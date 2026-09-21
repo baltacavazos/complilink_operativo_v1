@@ -573,6 +573,41 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.officialCheck?.overallStatus).toBe("no_se_pudo");
     expect(briefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(false);
+    expect(briefing.statusLines.find((line) => /IMSS: Falló/.test(line))).toMatch(/no de AuditaPatrón/);
     expect(briefing.missingIdentityDetail).not.toMatch(/Falta tu NSS/);
+  });
+
+  it("el reloj de la tarjeta pasa Pendiente a Falló aunque no haya checkedAt", () => {
+    const started = new Date("2026-09-21T15:30:00.000Z").getTime();
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt: null,
+        identity: { nss: true, curp: false, rfc: false },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+            checkedAt: null,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+          },
+        ],
+        chatAnchor: null,
+      }),
+      facts: { nss: "84129214965" },
+      nowMs: started + 70_000,
+      pendingSinceMs: started,
+    });
+    expect(briefing.officialCheck?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(briefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /IMSS: Pendiente/.test(line))).toBe(false);
+    expect(briefing.statusLines.join(" ")).toMatch(/instituto/);
+    expect(briefing.statusLines.join(" ")).toMatch(/no de AuditaPatrón/);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/Falta tu NSS/);
+    expect(JSON.stringify(briefing.statusLines)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
 });

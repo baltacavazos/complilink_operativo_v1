@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TrpcContext } from "./_core/context";
 
@@ -1911,6 +1912,65 @@ describe("appRouter case workflows", () => {
     ).rejects.toThrow(/expediente digital está vinculado a una sola persona[\s\S]*parece pertenecer a alguien distinto[\s\S]*cuenta correcta/i);
 
     expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("acepta el XML del mismo recibo aunque el nombre parezca de otra persona", async () => {
+    vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValue(true);
+    vi.mocked(db.listCanonicalContractsByType).mockResolvedValueOnce([
+      {
+        payload: JSON.stringify({
+          confirmedData: {
+            payrollNss: "84129214965",
+            payrollCurp: "UIPD921125HYNCLD03",
+            workerRfc: "UIPD9211257I0",
+          },
+        }),
+        status: "ready",
+      },
+    ] as never);
+
+    const xml = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 81,
+        openId: "worker-same-receipt-xml",
+        email: "worker-same-receipt-xml@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "recibo-nomina.xml",
+        mimeType: "application/xml",
+        base64Content: `data:application/xml;base64,${Buffer.from(xml, "utf8").toString("base64")}`,
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).resolves.toBeTruthy();
+
+    expect(db.addDocumentRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        originalName: "recibo-nomina.xml",
+      }),
+    );
+    const classification = vi
+      .mocked(db.upsertCanonicalContracts)
+      .mock.calls.flatMap((call) => call[0] ?? [])
+      .find((item) => item?.contractType === "classification");
+    const payload = JSON.parse(String(classification?.payload)) as {
+      confirmedData?: { workerRfc?: string; employerRfc?: string; payrollCurp?: string };
+    };
+    expect(payload.confirmedData?.workerRfc).toBe("UIPD9211257I0");
+    expect(payload.confirmedData?.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(payload.confirmedData?.employerRfc).toBe("ECC190605VA1");
+    expect(payload.confirmedData?.workerRfc).not.toBe(payload.confirmedData?.employerRfc);
   });
 
   it("rejects draft analysis when a normal user submits a document that appears to belong to another person", async () => {

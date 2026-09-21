@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { appRouter } from "./routers";
+import { appRouter, buildStructuredExtractionFallback } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import {
   buildCanonicalCaseContract,
@@ -8,6 +9,7 @@ import {
   buildCanonicalDocumentContract,
   buildDocumentStorageKey,
   buildPreliminaryLaborAnalysis,
+  derivePayrollXmlTextHint,
   buildSharedEngineEnvelope,
   classifyMexicanLaborDocument,
   computeSha256,
@@ -234,6 +236,69 @@ describe("caseContracts", () => {
     expect(analysis.confirmedData.payrollDeductions).toBe("$0.00");
     expect(analysis.confirmedData.payrollNss).toBe("84129214965");
     expect(analysis.confirmedData.payrollEmployerRegistration).toBe("R1379389106");
+    expect(analysis.confirmedData.employerRfc ?? analysis.estimatedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc ?? analysis.estimatedData.workerRfc).not.toBe("ECC190605VA1");
+    expect(analysis.confirmedData.payrollCurp ?? null).toBeNull();
+  });
+
+  it("separa RFC del patrón y de la persona trabajadora en el CFDI de nómina de referencia", () => {
+    const textHint = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
+    expect(textHint).toContain('cfdi:Emisor Rfc="ECC190605VA1"');
+    expect(textHint).toContain('cfdi:Receptor Rfc="UIPD9211257I0"');
+    expect(textHint).toContain('Curp="UIPD921125HYNCLD03"');
+    expect(textHint).toContain('NumSeguridadSocial="84129214965"');
+    expect(textHint).toContain('RfcProvCertif="CVD110412TF6"');
+
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint,
+    });
+
+    expect(analysis.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.workerRfc).not.toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc).not.toBe("CVD110412TF6");
+    expect(analysis.estimatedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.estimatedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$4725.60");
+    expect(analysis.confirmedData.payrollPeriod).toBe("2026-05-01 al 2026-05-15");
+    expect(analysis.estimatedData.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
+    expect(String(analysis.estimatedData.workerName)).not.toMatch(/CAMREFLEX/i);
+    expect(analysis.confirmedData.payrollEmployerName).toBe("EVOLUCION CREATIVA CAMREFLEX");
+
+    const padded = textHint.replace(
+      "<cfdi:Comprobante ",
+      `<cfdi:Comprobante Certificado="${"A".repeat(7000)}" `,
+    );
+    expect(padded.slice(0, 6000)).not.toContain("UIPD921125HYNCLD03");
+    const hint = derivePayrollXmlTextHint(padded);
+    const fromHint = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint: hint,
+    });
+    expect(fromHint.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(fromHint.confirmedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(fromHint.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(fromHint.confirmedData.workerRfc).not.toBe(fromHint.confirmedData.employerRfc);
+
+    const extraction = buildStructuredExtractionFallback({
+      classification: classifyMexicanLaborDocument({
+        fileName: "recibo-nomina.xml",
+        mimeType: "application/xml",
+        textHint,
+      }),
+      preliminaryAnalysis: analysis,
+    });
+    const missing = extraction.missingFields.join(" ");
+    expect(missing).not.toMatch(/RFC del patrón|RFC patrón/i);
+    expect(missing).not.toMatch(/RFC de la persona trabajadora|RFC trabajador/i);
+    expect(extraction.fields.some((field) => field.key === "payrollCurp" && field.value === "UIPD921125HYNCLD03")).toBe(true);
+    expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "UIPD9211257I0")).toBe(true);
+    expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "ECC190605VA1")).toBe(false);
   });
 
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {
