@@ -407,6 +407,18 @@ async function readExpedienteWorkerIdentity(tenantId: string, caseId: string) {
   );
 }
 
+function sameVisibleName(left?: string | null, right?: string | null) {
+  const fold = (value?: string | null) =>
+    (value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/gi, "")
+      .toLowerCase();
+  const a = fold(left);
+  const b = fold(right);
+  return a.length >= 8 && a === b;
+}
+
 function assertDocumentIdentityGuardrail(params: {
   ceoBypass: boolean;
   expectedWorkerName?: string | null;
@@ -423,9 +435,7 @@ function assertDocumentIdentityGuardrail(params: {
     return;
   }
 
-  const detectedNameIsEmployer =
-    Boolean(params.detectedEmployerName && params.detectedWorkerName) &&
-    !documentSeemsToBelongToAnotherPerson(params.detectedEmployerName, params.detectedWorkerName);
+  const detectedNameIsEmployer = sameVisibleName(params.detectedEmployerName, params.detectedWorkerName);
   if (detectedNameIsEmployer) {
     return;
   }

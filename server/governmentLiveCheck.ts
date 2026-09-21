@@ -895,6 +895,7 @@ export async function runOfficialGovernmentCheck(params: {
         identity: mergedIdentity,
       },
       mergedIdentity,
+      { nowMs: (params.now ?? new Date()).getTime() },
     );
     const resolved = reconciled ?? fromReturn;
     return {

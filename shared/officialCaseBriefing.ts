@@ -238,7 +238,7 @@ export function formatChatAnchorStatusLine(
 }
 
 function lineWithInstituteFailure(line: string, source: OfficialChatAnchorSource["fuente"], detail?: string | null) {
-  if (!/: Falló\b/.test(line) || line.includes("no de AuditaPatrón")) return line;
+  if (!line.includes(": Falló") || line.includes("no de AuditaPatrón")) return line;
   const blame = rewriteOfficialFailedMotivo(source, detail);
   return blame ? `${line} · ${blame}` : line;
 }

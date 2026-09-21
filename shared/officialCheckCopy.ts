@@ -526,6 +526,7 @@ function sourceFromAnchor(
   fuente: OfficialCheckSource,
   anchor: OfficialChatAnchorSource,
   identity: OfficialIdentityFlags,
+  facts?: { workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null,
 ): OfficialSourceCheck {
   const missing = filterOfficialMissingFieldsForSource(fuente, anchor.missingFields, identity);
   const mapped =
@@ -545,7 +546,7 @@ function sourceFromAnchor(
     label: OFFICIAL_CHECK_STATUS_LABEL[status],
     detail:
       status === "sin_datos"
-        ? officialSourceGapDetail(fuente, options?.facts)
+        ? officialSourceGapDetail(fuente, facts)
         : status === "no_se_pudo"
           ? rewriteOfficialFailedMotivo(fuente, anchor.motivoFallo)
           : OFFICIAL_CHECK_STATUS_DETAIL[status],
@@ -647,9 +648,9 @@ export function reconcileOfficialCheckWithIdentity(
   let checks = (summary.checks ?? []).map(reconcileCheck);
   if (checks.length === 0 && chatAnchor) {
     checks = [
-      sourceFromAnchor("imss", chatAnchor.imss, mergedIdentity),
-      sourceFromAnchor("sat", chatAnchor.sat, mergedIdentity),
-      sourceFromAnchor("infonavit", chatAnchor.infonavit, mergedIdentity),
+      sourceFromAnchor("imss", chatAnchor.imss, mergedIdentity, options?.facts),
+      sourceFromAnchor("sat", chatAnchor.sat, mergedIdentity, options?.facts),
+      sourceFromAnchor("infonavit", chatAnchor.infonavit, mergedIdentity, options?.facts),
     ];
   }
 

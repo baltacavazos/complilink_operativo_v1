@@ -152,6 +152,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     const afterConsult = resolveOfficialCheckDisplay({
       consentGranted: false,
       summary: summary("pendiente", { checkedAt: "2026-09-21T15:30:00.000Z" }),
+      nowMs: new Date("2026-09-21T15:30:30.000Z").getTime(),
     });
     expect(afterConsult.headline).toBe("Pendiente · 21/09/2026");
     expect(afterConsult.headline).not.toMatch(/Falta tu permiso/i);
