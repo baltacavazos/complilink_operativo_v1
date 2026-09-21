@@ -47,6 +47,7 @@ import {
 } from "@shared/fiveSecondVerdict";
 import {
   OFFICIAL_CHECK_CONSENT,
+  canDispatchOfficialConsult,
   isPermissionBlockedStatus,
   pickHonestOfficialCheck,
   resolveOfficialCheckDisplay,
@@ -56,6 +57,7 @@ import {
   WORKER_CHAT_NO_CONSULTA_EMPTY,
   buildOfficialCaseBriefing,
   buildOfficialChatStarterQuestions,
+  identityFlagsFromFacts,
 } from "@shared/officialCaseBriefing";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
@@ -5574,21 +5576,53 @@ export default function Auditar() {
     }
     return undefined;
   };
+  const lastUploadFactSignal = buildPayrollFactSignal({
+    documentType: lastUpload?.classification.documentType,
+    confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
+    estimatedData: lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined,
+  });
+  const guestFactSignal = buildPayrollFactSignal({
+    documentType: guestReview?.preview.classification.documentType,
+    confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
+    estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
+  });
   const officialCaseBriefing = buildOfficialCaseBriefing({
     officialCheck: officialCheckSummary,
     facts: {
-      period: effectiveSocialSecurityValidation?.facts?.period ?? readGuestOfficialFact("payrollPeriod", "period"),
-      netAmount: effectiveSocialSecurityValidation?.facts?.netAmount ?? readGuestOfficialFact("payrollNetAmount", "neto"),
+      period:
+        lastUploadFactSignal.period ??
+        guestFactSignal.period ??
+        effectiveSocialSecurityValidation?.facts?.period ??
+        readGuestOfficialFact("payrollPeriod", "period"),
+      netAmount:
+        lastUploadFactSignal.payment ??
+        guestFactSignal.payment ??
+        effectiveSocialSecurityValidation?.facts?.netAmount ??
+        readGuestOfficialFact("payrollNetAmount", "neto"),
       imssWithheld: effectiveSocialSecurityValidation?.facts?.imssWithheld ?? readGuestOfficialFact("imssWithheld"),
       isrWithheld: effectiveSocialSecurityValidation?.facts?.isrWithheld ?? readGuestOfficialFact("isrWithheld"),
-      infonavitWithheld: effectiveSocialSecurityValidation?.facts?.infonavitWithheld ?? readGuestOfficialFact("infonavitWithheld"),
-      nss: effectiveSocialSecurityValidation?.facts?.nss ?? readGuestOfficialFact("payrollNss", "nss"),
-      curp: effectiveSocialSecurityValidation?.facts?.curp ?? readGuestOfficialFact("payrollCurp", "curp"),
-      workerRfc: effectiveSocialSecurityValidation?.facts?.workerRfc ?? readGuestOfficialFact("workerRfc"),
+      infonavitWithheld:
+        effectiveSocialSecurityValidation?.facts?.infonavitWithheld ?? readGuestOfficialFact("infonavitWithheld"),
+      nss:
+        lastUploadFactSignal.nss ??
+        guestFactSignal.nss ??
+        effectiveSocialSecurityValidation?.facts?.nss ??
+        readGuestOfficialFact("payrollNss", "nss"),
+      curp:
+        lastUploadFactSignal.curp ??
+        guestFactSignal.curp ??
+        effectiveSocialSecurityValidation?.facts?.curp ??
+        readGuestOfficialFact("payrollCurp", "curp"),
+      workerRfc:
+        lastUploadFactSignal.workerRfc ??
+        guestFactSignal.workerRfc ??
+        effectiveSocialSecurityValidation?.facts?.workerRfc ??
+        readGuestOfficialFact("workerRfc"),
     },
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
   });
+  const officialReceiptIdentity = identityFlagsFromFacts(officialCaseBriefing.facts);
   useEffect(() => {
     if (
       officialCheckSummary &&
@@ -6240,11 +6274,6 @@ export default function Auditar() {
       )
     : lastUploadShortcuts;
   const lastUploadResultFallback = buildPayrollSignalFallback(lastUpload?.classification.documentType);
-  const lastUploadFactSignal = buildPayrollFactSignal({
-    documentType: lastUpload?.classification.documentType,
-    confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
-    estimatedData: lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined,
-  });
   const lastUploadFiveSecond = buildFiveSecondVerdictFromSignal(lastUploadFactSignal, {
     classificationConfidence: lastUpload?.classification.classificationConfidence,
     riskLevel: lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel,
@@ -6254,12 +6283,11 @@ export default function Auditar() {
     isPending:
       revalidateSocialSecurityMutation.isPending ||
       guestOfficialCheckMutation.isPending,
-    summary: officialCheckSummary,
-    missingIdentityDetail:
-      officialCaseBriefing.missingIdentity.length === 3 ||
-      officialCheckSummary?.overallStatus === "sin_datos"
-        ? officialCaseBriefing.missingIdentityDetail
-        : null,
+    summary: officialCaseBriefing.officialCheck ?? officialCheckSummary,
+    identity: officialReceiptIdentity,
+    missingIdentityDetail: canDispatchOfficialConsult(officialReceiptIdentity)
+      ? null
+      : officialCaseBriefing.missingIdentityDetail,
   });
   const officialCheckHeadline = officialCheckDisplay.headline;
   const lastUploadResultHeadline = toHumanResultTitle(
@@ -8708,11 +8736,6 @@ export default function Auditar() {
   const guestSignalFallback = buildPayrollSignalFallback(
     guestReview?.preview.classification.documentType
   );
-  const guestFactSignal = buildPayrollFactSignal({
-    documentType: guestReview?.preview.classification.documentType,
-    confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
-    estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
-  });
   const guestFiveSecond = buildFiveSecondVerdictFromSignal(guestFactSignal, {
     classificationConfidence: guestReview?.preview.classification.classificationConfidence,
   });
@@ -8906,8 +8929,7 @@ export default function Auditar() {
               <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                 {officialCheckDisplay.detail}
               </p>
-              {officialCaseBriefing.statusLines.length &&
-              officialCheckSummary?.overallStatus !== "sin_datos" ? (
+              {officialCaseBriefing.statusLines.length ? (
                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                   {officialCaseBriefing.statusLines.map(line => (
                     <li key={line}>{line}</li>
@@ -9611,8 +9633,7 @@ export default function Auditar() {
                               <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                                 {officialCheckDisplay.detail}
                               </p>
-                              {officialCaseBriefing.statusLines.length &&
-                              officialCheckSummary?.overallStatus !== "sin_datos" ? (
+                              {officialCaseBriefing.statusLines.length ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCaseBriefing.statusLines.map(line => (
                                     <li key={line}>{line}</li>

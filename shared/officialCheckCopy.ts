@@ -255,6 +255,15 @@ export type OfficialCheckSummary = {
   reciboVsOficial?: ReciboVsOficial | null;
 };
 
+export type OfficialIdentityField = keyof OfficialIdentityFlags;
+
+/** IMSS consulta con NSS; SAT con RFC; Infonavit con CURP. No se piden los tres en cada fuente. */
+export const OFFICIAL_SOURCE_REQUIRED_FIELDS: Record<OfficialCheckSource, OfficialIdentityField[]> = {
+  imss: ["nss"],
+  sat: ["rfc"],
+  infonavit: ["curp"],
+};
+
 export function listOfficialMissingFieldKeys(values?: unknown): string[] {
   if (!Array.isArray(values)) return [];
   const keys: string[] = [];
@@ -275,6 +284,268 @@ export function listOfficialMissingFieldKeys(values?: unknown): string[] {
   return keys;
 }
 
+export function sourceHasRequiredOfficialIdentity(
+  source: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
+): boolean {
+  return OFFICIAL_SOURCE_REQUIRED_FIELDS[source].some((key) => Boolean(identity?.[key]));
+}
+
+export function missingOfficialFieldsForSource(
+  source: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
+): OfficialIdentityField[] {
+  return OFFICIAL_SOURCE_REQUIRED_FIELDS[source].filter((key) => !identity?.[key]);
+}
+
+export function usedOfficialIdentityForSource(
+  source: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
+): OfficialIdentityFlags {
+  return {
+    nss: source === "imss" && Boolean(identity?.nss),
+    curp: source === "infonavit" && Boolean(identity?.curp),
+    rfc: source === "sat" && Boolean(identity?.rfc),
+  };
+}
+
+/** IMSS/SAT se despachan con NSS y/o RFC. CURP no bloquea el panel entero. */
+export function canDispatchOfficialConsult(identity?: OfficialIdentityFlags | null): boolean {
+  return Boolean(identity?.nss || identity?.rfc);
+}
+
+export function mergeOfficialIdentityFlags(
+  ...identities: Array<OfficialIdentityFlags | null | undefined>
+): OfficialIdentityFlags {
+  return {
+    nss: identities.some((item) => item?.nss),
+    curp: identities.some((item) => item?.curp),
+    rfc: identities.some((item) => item?.rfc),
+  };
+}
+
+export function officialDispatchGapDetail(identity?: OfficialIdentityFlags | null): string {
+  const missing: string[] = [];
+  if (!identity?.nss) missing.push("NSS");
+  if (!identity?.rfc) missing.push("RFC");
+  if (missing.length === 0) return OFFICIAL_CHECK_STATUS_DETAIL.sin_datos;
+  if (missing.length === 1) return `Falta tu ${missing[0]} en el recibo para consultar.`;
+  return `Falta tu ${missing[0]} y ${missing[1]} en el recibo para consultar.`;
+}
+
+export function officialSourceGapDetail(source: OfficialCheckSource): string {
+  const field = OFFICIAL_SOURCE_REQUIRED_FIELDS[source][0];
+  const label = field === "nss" ? "NSS" : field === "curp" ? "CURP" : "RFC";
+  return `Falta tu ${label} en el recibo para consultar.`;
+}
+
+export function rollupOfficialCheckStatus(statuses: OfficialCheckStatus[]): OfficialCheckStatus {
+  if (statuses.includes("vivo")) return "vivo";
+  if (statuses.length > 0 && statuses.every((status) => status === "no_configurado")) return "no_configurado";
+  if (statuses.length > 0 && statuses.every((status) => status === "sin_datos")) return "sin_datos";
+  if (statuses.length > 0 && statuses.every((status) => status === "sin_permiso")) return "sin_permiso";
+  if (statuses.includes("pendiente")) return "pendiente";
+  if (statuses.includes("no_se_pudo")) return "no_se_pudo";
+  return statuses[0] ?? "no_se_pudo";
+}
+
+function officialConsultAttempted(summary: OfficialCheckSummary): boolean {
+  if (isPermissionBlockedStatus(summary.overallStatus) && !summary.checkedAt && !summary.chatAnchor) {
+    return false;
+  }
+  return Boolean(summary.checkedAt || summary.chatAnchor || summary.reciboVsOficial);
+}
+
+function sourceFromAnchor(
+  fuente: OfficialCheckSource,
+  anchor: OfficialChatAnchorSource,
+  identity: OfficialIdentityFlags,
+): OfficialSourceCheck {
+  const missing = filterOfficialMissingFieldsForSource(fuente, anchor.missingFields, identity);
+  const status =
+    honestyToOfficialStatus(anchor.estado, missing, identity, fuente) ??
+    (sourceHasRequiredOfficialIdentity(fuente, identity) ? "pendiente" : "sin_datos");
+  return {
+    source: fuente,
+    sourceLabel: OFFICIAL_SOURCE_LABEL[fuente],
+    status,
+    label: OFFICIAL_CHECK_STATUS_LABEL[status],
+    detail:
+      status === "sin_datos"
+        ? officialSourceGapDetail(fuente)
+        : status === "no_se_pudo"
+          ? rewriteOfficialFailedMotivo(fuente, anchor.motivoFallo)
+          : OFFICIAL_CHECK_STATUS_DETAIL[status],
+    checkedAt: anchor.fecha,
+    used: usedOfficialIdentityForSource(fuente, identity),
+    honesty: officialStatusToHonesty(status),
+    hechos: anchor.hechos,
+    motivoFallo: anchor.motivoFallo,
+    missingFields: missingOfficialFieldsForSource(fuente, identity),
+  };
+}
+
+/**
+ * Recibo gana: si ya hay NSS/RFC, no se pinta Faltan datos en esa fuente
+ * ni en el overall. Solo Faltan datos si no se puede despachar IMSS/SAT.
+ */
+export function reconcileOfficialCheckWithIdentity(
+  summary: OfficialCheckSummary | null | undefined,
+  identity?: OfficialIdentityFlags | null,
+): OfficialCheckSummary | null {
+  if (!summary) return null;
+  const mergedIdentity = mergeOfficialIdentityFlags(summary.identity, identity);
+  const canDispatch = canDispatchOfficialConsult(mergedIdentity);
+
+  if (
+    (isPermissionBlockedStatus(summary.overallStatus) || summary.overallStatus === "no_configurado") &&
+    !officialConsultAttempted(summary)
+  ) {
+    return { ...summary, identity: mergedIdentity };
+  }
+
+  const chatAnchor = summary.chatAnchor ? readChatAnchor(summary.chatAnchor, mergedIdentity) : null;
+
+  const reconcileCheck = (item: OfficialSourceCheck): OfficialSourceCheck => {
+    const missing = filterOfficialMissingFieldsForSource(item.source, item.missingFields, mergedIdentity);
+    const honesty = item.honesty ?? officialStatusToHonesty(item.status);
+    let status =
+      honestyToOfficialStatus(honesty, missing, mergedIdentity, item.source) ?? item.status;
+    if (sourceHasRequiredOfficialIdentity(item.source, mergedIdentity)) {
+      if (status === "sin_datos") {
+        if (honesty === "live" || item.status === "vivo") status = "vivo";
+        else if (
+          (honesty === "failed" || item.status === "no_se_pudo") &&
+          looksLikeNoOfficialResponse(item.motivoFallo ?? item.detail)
+        ) {
+          status = "no_se_pudo";
+        } else status = "pendiente";
+      } else if (
+        status === "no_se_pudo" &&
+        listOfficialMissingFieldKeys(item.missingFields).length > 0 &&
+        missing.length === 0 &&
+        !looksLikeNoOfficialResponse(item.motivoFallo ?? item.detail)
+      ) {
+        status = "pendiente";
+      }
+    } else if (missingOfficialFieldsForSource(item.source, mergedIdentity).length > 0) {
+      status = "sin_datos";
+    }
+    return {
+      ...item,
+      status,
+      label: OFFICIAL_CHECK_STATUS_LABEL[status],
+      detail:
+        status === "sin_datos"
+          ? officialSourceGapDetail(item.source)
+          : status === "no_se_pudo"
+            ? rewriteOfficialFailedMotivo(item.source, item.motivoFallo ?? item.detail)
+            : status === item.status
+              ? item.detail
+              : OFFICIAL_CHECK_STATUS_DETAIL[status],
+      used: usedOfficialIdentityForSource(item.source, mergedIdentity),
+      missingFields: missingOfficialFieldsForSource(item.source, mergedIdentity),
+      honesty: officialStatusToHonesty(status),
+    };
+  };
+
+  let checks = (summary.checks ?? []).map(reconcileCheck);
+  if (checks.length === 0 && chatAnchor) {
+    checks = [
+      sourceFromAnchor("imss", chatAnchor.imss, mergedIdentity),
+      sourceFromAnchor("sat", chatAnchor.sat, mergedIdentity),
+      sourceFromAnchor("infonavit", chatAnchor.infonavit, mergedIdentity),
+    ];
+  }
+
+  const syncedAnchor = chatAnchor
+    ? {
+        imss: {
+          ...chatAnchor.imss,
+          estado: officialStatusToHonesty(
+            checks.find((item) => item.source === "imss")?.status ??
+              honestyToOfficialStatus(chatAnchor.imss.estado, chatAnchor.imss.missingFields, mergedIdentity, "imss") ??
+              "pendiente",
+          ),
+          missingFields: missingOfficialFieldsForSource("imss", mergedIdentity),
+        },
+        sat: {
+          ...chatAnchor.sat,
+          estado: officialStatusToHonesty(
+            checks.find((item) => item.source === "sat")?.status ??
+              honestyToOfficialStatus(chatAnchor.sat.estado, chatAnchor.sat.missingFields, mergedIdentity, "sat") ??
+              "pendiente",
+          ),
+          missingFields: missingOfficialFieldsForSource("sat", mergedIdentity),
+        },
+        infonavit: {
+          ...chatAnchor.infonavit,
+          estado: officialStatusToHonesty(
+            checks.find((item) => item.source === "infonavit")?.status ??
+              honestyToOfficialStatus(
+                chatAnchor.infonavit.estado,
+                chatAnchor.infonavit.missingFields,
+                mergedIdentity,
+                "infonavit",
+              ) ?? "pendiente",
+          ),
+          missingFields: missingOfficialFieldsForSource("infonavit", mergedIdentity),
+        },
+      }
+    : chatAnchor;
+
+  let overallStatus = summary.overallStatus;
+  if (checks.length > 0 && !isPermissionBlockedStatus(overallStatus) && overallStatus !== "no_configurado") {
+    overallStatus = rollupOfficialCheckStatus(checks.map((item) => item.status));
+  }
+  if (canDispatch && overallStatus === "sin_datos") {
+    overallStatus = officialConsultAttempted(summary) || checks.length > 0 ? "pendiente" : summary.overallStatus;
+    if (overallStatus === "sin_datos") {
+      overallStatus = "pendiente";
+    }
+  }
+  if (!canDispatch && overallStatus !== "vivo" && overallStatus !== "no_se_pudo" && overallStatus !== "pendiente") {
+    overallStatus = "sin_datos";
+  }
+
+  const overallDetail =
+    overallStatus === "sin_datos"
+      ? officialDispatchGapDetail(mergedIdentity)
+      : overallStatus === "no_se_pudo"
+        ? honestOfficialFailedDetail({
+            ...summary,
+            overallStatus,
+            checks,
+            chatAnchor: syncedAnchor ?? summary.chatAnchor,
+          })
+        : OFFICIAL_CHECK_STATUS_DETAIL[overallStatus];
+
+  return {
+    ...summary,
+    identity: mergedIdentity,
+    checks,
+    chatAnchor: syncedAnchor ?? summary.chatAnchor,
+    overallStatus,
+    overallLabel: OFFICIAL_CHECK_STATUS_LABEL[overallStatus],
+    overallDetail,
+  };
+}
+
+/** Quita campos que la fuente no pide o que el recibo ya trae. */
+export function filterOfficialMissingFieldsForSource(
+  source: OfficialCheckSource | null | undefined,
+  reported: unknown,
+  identity?: OfficialIdentityFlags | null,
+): string[] {
+  const reportedKeys = listOfficialMissingFieldKeys(reported);
+  const required = source ? OFFICIAL_SOURCE_REQUIRED_FIELDS[source] : (["nss", "curp", "rfc"] as OfficialIdentityField[]);
+  return reportedKeys.filter((key) => {
+    if (!required.includes(key as OfficialIdentityField)) return false;
+    if (identity?.[key as OfficialIdentityField]) return false;
+    return true;
+  });
+}
+
 export function looksLikeNoOfficialResponse(text?: string | null): boolean {
   return /no respondi[oó]|no contest[oó]|\btimeout\b|\btimed?\s*out\b|service unavailable|error del servidor/i.test(
     String(text ?? ""),
@@ -284,6 +555,8 @@ export function looksLikeNoOfficialResponse(text?: string | null): boolean {
 export function inferOfficialMissingFieldKeys(text?: string | null): string[] {
   const haystack = String(text ?? "").toLowerCase();
   if (!haystack) return [];
+  // Copy genérico del panel: no pintar las tres fuentes como si faltara todo.
+  if (/faltan?\s+(?:tu\s+)?nss[,/]?\s*curp\s+(y|o)\s+rfc/.test(haystack)) return [];
   const keys: string[] = [];
   if (/\bfalta(?:n)?\b[^.]{0,40}\bnss\b|\bnss\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("nss");
   if (/\bfalta(?:n)?\b[^.]{0,40}\bcurp\b|\bcurp\b[^.]{0,40}\bfalta/.test(haystack)) keys.push("curp");
@@ -294,9 +567,11 @@ export function inferOfficialMissingFieldKeys(text?: string | null): string[] {
 export function honestyToOfficialStatus(
   honesty?: string | null,
   missingFields?: string[] | null,
+  identity?: OfficialIdentityFlags | null,
+  source?: OfficialCheckSource | null,
 ): OfficialCheckStatus | null {
   const value = String(honesty ?? "").trim().toLowerCase();
-  const missing = listOfficialMissingFieldKeys(missingFields);
+  const missing = filterOfficialMissingFieldsForSource(source, missingFields, identity);
   if (value === "live" || value === "vivo") return "vivo";
   if (missing.length > 0) return "sin_datos";
   if (!value) return null;
@@ -354,23 +629,32 @@ function pendingChatSource(fuente: OfficialCheckSource): OfficialChatAnchorSourc
 export function readChatAnchorSource(
   value: unknown,
   fuente: OfficialCheckSource,
+  identity?: OfficialIdentityFlags | null,
 ): OfficialChatAnchorSource {
   const record = asRecord(value);
   if (!record) return pendingChatSource(fuente);
   const hechos = sanitizeHechos(record.hechos);
   const motivoFalloText =
     asText(record.motivoFallo) ?? asText(record.workerReason) ?? asText(record.reason);
-  const missing = [
-    ...listOfficialMissingFieldKeys(record.missingFields),
-    ...inferOfficialMissingFieldKeys(hechos.join(" ")),
-    ...inferOfficialMissingFieldKeys(motivoFalloText),
-  ].filter((item, index, all) => all.indexOf(item) === index);
+  const missing = filterOfficialMissingFieldsForSource(
+    fuente,
+    [
+      ...listOfficialMissingFieldKeys(record.missingFields),
+      ...inferOfficialMissingFieldKeys(hechos.join(" ")),
+      ...inferOfficialMissingFieldKeys(motivoFalloText),
+    ],
+    identity,
+  );
   let estado =
     record.estado === "live" || record.estado === "pending" || record.estado === "failed"
       ? record.estado
       : officialStatusToHonesty(
-          honestyToOfficialStatus(asText(record.honesty) ?? asText(record.status), missing) ??
-            "pendiente",
+          honestyToOfficialStatus(
+            asText(record.honesty) ?? asText(record.status),
+            missing,
+            identity,
+            fuente,
+          ) ?? "pendiente",
         );
   const noResponse = looksLikeNoOfficialResponse(`${motivoFalloText ?? ""} ${hechos.join(" ")}`);
   if (estado === "pending" && missing.length === 0 && noResponse) {
@@ -402,14 +686,17 @@ export function readChatAnchorSource(
   };
 }
 
-export function readChatAnchor(value: unknown): OfficialChatAnchor | null {
+export function readChatAnchor(
+  value: unknown,
+  identity?: OfficialIdentityFlags | null,
+): OfficialChatAnchor | null {
   const record = asRecord(value);
   if (!record) return null;
   if (!record.sat && !record.imss && !record.infonavit) return null;
   return {
-    sat: readChatAnchorSource(record.sat, "sat"),
-    imss: readChatAnchorSource(record.imss, "imss"),
-    infonavit: readChatAnchorSource(record.infonavit, "infonavit"),
+    sat: readChatAnchorSource(record.sat, "sat", identity),
+    imss: readChatAnchorSource(record.imss, "imss", identity),
+    infonavit: readChatAnchorSource(record.infonavit, "infonavit", identity),
   };
 }
 
@@ -558,6 +845,7 @@ export function resolveOfficialCheckDisplay(params: {
   isPending?: boolean;
   summary?: OfficialCheckSummary | null;
   missingIdentityDetail?: string | null;
+  identity?: OfficialIdentityFlags | null;
 }): OfficialCheckDisplay {
   if (params.isPending) {
     return {
@@ -569,24 +857,48 @@ export function resolveOfficialCheckDisplay(params: {
     };
   }
 
+  const identity = mergeOfficialIdentityFlags(params.identity, params.summary?.identity);
+  const canDispatch = canDispatchOfficialConsult(identity);
+  const reconciled = reconcileOfficialCheckWithIdentity(params.summary, identity);
   const consultAlreadyVisible = Boolean(
-    params.summary &&
-      !isPermissionBlockedStatus(params.summary.overallStatus) &&
-      (params.summary.checkedAt || params.summary.chatAnchor || params.summary.reciboVsOficial),
+    reconciled &&
+      !isPermissionBlockedStatus(reconciled.overallStatus) &&
+      (reconciled.checkedAt || reconciled.chatAnchor || reconciled.reciboVsOficial),
   );
   const consentGranted = params.consentGranted || consultAlreadyVisible;
 
   const honest =
-    consentGranted && isPermissionBlockedStatus(params.summary?.overallStatus)
+    consentGranted && isPermissionBlockedStatus(reconciled?.overallStatus)
       ? null
-      : (params.summary ?? null);
+      : reconciled;
 
   if (consentGranted) {
     if (honest && !isPermissionBlockedStatus(honest.overallStatus)) {
+      if (honest.overallStatus === "sin_datos" && canDispatch) {
+        if (honest.checkedAt || honest.chatAnchor || honest.reciboVsOficial) {
+          return {
+            headline: buildOfficialCheckHeadline({
+              overallStatus: "pendiente",
+              checkedAt: honest.checkedAt,
+            }),
+            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+            buttonLabel: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+            status: "pendiente",
+            showPermissionCopy: false,
+          };
+        }
+        return {
+          headline: OFFICIAL_CHECK_READY_HEADLINE,
+          detail: OFFICIAL_CHECK_READY_DETAIL,
+          buttonLabel: OFFICIAL_CHECK_BUTTON,
+          status: "listo",
+          showPermissionCopy: false,
+        };
+      }
       return {
         headline: buildOfficialCheckHeadline(honest),
         detail:
-          honest.overallStatus === "sin_datos" && params.missingIdentityDetail
+          honest.overallStatus === "sin_datos" && !canDispatch && params.missingIdentityDetail
             ? params.missingIdentityDetail
             : honest.overallStatus === "no_se_pudo"
               ? honestOfficialFailedDetail(honest)
@@ -597,7 +909,7 @@ export function resolveOfficialCheckDisplay(params: {
       };
     }
 
-    if (params.missingIdentityDetail) {
+    if (params.missingIdentityDetail && !canDispatch) {
       return {
         headline: OFFICIAL_CHECK_STATUS_LABEL.sin_datos,
         detail: params.missingIdentityDetail,

@@ -13,7 +13,10 @@ import {
   RECEIPT_OFFICIAL_COMPARISON_COPY,
   assertNoInternalBrands,
   buildOfficialFailedDetail,
+  canDispatchOfficialConsult,
+  filterOfficialMissingFieldsForSource,
   hasLiveOfficialResult,
+  reconcileOfficialCheckWithIdentity,
   honestyToOfficialStatus,
   pickHonestOfficialCheck,
   readChatAnchor,
@@ -90,7 +93,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
   it("con checkbox y sin NSS/CURP/RFC muestra Faltan datos, no Falta tu permiso", () => {
     const display = resolveOfficialCheckDisplay({
       consentGranted: true,
-      summary: summary("sin_permiso"),
+      summary: summary("sin_permiso", { identity: { nss: false, curp: false, rfc: false } }),
+      identity: { nss: false, curp: false, rfc: false },
       missingIdentityDetail: "Falta tu NSS, CURP y RFC en el recibo para consultar.",
     });
     expect(display.headline).toBe("Faltan datos");
@@ -153,11 +157,15 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
 
     const faltan = resolveOfficialCheckDisplay({
       consentGranted: true,
-      summary: summary("sin_datos", { checkedAt: "2026-09-21T15:30:00.000Z" }),
-      missingIdentityDetail: "Falta tu NSS y CURP en el recibo para consultar.",
+      summary: summary("sin_datos", {
+        checkedAt: "2026-09-21T15:30:00.000Z",
+        identity: { nss: false, curp: false, rfc: false },
+      }),
+      identity: { nss: false, curp: false, rfc: false },
+      missingIdentityDetail: "Falta tu NSS y RFC en el recibo para consultar.",
     });
     expect(faltan.headline).toBe("Faltan datos · 21/09/2026");
-    expect(faltan.detail).toMatch(/Falta tu NSS y CURP/);
+    expect(faltan.detail).toMatch(/Falta tu NSS y RFC/);
     expect(faltan.status).toBe("sin_datos");
 
     for (const display of [vivo, pendiente, fallo]) {
@@ -199,6 +207,10 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(honestyToOfficialStatus("pending")).toBe("pendiente");
     expect(honestyToOfficialStatus("failed", ["nss"])).toBe("sin_datos");
     expect(honestyToOfficialStatus("failed")).toBe("no_se_pudo");
+    const receipt = { nss: true, curp: false, rfc: true };
+    expect(honestyToOfficialStatus("pending", ["nss", "curp", "rfc"], receipt, "imss")).toBe("pendiente");
+    expect(honestyToOfficialStatus("pending", ["nss", "curp", "rfc"], receipt, "sat")).toBe("pendiente");
+    expect(honestyToOfficialStatus("pending", ["nss", "curp", "rfc"], receipt, "infonavit")).toBe("sin_datos");
 
     const anchor = readChatAnchor({
       sat: { fuente: "sat", estado: "pending", fecha: null, hechos: ["Todavía no hay una respuesta oficial nueva de SAT."], motivoFallo: null },
@@ -259,5 +271,103 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
 
     expect(hasLiveOfficialResult(summary("vivo"))).toBe(true);
     expect(hasLiveOfficialResult(summary("pendiente"))).toBe(false);
+
+    const parsedIdentity = { nss: true, curp: false, rfc: true };
+    expect(filterOfficialMissingFieldsForSource("imss", ["nss", "curp", "rfc"], parsedIdentity)).toEqual([]);
+    expect(filterOfficialMissingFieldsForSource("sat", ["nss", "curp", "rfc"], parsedIdentity)).toEqual([]);
+    expect(filterOfficialMissingFieldsForSource("infonavit", ["nss", "curp", "rfc"], parsedIdentity)).toEqual(["curp"]);
+  });
+
+  it("recibo con NSS y RFC visibles nunca pinta Faltan datos mentiroso", () => {
+    const visible = { nss: true, curp: false, rfc: true };
+    expect(canDispatchOfficialConsult(visible)).toBe(true);
+    expect(canDispatchOfficialConsult({ nss: false, curp: true, rfc: false })).toBe(false);
+
+    const stale = summary("sin_datos", {
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: false, curp: false, rfc: false },
+      overallDetail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "sin_datos",
+          label: "Faltan datos",
+          detail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: false, curp: false, rfc: false },
+          honesty: "failed",
+          missingFields: ["nss", "curp", "rfc"],
+        },
+        {
+          source: "sat",
+          sourceLabel: "SAT",
+          status: "sin_datos",
+          label: "Faltan datos",
+          detail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: false, curp: false, rfc: false },
+          honesty: "failed",
+          missingFields: ["nss", "curp", "rfc"],
+        },
+        {
+          source: "infonavit",
+          sourceLabel: "Infonavit",
+          status: "sin_datos",
+          label: "Faltan datos",
+          detail: "Falta tu CURP en el recibo para consultar.",
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: false, curp: false, rfc: false },
+          honesty: "failed",
+          missingFields: ["curp"],
+        },
+      ],
+      chatAnchor: {
+        imss: {
+          fuente: "imss",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+          motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+          missingFields: ["nss", "curp", "rfc"],
+        },
+        sat: {
+          fuente: "sat",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+          motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+          missingFields: ["nss", "curp", "rfc"],
+        },
+        infonavit: {
+          fuente: "infonavit",
+          estado: "failed",
+          fecha: "2026-09-21T15:30:00.000Z",
+          hechos: ["Falta el CURP para consultar Infonavit."],
+          motivoFallo: "Falta el CURP para consultar Infonavit.",
+          missingFields: ["curp"],
+        },
+      },
+    });
+
+    const reconciled = reconcileOfficialCheckWithIdentity(stale, visible);
+    expect(reconciled?.overallStatus).not.toBe("sin_datos");
+    expect(reconciled?.overallLabel).not.toBe("Faltan datos");
+    expect(reconciled?.identity).toEqual(visible);
+    expect(reconciled?.checks.find((item) => item.source === "imss")?.status).not.toBe("sin_datos");
+    expect(reconciled?.checks.find((item) => item.source === "sat")?.status).not.toBe("sin_datos");
+    expect(reconciled?.checks.find((item) => item.source === "infonavit")?.status).toBe("sin_datos");
+
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: stale,
+      identity: visible,
+      missingIdentityDetail: "Falta tu CURP en el recibo para consultar.",
+    });
+    expect(display.headline).not.toMatch(/Faltan datos/i);
+    expect(display.buttonLabel).not.toMatch(/Faltan datos/i);
+    expect(display.status).not.toBe("sin_datos");
+    expect(display.headline).toMatch(/Pendiente|Vivo|Falló|Consulta IMSS y SAT/);
+    expect(JSON.stringify(display)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
 });
