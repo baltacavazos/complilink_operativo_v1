@@ -195,8 +195,19 @@ function emptyFacts(): LaborFiscalStructuredFacts {
   };
 }
 
-function countVisibleFacts(facts: LaborFiscalStructuredFacts) {
-  return Object.values(facts).filter((value) => value !== null).length;
+export function mergeLaborFiscalFacts(
+  factsList: Array<LaborFiscalStructuredFacts | null | undefined>,
+): LaborFiscalStructuredFacts {
+  const merged = emptyFacts();
+  for (const facts of factsList) {
+    if (!facts) continue;
+    (Object.keys(merged) as Array<keyof LaborFiscalStructuredFacts>).forEach((key) => {
+      if (!merged[key] && facts[key]) {
+        merged[key] = facts[key];
+      }
+    });
+  }
+  return merged;
 }
 
 function documentIdentityHaystack(document: DocumentLaborFiscalInput) {
@@ -430,10 +441,8 @@ export function summarizeLaborFiscalSignals(documents: DocumentLaborFiscalInput[
   const imssSignalsCount = snapshots.filter((item) => item.hasImssLaborSignal).length;
   const infonavitSignalsCount = snapshots.filter((item) => item.hasInfonavitSignal).length;
   const fiscalSignalsCount = snapshots.filter((item) => item.hasFiscalSignal).length;
-  const richestSnapshot = [...snapshots].sort(
-    (left, right) => countVisibleFacts(right.facts) - countVisibleFacts(left.facts),
-  )[0];
   const preferredOpinion = pickPreferredWorkerOpinion(documents.map((document) => document.heliosOpinion));
+  const facts = mergeLaborFiscalFacts(snapshots.map((item) => item.facts));
 
   return {
     liveImssValidation: false as const,
@@ -447,8 +456,8 @@ export function summarizeLaborFiscalSignals(documents: DocumentLaborFiscalInput[
     hasImssSignal: imssSignalsCount > 0,
     hasInfonavitSignal: infonavitSignalsCount > 0,
     hasFiscalSignal: fiscalSignalsCount > 0,
-    facts: richestSnapshot?.facts ?? emptyFacts(),
-    explanations: richestSnapshot?.explanations ?? explainLaborFiscalFacts(emptyFacts()),
+    facts,
+    explanations: explainLaborFiscalFacts(facts),
     ...describeWorkerReviewSource(preferredOpinion),
   };
 }

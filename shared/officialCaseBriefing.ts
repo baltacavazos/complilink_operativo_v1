@@ -12,6 +12,7 @@ import {
   OFFICIAL_FAILED_MISSING,
   buildOfficialCheckHeadline,
   buildReceiptOfficialComparisonCopy,
+  canDispatchOfficialConsult,
   filterOfficialMissingFieldsForSource,
   formatOfficialCheckDate,
   hasLiveOfficialResult,
@@ -21,7 +22,9 @@ import {
   listFailedOfficialSources,
   listFailedOfficialSourcesFromAnchor,
   looksLikeNoOfficialResponse,
+  mergeOfficialIdentityFlags,
   officialStatusToHonesty,
+  reconcileOfficialCheckWithIdentity,
   rewriteOfficialFailedMotivo,
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
@@ -125,11 +128,7 @@ export function applyMissingFieldsToIdentity(
 export function mergeOfficialIdentity(
   ...identities: Array<OfficialIdentityFlags | null | undefined>
 ): OfficialIdentityFlags {
-  return {
-    nss: identities.some((item) => item?.nss),
-    curp: identities.some((item) => item?.curp),
-    rfc: identities.some((item) => item?.rfc),
-  };
+  return mergeOfficialIdentityFlags(...identities);
 }
 
 export function collectOfficialMissingFieldKeys(params: {
@@ -344,28 +343,36 @@ export function buildOfficialCaseBriefing(params: {
     ),
   );
   const missingIdentity = listMissingOfficialIdentityLabels(identity);
+  const reconciled = reconcileOfficialCheckWithIdentity(
+    officialCheck
+      ? { ...officialCheck, chatAnchor: chatAnchor ?? officialCheck.chatAnchor ?? null, reciboVsOficial }
+      : officialCheck,
+    identity,
+  );
   const comparison = selectReceiptOfficialComparison({
-    officialCheck,
+    officialCheck: reconciled,
     facts,
     reciboVsOficial,
     hasDifferenceSignal: params.hasDifferenceSignal,
   });
-  const mergedCheck = officialCheck
-    ? { ...officialCheck, chatAnchor: chatAnchor ?? officialCheck.chatAnchor ?? null, reciboVsOficial }
-    : officialCheck;
-  const statusLines = formatOfficialCheckStatusLines(mergedCheck);
+  const statusLines = formatOfficialCheckStatusLines(reconciled);
+  const canDispatch = canDispatchOfficialConsult(identity);
+  const headlineStatus =
+    reconciled &&
+    !isPermissionBlockedStatus(reconciled.overallStatus) &&
+    !(reconciled.overallStatus === "sin_datos" && canDispatch)
+      ? reconciled
+      : null;
 
   return {
     hasOfficialConsulta: comparison.hasOfficialConsulta,
-    hasLiveOfficialResult: hasLiveOfficialResult(mergedCheck),
-    officialCheck,
-    chatAnchor,
+    hasLiveOfficialResult: hasLiveOfficialResult(reconciled),
+    officialCheck: reconciled,
+    chatAnchor: reconciled?.chatAnchor ?? chatAnchor,
     reciboVsOficial,
     statusLines,
-    hechoLines: listChatAnchorHechos(chatAnchor),
-    headline: officialCheck && !isPermissionBlockedStatus(officialCheck.overallStatus)
-      ? buildOfficialCheckHeadline(officialCheck)
-      : null,
+    hechoLines: listChatAnchorHechos(reconciled?.chatAnchor ?? chatAnchor),
+    headline: headlineStatus ? buildOfficialCheckHeadline(headlineStatus) : null,
     missingIdentity,
     missingIdentityDetail: missingIdentity.length > 0 ? officialIdentityGapDetail(identity) : null,
     receiptLines: listReceiptFactLines(facts),

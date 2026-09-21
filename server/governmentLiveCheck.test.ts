@@ -14,6 +14,7 @@ import {
   OFFICIAL_CHECK_ACTION,
   collectWorkerOfficialIdentity,
   extractReceiptOfficialIdentity,
+  mergeWorkerOfficialIdentities,
   getOfficialCheckAvailability,
   isOfficialCheckConfigured,
   officialCheckFromBridgeReturn,
@@ -461,6 +462,17 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       workerRfc: "XAXX010101000",
     });
     expect(fromReceipt).toEqual({
+      nss: "12345678901",
+      curp: null,
+      rfc: "XAXX010101000",
+    });
+    expect(
+      mergeWorkerOfficialIdentities(
+        { nss: null, curp: null, rfc: null },
+        { nss: "12345678901", curp: null, rfc: null },
+        { nss: null, curp: null, rfc: "XAXX010101000" },
+      ),
+    ).toEqual({
       nss: "12345678901",
       curp: null,
       rfc: "XAXX010101000",

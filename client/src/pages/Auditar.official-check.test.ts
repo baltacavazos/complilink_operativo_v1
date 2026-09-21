@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   OFFICIAL_CHECK_STATUS_LABEL,
+  canDispatchOfficialConsult,
   resolveOfficialCheckDisplay,
 } from "@shared/officialCheckCopy";
+import { buildOfficialCaseBriefing } from "@shared/officialCaseBriefing";
 
 const source = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 
@@ -27,6 +29,9 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("officialCaseBriefing.comparison.nextStepLine");
     expect(source).toContain("officialCaseBriefing.statusLines.length");
     expect(source).not.toContain("overallStatus !== \"sin_datos\"");
+    expect(source).toContain("canDispatchOfficialConsult(officialReceiptIdentity)");
+    expect(source).toContain("lastUploadFactSignal.nss");
+    expect(source).toContain("lastUploadFactSignal.workerRfc");
     expect(source).not.toMatch(/Helios bridge HMAC|HMAC authentication failed/);
     expect(source).not.toMatch(/APIMARKET/);
   });
@@ -63,13 +68,71 @@ describe("Auditar consult UI — permiso y CTA", () => {
         overallLabel: OFFICIAL_CHECK_STATUS_LABEL.sin_datos,
         overallDetail: "Falta tu NSS en el recibo para consultar.",
         checkedAt: "2026-09-21T12:00:00.000Z",
-        identity: { nss: false, curp: true, rfc: true },
+        identity: { nss: false, curp: true, rfc: false },
         checks: [],
       },
-      missingIdentityDetail: "Falta tu NSS en el recibo para consultar.",
+      identity: { nss: false, curp: true, rfc: false },
+      missingIdentityDetail: "Falta tu NSS y RFC en el recibo para consultar.",
     });
     expect(faltan.headline).toBe("Faltan datos · 21/09/2026");
     expect(faltan.detail).toMatch(/Falta tu NSS/);
     expect(faltan.headline).not.toBe("Falta tu permiso");
+  });
+
+  it("recibo con NSS y RFC visibles nunca pinta Faltan datos mentiroso", () => {
+    expect(canDispatchOfficialConsult({ nss: true, curp: false, rfc: true })).toBe(true);
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: {
+        configured: true,
+        consentGranted: true,
+        overallStatus: "sin_datos",
+        overallLabel: OFFICIAL_CHECK_STATUS_LABEL.sin_datos,
+        overallDetail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        identity: { nss: false, curp: false, rfc: false },
+        checks: [],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            fecha: "2026-09-21T12:00:00.000Z",
+            hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+            motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+            missingFields: ["nss", "curp", "rfc"],
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: "2026-09-21T12:00:00.000Z",
+            hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+            motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+            missingFields: ["nss", "curp", "rfc"],
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: "2026-09-21T12:00:00.000Z",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            motivoFallo: "Falta el CURP para consultar Infonavit.",
+            missingFields: ["curp"],
+          },
+        },
+      },
+      facts: { nss: "12345678901", workerRfc: "XAXX010101000", netAmount: "$12,450" },
+    });
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: briefing.officialCheck,
+      identity: { nss: true, curp: false, rfc: true },
+      missingIdentityDetail: briefing.missingIdentityDetail,
+    });
+
+    expect(display.headline).not.toMatch(/Faltan datos/i);
+    expect(display.buttonLabel).not.toMatch(/Faltan datos/i);
+    expect(display.status).not.toBe("sin_datos");
+    expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(false);
+    expect(source).toContain("canDispatchOfficialConsult");
+    expect(JSON.stringify({ display, briefing })).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
 });

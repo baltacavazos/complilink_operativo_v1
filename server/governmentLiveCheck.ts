@@ -17,6 +17,7 @@ import {
   readChatAnchorSource,
   readReciboVsOficial,
   rewriteOfficialFailedMotivo,
+  reconcileOfficialCheckWithIdentity,
   usedOfficialIdentityForSource,
   type OfficialChatAnchor,
   type OfficialCheckSource,
@@ -235,6 +236,16 @@ export function collectWorkerOfficialIdentity(facts: {
     nss: fromFacts.nss ?? extracted.nss,
     curp: fromFacts.curp ?? extracted.curp,
     rfc: fromFacts.rfc ? rfc : rfc && rfc !== employerRfc ? rfc : null,
+  };
+}
+
+export function mergeWorkerOfficialIdentities(
+  ...identities: Array<WorkerOfficialIdentity | null | undefined>
+): WorkerOfficialIdentity {
+  return {
+    nss: identities.find((item) => item?.nss)?.nss ?? null,
+    curp: identities.find((item) => item?.curp)?.curp ?? null,
+    rfc: identities.find((item) => item?.rfc)?.rfc ?? null,
   };
 }
 
@@ -860,19 +871,30 @@ export async function runOfficialGovernmentCheck(params: {
     nowIso,
   });
   if (fromReturn) {
+    const mergedIdentity = {
+      nss: used.nss || Boolean(fromReturn.identity?.nss),
+      curp: used.curp || Boolean(fromReturn.identity?.curp),
+      rfc: used.rfc || Boolean(fromReturn.identity?.rfc),
+    };
+    const reconciled = reconcileOfficialCheckWithIdentity(
+      {
+        ...fromReturn,
+        configured: true,
+        consentGranted: true,
+        identity: mergedIdentity,
+      },
+      mergedIdentity,
+    );
+    const resolved = reconciled ?? fromReturn;
     return {
-      ...fromReturn,
+      ...resolved,
       configured: true,
       consentGranted: true,
-      identity: {
-        nss: used.nss || Boolean(fromReturn.identity?.nss),
-        curp: used.curp || Boolean(fromReturn.identity?.curp),
-        rfc: used.rfc || Boolean(fromReturn.identity?.rfc),
-      },
+      identity: mergedIdentity,
       overallDetail:
-        fromReturn.overallStatus === "sin_datos"
-          ? fromReturn.overallDetail
-          : fromReturn.overallDetail || workerDetailForBridgeResult(fromReturn.overallStatus, posted),
+        resolved.overallStatus === "sin_datos"
+          ? resolved.overallDetail
+          : resolved.overallDetail || workerDetailForBridgeResult(resolved.overallStatus, posted),
     };
   }
 

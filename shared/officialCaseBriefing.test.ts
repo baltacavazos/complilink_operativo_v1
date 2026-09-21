@@ -281,6 +281,98 @@ describe("briefing del caso para el asesor", () => {
     expect(JSON.stringify(briefing)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
 
+  it("recibo con NSS y RFC visibles nunca pinta Faltan datos mentiroso en tarjeta ni chat", () => {
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("sin_datos", {
+        identity: { nss: false, curp: false, rfc: false },
+        overallDetail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+            missingFields: ["nss", "curp", "rfc"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+            missingFields: ["nss", "curp", "rfc"],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: "Falta tu CURP en el recibo para consultar.",
+            checkedAt: "2026-09-21T15:30:00.000Z",
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            missingFields: ["curp"],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+            motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+            missingFields: ["nss", "curp", "rfc"],
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Falta tu NSS, CURP o RFC en el recibo para consultar."],
+            motivoFallo: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
+            missingFields: ["nss", "curp", "rfc"],
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            motivoFallo: "Falta el CURP para consultar Infonavit.",
+            missingFields: ["curp"],
+          },
+        },
+      }),
+      facts: { nss: "12345678901", workerRfc: "XAXX010101000", netAmount: "$12,450" },
+    });
+
+    expect(briefing.receiptLines.join(" ")).toMatch(/NSS 12345678901/);
+    expect(briefing.receiptLines.join(" ")).toMatch(/XAXX010101000/);
+    expect(briefing.officialCheck?.overallStatus).not.toBe("sin_datos");
+    expect(briefing.officialCheck?.overallLabel).not.toBe("Faltan datos");
+    expect(briefing.headline).not.toMatch(/Faltan datos/i);
+    expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(false);
+    expect(briefing.statusLines.some((line) => /IMSS: (Pendiente|Vivo|Falló)/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /SAT: (Pendiente|Vivo|Falló)/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
+    expect(briefing.missingIdentity).toEqual(["CURP"]);
+    const prompt = formatOfficialCaseBriefingForPrompt(briefing);
+    expect(prompt).not.toMatch(/IMSS: Faltan datos/);
+    expect(prompt).not.toMatch(/SAT: Faltan datos/);
+    expect(prompt).toMatch(/IMSS: (Pendiente|Vivo|Falló)/);
+    expect(prompt).toMatch(/SAT: (Pendiente|Vivo|Falló)/);
+    expect(JSON.stringify(briefing)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
+  });
+
   it("usa reciboVsOficial del puente y no inventa bien", () => {
     const bien = selectReceiptOfficialComparison({
       officialCheck: official("vivo", { chatAnchor: liveAnchor }),

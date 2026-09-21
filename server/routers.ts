@@ -129,6 +129,7 @@ import {
 import {
   collectWorkerOfficialIdentity,
   getOfficialCheckAvailability,
+  mergeWorkerOfficialIdentities,
   readOfficialCheckFromMetadata,
   runOfficialGovernmentCheck,
 } from "./governmentLiveCheck";
@@ -1962,7 +1963,10 @@ function buildSocialSecurityValidationSummary(params: {
       .map((event) => readOfficialCheckFromMetadata(parseEventMetadata(event.metadata)))
       .find((item): item is OfficialCheckSummary => Boolean(item)) ?? null;
   const officialAvailability = getOfficialCheckAvailability();
-  const officialIdentity = collectWorkerOfficialIdentity(laborFiscal.facts);
+  const officialIdentity = mergeWorkerOfficialIdentities(
+    collectWorkerOfficialIdentity(laborFiscal.facts),
+    ...params.documents.map((document) => officialIdentityForEngineDispatch(document)),
+  );
   const officialCheck: OfficialCheckSummary =
     lastLiveCheck ??
     ({
@@ -3813,7 +3817,10 @@ export const appRouter = router({
         });
         const recordedAt = new Date();
         const officialCheck = await runOfficialGovernmentCheck({
-          identity: collectWorkerOfficialIdentity(socialSecurityValidation.facts),
+          identity: mergeWorkerOfficialIdentities(
+            collectWorkerOfficialIdentity(socialSecurityValidation.facts),
+            ...documents.map((document) => officialIdentityForEngineDispatch(document)),
+          ),
           consentGranted: Boolean(input.consentGranted),
           now: recordedAt,
         });

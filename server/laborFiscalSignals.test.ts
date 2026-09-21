@@ -236,4 +236,37 @@ describe("laborFiscalSignals", () => {
     expect(summary.facts.nss).toBe("12345678901");
     expect(summary.liveImssValidation).toBe(false);
   });
+
+  it("junta NSS y RFC de distintos papeles y no pierde identidad del recibo", () => {
+    const summary = summarizeLaborFiscalSignals([
+      {
+        documentType: "cfdi",
+        originalName: "cfdi.xml",
+        preliminaryAnalysis: {
+          confirmedData: {
+            payrollPeriod: "1 al 15 de mayo",
+            payrollNetAmount: "$12,450",
+            payrollPerceptions: "$12,450",
+            payrollDeductions: "$0.00",
+            employerRfc: "ECC190605VA1",
+          },
+        },
+      },
+      {
+        documentType: "payroll_receipt",
+        originalName: "recibo.pdf",
+        preliminaryAnalysis: {
+          confirmedData: {
+            payrollNss: "12345678901",
+            workerRfc: "XAXX010101000",
+          },
+        },
+      },
+    ]);
+
+    expect(summary.facts.nss).toBe("12345678901");
+    expect(summary.facts.workerRfc).toBe("XAXX010101000");
+    expect(summary.facts.netAmount).toBe("$12,450");
+    expect(summary.facts.period).toBe("1 al 15 de mayo");
+  });
 });
