@@ -6,6 +6,8 @@ import {
   OFFICIAL_CHECK_CONSENT,
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialCheckHeadline,
+  reconcileOfficialCheckWithIdentity,
+  resolveOfficialCheckDisplay,
 } from "@shared/officialCheckCopy";
 import {
   buildAuditaPatronEngineSignature,
@@ -704,6 +706,90 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(parsed?.overallDetail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(parsed?.overallDetail).not.toMatch(/El instituto no respondió hoy|respuesta usable/);
     expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
+  });
+
+  it("recibo UIPD: SAT vivo sobrevive si IMSS e Infonavit vienen en 503 mantenimiento", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            sat: {
+              honesty: "live",
+              status: "vivo",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              hechos: ["RFC: UIPD9211257I0", "Situación: activo"],
+            },
+            imss: {
+              honesty: "failed",
+              status: "no_se_pudo",
+              workerReason: "503 mantenimiento",
+              message: "503 mantenimiento",
+              hechos: ["IMSS en mantenimiento."],
+            },
+            infonavit: {
+              honesty: "failed",
+              status: "no_se_pudo",
+              workerReason: "503 mantenimiento",
+              hechos: ["Infonavit en mantenimiento."],
+            },
+          },
+          chatAnchor: {
+            sat: {
+              fuente: "sat",
+              estado: "live",
+              fecha: "2026-09-21T12:00:00.000Z",
+              hechos: ["RFC: UIPD9211257I0", "Situación: activo"],
+              motivoFallo: null,
+            },
+            imss: {
+              fuente: "imss",
+              estado: "failed",
+              fecha: "2026-09-21T12:00:00.000Z",
+              hechos: ["IMSS en mantenimiento."],
+              motivoFallo: "503 mantenimiento",
+            },
+            infonavit: {
+              fuente: "infonavit",
+              estado: "failed",
+              fecha: "2026-09-21T12:00:00.000Z",
+              hechos: ["Infonavit en mantenimiento."],
+              motivoFallo: "503 mantenimiento",
+            },
+          },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+    const reconciled = reconcileOfficialCheckWithIdentity(parsed, { nss: true, curp: true, rfc: true }, {
+      facts: {
+        nss: "84129214965",
+        curp: "UIPD921125HYNCLD03",
+        workerRfc: "UIPD9211257I0",
+        employerRfc: "ECC190605VA1",
+      },
+    });
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: reconciled,
+      identity: { nss: true, curp: true, rfc: true },
+      facts: {
+        nss: "84129214965",
+        curp: "UIPD921125HYNCLD03",
+        workerRfc: "UIPD9211257I0",
+      },
+    });
+
+    expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
+    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS — sin respuesta hoy · en mantenimiento/);
+    expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {

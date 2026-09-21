@@ -319,6 +319,23 @@ export function buildWorkerChatFallbackAnswer(
       disclaimer: grounding.disclaimer,
       multiDocUpsell: grounding.multiDocUpsell,
     });
+  } else if (grounding.officialBriefing.verdict?.kind === "mixed") {
+    const mixed = grounding.officialBriefing.verdict;
+    const comparison = grounding.officialBriefing.comparison;
+    const comparisonBit =
+      comparison.seen === "bien" || comparison.seen === "hay_diferencia"
+        ? ` ${comparison.seenLine} ${comparison.nextStep}`
+        : "";
+    answer = formatWorkerChatAnswer({
+      answer: `${mixed.chat}${comparisonBit}`,
+      known: mixed.verdict,
+      missing: "Todavía falta la respuesta de las oficinas que hoy no contestaron.",
+      nextStep: mixed.nextStep,
+      includeOfficialSources: false,
+      prompt: options?.prompt,
+      disclaimer: grounding.disclaimer,
+      multiDocUpsell: grounding.multiDocUpsell,
+    });
   } else if (isPayWellQuestion(options?.prompt)) {
     const pay = buildPayWellFallback(grounding.officialBriefing);
     answer = formatWorkerChatAnswer({
@@ -363,9 +380,11 @@ export function buildWorkerChatLlmInstructions(
   options?: { prompt?: string | null },
 ): string {
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
-  const nextStep = briefingHasInstituteFailure(grounding.officialBriefing)
-    ? grounding.officialBriefing.comparison.nextStep
-    : guidance.nextStep;
+  const nextStep = grounding.officialBriefing.verdict?.kind === "mixed"
+    ? grounding.officialBriefing.verdict.nextStep
+    : briefingHasInstituteFailure(grounding.officialBriefing)
+      ? grounding.officialBriefing.comparison.nextStep
+      : guidance.nextStep;
   const includeOfficialSources = !grounding.caseOnly && shouldAttachOfficialDigest(options?.prompt);
   const foundations =
     grounding.legalFoundations.length > 0
@@ -416,20 +435,24 @@ export function buildWorkerChatLlmInstructions(
       "Nunca inventes tesis, registro digital, Semanario Judicial, IUS ni jurisprudencia.",
       "No uses el título Lecturas oficiales del digest. La respuesta son solo las cuatro secciones del papel.",
       "Si una lectura es doctrina, dilo: doctrina de la Corte, no jurisprudencia. Nunca etiquetes doctrina como jurisprudencia.",
-      grounding.officialBriefing.hasLiveOfficialResult
-        ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
-        : briefingHasInstituteFailure(grounding.officialBriefing)
-          ? `${CASE_ADVISOR_FALLO_RULE} Inténtalo más tarde.`
-          : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
+      grounding.officialBriefing.verdict?.kind === "mixed"
+        ? `Hay fuentes que sí contestaron y otras que no. Cita solo las vivas. No digas que fallaron las que sí contestaron. Idea: ${grounding.officialBriefing.verdict.chat}`
+        : grounding.officialBriefing.hasLiveOfficialResult
+          ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
+          : briefingHasInstituteFailure(grounding.officialBriefing)
+            ? `${CASE_ADVISOR_FALLO_RULE} Inténtalo más tarde.`
+            : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
       "Límite: habla solo con el resultado de TU consulta y el recibo de ESTE expediente. No inventes cumple, alta vigente ni salario oficial.",
       "Hechos visibles (únicos montos, RFC o NSS que puedes citar):",
       visibleFacts,
       `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${nextStep}`,
-      grounding.officialBriefing.instituteSilence ||
-      (!grounding.officialBriefing.hasLiveOfficialResult &&
-        briefingHasInstituteFailure(grounding.officialBriefing))
-        ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Idea: ${INSTITUTE_SILENCE_CHAT} Si preguntan qué implica para el pago, di que hoy no se puede saber si el patrón está bien dado de alta ni si el pago está bien o mal. Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», dictamen.`
-        : `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
+      grounding.officialBriefing.verdict?.kind === "mixed"
+        ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Cita lo que sí contestó. No digas que esa oficina no contestó. Idea: ${grounding.officialBriefing.verdict.chat} Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», decir que IMSS, SAT e Infonavit no contestaron si alguna sí lo hizo.`
+        : grounding.officialBriefing.instituteSilence ||
+          (!grounding.officialBriefing.hasLiveOfficialResult &&
+            briefingHasInstituteFailure(grounding.officialBriefing))
+          ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Idea: ${grounding.officialBriefing.verdict?.chat ?? INSTITUTE_SILENCE_CHAT} Si preguntan qué implica para el pago, di que hoy no se puede saber si el patrón está bien dado de alta ni si el pago está bien o mal. Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», dictamen.`
+          : `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
       "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte. Si la respuesta es el párrafo de oficinas sin respuesta, no partas en cuatro.",
       `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
     ].join("\n");
@@ -460,11 +483,13 @@ export function buildWorkerChatLlmInstructions(
     includeOfficialSources
       ? `Si citas lecturas oficiales, usa el título recortado tal como aparece aquí y agrégalas bajo ${WORKER_CHAT_SOURCES_HEADING}. No completes el rubro ni inventes IUS.`
       : `No uses el título ${WORKER_CHAT_SOURCES_HEADING}. La respuesta son solo las cuatro secciones del papel.`,
-    grounding.officialBriefing.hasLiveOfficialResult
-      ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
-      : briefingHasInstituteFailure(grounding.officialBriefing)
-        ? `${CASE_ADVISOR_FALLO_RULE} Inténtalo más tarde.`
-        : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
+    grounding.officialBriefing.verdict?.kind === "mixed"
+      ? `Hay fuentes que sí contestaron y otras que no. Cita solo las vivas. No digas que fallaron las que sí contestaron. Idea: ${grounding.officialBriefing.verdict.chat}`
+      : grounding.officialBriefing.hasLiveOfficialResult
+        ? "Cita solo estados, fechas y hechos de chatAnchor. No inventes cumple, alta vigente ni salario oficial si no vienen en esos hechos."
+        : briefingHasInstituteFailure(grounding.officialBriefing)
+          ? `${CASE_ADVISOR_FALLO_RULE} Inténtalo más tarde.`
+          : "No hay resultado vivo de TU consulta. Una frase y el botón Consultar IMSS y SAT. No inventes un estado oficial.",
     `Modo de lectura: ${grounding.officialBriefing.hasLiveOfficialResult ? "recibo + resultado de TU consulta" : "sin resultado vivo"}.`,
     `Origen de la lectura: ${guidance.reviewSourceLabel}. ${
       guidance.prefersRemoteOpinion
@@ -482,11 +507,13 @@ export function buildWorkerChatLlmInstructions(
     officialLines,
     `Siguiente paso ya anclado (acláralo si hace falta, no lo cambies por otro distinto): ${nextStep}`,
     `Si preguntan por IMSS e ISR (o impuestos/retenciones) juntos, el siguiente paso debe cubrir ambos: cruzar NSS/IMSS con el siguiente recibo o un papel IMSS (sin confirmar alta oficial) y cruzar la retención ISR con el CFDI o el depósito del mismo periodo. Si también mencionan Infonavit —o preguntan los tres—, cubre además el cruce de retención/crédito Infonavit con el aviso de retención o estado de crédito. Si preguntan por IMSS, impuestos o Infonavit por separado, usa esas señales y el límite honesto. Foco de esta pregunta: ${guidance.promptFocus}.`,
-    grounding.officialBriefing.instituteSilence ||
-    (!grounding.officialBriefing.hasLiveOfficialResult &&
-      briefingHasInstituteFailure(grounding.officialBriefing))
-      ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Idea: ${INSTITUTE_SILENCE_CHAT} Si preguntan qué implica para el pago, di que hoy no se puede saber si el patrón está bien dado de alta ni si el pago está bien o mal. Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», dictamen.`
-      : `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
+    grounding.officialBriefing.verdict?.kind === "mixed"
+      ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Cita lo que sí contestó. No digas que esa oficina no contestó. Idea: ${grounding.officialBriefing.verdict.chat} Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», decir que IMSS, SAT e Infonavit no contestaron si alguna sí lo hizo.`
+      : grounding.officialBriefing.instituteSilence ||
+        (!grounding.officialBriefing.hasLiveOfficialResult &&
+          briefingHasInstituteFailure(grounding.officialBriefing))
+        ? `Responde con un solo párrafo, sin títulos de Respuesta clara, Lo que sí se sabe, Lo que falta ni Siguiente paso. Idea: ${grounding.officialBriefing.verdict?.chat ?? INSTITUTE_SILENCE_CHAT} Si preguntan qué implica para el pago, di que hoy no se puede saber si el patrón está bien dado de alta ni si el pago está bien o mal. Prohibido: Falló, «no de AuditaPatrón», «Esto vimos: bien», dictamen.`
+        : `Responde con cuatro partes y estos títulos exactos: 1) ${WORKER_CHAT_CLEAR_HEADING} 2) ${WORKER_CHAT_KNOWN_HEADING} 3) ${WORKER_CHAT_MISSING_HEADING} 4) ${WORKER_CHAT_NEXT_HEADING}.`,
     "En modo breve: 1 o 2 frases por parte. En modo más explicativo: hasta 3 frases por parte. Si la respuesta es el párrafo de oficinas sin respuesta, no partas en cuatro.",
     `Cierra con esta frase exacta: ${WORKER_CHAT_DISCLAIMER}`,
   ].join("\n");
@@ -499,6 +526,15 @@ export function sanitizeWorkerChatAnswer(
 ): string {
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
   const briefing = grounding.officialBriefing;
+  if (briefing.verdict?.kind === "mixed") {
+    if (
+      /Hoy no pudimos confirmar con IMSS, SAT e Infonavit|Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron/i.test(
+        cleaned,
+      )
+    ) {
+      return briefing.verdict.chat;
+    }
+  }
   if (
     !briefing.hasLiveOfficialResult &&
     (briefing.instituteSilence || briefingHasInstituteFailure(briefing))

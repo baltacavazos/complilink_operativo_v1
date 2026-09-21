@@ -413,9 +413,12 @@ function readSourceStatusFromResult(
     if (normalized) return "vivo";
   }
   if (direct && typeof direct === "object") {
-    const status = String((direct as { status?: unknown }).status ?? "").toLowerCase();
+    const status = String((direct as { status?: unknown; honesty?: unknown }).honesty ?? (direct as { status?: unknown }).status ?? "").toLowerCase();
     const haystack = collectHaystack(direct);
-    if (status === "vivo" || status === "pendiente" || status === "no_se_pudo") return status;
+    if (status === "vivo" || status === "live") return "vivo";
+    if (status === "pendiente" || status === "pending") return "pendiente";
+    if (status === "no_se_pudo" || status === "failed" || status === "fallo" || status === "falló") return "no_se_pudo";
+    if (/503|service unavailable/.test(haystack) || looksLikeInstituteMaintenance(haystack)) return "no_se_pudo";
     if (looksLikeNoOfficialResponse(status) || looksLikeNoOfficialResponse(haystack)) return "no_se_pudo";
     if (PENDING_HINT.test(status) || PENDING_HINT.test(haystack)) return "pendiente";
     return "vivo";
@@ -510,6 +513,40 @@ function normalizeReturnedOfficialStatus(value: unknown): OfficialCheckStatus | 
   return null;
 }
 
+function factsFromOfficialRecord(record: Record<string, unknown> | null): string[] {
+  if (!record) return [];
+  const picked: string[] = [];
+  const rfc = typeof record.rfc === "string" ? record.rfc.trim() : "";
+  if (rfc && !isGenericSatRfc(rfc)) picked.push(`RFC: ${rfc}`);
+  const vigencia = typeof record.vigencia === "string" ? record.vigencia.trim() : "";
+  if (vigencia) picked.push(`Vigencia: ${vigencia}`);
+  const situacionRaw = record.situacionFiscal ?? record.situacion ?? record["situación"];
+  const situacion = typeof situacionRaw === "string" ? situacionRaw.trim() : "";
+  if (situacion) picked.push(`Situación: ${situacion}`);
+  return picked.slice(0, 3);
+}
+
+function readNestedOfficialRecord(
+  roots: Array<Record<string, unknown> | null>,
+  source: OfficialSourceCheck["source"],
+): Record<string, unknown> | null {
+  const keys = {
+    imss: ["imss", "imssStatus", "imss_status"],
+    sat: ["sat", "satStatus", "sat_status"],
+    infonavit: ["infonavit", "infonavitStatus", "infonavit_status"],
+  }[source];
+  for (const root of roots) {
+    if (!root) continue;
+    const sources = asRecord(root.sources);
+    for (const key of keys) {
+      const direct = root[key] ?? sources?.[key];
+      const record = asRecord(direct);
+      if (record) return record;
+    }
+  }
+  return null;
+}
+
 function readNestedOfficialSource(
   roots: Array<Record<string, unknown> | null>,
   source: OfficialSourceCheck["source"],
@@ -544,7 +581,9 @@ function readOfficialObligationCheck(
     : [];
   const motivoText =
     (typeof record?.workerReason === "string" ? record.workerReason : null) ??
-    (typeof record?.motivoFallo === "string" ? record.motivoFallo : null);
+    (typeof record?.motivoFallo === "string" ? record.motivoFallo : null) ??
+    (typeof record?.message === "string" ? record.message : null) ??
+    (typeof record?.error === "string" ? record.error : null);
   const missing = filterOfficialMissingFieldsForSource(
     source,
     [
@@ -583,7 +622,7 @@ function readOfficialObligationCheck(
       nowIso,
     used: usedOfficialIdentityForSource(source, used),
     honesty: anchor?.estado ?? officialStatusToHonesty(status),
-    hechos: hechos.length > 0 ? hechos : anchor?.hechos,
+    hechos: hechos.length > 0 ? hechos : anchor?.hechos?.length ? anchor.hechos : status === "vivo" ? factsFromOfficialRecord(record) : [],
     motivoFallo,
     detail:
       status === "no_se_pudo"
@@ -701,10 +740,22 @@ export function officialCheckFromBridgeReturn(params: {
   }
 
   const checks = [
-    readOfficialObligationCheck(officialCheck?.imss ?? chatAnchor?.imss, "imss", imssStatus, nowIso, used),
-    readOfficialObligationCheck(officialCheck?.sat ?? chatAnchor?.sat, "sat", satStatus, nowIso, used),
     readOfficialObligationCheck(
-      officialCheck?.infonavit ?? chatAnchor?.infonavit,
+      officialCheck?.imss ?? chatAnchor?.imss ?? readNestedOfficialRecord(roots, "imss"),
+      "imss",
+      imssStatus,
+      nowIso,
+      used,
+    ),
+    readOfficialObligationCheck(
+      officialCheck?.sat ?? chatAnchor?.sat ?? readNestedOfficialRecord(roots, "sat"),
+      "sat",
+      satStatus,
+      nowIso,
+      used,
+    ),
+    readOfficialObligationCheck(
+      officialCheck?.infonavit ?? chatAnchor?.infonavit ?? readNestedOfficialRecord(roots, "infonavit"),
       "infonavit",
       infonavitStatus,
       nowIso,

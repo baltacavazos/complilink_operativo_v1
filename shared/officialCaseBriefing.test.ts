@@ -712,15 +712,107 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.facts.workerRfc).toBe("UIPD9211257I0");
     expect(briefing.missingIdentity).not.toContain("RFC");
     expect(briefing.officialCheck?.overallStatus).toBe("no_se_pudo");
-    expect(briefing.statusLines.some((line) => /IMSS: Falló/.test(line))).toBe(true);
-    expect(briefing.statusLines.some((line) => /SAT: Falló/.test(line))).toBe(true);
-    expect(briefing.statusLines.some((line) => /Infonavit: Falló/.test(line))).toBe(true);
-    expect(briefing.statusLines.join(" ")).not.toMatch(/Pendiente|Faltan datos/);
+    expect(briefing.statusLines.some((line) => line.startsWith("IMSS — sin respuesta hoy"))).toBe(true);
+    expect(briefing.statusLines.some((line) => line.startsWith("SAT — sin respuesta hoy"))).toBe(true);
+    expect(briefing.statusLines.some((line) => line.startsWith("Infonavit — sin respuesta hoy"))).toBe(true);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/Pendiente|Faltan datos|Falló/);
     expect(visible).not.toMatch(/Falta un RFC/i);
     expect(visible).not.toMatch(/RFC real/i);
-    expect(aligned).toMatch(/IMSS: Falló/);
-    expect(aligned).toMatch(/SAT: Falló/);
-    expect(aligned).not.toMatch(/Pendiente|Faltan datos/);
+    expect(aligned).toMatch(/IMSS — sin respuesta hoy/);
+    expect(aligned).toMatch(/SAT — sin respuesta hoy/);
+    expect(aligned).not.toMatch(/Pendiente|Faltan datos|Falló/);
     expect(JSON.stringify({ briefing, answer, aligned })).not.toMatch(/\bcumple\b|\bcobro\b/i);
+  });
+
+  it("recibo UIPD muestra el SAT vivo aunque IMSS e Infonavit no contesten", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("no_se_pudo", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "no_se_pudo",
+            label: "Sin respuesta",
+            detail: "503 mantenimiento",
+            checkedAt,
+            used: { nss: true, curp: true, rfc: true },
+            honesty: "failed",
+            hechos: ["IMSS en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: true, rfc: true },
+            honesty: "live",
+            hechos: ["RFC: UIPD9211257I0", "Situación: activo"],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "no_se_pudo",
+            label: "Sin respuesta",
+            detail: "503 mantenimiento",
+            checkedAt,
+            used: { nss: true, curp: true, rfc: true },
+            honesty: "failed",
+            hechos: ["Infonavit en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["IMSS en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          sat: {
+            fuente: "sat",
+            estado: "live",
+            fecha: checkedAt,
+            hechos: ["RFC: UIPD9211257I0", "Situación: activo"],
+            motivoFallo: null,
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["Infonavit en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+        },
+      }),
+      facts: {
+        nss: "84129214965",
+        curp: "UIPD921125HYNCLD03",
+        workerRfc: "UIPD9211257I0",
+        employerRfc: "ECC190605VA1",
+        netAmount: "$4,725.60",
+      },
+    });
+    const answer = buildPayWellFallback(briefing);
+    const prompt = formatOfficialCaseBriefingForPrompt(briefing);
+
+    expect(briefing.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(briefing.instituteSilence).toBe(false);
+    expect(briefing.verdict?.kind).toBe("mixed");
+    expect(briefing.statusLines.some((line) => /SAT: Vivo/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => line.includes("UIPD9211257I0"))).toBe(true);
+    expect(briefing.statusLines.some((line) => line === "IMSS — sin respuesta hoy · en mantenimiento")).toBe(true);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/SAT — sin respuesta|Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(answer.clearAnswer).toMatch(/UIPD9211257I0/);
+    expect(answer.clearAnswer).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(prompt).toMatch(/SAT: Vivo/);
+    expect(prompt).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(JSON.stringify({ briefing, answer })).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
   });
 });
