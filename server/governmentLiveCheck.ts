@@ -9,6 +9,7 @@ import {
 } from "@shared/officialCheckCopy";
 import {
   canonicalizeEngineWebhookUrl,
+  deriveHeliosBridgeUrl,
   postSignedAuditaPatronEngine,
   type SignedEnginePostResult,
 } from "./auditaPatronIntegrationService";
@@ -37,9 +38,33 @@ export type OfficialCheckEngineConfig = {
   hmacSecret: string;
 };
 
+export function resolveOfficialCheckWebhookUrl(engineWebhookUrl: string): string {
+  const configured = canonicalizeEngineWebhookUrl(engineWebhookUrl);
+  if (!configured) return "";
+
+  try {
+    const path = new URL(configured).pathname.replace(/\/+$/, "") || "/";
+    if (path === "/api/auditapatron/webhook" || path === "/api/auditapatron/complilink-webhook") {
+      return deriveHeliosBridgeUrl(configured) || configured;
+    }
+    return configured;
+  } catch {
+    return configured;
+  }
+}
+
+export function resolveOfficialCheckTargetUrls(engineWebhookUrl: string): string[] {
+  const primary = resolveOfficialCheckWebhookUrl(engineWebhookUrl);
+  const derived = deriveHeliosBridgeUrl(engineWebhookUrl);
+  const urls: string[] = [];
+  if (primary) urls.push(primary);
+  if (derived && !urls.includes(derived)) urls.push(derived);
+  return urls;
+}
+
 export function readEngineBridgeConfig(env: GovernmentLiveEnv = process.env): OfficialCheckEngineConfig {
   return {
-    webhookUrl: canonicalizeEngineWebhookUrl(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "")),
+    webhookUrl: resolveOfficialCheckWebhookUrl(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "")),
     hmacSecret: String(env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "").trim(),
   };
 }
@@ -452,16 +477,36 @@ export async function runOfficialGovernmentCheck(params: {
     correlationId: params.correlationId,
   });
 
-  const posted = await postSignedAuditaPatronEngine({
-    url: engine.webhookUrl,
-    payload,
-    hmacSecret: engine.hmacSecret,
-    timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
-    maxAttempts: GOVERNMENT_LIVE_MAX_ATTEMPTS,
-    fetchImpl: params.fetchImpl,
-    sleep: params.sleep,
-    now: params.now,
-  });
+  const targetUrls = resolveOfficialCheckTargetUrls(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? engine.webhookUrl));
+  let posted: SignedEnginePostResult | null = null;
+  for (const url of targetUrls.length > 0 ? targetUrls : [engine.webhookUrl]) {
+    posted = await postSignedAuditaPatronEngine({
+      url,
+      payload,
+      hmacSecret: engine.hmacSecret,
+      timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
+      maxAttempts: GOVERNMENT_LIVE_MAX_ATTEMPTS,
+      fetchImpl: params.fetchImpl,
+      sleep: params.sleep,
+      now: params.now,
+    });
+    if (posted.ok) break;
+    if (posted.reason === "hmac_failed" || posted.reason === "authentication_failed") break;
+    if (posted.reason === "timeout" || posted.reason === "retryable_http" || posted.reason === "server_error") {
+      break;
+    }
+    if (posted.httpStatus === 404 || posted.reason === "redirect_without_hmac_headers") {
+      continue;
+    }
+    break;
+  }
+  if (!posted) {
+    return {
+      ...emptySummary("no_se_pudo", identity),
+      configured: true,
+      consentGranted: true,
+    };
+  }
 
   const overallStatus = classifyBridgeOfficialCheck(posted);
   const imssStatus = readSourceStatusFromResult(posted.responseJson, "imss") ?? overallStatus;

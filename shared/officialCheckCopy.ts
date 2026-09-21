@@ -81,6 +81,89 @@ export function buildOfficialCheckHeadline(summary: Pick<OfficialCheckSummary, "
   return date ? `${label} · ${date}` : label;
 }
 
+export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando...";
+export const OFFICIAL_CHECK_READY_HEADLINE = "Consulta IMSS y SAT";
+export const OFFICIAL_CHECK_READY_DETAIL =
+  "Con tu permiso consultamos IMSS y SAT. Si no hay respuesta, te lo decimos. No inventamos que tu patrón cumple.";
+
+export type OfficialCheckDisplayStatus = OfficialCheckStatus | "consultando" | "listo";
+
+export type OfficialCheckDisplay = {
+  headline: string;
+  detail: string;
+  buttonLabel: string;
+  status: OfficialCheckDisplayStatus;
+  showPermissionCopy: boolean;
+};
+
+export function isPermissionBlockedStatus(status: OfficialCheckStatus | null | undefined) {
+  return status === "sin_permiso";
+}
+
+export function pickHonestOfficialCheck(params: {
+  consentGranted: boolean;
+  candidates: Array<OfficialCheckSummary | null | undefined>;
+}): OfficialCheckSummary | null {
+  const present = params.candidates.filter((item): item is OfficialCheckSummary => Boolean(item));
+  if (params.consentGranted) {
+    return present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ?? null;
+  }
+  return present[0] ?? null;
+}
+
+/**
+ * Permiso primero. Con el checkbox marcado nunca se muestra «Falta tu permiso».
+ * El CTA refleja Consultando / Vivo / Pendiente / Falló según la respuesta, no un veredicto inventado.
+ */
+export function resolveOfficialCheckDisplay(params: {
+  consentGranted: boolean;
+  isPending?: boolean;
+  summary?: OfficialCheckSummary | null;
+}): OfficialCheckDisplay {
+  if (params.isPending) {
+    return {
+      headline: OFFICIAL_CHECK_LOADING_LABEL,
+      detail: "Estamos consultando IMSS y SAT. Si no hay respuesta, te lo decimos.",
+      buttonLabel: OFFICIAL_CHECK_LOADING_LABEL,
+      status: "consultando",
+      showPermissionCopy: false,
+    };
+  }
+
+  const honest =
+    params.consentGranted && isPermissionBlockedStatus(params.summary?.overallStatus)
+      ? null
+      : (params.summary ?? null);
+
+  if (params.consentGranted) {
+    if (honest && !isPermissionBlockedStatus(honest.overallStatus)) {
+      return {
+        headline: buildOfficialCheckHeadline(honest),
+        detail: honest.overallDetail,
+        buttonLabel: honest.overallLabel,
+        status: honest.overallStatus,
+        showPermissionCopy: false,
+      };
+    }
+
+    return {
+      headline: OFFICIAL_CHECK_READY_HEADLINE,
+      detail: OFFICIAL_CHECK_READY_DETAIL,
+      buttonLabel: OFFICIAL_CHECK_BUTTON,
+      status: "listo",
+      showPermissionCopy: false,
+    };
+  }
+
+  return {
+    headline: OFFICIAL_CHECK_STATUS_LABEL.sin_permiso,
+    detail: OFFICIAL_CHECK_STATUS_DETAIL.sin_permiso,
+    buttonLabel: OFFICIAL_CHECK_BUTTON,
+    status: "sin_permiso",
+    showPermissionCopy: true,
+  };
+}
+
 export function assertNoInternalBrands(value: string) {
   return !/\b(APIMarket|Helios|CompliLink|connector|Capsolver)\b/i.test(value);
 }

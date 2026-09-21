@@ -47,9 +47,9 @@ import {
   type FiveSecondVerdict,
 } from "@shared/fiveSecondVerdict";
 import {
-  OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_CONSENT,
-  buildOfficialCheckHeadline,
+  pickHonestOfficialCheck,
+  resolveOfficialCheckDisplay,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
@@ -4325,6 +4325,8 @@ export default function Auditar() {
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
+  const [officialCheckResult, setOfficialCheckResult] =
+    useState<OfficialCheckSummary | null>(null);
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
   const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
   const [guestReviewClaimStarted, setGuestReviewClaimStarted] = useState(false);
@@ -6238,12 +6240,20 @@ export default function Auditar() {
     classificationConfidence: lastUpload?.classification.classificationConfidence,
     riskLevel: lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel,
   });
-  const officialCheckSummary =
-    effectiveSocialSecurityValidation?.officialCheck ?? null;
-  const officialCheckHeadline = officialCheckSummary
-    ? effectiveSocialSecurityValidation?.officialCheckHeadline ??
-      buildOfficialCheckHeadline(officialCheckSummary)
-    : null;
+  const officialCheckSummary = pickHonestOfficialCheck({
+    consentGranted: officialCheckConsent,
+    candidates: [
+      officialCheckResult,
+      socialSecurityValidation?.officialCheck,
+      uploadSocialSecurityValidation?.officialCheck,
+    ],
+  });
+  const officialCheckDisplay = resolveOfficialCheckDisplay({
+    consentGranted: officialCheckConsent,
+    isPending: revalidateSocialSecurityMutation.isPending,
+    summary: officialCheckSummary,
+  });
+  const officialCheckHeadline = officialCheckDisplay.headline;
   const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
       plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -7533,10 +7543,27 @@ export default function Auditar() {
     try {
       setSubmitError(null);
       setLegalGateError(null);
-      await revalidateSocialSecurityMutation.mutateAsync({
+      const result = await revalidateSocialSecurityMutation.mutateAsync({
         ...caseDetailInput,
         consentGranted: officialCheckConsent,
       });
+      if (result.officialCheck) {
+        setOfficialCheckResult(result.officialCheck);
+        setLastUpload((current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            socialSecurityValidation: {
+              ...current.socialSecurityValidation,
+              officialCheck: result.officialCheck,
+              officialCheckHeadline: result.officialCheckHeadline,
+              lastRevalidatedAt: result.lastRevalidatedAt,
+              lastRevalidationSummary: result.lastRevalidationSummary,
+              liveImssValidation: result.liveImssValidation,
+            },
+          };
+        });
+      }
       await Promise.all([
         utils.cases.detail.invalidate(caseDetailInput),
         caseDetailQuery.refetch(),
@@ -9480,14 +9507,13 @@ export default function Auditar() {
                               </div>
                             </details>
                             <div data-testid="official-check-card" className="mt-3 rounded-[1rem] border border-teal-200 bg-teal-50/80 px-3 py-3 text-left">
-                              <p className="text-sm font-semibold tracking-tight text-teal-950">
-                                {officialCheckHeadline ?? "Consulta IMSS y SAT"}
+                              <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
+                                {officialCheckDisplay.headline}
                               </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-800">
-                                {officialCheckSummary?.overallDetail ??
-                                  "Si das permiso, consultamos IMSS y SAT con tu NSS, CURP o RFC. Si no hay respuesta, te lo decimos. No inventamos que tu patrón cumple."}
+                              <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                                {officialCheckDisplay.detail}
                               </p>
-                              {officialCheckSummary?.checks?.length ? (
+                              {officialCheckConsent && officialCheckSummary?.checks?.length ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCheckSummary.checks.map(check => (
                                     <li key={check.source}>
@@ -9507,15 +9533,14 @@ export default function Auditar() {
                               </label>
                               <Button
                                 type="button"
+                                data-testid="official-check-cta"
                                 className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
                                 disabled={revalidateSocialSecurityMutation.isPending || !officialCheckConsent}
                                 onClick={() => {
                                   void handleRevalidateSocialSecurity();
                                 }}
                               >
-                                {revalidateSocialSecurityMutation.isPending
-                                  ? "Consultando..."
-                                  : OFFICIAL_CHECK_BUTTON}
+                                {officialCheckDisplay.buttonLabel}
                               </Button>
                             </div>
                           </>
@@ -10453,6 +10478,8 @@ export default function Auditar() {
                       setSelectedCaseId("");
                       setPendingDraft(null);
                       setLastUpload(null);
+                      setOfficialCheckResult(null);
+                      setOfficialCheckConsent(false);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
                   >
@@ -10474,6 +10501,8 @@ export default function Auditar() {
                       setSelectedCaseId(event.target.value);
                       setPendingDraft(null);
                       setLastUpload(null);
+                      setOfficialCheckResult(null);
+                      setOfficialCheckConsent(false);
                     }}
                     className="mt-2 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition focus:border-teal-500"
                   >
