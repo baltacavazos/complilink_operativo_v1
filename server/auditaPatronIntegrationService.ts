@@ -391,8 +391,11 @@ export async function postSignedAuditaPatronEngine(params: {
         break;
       }
 
-      lastBody = sanitizeResponseBody(await response.text());
-      lastJson = safeJsonParse(lastBody);
+      const rawBody = await response.text();
+      // El acuse se guarda corto. La consulta oficial trae certificados y el SAT vivo al final:
+      // recortar antes de parsear deja el JSON inválido y AuditaPatrón pierde esa fuente.
+      lastJson = safeJsonParse(rawBody);
+      lastBody = sanitizeResponseBody(rawBody);
 
       if (response.ok) {
         return {

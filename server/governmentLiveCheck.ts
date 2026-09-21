@@ -4,6 +4,7 @@ import {
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialFailedDetail,
   buildOfficialMaintenanceDetail,
+  citeableOfficialHechos,
   filterOfficialMissingFieldsForSource,
   honestyToOfficialStatus,
   inferOfficialMissingFieldKeys,
@@ -38,7 +39,8 @@ import {
   type SignedEnginePostResult,
 } from "./auditaPatronIntegrationService";
 
-export const GOVERNMENT_LIVE_TIMEOUT_MS = 12_000;
+/** El puente espera cada fuente (hasta dos intentos de 12s) y devuelve el SAT en el mismo cuerpo. */
+export const GOVERNMENT_LIVE_TIMEOUT_MS = 30_000;
 export const GOVERNMENT_LIVE_MAX_ATTEMPTS = 2;
 export const OFFICIAL_CHECK_ACTION = "official_check";
 export const OFFICIAL_CHECK_EVENT = "official.check.requested";
@@ -480,10 +482,76 @@ function workerDetailForBridgeResult(
   return OFFICIAL_CHECK_STATUS_DETAIL[status];
 }
 
+/**
+ * Honestidad de la consulta, no la opinión fiscal.
+ * `opinionStatus: pendiente` (la opinión aún no sale) no es «la fuente no contestó».
+ * `resultado: vivo` o `honesty: live` ganan sobre un status pendiente.
+ */
+function consultHonesty(record: Record<string, unknown> | null): string | null {
+  if (!record) return null;
+  const honesty = String(record.honesty ?? "").trim().toLowerCase();
+  const estado = String(record.estado ?? "").trim().toLowerCase();
+  const resultado = String(record.resultado ?? "").trim().toLowerCase();
+  if (honesty === "live" || estado === "live" || resultado === "vivo" || resultado === "live") return "live";
+  if (honesty === "failed" || estado === "failed" || resultado === "no_se_pudo") return "failed";
+  if (honesty === "pending" || estado === "pending" || resultado === "pendiente") return "pending";
+  const status = String(record.status ?? "").trim().toLowerCase();
+  if (
+    status === "live" ||
+    status === "vivo" ||
+    status === "pending" ||
+    status === "pendiente" ||
+    status === "failed" ||
+    status === "no_se_pudo" ||
+    status === "fallo" ||
+    status === "falló"
+  ) {
+    return status;
+  }
+  return null;
+}
+
+function flatSourceHonesty(
+  roots: Array<Record<string, unknown> | null>,
+  source: OfficialSourceCheck["source"],
+): string | null {
+  const names = {
+    sat: ["satHonesty", "sat_honesty"],
+    imss: ["imssHonesty", "imss_honesty"],
+    infonavit: ["infonavitHonesty", "infonavit_honesty"],
+  }[source];
+  for (const root of roots) {
+    if (!root) continue;
+    for (const name of names) {
+      const value = root[name] ?? asRecord(root.result)?.[name] ?? asRecord(root.officialCheck)?.[name];
+      if (typeof value === "string" && value.trim()) return value.trim().toLowerCase();
+    }
+  }
+  return null;
+}
+
+function withFlatHonesty(
+  value: unknown,
+  source: OfficialSourceCheck["source"],
+  roots: Array<Record<string, unknown> | null>,
+): unknown {
+  const flat = flatSourceHonesty(roots, source);
+  if (flat !== "live") return value;
+  const record = asRecord(value) ?? {};
+  if (consultHonesty(record) === "live") return value ?? record;
+  return { ...record, honesty: "live" };
+}
+
 function normalizeReturnedOfficialStatus(value: unknown): OfficialCheckStatus | null {
   if (value == null) return null;
   if (typeof value === "object" && !Array.isArray(value)) {
     const record = value as Record<string, unknown>;
+    const declared = consultHonesty(record);
+    if (declared === "live" || declared === "vivo") return "vivo";
+    if (declared === "failed" || declared === "no_se_pudo" || declared === "fallo" || declared === "falló") {
+      return "no_se_pudo";
+    }
+    if (declared === "pending" || declared === "pendiente") return "pendiente";
     return (
       normalizeReturnedOfficialStatus(record.status) ??
       normalizeReturnedOfficialStatus(record.state) ??
@@ -594,7 +662,7 @@ function readOfficialObligationCheck(
     used,
   );
   const fromHonesty = honestyToOfficialStatus(
-    record ? String(record.honesty ?? record.estado ?? record.status ?? "") : null,
+    consultHonesty(record),
     missing,
     used,
     source,
@@ -622,7 +690,14 @@ function readOfficialObligationCheck(
       nowIso,
     used: usedOfficialIdentityForSource(source, used),
     honesty: anchor?.estado ?? officialStatusToHonesty(status),
-    hechos: hechos.length > 0 ? hechos : anchor?.hechos?.length ? anchor.hechos : status === "vivo" ? factsFromOfficialRecord(record) : [],
+    hechos: (() => {
+      const own = citeableOfficialHechos(source, hechos);
+      const fromAnchor = citeableOfficialHechos(source, anchor?.hechos ?? []);
+      if (own.length > 0) return own;
+      if (fromAnchor.length > 0) return fromAnchor;
+      if (status === "vivo") return factsFromOfficialRecord(record);
+      return anchor?.hechos?.length ? anchor.hechos : [];
+    })(),
     motivoFallo,
     detail:
       status === "no_se_pudo"
@@ -632,10 +707,23 @@ function readOfficialObligationCheck(
   });
 }
 
+function bridgeContractResult(root: Record<string, unknown>): Record<string, unknown> | null {
+  const contracts = [
+    asRecord(root.responseContract),
+    asRecord(asRecord(root.result)?.responseContract),
+    asRecord(asRecord(root.metadata)?.responseContract),
+  ];
+  for (const contract of contracts) {
+    const current = asRecord(contract?.currentResponseEvent);
+    const result = asRecord(current?.result);
+    if (result) return result;
+  }
+  return asRecord(asRecord(root.currentResponseEvent)?.result);
+}
+
 function pickBridgeResultRoots(root: Record<string, unknown>): Array<Record<string, unknown> | null> {
   const result = asRecord(root.result) ?? asRecord(root.analysisResults) ?? root;
-  const current = asRecord(root.currentResponseEvent);
-  const currentResult = asRecord(current?.result);
+  const currentResult = bridgeContractResult(root);
   const officialCheck =
     asRecord(result?.officialCheck) ??
     asRecord(root.officialCheck) ??
@@ -680,7 +768,7 @@ export function officialCheckFromBridgeReturn(params: {
 
   const roots = pickBridgeResultRoots(root);
   const result = asRecord(root.result) ?? asRecord(root.analysisResults) ?? root;
-  const currentResult = asRecord(asRecord(root.currentResponseEvent)?.result);
+  const currentResult = bridgeContractResult(root);
   const officialCheck =
     asRecord(result?.officialCheck) ??
     asRecord(root.officialCheck) ??
@@ -741,21 +829,25 @@ export function officialCheckFromBridgeReturn(params: {
 
   const checks = [
     readOfficialObligationCheck(
-      officialCheck?.imss ?? chatAnchor?.imss ?? readNestedOfficialRecord(roots, "imss"),
+      withFlatHonesty(officialCheck?.imss ?? chatAnchor?.imss ?? readNestedOfficialRecord(roots, "imss"), "imss", roots),
       "imss",
       imssStatus,
       nowIso,
       used,
     ),
     readOfficialObligationCheck(
-      officialCheck?.sat ?? chatAnchor?.sat ?? readNestedOfficialRecord(roots, "sat"),
+      withFlatHonesty(officialCheck?.sat ?? chatAnchor?.sat ?? readNestedOfficialRecord(roots, "sat"), "sat", roots),
       "sat",
       satStatus,
       nowIso,
       used,
     ),
     readOfficialObligationCheck(
-      officialCheck?.infonavit ?? chatAnchor?.infonavit ?? readNestedOfficialRecord(roots, "infonavit"),
+      withFlatHonesty(
+        officialCheck?.infonavit ?? chatAnchor?.infonavit ?? readNestedOfficialRecord(roots, "infonavit"),
+        "infonavit",
+        roots,
+      ),
       "infonavit",
       infonavitStatus,
       nowIso,

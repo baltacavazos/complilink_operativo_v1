@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 
+import { buildOfficialCaseBriefing, buildPayWellFallback } from "@shared/officialCaseBriefing";
 import {
   OFFICIAL_CHECK_BUTTON,
   OFFICIAL_CHECK_CONSENT,
+  OFFICIAL_PENDING_STALE_MS,
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialCheckHeadline,
   reconcileOfficialCheckWithIdentity,
@@ -790,6 +792,171 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS — sin respuesta hoy · en mantenimiento/);
     expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
+  });
+
+  it("un cuerpo largo con SAT vivo y opinión pendiente no se vuelve silencio de las tres", async () => {
+    const certificates = Array.from({ length: 30 }, (_, index) => ({
+      serial: `CERT-${index}-`.padEnd(90, "A"),
+      opinionStatus: "pendiente",
+      tipo: "certificado",
+    }));
+    const payload = {
+      ok: true,
+      action: "official_check",
+      satHonesty: "live",
+      imssHonesty: "failed",
+      infonavitHonesty: "failed",
+      result: {
+        sat: {
+          opinionStatus: "pendiente",
+          matchedRfc: true,
+          rfc: "UIPD9211257I0",
+          documents: certificates,
+        },
+        imss: { message: "503 mantenimiento" },
+        infonavit: { message: "503 mantenimiento" },
+        officialCheck: {
+          sat: {
+            honesty: "live",
+            status: "pendiente",
+            resultado: "vivo",
+            opinionStatus: "pendiente",
+            checkedAt: "2026-09-21T20:41:00.000Z",
+            hechos: ["RFC: UIPD9211257I0", "Certificados del SAT."],
+          },
+          imss: {
+            honesty: "failed",
+            status: "failed",
+            resultado: "no_se_pudo",
+            workerReason: "IMSS está en mantenimiento.",
+            hechos: ["IMSS está en mantenimiento."],
+          },
+          infonavit: {
+            honesty: "failed",
+            status: "failed",
+            resultado: "no_se_pudo",
+            workerReason: "Infonavit está en mantenimiento.",
+            hechos: ["Infonavit está en mantenimiento."],
+          },
+        },
+        chatAnchor: {
+          sat: {
+            fuente: "sat",
+            estado: "live",
+            resultado: "vivo",
+            fecha: "2026-09-21T20:41:00.000Z",
+            hechos: ["RFC: UIPD9211257I0", "Certificados del SAT."],
+            motivoFallo: null,
+          },
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            resultado: "no_se_pudo",
+            fecha: "2026-09-21T20:41:00.000Z",
+            hechos: ["IMSS está en mantenimiento."],
+            motivoFallo: "IMSS está en mantenimiento.",
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            resultado: "no_se_pudo",
+            fecha: "2026-09-21T20:41:00.000Z",
+            hechos: ["Infonavit está en mantenimiento."],
+            motivoFallo: "Infonavit está en mantenimiento.",
+          },
+        },
+      },
+    };
+    const raw = JSON.stringify(payload);
+    expect(raw.length).toBeGreaterThan(2000);
+    expect(raw.slice(0, 2000)).not.toContain('"honesty":"live"');
+
+    const checkedAt = new Date("2026-09-21T20:41:00.000Z");
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(raw, { status: 200, headers: { "content-type": "application/json" } }),
+    );
+    const result = await runOfficialGovernmentCheck({
+      identity: { nss: "84129214965", curp: "UIPD921125HYNCLD03", rfc: "UIPD9211257I0" },
+      consentGranted: true,
+      env: ENGINE_ENV,
+      now: checkedAt,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const facts = {
+      nss: "84129214965",
+      curp: "UIPD921125HYNCLD03",
+      workerRfc: "UIPD9211257I0",
+      employerRfc: "ECC190605VA1",
+    };
+    const laterMs = checkedAt.getTime() + OFFICIAL_PENDING_STALE_MS + 60_000;
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: result,
+      identity: { nss: true, curp: true, rfc: true },
+      facts,
+      nowMs: laterMs,
+    });
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: result,
+      facts,
+      nowMs: laterMs,
+    });
+
+    expect(result.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
+    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS — sin respuesta hoy/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/en mantenimiento/);
+    expect(briefing.instituteSilence).toBe(false);
+    expect(briefing.hasLiveOfficialResult).toBe(true);
+    expect(briefing.verdict?.kind).toBe("mixed");
+    expect(briefing.verdict?.chat).toMatch(/SAT sí contestó/);
+    expect(briefing.verdict?.chat).not.toMatch(/IMSS, SAT e Infonavit y no contestaron/);
+    expect(buildPayWellFallback(briefing).clearAnswer).not.toMatch(/IMSS, SAT e Infonavit y no contestaron/);
+    expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
+    expect(briefing.verdict?.chat).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("satHonesty vivo gana aunque la opinión del SAT diga pendiente", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        satHonesty: "live",
+        result: {
+          sat: { opinionStatus: "pendiente", status: "pendiente", rfc: "UIPD9211257I0" },
+          imss: {
+            honesty: "failed",
+            resultado: "no_se_pudo",
+            workerReason: "IMSS está en mantenimiento.",
+            hechos: ["IMSS está en mantenimiento."],
+          },
+          infonavit: {
+            honesty: "failed",
+            resultado: "no_se_pudo",
+            workerReason: "Infonavit está en mantenimiento.",
+            hechos: ["Infonavit está en mantenimiento."],
+          },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso: "2026-09-21T20:41:00.000Z",
+    });
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: parsed,
+      identity: { nss: true, curp: true, rfc: true },
+      nowMs: Date.parse("2026-09-21T20:41:00.000Z") + OFFICIAL_PENDING_STALE_MS + 5_000,
+    });
+
+    expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    expect(parsed?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(/UIPD9211257I0/);
+    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Certificados|RFC: UIPD9211257I0/);
+    expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {
