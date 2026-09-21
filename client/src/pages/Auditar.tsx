@@ -9702,6 +9702,47 @@ export default function Auditar() {
 
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
           <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
+            {documents.length > 0 && !pendingDraft && !lastUpload ? (
+              <div data-testid="official-check-card" className="w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
+                <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
+                  {officialCheckDisplay.headline}
+                </p>
+                <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
+                  {officialCheckDisplay.detail}
+                </p>
+                <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={officialCheckConsent}
+                    onChange={event => setOfficialCheckConsent(event.target.checked)}
+                  />
+                  <span>{effectiveSocialSecurityValidation?.officialCheckConsent ?? OFFICIAL_CHECK_CONSENT}</span>
+                </label>
+                <Button
+                  type="button"
+                  data-testid="official-check-cta"
+                  className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                  disabled={revalidateSocialSecurityMutation.isPending || !officialCheckConsent}
+                  onClick={() => {
+                    void handleRevalidateSocialSecurity();
+                  }}
+                >
+                  {officialCheckDisplay.silence ? INSTITUTE_SILENCE_RETRY : officialCheckDisplay.buttonLabel}
+                </Button>
+                {officialCaseBriefing.hasOfficialConsulta ? (
+                  <Button
+                    type="button"
+                    data-testid="official-check-chat-cta"
+                    variant="outline"
+                    className="mt-2 h-11 rounded-full border-teal-200 bg-white px-4 text-teal-950 hover:bg-teal-100"
+                    onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
+                  >
+                    {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
             {shouldCompactPostUploadExperience && lastUpload ? (
               <div className="w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-[linear-gradient(135deg,_rgba(250,254,251,0.998),_rgba(255,255,255,1))] px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
                 <div className={`flex flex-col gap-2 ${shouldCompactPostUploadExperience ? "" : "lg:flex-row lg:items-center lg:justify-between"}`}>

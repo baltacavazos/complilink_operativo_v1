@@ -16,6 +16,7 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("pickHonestOfficialCheck");
     expect(source).toContain("officialCheckConsent");
     expect(source).toContain('data-testid="official-check-card"');
+    expect(source).toContain("documents.length > 0 && !pendingDraft && !lastUpload");
     expect(source).toContain('data-testid="official-check-headline"');
     expect(source).toContain('data-testid="official-check-cta"');
     expect(source).toContain("setOfficialCheckResult(result.officialCheck)");

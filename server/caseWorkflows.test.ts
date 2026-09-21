@@ -2723,6 +2723,170 @@ describe("appRouter case workflows", () => {
     });
   });
 
+  function confirmableNominaDraft(draftId: string) {
+    const freshDraftCreatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    return {
+      id: 412,
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId,
+      createdAt: new Date(freshDraftCreatedAt),
+      payload: {
+        draftId,
+        createdAt: freshDraftCreatedAt,
+        fileName: "nomina-didier.xml",
+        mimeType: "application/xml",
+        sizeBytes: 48211,
+        storageKey: `complilink/balt-1/${draftId}.xml`,
+        storageUrl: `https://cdn.example.com/${draftId}.xml`,
+        sha256: "c".repeat(64),
+        expectedDocumentType: "cfdi_nomina",
+        captureMode: "manual_upload",
+        classification: {
+          documentType: "payroll_cfdi",
+          classificationConfidence: 0.96,
+          normalizedDocType: "cfdi_nomina",
+          reasons: ["CFDI de nómina del mismo trabajador."],
+          processingProfile: "structured",
+          reviewRecommendation: "auto_accept",
+          supportsStructuredExtraction: true,
+          supportsBenefitEstimation: true,
+        },
+        preliminaryAnalysis: {
+          confirmedData: {
+            workerName: "Didier Antonio Uicab Palomo",
+            employerRfc: "ECC190605VA1",
+            period: "2026-08",
+          },
+          estimatedData: {},
+          structuredExtraction: {
+            nss: "84129214965",
+            curp: "UIPD921125HYNCLD03",
+            workerRfc: "UIPD9211257I0",
+          },
+          extractionTargets: ["nss", "curp", "workerRfc", "employerRfc"],
+          guardrails: [],
+        },
+        scanAssistance: {
+          friendlyHeadline: "Lectura clara",
+          userGuidance: "El CFDI se puede guardar.",
+          readiness: "ready",
+          documentPresence: "present",
+          expectedTypeAlignment: "match",
+          confidence: 0.97,
+          issues: [],
+        },
+      },
+    } as never;
+  }
+
+  it("keeps a confirmed CFDI saved when the bridge ack is larger than a MySQL TEXT column", async () => {
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue(confirmableNominaDraft("DRF-CONFIRM-GIANT-001"));
+    vi.mocked(sendDocumentToAuditaPatronEngine).mockResolvedValue({
+      status: "sent",
+      dispatchedAt: "2026-09-21T21:53:08.000Z",
+      timestamp: "1758491588",
+      attempts: 1,
+      httpStatus: 200,
+      responseBody: "ok",
+      payload: {
+        providerId: 30001,
+        userId: 1,
+        title: "nomina-didier.xml",
+        mimeType: "application/xml",
+      },
+      observabilityEnvelope: {
+        dispatchId: "dsp-giant",
+        correlationId: "corr-giant",
+        targetHost: "bridge.example",
+        targetPath: "/engine/webhook",
+        outcomeCategory: "success",
+        retryScheduled: false,
+        retryDelayMs: null,
+        remoteSmokeEnabled: false,
+        httpStatusCode: 200,
+        healthProbe: { mode: "soft", attempted: false, ok: null, httpStatus: null },
+      },
+      responseAck: {
+        received: true,
+        responseContract: {
+          contractVersion: "auditapatron_return_contract_v1",
+          currentResponseEvent: {
+            eventName: "bridge.snapshot",
+            eventId: "evt-giant",
+            documentId: "DOC-GIANT",
+            correlationId: "corr-giant",
+            traceId: "trace.balt-1.CASE-BALT-1-DEMO001",
+            finality: "final",
+            businessStatus: "processed",
+            result: {
+              verification: `GIANT_VERIFICATION_BLOB:${"x".repeat(80_000)}`,
+            },
+          },
+        },
+      },
+    } as never);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 7601,
+        openId: "confirm-giant-ack",
+        email: "giant-ack@auditapatron.test",
+      }),
+    );
+    const result = await caller.cases.confirmDocumentDraft({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId: "DRF-CONFIRM-GIANT-001",
+      visibility: "case_team",
+      consentStatus: "granted",
+      sourceChannel: "manual",
+    });
+
+    expect(db.addDocumentRecord).toHaveBeenCalledWith(
+      expect.objectContaining({
+        originalName: "nomina-didier.xml",
+        documentType: "payroll_cfdi",
+      }),
+    );
+    expect(result.document.originalName).toBe("nomina-didier.xml");
+    expect(JSON.stringify(result.engineDispatch)).not.toContain("GIANT_VERIFICATION_BLOB");
+    expect(result.engineDispatch.responseAck?.responseContract).toMatchObject({
+      contractVersion: "auditapatron_return_contract_v1",
+      currentResponseEvent: expect.objectContaining({ eventId: "evt-giant" }),
+    });
+
+    expect(db.createAuditLogs).toHaveBeenCalled();
+    const auditEntries = vi.mocked(db.createAuditLogs).mock.calls.at(-1)?.[0] ?? [];
+    const dispatchAudit = auditEntries.find((entry) => entry?.action === "document.engine_dispatch");
+    expect(JSON.stringify(dispatchAudit?.afterState)).not.toContain("GIANT_VERIFICATION_BLOB");
+  });
+
+  it("still returns the saved document when the confirm close-out cannot persist the audit", async () => {
+    vi.mocked(db.getAuditarDraftById).mockResolvedValue(confirmableNominaDraft("DRF-CONFIRM-CLOSEOUT-001"));
+    vi.mocked(db.createAuditLogs).mockRejectedValueOnce(new Error("Data too long for column 'afterState'"));
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 7602,
+        openId: "confirm-closeout",
+        email: "closeout@auditapatron.test",
+      }),
+    );
+    const result = await caller.cases.confirmDocumentDraft({
+      tenantId: "balt-1",
+      caseId: "CASE-BALT-1-DEMO001",
+      draftId: "DRF-CONFIRM-CLOSEOUT-001",
+      visibility: "case_team",
+      consentStatus: "granted",
+      sourceChannel: "manual",
+    });
+
+    expect(db.addDocumentRecord).toHaveBeenCalledTimes(1);
+    expect(result.document.originalName).toBe("nomina-didier.xml");
+    expect(result.document.sha256).toHaveLength(64);
+  });
+
   it("deduplicates an immediate repeated confirmation of the same Auditar draft after success", async () => {
     const freshDraftCreatedAt = new Date(Date.now() - 5 * 60 * 1000).toISOString();
 
