@@ -51,11 +51,25 @@ Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FO
 | `VITE_FRONTEND_FORGE_API_URL` | Legacy UI Manus |
 | `VITE_FRONTEND_FORGE_API_KEY` | Legacy UI Manus |
 
+## Consulta IMSS / SAT (puente Helios / CompliLink)
+
+AuditaPatrón **no** cablea `APIMARKET_*` ni `CAPSOLVER_*`. Esas llaves viven en el servicio **CompliLink** (cerebro Helios), no en este Railway.
+
+La consulta del trabajador dispara el puente ya existente. En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`) deben estar (modo remoto):
+
+| Variable | Notas |
+| --- | --- |
+| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Preferir host canónico `https://complilink.mx/...`. **Nunca** `www.complilink.mx`: el redirect pierde HMAC/Bearer y el Tester ve fallo de firma. |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)`; nunca en Git |
+
+El código deriva `https://<mismo-host>/api/internal/helios/bridge` y envía NSS/CURP/RFC del expediente.  
+Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). Firma 403 / error de red → «No se pudo». 5xx / timeout → «Pendiente». Nunca «cumple».
+
 ## Bridge AuditaPatrón
 
 | Variable | Notas |
 | --- | --- |
-| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Bridge externo |
+| `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Bridge / motor remoto (documentos + consulta oficial) |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma; nunca en Git |
 
 ## IA

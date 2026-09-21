@@ -7,7 +7,11 @@ import {
   AUDITAPATRON_RETURN_EVENTS,
   buildAuditaPatronEnginePayload,
   buildAuditaPatronEngineSignature,
+  buildSignedEngineHeaders,
+  canonicalizeEngineWebhookUrl,
   classifyAuditaPatronBridgeEvent,
+  deriveHeliosBridgeUrl,
+  postSignedAuditaPatronEngine,
   sendDocumentToAuditaPatronEngine,
   verifySignedWebhook,
 } from "./auditaPatronIntegrationService";
@@ -189,6 +193,52 @@ describe("auditaPatronIntegrationService", () => {
         sharedEnvelopeDocumentCount: 1,
       },
     });
+  });
+
+  it("rewrites www.complilink.mx to the apex host so HMAC headers survive", () => {
+    expect(canonicalizeEngineWebhookUrl("https://www.complilink.mx/api/auditapatron/webhook")).toBe(
+      "https://complilink.mx/api/auditapatron/webhook",
+    );
+    expect(deriveHeliosBridgeUrl("https://www.complilink.mx/api/auditapatron/webhook")).toBe(
+      "https://complilink.mx/api/internal/helios/bridge",
+    );
+    expect(deriveHeliosBridgeUrl("https://complilink.mx/api/auditapatron/webhook")).toBe(
+      "https://complilink.mx/api/internal/helios/bridge",
+    );
+  });
+
+  it("signs the exact raw body that postSigned sends and does not follow redirects", async () => {
+    const fetchImpl = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const body = String(init?.body ?? "");
+      const headers = init?.headers as Record<string, string>;
+      expect(String(input)).toBe("https://complilink.mx/api/internal/helios/bridge");
+      expect(init?.redirect).toBe("manual");
+      expect(headers["X-AuditaPatron-Signature"]).toBe(
+        buildAuditaPatronEngineSignature(headers["X-AuditaPatron-Timestamp"], body, "secret-for-engine-123456"),
+      );
+      return new Response(JSON.stringify({ ok: true, action: "official_check", result: { imss: "registrado" } }), {
+        status: 200,
+      });
+    };
+
+    const posted = await postSignedAuditaPatronEngine({
+      url: "https://www.complilink.mx/api/internal/helios/bridge",
+      payload: { action: "official_check", autonomousInput: { nss: "12345678901" } },
+      hmacSecret: "secret-for-engine-123456",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      now: new Date("2026-09-21T15:30:00.000Z"),
+    });
+
+    expect(posted.ok).toBe(true);
+    expect(posted.targetUrl).toBe("https://complilink.mx/api/internal/helios/bridge");
+    expect(posted.signedBody).toBe(JSON.stringify({ action: "official_check", autonomousInput: { nss: "12345678901" } }));
+    expect(buildSignedEngineHeaders({
+      timestamp: posted.timestamp,
+      body: posted.signedBody,
+      hmacSecret: "secret-for-engine-123456",
+    })["X-AuditaPatron-Signature"]).toBe(
+      buildAuditaPatronEngineSignature(posted.timestamp, posted.signedBody, "secret-for-engine-123456"),
+    );
   });
 
   it("creates deterministic signatures for timestamped verification and raw-body bridge delivery", () => {

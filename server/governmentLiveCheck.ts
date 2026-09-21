@@ -1,0 +1,359 @@
+import {
+  OFFICIAL_CHECK_CONSENT,
+  OFFICIAL_CHECK_STATUS_DETAIL,
+  OFFICIAL_CHECK_STATUS_LABEL,
+  type OfficialCheckStatus,
+  type OfficialCheckSummary,
+  type OfficialIdentityFlags,
+  type OfficialSourceCheck,
+} from "@shared/officialCheckCopy";
+import {
+  deriveHeliosBridgeUrl,
+  postSignedAuditaPatronEngine,
+  type SignedEnginePostResult,
+} from "./auditaPatronIntegrationService";
+
+export const GOVERNMENT_LIVE_TIMEOUT_MS = 12_000;
+export const GOVERNMENT_LIVE_MAX_ATTEMPTS = 2;
+export const OFFICIAL_CHECK_ACTION = "official_check";
+export const OFFICIAL_CHECK_EVENT = "official.check.requested";
+
+const SOURCE_LABEL = {
+  imss: "IMSS",
+  sat: "SAT",
+} as const;
+
+export type GovernmentLiveEnv = Record<string, string | undefined>;
+
+export type WorkerOfficialIdentity = {
+  nss: string | null;
+  curp: string | null;
+  rfc: string | null;
+};
+
+export type OfficialCheckEngineConfig = {
+  webhookUrl: string;
+  hmacSecret: string;
+  heliosBridgeUrl: string;
+};
+
+export function readEngineBridgeConfig(env: GovernmentLiveEnv = process.env): OfficialCheckEngineConfig {
+  const webhookUrl = String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "").trim();
+  const hmacSecret = String(env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "").trim();
+  return {
+    webhookUrl,
+    hmacSecret,
+    heliosBridgeUrl: deriveHeliosBridgeUrl(webhookUrl),
+  };
+}
+
+export function isOfficialCheckConfigured(env: GovernmentLiveEnv = process.env) {
+  const config = readEngineBridgeConfig(env);
+  return Boolean(config.webhookUrl && config.hmacSecret);
+}
+
+export function getOfficialCheckAvailability(env: GovernmentLiveEnv = process.env) {
+  const configured = isOfficialCheckConfigured(env);
+  return {
+    imss: configured,
+    sat: configured,
+    infonavit: false,
+    any: configured,
+  };
+}
+
+export function normalizeNss(value: unknown): string | null {
+  if (typeof value !== "string" && typeof value !== "number") return null;
+  const digits = String(value).replace(/\D/g, "");
+  return digits.length >= 10 && digits.length <= 11 ? digits : null;
+}
+
+export function normalizeCurp(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toUpperCase();
+  return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/.test(normalized) ? normalized : null;
+}
+
+export function normalizeRfc(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toUpperCase().replace(/[^A-Z0-9Ñ&]/g, "");
+  if (normalized.length < 12 || normalized.length > 13) return null;
+  if (normalized === "XAXX010101000" || normalized === "XEXX010101000") return null;
+  return normalized;
+}
+
+export function collectWorkerOfficialIdentity(facts: {
+  nss?: unknown;
+  curp?: unknown;
+  workerRfc?: unknown;
+  rfc?: unknown;
+}): WorkerOfficialIdentity {
+  return {
+    nss: normalizeNss(facts.nss),
+    curp: normalizeCurp(facts.curp),
+    rfc: normalizeRfc(facts.workerRfc ?? facts.rfc),
+  };
+}
+
+function identityFlags(identity: WorkerOfficialIdentity): OfficialIdentityFlags {
+  return {
+    nss: Boolean(identity.nss),
+    curp: Boolean(identity.curp),
+    rfc: Boolean(identity.rfc),
+  };
+}
+
+function hasAnyIdentity(identity: WorkerOfficialIdentity) {
+  return Boolean(identity.nss || identity.curp || identity.rfc);
+}
+
+function sourceCheck(
+  source: OfficialSourceCheck["source"],
+  status: OfficialCheckStatus,
+  extra?: Partial<Pick<OfficialSourceCheck, "checkedAt" | "used" | "detail">>,
+): OfficialSourceCheck {
+  return {
+    source,
+    sourceLabel: SOURCE_LABEL[source],
+    status,
+    label: OFFICIAL_CHECK_STATUS_LABEL[status],
+    detail: extra?.detail ?? OFFICIAL_CHECK_STATUS_DETAIL[status],
+    checkedAt: extra?.checkedAt ?? null,
+    used: extra?.used ?? { nss: false, curp: false, rfc: false },
+  };
+}
+
+function rollupStatus(statuses: OfficialCheckStatus[]): OfficialCheckStatus {
+  if (statuses.includes("vivo")) return "vivo";
+  if (statuses.every((status) => status === "no_configurado")) return "no_configurado";
+  if (statuses.every((status) => status === "sin_datos")) return "sin_datos";
+  if (statuses.every((status) => status === "sin_permiso")) return "sin_permiso";
+  if (statuses.includes("pendiente")) return "pendiente";
+  if (statuses.includes("no_se_pudo")) return "no_se_pudo";
+  return statuses[0] ?? "no_se_pudo";
+}
+
+function emptySummary(status: OfficialCheckStatus, identity: WorkerOfficialIdentity): OfficialCheckSummary {
+  return {
+    configured: false,
+    consentGranted: false,
+    overallStatus: status,
+    overallLabel: OFFICIAL_CHECK_STATUS_LABEL[status],
+    overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[status],
+    checkedAt: null,
+    identity: identityFlags(identity),
+    checks: [],
+  };
+}
+
+export function buildOfficialCheckBridgePayload(params: {
+  identity: WorkerOfficialIdentity;
+  nowIso: string;
+  idempotencyKey?: string;
+  correlationId?: string;
+}) {
+  const autonomousInput: Record<string, string> = {};
+  if (params.identity.nss) autonomousInput.nss = params.identity.nss;
+  if (params.identity.curp) autonomousInput.curp = params.identity.curp;
+  if (params.identity.rfc) autonomousInput.rfc = params.identity.rfc;
+
+  return {
+    action: OFFICIAL_CHECK_ACTION,
+    eventName: OFFICIAL_CHECK_EVENT,
+    event: OFFICIAL_CHECK_EVENT,
+    consentGranted: true,
+    sources: ["imss", "sat"],
+    autonomousInput,
+    nss: params.identity.nss,
+    curp: params.identity.curp,
+    rfc: params.identity.rfc,
+    sourceModule: "auditapatron_official_check",
+    requestedAt: params.nowIso,
+    idempotencyKey: params.idempotencyKey,
+    correlationId: params.correlationId,
+  };
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return value as Record<string, unknown>;
+}
+
+function collectHaystack(value: unknown): string {
+  try {
+    return JSON.stringify(value ?? "").toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+const PENDING_HINT = /mantenimiento|temporarily unavailable|service unavailable|timeout|timed out|retry|queued|pending|en curso|en progreso/;
+const LIVE_HINT =
+  /\b(imss|sat|vigencia|semanas|cotiz|rfc|nss|curp|alta|baja|constancia|situacion fiscal|situación fiscal|connector|historial)\b/;
+
+function looksLikeLiveInstituteResult(payload: unknown): boolean {
+  const root = asRecord(payload);
+  if (!root) return false;
+  if (root.received && !root.result && !root.imss && !root.sat) return false;
+
+  const result = asRecord(root.result) ?? root;
+  if (result.imss || result.sat || result.imssStatus || result.satStatus) return true;
+  if (result.connectors || result.verifications || result.official) return true;
+
+  const action = String(root.action ?? "");
+  if (root.ok === true && (action === OFFICIAL_CHECK_ACTION || action === "verify") && root.result) {
+    return true;
+  }
+
+  const haystack = collectHaystack(result);
+  return LIVE_HINT.test(haystack) && !/\breceived\b/.test(haystack);
+}
+
+function readSourceStatusFromResult(
+  payload: unknown,
+  source: OfficialSourceCheck["source"],
+): OfficialCheckStatus | null {
+  const root = asRecord(payload);
+  if (!root) return null;
+  const result = asRecord(root.result) ?? root;
+  const direct = result[source] ?? result[`${source}Status`] ?? asRecord(result.sources)?.[source];
+  if (typeof direct === "string") {
+    const normalized = direct.trim().toLowerCase();
+    if (normalized === "vivo" || normalized === "pendiente" || normalized === "no_se_pudo") {
+      return normalized;
+    }
+    if (PENDING_HINT.test(normalized)) return "pendiente";
+    if (normalized) return "vivo";
+  }
+  if (direct && typeof direct === "object") {
+    const status = String((direct as { status?: unknown }).status ?? "").toLowerCase();
+    if (status === "vivo" || status === "pendiente" || status === "no_se_pudo") return status;
+    if (PENDING_HINT.test(status) || PENDING_HINT.test(collectHaystack(direct))) return "pendiente";
+    return "vivo";
+  }
+  return null;
+}
+
+export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): OfficialCheckStatus {
+  if (result.ok) {
+    if (looksLikeLiveInstituteResult(result.responseJson)) return "vivo";
+    return "pendiente";
+  }
+
+  if (result.reason === "timeout" || result.reason === "retryable_http" || result.reason === "server_error") {
+    return "pendiente";
+  }
+  if (result.httpStatus === 429 || (result.httpStatus !== null && result.httpStatus >= 500)) {
+    return "pendiente";
+  }
+  if (result.reason === "hmac_failed" || result.reason === "authentication_failed") {
+    return "no_se_pudo";
+  }
+  if (result.reason === "redirect_without_hmac_headers") {
+    return "no_se_pudo";
+  }
+  if (result.reason === "network_error") {
+    return "no_se_pudo";
+  }
+  return "no_se_pudo";
+}
+
+export async function runOfficialGovernmentCheck(params: {
+  identity: WorkerOfficialIdentity;
+  consentGranted: boolean;
+  env?: GovernmentLiveEnv;
+  now?: Date;
+  fetchImpl?: typeof fetch;
+  sleep?: (ms: number) => Promise<void>;
+  idempotencyKey?: string;
+  correlationId?: string;
+}): Promise<OfficialCheckSummary> {
+  const env = params.env ?? process.env;
+  const identity = {
+    nss: normalizeNss(params.identity.nss),
+    curp: normalizeCurp(params.identity.curp),
+    rfc: normalizeRfc(params.identity.rfc),
+  };
+  const engine = readEngineBridgeConfig(env);
+  const configured = Boolean(engine.webhookUrl && engine.hmacSecret);
+  const nowIso = (params.now ?? new Date()).toISOString();
+  const used = identityFlags(identity);
+
+  if (!configured) {
+    return {
+      ...emptySummary("no_configurado", identity),
+      configured: false,
+      consentGranted: params.consentGranted,
+    };
+  }
+
+  if (!params.consentGranted) {
+    return {
+      ...emptySummary("sin_permiso", identity),
+      configured: true,
+      consentGranted: false,
+      overallDetail: `${OFFICIAL_CHECK_STATUS_DETAIL.sin_permiso} ${OFFICIAL_CHECK_CONSENT}`,
+    };
+  }
+
+  if (!hasAnyIdentity(identity)) {
+    return {
+      ...emptySummary("sin_datos", identity),
+      configured: true,
+      consentGranted: true,
+    };
+  }
+
+  const targetUrl = engine.heliosBridgeUrl || engine.webhookUrl;
+  const payload = buildOfficialCheckBridgePayload({
+    identity,
+    nowIso,
+    idempotencyKey: params.idempotencyKey,
+    correlationId: params.correlationId,
+  });
+
+  const posted = await postSignedAuditaPatronEngine({
+    url: targetUrl,
+    payload,
+    hmacSecret: engine.hmacSecret,
+    timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
+    maxAttempts: GOVERNMENT_LIVE_MAX_ATTEMPTS,
+    fetchImpl: params.fetchImpl,
+    sleep: params.sleep,
+    now: params.now,
+  });
+
+  const overallStatus = classifyBridgeOfficialCheck(posted);
+  const imssStatus = readSourceStatusFromResult(posted.responseJson, "imss") ?? overallStatus;
+  const satStatus = readSourceStatusFromResult(posted.responseJson, "sat") ?? overallStatus;
+  const checks = [
+    sourceCheck("imss", identity.nss || identity.curp ? imssStatus : "sin_datos", {
+      checkedAt: nowIso,
+      used,
+    }),
+    sourceCheck("sat", identity.rfc || identity.curp ? satStatus : "sin_datos", {
+      checkedAt: nowIso,
+      used,
+    }),
+  ];
+  const rolled = rollupStatus(checks.map((item) => item.status));
+
+  return {
+    configured: true,
+    consentGranted: true,
+    overallStatus: rolled,
+    overallLabel: OFFICIAL_CHECK_STATUS_LABEL[rolled],
+    overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[rolled],
+    checkedAt: nowIso,
+    identity: used,
+    checks,
+  };
+}
+
+export function readOfficialCheckFromMetadata(metadata: Record<string, unknown> | null | undefined): OfficialCheckSummary | null {
+  const raw = metadata?.live_check ?? metadata?.liveCheck;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const record = raw as OfficialCheckSummary;
+  if (!record.overallStatus) return null;
+  return record;
+}

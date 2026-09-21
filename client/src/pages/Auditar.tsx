@@ -41,6 +41,17 @@ import {
   sanitizeWorkerChatCopy,
   toFriendlyWorkerChatError,
 } from "@shared/workerChatUx";
+import {
+  FIVE_SECOND_DISCLAIMER,
+  selectFiveSecondVerdictFromReceipt,
+  type FiveSecondVerdict,
+} from "@shared/fiveSecondVerdict";
+import {
+  OFFICIAL_CHECK_BUTTON,
+  OFFICIAL_CHECK_CONSENT,
+  buildOfficialCheckHeadline,
+  type OfficialCheckSummary,
+} from "@shared/officialCheckCopy";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import {
@@ -1348,6 +1359,9 @@ type ConfirmedUploadResultView = {
     hasImssSignal?: boolean;
     hasFiscalSignal?: boolean;
     hasInfonavitSignal?: boolean;
+    officialCheck?: OfficialCheckSummary | null;
+    officialCheckHeadline?: string | null;
+    officialCheckConsent?: string | null;
     facts?: {
       period?: string | null;
       netAmount?: string | null;
@@ -1356,6 +1370,7 @@ type ConfirmedUploadResultView = {
       employerRfc?: string | null;
       workerRfc?: string | null;
       nss?: string | null;
+      curp?: string | null;
       employerRegistration?: string | null;
       isrWithheld?: string | null;
       imssWithheld?: string | null;
@@ -2329,6 +2344,13 @@ type PayrollFactSignal = {
   imss: string;
   retentions: string;
   nextStep: string;
+  employer: string | null;
+  employerRfc: string | null;
+  period: string | null;
+  payment: string | null;
+  nss: string | null;
+  curp: string | null;
+  workerRfc: string | null;
 };
 
 const LEAKED_PAYROLL_FIELD_LABEL =
@@ -2421,6 +2443,7 @@ export function buildPayrollFactSignal(params: {
     "payrollperceptions",
   ]);
   const nss = readValue(["payrollnss", "nss", "numseguridadsocial", "numerodeseguridadsocial"]);
+  const curp = readValue(["payrollcurp", "curp", "clavunica", "claveunicaregistropoblacion"]);
   const employerRegistration = readValue(["payrollemployerregistration", "registropatronal", "regpatronal"]);
   const isrWithheld = readValue(["isrwithheld", "isr", "retencionisr"]);
   const imssWithheld = readValue(["imsswithheld", "cuotaimss", "retencionimss"]);
@@ -2473,7 +2496,43 @@ export function buildPayrollFactSignal(params: {
     ? `Compara este recibo del periodo ${period} con el comprobante fiscal (CFDI) del mismo periodo. Si un monto o descuento no coincide, pide el desglose por escrito antes de sacar conclusiones.`
     : "Conserva este recibo y, si puedes, sube el comprobante fiscal (CFDI) o una versión más clara donde se vean el periodo, el pago y las deducciones. Así podrás compararlos mejor.";
 
-  return { headline, facts: facts.join(" "), attention, imss, retentions, nextStep };
+  return {
+    headline,
+    facts: facts.join(" "),
+    attention,
+    imss,
+    retentions,
+    nextStep,
+    employer,
+    employerRfc,
+    period,
+    payment,
+    nss,
+    curp,
+    workerRfc,
+  };
+}
+
+function buildFiveSecondVerdictFromSignal(
+  signal: PayrollFactSignal,
+  extras?: {
+    classificationConfidence?: number | null;
+    riskLevel?: string | null;
+    hasDifferenceSignal?: boolean;
+  },
+): FiveSecondVerdict {
+  return selectFiveSecondVerdictFromReceipt({
+    employer: signal.employer,
+    employerRfc: signal.employerRfc,
+    period: signal.period,
+    payment: signal.payment,
+    nss: signal.nss,
+    curp: signal.curp,
+    workerRfc: signal.workerRfc,
+    classificationConfidence: extras?.classificationConfidence,
+    riskLevel: extras?.riskLevel,
+    hasDifferenceSignal: extras?.hasDifferenceSignal,
+  });
 }
 
 function humanizeSnakeCase(value: string) {
@@ -4265,6 +4324,7 @@ export default function Auditar() {
   const [autoAdvanceFlash, setAutoAdvanceFlash] = useState(false);
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
+  const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
   const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
   const [guestReviewClaimStarted, setGuestReviewClaimStarted] = useState(false);
@@ -6174,6 +6234,16 @@ export default function Auditar() {
     confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
     estimatedData: lastUpload?.preliminaryAnalysis?.estimatedData as Record<string, unknown> | undefined,
   });
+  const lastUploadFiveSecond = buildFiveSecondVerdictFromSignal(lastUploadFactSignal, {
+    classificationConfidence: lastUpload?.classification.classificationConfidence,
+    riskLevel: lastHeliosOpinion?.riskLevel ?? visibleHeliosOpinion?.riskLevel,
+  });
+  const officialCheckSummary =
+    effectiveSocialSecurityValidation?.officialCheck ?? null;
+  const officialCheckHeadline = officialCheckSummary
+    ? effectiveSocialSecurityValidation?.officialCheckHeadline ??
+      buildOfficialCheckHeadline(officialCheckSummary)
+    : null;
   const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
       plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -7463,7 +7533,10 @@ export default function Auditar() {
     try {
       setSubmitError(null);
       setLegalGateError(null);
-      await revalidateSocialSecurityMutation.mutateAsync(caseDetailInput);
+      await revalidateSocialSecurityMutation.mutateAsync({
+        ...caseDetailInput,
+        consentGranted: officialCheckConsent,
+      });
       await Promise.all([
         utils.cases.detail.invalidate(caseDetailInput),
         caseDetailQuery.refetch(),
@@ -8565,6 +8638,9 @@ export default function Auditar() {
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
   });
+  const guestFiveSecond = buildFiveSecondVerdictFromSignal(guestFactSignal, {
+    classificationConfidence: guestReview?.preview.classification.classificationConfidence,
+  });
   const guestSignalHeadline = toHumanResultTitle(
     (guestReview ? guestFactSignal.headline : null) ??
       plainWorkerCopy(
@@ -8722,11 +8798,13 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-slate-700">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            <h1 className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestSignalHeadline}</h1>
+            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-4xl">{guestFiveSecond.seenLine}</p>
+            <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-slate-900">{guestFiveSecond.nextStepLine}</p>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{guestFiveSecond.disclaimer}</p>
             <div className="mt-5 grid gap-4">
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
                 <p className="text-sm font-semibold tracking-tight text-amber-900">Qué conviene revisar</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalWhy}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalHeadline}. {guestSignalWhy}</p>
               </div>
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-4">
                 <p className="text-sm font-semibold tracking-tight text-amber-900">Hoy conviene poner atención especial en esto</p>
@@ -9352,9 +9430,6 @@ export default function Auditar() {
                     )}
                     {shouldCompactPostUploadExperience ? (
                       <div className="flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start">
-                        <span className={`rounded-full px-3 py-1 text-[11px] font-semibold tracking-tight ${lastUploadRiskCopy.classes}`}>
-                          {lastUploadRiskCopy.label}
-                        </span>
                         <span className="rounded-full bg-white px-3 py-1 text-[11px] font-semibold tracking-tight text-slate-700 shadow-sm">
                           {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}
                         </span>
@@ -9363,46 +9438,76 @@ export default function Auditar() {
                     <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
                       <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
                       <div className="min-w-0">
-                        <h2 className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}>
+                        <h2
+                          data-testid="five-second-verdict-seen"
+                          className={`font-semibold tracking-[-0.05em] text-slate-950 ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
+                        >
                           {shouldCompactPostUploadExperience
-                            ? lastUploadResultHeadline
+                            ? lastUploadFiveSecond.seenLine
                             : lastUploadVerdict.label}
                         </h2>
                         {shouldCompactPostUploadExperience ? (
-                          <p className="mt-2 text-sm font-medium leading-6 text-slate-600">
-                            Estado: {lastUploadRiskCopy.label}. {lastUploadRiskCopy.action}.
+                          <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-slate-900 sm:text-lg">
+                            {lastUploadFiveSecond.nextStepLine}
+                          </p>
+                        ) : null}
+                        {shouldCompactPostUploadExperience ? (
+                          <p className="mt-2 text-sm leading-6 text-slate-600">
+                            {lastUploadFiveSecond.disclaimer}
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
                           <>
-                            <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                              {lastUploadResultLead}
-                            </p>
-                            <div className="mt-3 rounded-[1rem] border border-emerald-200 bg-emerald-50/80 px-3 py-3 text-left">
-                              <p className="text-sm font-semibold tracking-tight text-emerald-900">
-                                Qué sigue
+                            <details className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
+                              <summary className="cursor-pointer text-sm font-semibold tracking-tight text-slate-800">
+                                Ver lo que se leyó en el papel
+                              </summary>
+                              <p className="mt-2 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
+                                {lastUploadResultHeadline}. {lastUploadResultLead}
                               </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-900">
-                                {lastUploadNextStepSummary}
-                              </p>
-                            </div>
-                            <div className="mt-3 rounded-[1rem] border border-amber-200 bg-amber-50/80 px-3 py-3 text-left">
-                              <p className="text-sm font-semibold tracking-tight text-amber-900">
-                                Hoy conviene poner atención especial en esto
-                              </p>
-                              <p className="mt-1 text-sm leading-6 text-slate-900">
+                              <p className="mt-3 text-sm leading-6 text-slate-900">
                                 {lastUploadFactSignal.attention}
                               </p>
-                            </div>
-                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                              <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
-                                <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
-                                <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
+                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                <div className="rounded-[1rem] border border-cyan-200 bg-cyan-50/80 px-3 py-3 text-left">
+                                  <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.imss}</p>
+                                </div>
+                                <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
+                                  <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
+                                  <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
+                                </div>
                               </div>
-                              <div className="rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                                <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
-                                <p className="mt-1 text-sm leading-6 text-slate-900">{lastUploadFactSignal.retentions}</p>
-                              </div>
+                            </details>
+                            <div data-testid="official-check-card" className="mt-3 rounded-[1rem] border border-teal-200 bg-teal-50/80 px-3 py-3 text-left">
+                              <p className="text-sm font-semibold tracking-tight text-teal-950">
+                                {officialCheckHeadline ?? "Consulta IMSS y SAT"}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-slate-800">
+                                {officialCheckSummary?.overallDetail ??
+                                  "Si das permiso, consultamos IMSS y SAT con tu NSS, CURP o RFC. Si no hay respuesta, te lo decimos. No inventamos que tu patrón cumple."}
+                              </p>
+                              <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
+                                <input
+                                  type="checkbox"
+                                  className="mt-1"
+                                  checked={officialCheckConsent}
+                                  onChange={event => setOfficialCheckConsent(event.target.checked)}
+                                />
+                                <span>{effectiveSocialSecurityValidation?.officialCheckConsent ?? OFFICIAL_CHECK_CONSENT}</span>
+                              </label>
+                              <Button
+                                type="button"
+                                className="mt-3 h-11 rounded-full bg-teal-700 px-4 text-white hover:bg-teal-800"
+                                disabled={revalidateSocialSecurityMutation.isPending || !officialCheckConsent}
+                                onClick={() => {
+                                  void handleRevalidateSocialSecurity();
+                                }}
+                              >
+                                {revalidateSocialSecurityMutation.isPending
+                                  ? "Consultando..."
+                                  : OFFICIAL_CHECK_BUTTON}
+                              </Button>
                             </div>
                           </>
                         ) : null}
@@ -9434,7 +9539,7 @@ export default function Auditar() {
                     </Button>
                     {shouldCompactPostUploadExperience ? (
                       <p className="max-w-[22rem] text-center text-[12px] leading-[1.1rem] text-slate-600">
-                        Un solo paso claro primero. Si luego quieres profundizar, abajo puedes abrir el informe completo.
+                        Un solo paso claro primero. El detalle del papel queda abajo, si lo quieres ver.
                       </p>
                     ) : null}
                   </div>
@@ -9616,15 +9721,11 @@ export default function Auditar() {
                     {socialSecurityLastCheckLabel}
                   </p>
                   <p className="mt-2 text-xs leading-5 text-teal-800">
-                    {effectiveSocialSecurityValidation?.disclaimer ??
-                      "Esto no consulta IMSS, SAT ni Infonavit en vivo. Solo lee lo que ya aparece en tus documentos."}
+                    {officialCheckHeadline ?? FIVE_SECOND_DISCLAIMER}
                   </p>
-                  {effectiveSocialSecurityValidation?.reviewSourceLabel ? (
-                    <p className="mt-2 text-xs font-semibold leading-5 text-teal-950">
-                      {effectiveSocialSecurityValidation.reviewSourceLabel}
-                      {effectiveSocialSecurityValidation.reviewSourceExplanation
-                        ? `. ${effectiveSocialSecurityValidation.reviewSourceExplanation}`
-                        : ""}
+                  {officialCheckSummary ? (
+                    <p className="mt-2 text-xs leading-5 text-teal-950">
+                      {officialCheckSummary.overallDetail}
                     </p>
                   ) : null}
                   {effectiveSocialSecurityValidation?.explanations?.length ? (
@@ -10050,12 +10151,11 @@ export default function Auditar() {
                         socialSecurityRecommendedNextStep}
                     </p>
                     <p className="mt-1.5 text-xs leading-4 text-slate-500">
-                      {socialSecurityLastCheckLabel}
+                      {officialCheckHeadline ?? socialSecurityLastCheckLabel}
                     </p>
-                    {effectiveSocialSecurityValidation?.reviewSourceLabel ? (
+                    {officialCheckSummary ? (
                       <p className="mt-1.5 text-xs leading-4 text-slate-600">
-                        {effectiveSocialSecurityValidation.reviewSourceLabel}.{" "}
-                        {effectiveSocialSecurityValidation.reviewSourceExplanation}
+                        {officialCheckSummary.overallDetail}
                       </p>
                     ) : null}
                     {effectiveSocialSecurityValidation?.explanations?.length ? (
@@ -10162,7 +10262,7 @@ export default function Auditar() {
                         </details>
                       ) : (
                         <div className="rounded-[0.95rem] border border-dashed border-slate-200 bg-slate-50 p-2.5 text-sm leading-5 text-slate-600">
-                          Cuando vuelvas a revisar lo que se ve de IMSS e Infonavit, aquí verás fecha, estado y cambios. Esto no consulta esos institutos en vivo.
+                          Cuando consultes IMSS y SAT, aquí verás fecha y si la consulta quedó hecha, pendiente o no se pudo.
                         </div>
                       )}
                     </div>
@@ -12869,9 +12969,10 @@ Reforzar con otro documento
                           <span className="rounded-full bg-white px-3 py-1 text-slate-700">
                             {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).action}
                           </span>
-                          {typeof lastHeliosOpinion.confidenceScore === "number" ? (
+                          {typeof lastHeliosOpinion.confidenceScore === "number" &&
+                          lastHeliosOpinion.confidenceScore > 0 ? (
                             <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                              Confianza {lastHeliosOpinion.confidenceScore}%
+                              Lectura {lastHeliosOpinion.confidenceScore}%
                             </span>
                           ) : null}
                           <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">

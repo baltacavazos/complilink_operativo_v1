@@ -1272,7 +1272,7 @@ function HeroSection() {
               className="motion-enter-soft mt-3 min-w-0 max-w-xl rounded-[1rem] border border-slate-200 bg-white/90 px-3.5 py-2.5 text-pretty text-sm font-medium leading-5 text-slate-700 shadow-sm"
               style={{ ["--motion-delay" as string]: "230ms" }}
             >
-              Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti. Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.
+              Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti. Leemos tu recibo; si das permiso, también podemos consultar IMSS y SAT. Si no hay respuesta, te lo decimos.
             </p>
 
             <div
@@ -1352,7 +1352,7 @@ function HeroSection() {
                   ))}
                 </div>
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700 max-[359px]:hidden">
-                  Empieza con una foto o PDF y ves si tu pago merece una revisión más a fondo, sin cuenta al inicio. No es un cruce en vivo con SAT/IMSS.
+                  Empieza con una foto o PDF y ves si tu pago merece una revisión más a fondo, sin cuenta al inicio. La consulta en vivo solo ocurre si das permiso y el servicio responde. Nunca inventamos que tu patrón cumple.
                 </p>
               </div>
           </div>

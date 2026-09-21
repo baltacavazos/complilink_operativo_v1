@@ -29,8 +29,8 @@ describe("copy público y aviso de privacidad", () => {
     const html = read("index.html");
 
     expect(home).toContain("Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti.");
-    expect(home).toContain("Es una lectura orientativa, no una validación oficial ante SAT, IMSS ni Infonavit, ni asesoría legal.");
-    expect(home).toContain("No es un cruce en vivo con SAT/IMSS.");
+    expect(home).toContain("Leemos tu recibo; si das permiso, también podemos consultar IMSS y SAT.");
+    expect(home).toContain("La consulta en vivo solo ocurre si das permiso y el servicio responde. Nunca inventamos que tu patrón cumple.");
     expect(home).toContain("Lectura orientativa desde el primer archivo");
     expect(home).toContain("primera lectura");
     expect(home).not.toContain("Resultado instantáneo");

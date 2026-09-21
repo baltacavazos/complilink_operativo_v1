@@ -117,13 +117,15 @@ describe("compact mobile upload entry", () => {
 
   it("equilibra el primer viewport con CTA consistente y una lectura más corta del resultado", () => {
     expect(auditarSource).toContain('"flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5"');
-    expect(auditarSource).toContain("lastUploadRiskCopy.label");
-    expect(auditarSource).toContain("Estado: {lastUploadRiskCopy.label}. {lastUploadRiskCopy.action}.");
+    expect(auditarSource).toContain("lastUploadFiveSecond.seenLine");
+    expect(auditarSource).toContain("lastUploadFiveSecond.nextStepLine");
+    expect(auditarSource).toContain("lastUploadFiveSecond.disclaimer");
     expect(auditarSource).not.toContain("Resultado listo");
     expect(auditarSource).toContain('"flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start"');
     expect(auditarSource).toContain('"text-[1.85rem] leading-[1.02] sm:text-[2.3rem]"');
-    expect(auditarSource).toContain('Qué sigue');
-    expect(auditarSource).toContain('Un solo paso claro primero. Si luego quieres profundizar, abajo puedes abrir el informe completo.');
+    expect(auditarSource).toContain("Esto vimos");
+    expect(auditarSource).toContain("Qué hacer ahora");
+    expect(auditarSource).toContain("Un solo paso claro primero. El detalle del papel queda abajo, si lo quieres ver.");
     expect(auditarSource).toContain('"mx-auto flex h-auto min-h-[4.5rem] w-full max-w-[22rem] items-center justify-center gap-2 rounded-[1.6rem] border-2 border-emerald-700 bg-emerald-700 px-4 py-3 text-center text-[1.24rem] leading-tight tracking-[-0.02em] shadow-[0_22px_48px_-24px_rgba(5,150,105,0.42)] hover:bg-emerald-600"');
     expect(auditarSource).toContain('primaryLastUploadShortcut?.label ?? "Ver qué sigue"');
   });

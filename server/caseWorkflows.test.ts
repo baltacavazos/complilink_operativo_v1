@@ -63,6 +63,16 @@ const engineMocks = vi.hoisted(() => ({
   sendDocumentToAuditaPatronEngine: vi.fn(),
 }));
 
+const governmentLiveCheckMocks = vi.hoisted(() => ({
+  getOfficialCheckAvailability: vi.fn(() => ({
+    imss: false,
+    sat: false,
+    infonavit: false,
+    any: false,
+  })),
+  runOfficialGovernmentCheck: vi.fn(),
+}));
+
 const advisorMemoryMocks = vi.hoisted(() => ({
   summarizeAdvisorCaseMemory: vi.fn(),
 }));
@@ -74,6 +84,14 @@ vi.mock("./mysqlBootstrap", () => ({
 vi.mock("./storage", () => storageMocks);
 vi.mock("./_core/llm", () => llmMocks);
 vi.mock("./auditaPatronIntegrationService", () => engineMocks);
+vi.mock("./governmentLiveCheck", async () => {
+  const actual = await vi.importActual<typeof import("./governmentLiveCheck")>("./governmentLiveCheck");
+  return {
+    ...actual,
+    getOfficialCheckAvailability: governmentLiveCheckMocks.getOfficialCheckAvailability,
+    runOfficialGovernmentCheck: governmentLiveCheckMocks.runOfficialGovernmentCheck,
+  };
+});
 vi.mock("./advisorMemory", async () => {
   const actual = await vi.importActual<typeof import("./advisorMemory")>("./advisorMemory");
   return {
@@ -163,6 +181,29 @@ describe("appRouter case workflows", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetAuditarRuntimeGuardsForTests();
+    governmentLiveCheckMocks.getOfficialCheckAvailability.mockReturnValue({
+      imss: false,
+      sat: false,
+      infonavit: false,
+      any: false,
+    });
+    governmentLiveCheckMocks.runOfficialGovernmentCheck.mockImplementation(async (params: {
+      identity?: { nss?: string | null; curp?: string | null; rfc?: string | null };
+      consentGranted?: boolean;
+    }) => ({
+      configured: false,
+      consentGranted: Boolean(params.consentGranted),
+      overallStatus: "no_configurado",
+      overallLabel: "Aún no configurado",
+      overallDetail: "Aún no configurado. Por ahora solo leemos tus papeles.",
+      checkedAt: null,
+      identity: {
+        nss: Boolean(params.identity?.nss),
+        curp: Boolean(params.identity?.curp),
+        rfc: Boolean(params.identity?.rfc),
+      },
+      checks: [],
+    }));
 
     vi.mocked(db.ensureTenantForUser).mockResolvedValue({ tenantId: "balt-1" } as never);
     vi.mocked(db.ensurePersonalWorkspaceForUser).mockResolvedValue({
