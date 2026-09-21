@@ -174,10 +174,23 @@ function joinSpanishLabels(labels: string[]): string {
   return `${labels.slice(0, -1).join(", ")} ${conj} ${last}`;
 }
 
+function isPendingOfficialPlaceholder(source: OfficialCheckSource, text?: string | null): boolean {
+  const label = OFFICIAL_SOURCE_LABEL[source];
+  return String(text ?? "").replace(/\s+/g, " ").trim() === `Todavía no hay una respuesta oficial nueva de ${label}.`;
+}
+
+/** Hechos que sí se pueden citar. La frase de espera no es un dato del SAT. */
+export function citeableOfficialHechos(source: OfficialCheckSource, hechos: string[]): string[] {
+  return hechos
+    .map((item) => item.replace(/\s+/g, " ").trim())
+    .filter((item) => item.length > 0 && !isPendingOfficialPlaceholder(source, item));
+}
+
 function usefulOfficialHechos(hechos: string[]): string[] {
   return hechos
     .map((item) => item.replace(/\s+/g, " ").trim())
     .filter((item) => item.length > 0)
+    .filter((item) => !/^Todavía no hay una respuesta oficial nueva de (IMSS|SAT|Infonavit)\.$/.test(item))
     .filter((item) => !looksLikeNoOfficialResponse(item))
     .filter((item) => !looksLikeInstituteMaintenance(item))
     .filter((item) => !/faltan datos|falta tu |falta el |falta un /i.test(item))
@@ -676,6 +689,8 @@ export type OfficialCheckSummary = {
   checks: OfficialSourceCheck[];
   chatAnchor?: OfficialChatAnchor | null;
   reciboVsOficial?: ReciboVsOficial | null;
+  /** El puente rechazó la consulta por el tope de un proveedor. No es silencio de IMSS, SAT o Infonavit. */
+  bridgeBlock?: "provider_cap" | null;
 };
 
 export type OfficialIdentityField = keyof OfficialIdentityFlags;
@@ -1026,8 +1041,9 @@ export function reconcileOfficialCheckWithIdentity(
     if (anchorSaysLive || honesty === "live" || item.status === "vivo") {
       status = "vivo";
     }
-    const liveHechos =
-      anchorSaysLive && anchor.hechos.length > 0 ? anchor.hechos : (item.hechos ?? []);
+    const fromAnchor = anchorSaysLive ? citeableOfficialHechos(item.source, anchor?.hechos ?? []) : [];
+    const fromItem = citeableOfficialHechos(item.source, item.hechos ?? []);
+    const liveHechos = fromAnchor.length > 0 ? fromAnchor : fromItem;
     const detail =
       status === "sin_datos"
         ? officialSourceGapDetail(item.source, options?.facts)
@@ -1046,7 +1062,12 @@ export function reconcileOfficialCheckWithIdentity(
       used: usedOfficialIdentityForSource(item.source, mergedIdentity),
       missingFields: missingOfficialFieldsForSource(item.source, mergedIdentity),
       honesty: officialStatusToHonesty(status),
-      hechos: rewriteOfficialIdentityHechos(item.source, status === "vivo" ? liveHechos : (item.hechos ?? []), mergedIdentity),
+      hechos:
+        status === "vivo"
+          ? liveHechos.length > 0
+            ? rewriteOfficialIdentityHechos(item.source, liveHechos, mergedIdentity)
+            : []
+          : rewriteOfficialIdentityHechos(item.source, item.hechos ?? [], mergedIdentity),
       motivoFallo:
         status === "vivo"
           ? null
@@ -1071,11 +1092,18 @@ export function reconcileOfficialCheckWithIdentity(
     fuente: OfficialCheckSource,
     source: OfficialChatAnchorSource,
   ): OfficialChatAnchorSource => {
+    const check = checks.find((item) => item.source === fuente);
     const status =
-      checks.find((item) => item.source === fuente)?.status ??
+      check?.status ??
       honestyToOfficialStatus(source.estado, source.missingFields, mergedIdentity, fuente) ??
       "pendiente";
-    const hechos = rewriteOfficialIdentityHechos(fuente, source.hechos, mergedIdentity);
+    const fromSource = citeableOfficialHechos(fuente, source.hechos);
+    const fromCheck = citeableOfficialHechos(fuente, check?.hechos ?? []);
+    const chosen = status === "vivo" ? (fromSource.length > 0 ? fromSource : fromCheck) : source.hechos;
+    const hechos =
+      status === "vivo" && citeableOfficialHechos(fuente, chosen).length === 0
+        ? []
+        : rewriteOfficialIdentityHechos(fuente, chosen, mergedIdentity);
     const motivoFallo =
       source.motivoFallo && textContradictsVisibleReceiptIdentity(source.motivoFallo, mergedIdentity)
         ? sourceHasRequiredOfficialIdentity(fuente, mergedIdentity)
@@ -1109,7 +1137,9 @@ export function reconcileOfficialCheckWithIdentity(
   const pendingSinceMs = options?.pendingSinceMs ?? null;
   const anchorFechaFor = (source: OfficialCheckSource) => chatAnchor?.[source]?.fecha ?? null;
   const livePresent = hasLiveOfficialResult({ ...summary, checks, chatAnchor: chatAnchor ?? summary.chatAnchor });
+  const providerCap = summary.bridgeBlock === "provider_cap";
   checks = checks.map((item) => {
+    if (providerCap) return item;
     if (item.status !== "pendiente" || item.honesty === "live") return item;
     if (
       !isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs, {
@@ -1128,7 +1158,7 @@ export function reconcileOfficialCheckWithIdentity(
       motivoFallo: rewriteOfficialFailedMotivo(item.source, item.motivoFallo),
     };
   });
-  if (!livePresent && overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs, {
+  if (!providerCap && !livePresent && overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs, {
     anchorFecha: anchorFechaFor("imss") ?? anchorFechaFor("sat") ?? anchorFechaFor("infonavit"),
     pendingSinceMs,
   })) {
@@ -1295,12 +1325,16 @@ export function readChatAnchorSource(
     ],
     identity,
   );
+  const resultado = asText(record.resultado)?.toLowerCase() ?? "";
+  const honesty = asText(record.honesty)?.toLowerCase() ?? "";
   let estado =
     record.estado === "live" || record.estado === "pending" || record.estado === "failed"
       ? record.estado
       : officialStatusToHonesty(
           honestyToOfficialStatus(
-            asText(record.honesty) ?? asText(record.status),
+            honesty === "live" || resultado === "vivo" || resultado === "live"
+              ? "live"
+              : honesty || (resultado === "no_se_pudo" ? "failed" : null) || asText(record.status),
             missing,
             identity,
             fuente,
@@ -1309,6 +1343,9 @@ export function readChatAnchorSource(
   const noResponse = looksLikeNoOfficialResponse(`${motivoFalloText ?? ""} ${hechos.join(" ")}`);
   if (estado === "pending" && missing.length === 0 && noResponse) {
     estado = "failed";
+  }
+  if (honesty === "live" || resultado === "vivo" || resultado === "live") {
+    estado = "live";
   }
   const rawMotivo =
     estado === "failed" || missing.length > 0
@@ -1321,12 +1358,17 @@ export function readChatAnchorSource(
         ? rewriteOfficialFailedMotivo(fuente, rawMotivo)
         : null;
   const resolvedHechos =
-    estado === "failed" && missing.length === 0
-      ? rewriteOfficialFailedHechos(fuente, hechos)
-      : hechos.length > 0
-        ? hechos
-        : pendingChatSource(fuente).hechos;
-  const identityHechos = rewriteOfficialIdentityHechos(fuente, resolvedHechos, identity);
+    estado === "live"
+      ? citeableOfficialHechos(fuente, hechos)
+      : estado === "failed" && missing.length === 0
+        ? rewriteOfficialFailedHechos(fuente, hechos)
+        : hechos.length > 0
+          ? hechos
+          : pendingChatSource(fuente).hechos;
+  const identityHechos =
+    estado === "live" && resolvedHechos.length === 0
+      ? []
+      : rewriteOfficialIdentityHechos(fuente, resolvedHechos, identity);
   const identityMotivo =
     motivoFallo && textContradictsVisibleReceiptIdentity(motivoFallo, identity)
       ? sourceHasRequiredOfficialIdentity(fuente, identity)
@@ -1489,7 +1531,9 @@ export function pickHonestOfficialCheck(params: {
   candidates: Array<OfficialCheckSummary | null | undefined>;
 }): OfficialCheckSummary | null {
   const present = params.candidates.filter((item): item is OfficialCheckSummary => Boolean(item));
-  const consulted = present.find(
+  const withoutProviderCap = present.filter((item) => item.bridgeBlock !== "provider_cap");
+  const pool = withoutProviderCap.length > 0 ? withoutProviderCap : present;
+  const consulted = pool.find(
     (item) =>
       !isPermissionBlockedStatus(item.overallStatus) &&
       Boolean(item.checkedAt || item.chatAnchor || item.reciboVsOficial),
@@ -1497,11 +1541,11 @@ export function pickHonestOfficialCheck(params: {
   if (params.consentGranted || consulted) {
     return (
       consulted ??
-      present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ??
+      pool.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ??
       null
     );
   }
-  return present[0] ?? null;
+  return pool[0] ?? null;
 }
 
 /**

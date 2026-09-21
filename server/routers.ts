@@ -2080,11 +2080,12 @@ function buildSocialSecurityValidationSummary(params: {
 
   const lastRevalidation = revalidationHistory[0] ?? null;
   const lastRecordedCoverage = lastRevalidation?.coverageScore ?? null;
+  const recordedChecks = [...params.events]
+    .sort((left, right) => new Date(right.eventAt).getTime() - new Date(left.eventAt).getTime())
+    .map((event) => readOfficialCheckFromMetadata(parseEventMetadata(event.metadata)))
+    .filter((item): item is OfficialCheckSummary => Boolean(item));
   const lastLiveCheck =
-    [...params.events]
-      .sort((left, right) => new Date(right.eventAt).getTime() - new Date(left.eventAt).getTime())
-      .map((event) => readOfficialCheckFromMetadata(parseEventMetadata(event.metadata)))
-      .find((item): item is OfficialCheckSummary => Boolean(item)) ?? null;
+    recordedChecks.find((item) => item.bridgeBlock !== "provider_cap") ?? recordedChecks[0] ?? null;
   const officialAvailability = getOfficialCheckAvailability();
   const officialIdentity = mergeWorkerOfficialIdentities(
     collectWorkerOfficialIdentity(laborFiscal.facts),
