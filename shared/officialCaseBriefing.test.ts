@@ -266,8 +266,10 @@ describe("briefing del caso para el asesor", () => {
 
     const failed = buildNoLiveOfficialAnswer(
       buildOfficialCaseBriefing({
-        officialCheck: official("no_se_pudo"),
-        facts: { nss: "12345678901" },
+        officialCheck: official("no_se_pudo", {
+          identity: { nss: true, curp: true, rfc: true },
+        }),
+        facts: { nss: "12345678901", curp: "DILE970625HBCZPM01", workerRfc: "VECJ880326XXX" },
       }),
     );
     expect(failed.clearAnswer).toMatch(/Falló/);
