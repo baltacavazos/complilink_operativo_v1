@@ -337,6 +337,8 @@ export async function postSignedAuditaPatronEngine(params: {
   bearerToken?: string;
   timeoutMs?: number;
   maxAttempts?: number;
+  /** Un timeout del cliente no debe disparar otro POST: el primero puede seguir y el segundo choca con el tope de un proveedor. */
+  retryTimeouts?: boolean;
   fetchImpl?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
   now?: Date;
@@ -413,7 +415,11 @@ export async function postSignedAuditaPatronEngine(params: {
 
       const haystack = `${lastBody ?? ""}`.toLowerCase();
       if (response.status === 403) {
-        lastReason = /hmac/.test(haystack) ? "hmac_failed" : "authentication_failed";
+        lastReason = /hmac/.test(haystack)
+          ? "hmac_failed"
+          : /acceso gratuito solo puedes revisar un proveedor/.test(haystack)
+            ? "provider_cap"
+            : "authentication_failed";
         break;
       }
 
@@ -428,10 +434,12 @@ export async function postSignedAuditaPatronEngine(params: {
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
       lastReason = /timeout|timed out|aborted/i.test(lastError) ? "timeout" : "network_error";
-      if (attempt < maxAttempts) {
+      const retryThisTimeout = lastReason !== "timeout" || params.retryTimeouts !== false;
+      if (attempt < maxAttempts && retryThisTimeout) {
         await sleepFn(160 * attempt);
         continue;
       }
+      break;
     }
   }
 

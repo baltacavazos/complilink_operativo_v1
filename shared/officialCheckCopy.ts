@@ -689,6 +689,8 @@ export type OfficialCheckSummary = {
   checks: OfficialSourceCheck[];
   chatAnchor?: OfficialChatAnchor | null;
   reciboVsOficial?: ReciboVsOficial | null;
+  /** El puente rechazó la consulta por el tope de un proveedor. No es silencio de IMSS, SAT o Infonavit. */
+  bridgeBlock?: "provider_cap" | null;
 };
 
 export type OfficialIdentityField = keyof OfficialIdentityFlags;
@@ -1135,7 +1137,9 @@ export function reconcileOfficialCheckWithIdentity(
   const pendingSinceMs = options?.pendingSinceMs ?? null;
   const anchorFechaFor = (source: OfficialCheckSource) => chatAnchor?.[source]?.fecha ?? null;
   const livePresent = hasLiveOfficialResult({ ...summary, checks, chatAnchor: chatAnchor ?? summary.chatAnchor });
+  const providerCap = summary.bridgeBlock === "provider_cap";
   checks = checks.map((item) => {
+    if (providerCap) return item;
     if (item.status !== "pendiente" || item.honesty === "live") return item;
     if (
       !isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs, {
@@ -1154,7 +1158,7 @@ export function reconcileOfficialCheckWithIdentity(
       motivoFallo: rewriteOfficialFailedMotivo(item.source, item.motivoFallo),
     };
   });
-  if (!livePresent && overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs, {
+  if (!providerCap && !livePresent && overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs, {
     anchorFecha: anchorFechaFor("imss") ?? anchorFechaFor("sat") ?? anchorFechaFor("infonavit"),
     pendingSinceMs,
   })) {
@@ -1527,7 +1531,9 @@ export function pickHonestOfficialCheck(params: {
   candidates: Array<OfficialCheckSummary | null | undefined>;
 }): OfficialCheckSummary | null {
   const present = params.candidates.filter((item): item is OfficialCheckSummary => Boolean(item));
-  const consulted = present.find(
+  const withoutProviderCap = present.filter((item) => item.bridgeBlock !== "provider_cap");
+  const pool = withoutProviderCap.length > 0 ? withoutProviderCap : present;
+  const consulted = pool.find(
     (item) =>
       !isPermissionBlockedStatus(item.overallStatus) &&
       Boolean(item.checkedAt || item.chatAnchor || item.reciboVsOficial),
@@ -1535,11 +1541,11 @@ export function pickHonestOfficialCheck(params: {
   if (params.consentGranted || consulted) {
     return (
       consulted ??
-      present.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ??
+      pool.find((item) => !isPermissionBlockedStatus(item.overallStatus)) ??
       null
     );
   }
-  return present[0] ?? null;
+  return pool[0] ?? null;
 }
 
 /**

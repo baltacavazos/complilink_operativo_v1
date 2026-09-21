@@ -8,6 +8,7 @@ import {
   OFFICIAL_PENDING_STALE_MS,
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialCheckHeadline,
+  pickHonestOfficialCheck,
   reconcileOfficialCheckWithIdentity,
   resolveOfficialCheckDisplay,
 } from "@shared/officialCheckCopy";
@@ -283,7 +284,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(timedOut.overallDetail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(timedOut.overallDetail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
     expect(timedOut.checkedAt).toBeTruthy();
-    expect(fetchTimeout).toHaveBeenCalledTimes(2);
+    expect(fetchTimeout).toHaveBeenCalledTimes(1);
   });
 
   it("un acuse vacío no se inventa como consulta hecha", async () => {
@@ -957,6 +958,135 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Certificados|RFC: UIPD9211257I0/);
     expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+  });
+
+  it("el tope de un proveedor no apaga un SAT vivo ni en el humo ni en guest-official", async () => {
+    const capMessage = "En el acceso gratuito solo puedes revisar un proveedor. Para revisar otro, elige un plan.";
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: false,
+          action: "official_check",
+          error: capMessage,
+          idempotencyKey: "guest-official:preview-uipd",
+          providerId: null,
+          result: {
+            satHonesty: "live",
+            officialCheck: {
+              sat: {
+                honesty: "live",
+                resultado: "vivo",
+                status: "pendiente",
+                rfc: "UIPD9211257I0",
+                hechos: ["RFC: UIPD9211257I0", "El SAT entregó 30 certificados."],
+              },
+              imss: { honesty: "failed", resultado: "no_se_pudo", workerReason: "IMSS está en mantenimiento.", hechos: ["IMSS está en mantenimiento."] },
+              infonavit: { honesty: "failed", resultado: "no_se_pudo", workerReason: "Infonavit está en mantenimiento.", hechos: ["Infonavit está en mantenimiento."] },
+            },
+          },
+        }),
+        { status: 403 },
+      ),
+    );
+    const checkedAt = new Date("2026-09-21T20:41:00.000Z");
+    const result = await runOfficialGovernmentCheck({
+      identity: { nss: "84129214965", curp: "UIPD921125HYNCLD03", rfc: "UIPD9211257I0" },
+      consentGranted: true,
+      env: ENGINE_ENV,
+      now: checkedAt,
+      idempotencyKey: "guest-official:preview-uipd",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    const laterMs = checkedAt.getTime() + OFFICIAL_PENDING_STALE_MS + 60_000;
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: result,
+      identity: { nss: true, curp: true, rfc: true },
+      nowMs: laterMs,
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(result.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
+    expect(display.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
+    expect(JSON.stringify(display)).not.toMatch(/acceso gratuito|proveedor|elige un plan/i);
+  });
+
+  it("un 403 de tope sin consulta no se vuelve silencio de las tres y no pisa un SAT vivo", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          ok: false,
+          action: "official_check",
+          providerId: null,
+          error: "En el acceso gratuito solo puedes revisar un proveedor. Para revisar otro, elige un plan.",
+        }),
+        { status: 403 },
+      ),
+    );
+    const blocked = await runOfficialGovernmentCheck({
+      identity: { nss: "84129214965", curp: "UIPD921125HYNCLD03", rfc: "UIPD9211257I0" },
+      consentGranted: true,
+      env: ENGINE_ENV,
+      now: new Date("2026-09-21T20:39:00.000Z"),
+      idempotencyKey: "guest-official:preview-uipd",
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    expect(blocked.bridgeBlock).toBe("provider_cap");
+    expect(blocked.overallStatus).toBe("pendiente");
+    expect(blocked.checks.every((item) => item.status !== "no_se_pudo")).toBe(true);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const capOnly = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "pendiente" as const,
+      overallLabel: "Pendiente",
+      overallDetail: "Todavía no hay una respuesta oficial nueva. Inténtalo más tarde.",
+      checkedAt: "2026-09-21T20:39:00.000Z",
+      identity: { nss: true, curp: true, rfc: true },
+      bridgeBlock: "provider_cap" as const,
+      checks: [],
+    };
+    const live = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "vivo" as const,
+      overallLabel: "Vivo",
+      overallDetail: "Esto respondió el instituto hoy.",
+      checkedAt: "2026-09-21T20:41:00.000Z",
+      identity: { nss: true, curp: true, rfc: true },
+      checks: [
+        {
+          source: "sat" as const,
+          sourceLabel: "SAT",
+          status: "vivo" as const,
+          label: "Vivo",
+          detail: "Esto respondió el instituto hoy.",
+          checkedAt: "2026-09-21T20:41:00.000Z",
+          used: { nss: false, curp: false, rfc: true },
+          honesty: "live" as const,
+          hechos: ["RFC: UIPD9211257I0"],
+        },
+      ],
+    };
+    const picked = pickHonestOfficialCheck({
+      consentGranted: true,
+      candidates: [capOnly, live],
+    });
+    expect(picked?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    expect(picked?.bridgeBlock).toBeUndefined();
+
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: capOnly,
+      identity: { nss: true, curp: true, rfc: true },
+      nowMs: Date.parse("2026-09-21T20:39:00.000Z") + OFFICIAL_PENDING_STALE_MS + 60_000,
+    });
+    expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(display.headline).not.toMatch(/acceso gratuito|proveedor/i);
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {

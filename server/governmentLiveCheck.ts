@@ -40,7 +40,8 @@ import {
 } from "./auditaPatronIntegrationService";
 
 /** El puente espera cada fuente (hasta dos intentos de 12s) y devuelve el SAT en el mismo cuerpo. */
-export const GOVERNMENT_LIVE_TIMEOUT_MS = 30_000;
+/** El puente espera dos intentos de 12s por fuente. Un corte antes, y el reintento, dejan providerId vacío y el tope de un proveedor. */
+export const GOVERNMENT_LIVE_TIMEOUT_MS = 45_000;
 export const GOVERNMENT_LIVE_MAX_ATTEMPTS = 2;
 export const OFFICIAL_CHECK_ACTION = "official_check";
 export const OFFICIAL_CHECK_EVENT = "official.check.requested";
@@ -466,6 +467,17 @@ export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): Off
 }
 
 const CONSULTED_BRIDGE_SOURCES: OfficialCheckSource[] = ["imss", "sat"];
+
+const PROVIDER_CAP_RE = /acceso gratuito solo puedes revisar un proveedor/i;
+
+function isProviderCapBridgeFailure(posted: SignedEnginePostResult): boolean {
+  if (posted.reason === "provider_cap") return true;
+  return PROVIDER_CAP_RE.test(`${collectHaystack(posted.responseJson)} ${posted.responseBody ?? ""}`);
+}
+
+function officialCheckHasLiveSource(summary: OfficialCheckSummary | null | undefined): boolean {
+  return Boolean(summary?.checks?.some((item) => item.status === "vivo" || item.honesty === "live"));
+}
 
 function workerDetailForBridgeResult(
   status: OfficialCheckStatus,
@@ -997,6 +1009,7 @@ export async function runOfficialGovernmentCheck(params: {
       hmacSecret: engine.hmacSecret,
       timeoutMs: GOVERNMENT_LIVE_TIMEOUT_MS,
       maxAttempts: GOVERNMENT_LIVE_MAX_ATTEMPTS,
+      retryTimeouts: false,
       fetchImpl: params.fetchImpl,
       sleep: params.sleep,
       now: params.now,
@@ -1024,6 +1037,38 @@ export async function runOfficialGovernmentCheck(params: {
     identity: used,
     nowIso,
   });
+  const providerCap = isProviderCapBridgeFailure(posted);
+  if (providerCap && !officialCheckHasLiveSource(fromReturn)) {
+    return {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "pendiente",
+      overallLabel: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+      overallDetail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+      checkedAt: nowIso,
+      identity: used,
+      bridgeBlock: "provider_cap",
+      checks: [
+        sourceCheck("imss", identity.nss ? "pendiente" : "sin_datos", {
+          checkedAt: nowIso,
+          used: usedOfficialIdentityForSource("imss", used),
+          missingFields: missingOfficialFieldsForSource("imss", used),
+        }),
+        sourceCheck("sat", identity.rfc ? "pendiente" : "sin_datos", {
+          checkedAt: nowIso,
+          used: usedOfficialIdentityForSource("sat", used),
+          missingFields: missingOfficialFieldsForSource("sat", used),
+        }),
+        sourceCheck("infonavit", identity.curp ? "pendiente" : "sin_datos", {
+          checkedAt: nowIso,
+          used: usedOfficialIdentityForSource("infonavit", used),
+          missingFields: missingOfficialFieldsForSource("infonavit", used),
+        }),
+      ],
+      chatAnchor: null,
+      reciboVsOficial: null,
+    };
+  }
   if (fromReturn) {
     const mergedIdentity = {
       nss: used.nss || Boolean(fromReturn.identity?.nss),
