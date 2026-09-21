@@ -13,6 +13,7 @@ import {
 import {
   OFFICIAL_CHECK_ACTION,
   collectWorkerOfficialIdentity,
+  extractReceiptOfficialIdentity,
   getOfficialCheckAvailability,
   isOfficialCheckConfigured,
   officialCheckFromBridgeReturn,
@@ -311,6 +312,86 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(pending?.overallStatus).toBe("pendiente");
     expect(pending?.overallLabel).toBe("Pendiente");
+  });
+
+  it("si el puente queda pending por NSS/CURP/RFC, marca Faltan datos con fecha y qué falta", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            sat: {
+              obligation: "sat",
+              honesty: "pending",
+              status: "pending",
+              workerLabel: "Faltan datos",
+              workerReason: "Falta el RFC para consultar SAT.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: ["rfc"],
+              hechos: ["Falta el RFC para consultar SAT."],
+            },
+            imss: {
+              obligation: "imss",
+              honesty: "pending",
+              status: "pending",
+              workerLabel: "Faltan datos",
+              workerReason: "Falta el NSS para consultar IMSS.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: ["nss"],
+              hechos: ["Falta el NSS para consultar IMSS."],
+            },
+            infonavit: {
+              obligation: "infonavit",
+              honesty: "failed",
+              status: "missing_identifiers",
+              workerLabel: "Faltan datos",
+              workerReason: "Falta el NSS para consultar Infonavit.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              missingFields: ["nss"],
+              hechos: ["Falta el NSS para consultar Infonavit."],
+            },
+          },
+          chatAnchor: {
+            sat: { fuente: "sat", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el RFC para consultar SAT."], motivoFallo: null },
+            imss: { fuente: "imss", estado: "pending", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el NSS para consultar IMSS."], motivoFallo: null },
+            infonavit: { fuente: "infonavit", estado: "failed", fecha: "2026-09-21T12:00:00.000Z", hechos: ["Falta el NSS para consultar Infonavit."], motivoFallo: "Falta el NSS para consultar Infonavit." },
+          },
+          reciboVsOficial: { resultado: "no_se_pudo", motivo: "Faltan datos para comparar." },
+        },
+      },
+      nowIso: "2026-09-21T12:00:00.000Z",
+      identity: { nss: false, curp: true, rfc: false },
+    });
+
+    expect(parsed?.overallStatus).toBe("sin_datos");
+    expect(parsed?.overallLabel).toBe("Faltan datos");
+    expect(parsed?.overallDetail).toBe("Falta tu NSS y RFC en el recibo para consultar.");
+    expect(parsed?.checkedAt).toBe("2026-09-21T12:00:00.000Z");
+    expect(parsed?.identity).toEqual({ nss: false, curp: true, rfc: false });
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("sin_datos");
+    expect(parsed?.reciboVsOficial?.resultado).toBe("no_se_pudo");
+    expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
+  });
+
+  it("saca NSS, CURP y RFC del texto del recibo", () => {
+    const fromText = extractReceiptOfficialIdentity(
+      "Recibo de nómina. NSS 12345678901 CURP DILE970625HBCZPM01 RFC del trabajador VECJ880326XXX. RFC del patrón ECC190605VA1.",
+    );
+    expect(fromText).toEqual({
+      nss: "12345678901",
+      curp: "DILE970625HBCZPM01",
+      rfc: "VECJ880326XXX",
+    });
+    expect(
+      collectWorkerOfficialIdentity({
+        employerRfc: "ECC190605VA1",
+        text: "NumSeguridadSocial 84129214965 Curp DILE970625HBCZPM01 RfcReceptor VECJ880326XXX",
+      }),
+    ).toMatchObject({
+      nss: "84129214965",
+      curp: "DILE970625HBCZPM01",
+      rfc: "VECJ880326XXX",
+    });
   });
 
   it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {

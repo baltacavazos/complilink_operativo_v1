@@ -6231,7 +6231,8 @@ export default function Auditar() {
     isPending: revalidateSocialSecurityMutation.isPending,
     summary: officialCheckSummary,
     missingIdentityDetail:
-      officialCaseBriefing.missingIdentity.length === 3
+      officialCaseBriefing.missingIdentity.length === 3 ||
+      officialCheckSummary?.overallStatus === "sin_datos"
         ? officialCaseBriefing.missingIdentityDetail
         : null,
   });
@@ -9495,7 +9496,9 @@ export default function Auditar() {
                               <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                                 {officialCheckDisplay.detail}
                               </p>
-                              {officialCheckConsent && officialCaseBriefing.statusLines.length ? (
+                              {officialCheckConsent &&
+                              officialCaseBriefing.statusLines.length &&
+                              officialCheckSummary?.overallStatus !== "sin_datos" ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
                                   {officialCaseBriefing.statusLines.map(line => (
                                     <li key={line}>{line}</li>
@@ -14458,7 +14461,7 @@ Reforzar con otro documento
                   officialCaseBriefing.hasOfficialConsulta
                     ? {
                         seenLine: officialCaseBriefing.comparison.seenLine,
-                        nextStep: officialCaseBriefing.comparison.nextStep,
+                        nextStep: officialCaseBriefing.comparison.nextStepLine,
                       }
                     : null
                 }

@@ -2,6 +2,7 @@ import {
   humanizeStructuredFieldLabel,
   isWorkerSystemStructuredField,
 } from "./workerVisibleExtraction";
+import { extractReceiptOfficialIdentity } from "./governmentLiveCheck";
 
 type RecordLike = Record<string, unknown>;
 
@@ -75,9 +76,18 @@ const FACT_ALIASES: Record<keyof LaborFiscalStructuredFacts, string[]> = {
   perceptions: ["payrollperceptions", "percepciones", "totalpercepciones", "grossamount"],
   deductions: ["payrolldeductions", "deducciones", "totaldeducciones", "deductions"],
   employerRfc: ["employerrfc", "rfcpayrollissuer", "rfcemisor", "rfcpatron"],
-  workerRfc: ["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker"],
-  nss: ["payrollnss", "nss", "numseguridadsocial", "numerodeseguridadsocial"],
-  curp: ["payrollcurp", "curp", "clavunica", "claveunicaregistropoblacion"],
+  workerRfc: ["workerrfc", "rfctrabajador", "rfcreceptor", "rfcworker", "rfcempleado", "rfcreceptorcfdi"],
+  nss: [
+    "payrollnss",
+    "nss",
+    "numseguridadsocial",
+    "numerodeseguridadsocial",
+    "numerosegurosocial",
+    "numnss",
+    "imssnss",
+    "nsstrabajador",
+  ],
+  curp: ["payrollcurp", "curp", "clavunica", "claveunicaregistropoblacion", "curptrabajador", "curpempleado", "curpreceptor"],
   employerRegistration: ["payrollemployerregistration", "registropatronal", "regpatronal"],
   isrWithheld: ["isrwithheld", "isr", "retencionisr"],
   imssWithheld: ["imsswithheld", "cuotaimss", "retencionimss"],
@@ -189,18 +199,33 @@ function countVisibleFacts(facts: LaborFiscalStructuredFacts) {
   return Object.values(facts).filter((value) => value !== null).length;
 }
 
+function documentIdentityHaystack(document: DocumentLaborFiscalInput) {
+  const { opinion, rawPayload, confirmedData, estimatedData } = collectAnalysisRecords(document);
+  return {
+    originalName: document.originalName ?? null,
+    documentType: document.documentType ?? null,
+    summary: asText(opinion?.summary),
+    confirmedData,
+    estimatedData,
+    rawPayload,
+  };
+}
+
 export function extractStructuredLaborFiscalFacts(
   document: DocumentLaborFiscalInput,
 ): LaborFiscalStructuredFacts {
+  const employerRfc = readAliasedFact(document, FACT_ALIASES.employerRfc);
+  const extracted = extractReceiptOfficialIdentity(documentIdentityHaystack(document));
+  const workerRfc = readAliasedFact(document, FACT_ALIASES.workerRfc) ?? extracted.rfc;
   return {
     period: readAliasedFact(document, FACT_ALIASES.period),
     netAmount: readAliasedFact(document, FACT_ALIASES.netAmount),
     perceptions: readAliasedFact(document, FACT_ALIASES.perceptions),
     deductions: readAliasedFact(document, FACT_ALIASES.deductions),
-    employerRfc: readAliasedFact(document, FACT_ALIASES.employerRfc),
-    workerRfc: readAliasedFact(document, FACT_ALIASES.workerRfc),
-    nss: readAliasedFact(document, FACT_ALIASES.nss),
-    curp: readAliasedFact(document, FACT_ALIASES.curp),
+    employerRfc,
+    workerRfc: workerRfc && workerRfc !== employerRfc ? workerRfc : null,
+    nss: readAliasedFact(document, FACT_ALIASES.nss) ?? extracted.nss,
+    curp: readAliasedFact(document, FACT_ALIASES.curp) ?? extracted.curp,
     employerRegistration: readAliasedFact(document, FACT_ALIASES.employerRegistration),
     isrWithheld: readAliasedFact(document, FACT_ALIASES.isrWithheld),
     imssWithheld: readAliasedFact(document, FACT_ALIASES.imssWithheld),

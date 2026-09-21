@@ -3,6 +3,8 @@ import {
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
   honestyToOfficialStatus,
+  inferOfficialMissingFieldKeys,
+  listOfficialMissingFieldKeys,
   officialStatusToHonesty,
   readChatAnchor,
   readChatAnchorSource,
@@ -14,7 +16,10 @@ import {
   type OfficialSourceCheck,
   type ReciboVsOficial,
 } from "@shared/officialCheckCopy";
-import { officialIdentityGapDetail } from "@shared/officialCaseBriefing";
+import {
+  applyMissingFieldsToIdentity,
+  officialIdentityGapDetail,
+} from "@shared/officialCaseBriefing";
 import {
   canonicalizeEngineWebhookUrl,
   deriveHeliosBridgeUrl,
@@ -112,16 +117,111 @@ export function normalizeRfc(value: unknown): string | null {
   return normalized;
 }
 
+const NSS_LABELED_RE =
+  /(?:nss|n\.?\s*s\.?\s*s\.?|num(?:ero)?\s+(?:de\s+)?seguro\s+social|seguridad\s+social|numseguridadsocial)\D{0,24}(\d{10,11})/i;
+const NSS_BARE_RE = /\b(\d{11})\b/;
+const CURP_LABELED_RE = /(?:curp)\D{0,16}([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})/i;
+const CURP_BARE_RE = /\b([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})\b/;
+const RFC_TRABAJADOR_RE =
+  /rfc\s+(?:del\s+)?(?:trabajador|receptor|empleado)[:\s]*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i;
+const RFC_BARE_RE = /\b([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})\b/g;
+
+function walkIdentityRecords(root: unknown, visit: (record: Record<string, unknown>) => void) {
+  const seen = new Set<unknown>();
+  const stack = [root];
+  while (stack.length) {
+    const current = stack.pop();
+    if (!current || typeof current !== "object") continue;
+    if (seen.has(current)) continue;
+    seen.add(current);
+    if (Array.isArray(current)) {
+      stack.push(...current);
+      continue;
+    }
+    visit(current as Record<string, unknown>);
+    for (const child of Object.values(current)) {
+      if (child && typeof child === "object") stack.push(child);
+    }
+  }
+}
+
+export function extractReceiptOfficialIdentity(source: unknown): WorkerOfficialIdentity {
+  const found: WorkerOfficialIdentity = { nss: null, curp: null, rfc: null };
+  const texts: string[] = [];
+
+  if (typeof source === "string") {
+    texts.push(source);
+  } else if (source && typeof source === "object") {
+    walkIdentityRecords(source, (record) => {
+      for (const [key, value] of Object.entries(record)) {
+        const compact = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+        if (!found.nss && /nss|numseguridadsocial|numeroseguridadsocial|numerosegurosocial|segurosocial/.test(compact)) {
+          found.nss = normalizeNss(value);
+        }
+        if (!found.curp && compact.includes("curp")) {
+          found.curp = normalizeCurp(value);
+        }
+        if (
+          !found.rfc &&
+          /rfctrabajador|rfcreceptor|rfcempleado|rfcworker|workerrfc/.test(compact)
+        ) {
+          found.rfc = normalizeRfc(value);
+        }
+        if (typeof value === "string" || typeof value === "number") {
+          texts.push(String(value));
+        }
+      }
+    });
+    try {
+      texts.push(JSON.stringify(source));
+    } catch {
+      // El recibo no era serializable; se sigue con los textos ya vistos.
+    }
+  }
+
+  const haystack = texts.join(" ");
+  if (!found.nss) {
+    const labeled = haystack.match(NSS_LABELED_RE);
+    found.nss = normalizeNss(labeled?.[1]) ?? normalizeNss(haystack.match(NSS_BARE_RE)?.[1]);
+  }
+  if (!found.curp) {
+    found.curp =
+      normalizeCurp(haystack.match(CURP_LABELED_RE)?.[1]) ??
+      normalizeCurp(haystack.match(CURP_BARE_RE)?.[1]);
+  }
+  if (!found.rfc) {
+    found.rfc = normalizeRfc(haystack.match(RFC_TRABAJADOR_RE)?.[1]);
+    if (!found.rfc) {
+      const physical = [...haystack.toUpperCase().matchAll(RFC_BARE_RE)]
+        .map((item) => normalizeRfc(item[1]))
+        .find((item) => item && item.length === 13);
+      found.rfc = physical ?? null;
+    }
+  }
+  return found;
+}
+
 export function collectWorkerOfficialIdentity(facts: {
   nss?: unknown;
   curp?: unknown;
   workerRfc?: unknown;
   rfc?: unknown;
+  text?: unknown;
+  haystack?: unknown;
+  employerRfc?: unknown;
 }): WorkerOfficialIdentity {
-  return {
+  const fromFacts = {
     nss: normalizeNss(facts.nss),
     curp: normalizeCurp(facts.curp),
     rfc: normalizeRfc(facts.workerRfc ?? facts.rfc),
+  };
+  const extracted = extractReceiptOfficialIdentity(facts.haystack ?? facts.text ?? facts);
+  const rfc = fromFacts.rfc ?? extracted.rfc;
+  const employerRfc = normalizeRfc(facts.employerRfc);
+  return {
+    nss: fromFacts.nss ?? extracted.nss,
+    curp: fromFacts.curp ?? extracted.curp,
+    rfc: rfc && rfc !== employerRfc ? rfc : null,
   };
 }
 
@@ -140,7 +240,7 @@ function hasAnyIdentity(identity: WorkerOfficialIdentity) {
 function sourceCheck(
   source: OfficialSourceCheck["source"],
   status: OfficialCheckStatus,
-  extra?: Partial<Pick<OfficialSourceCheck, "checkedAt" | "used" | "detail" | "honesty" | "hechos" | "motivoFallo">>,
+  extra?: Partial<Pick<OfficialSourceCheck, "checkedAt" | "used" | "detail" | "honesty" | "hechos" | "motivoFallo" | "missingFields">>,
 ): OfficialSourceCheck {
   return {
     source,
@@ -153,6 +253,7 @@ function sourceCheck(
     honesty: extra?.honesty ?? officialStatusToHonesty(status),
     hechos: extra?.hechos?.slice(0, 3) ?? [],
     motivoFallo: extra?.motivoFallo ?? null,
+    missingFields: extra?.missingFields ?? [],
   };
 }
 
@@ -365,22 +466,26 @@ function readOfficialObligationCheck(
   used: OfficialIdentityFlags,
 ): OfficialSourceCheck {
   const record = asRecord(value);
-  const missing = Array.isArray(record?.missingFields)
-    ? record.missingFields.map((item) => String(item))
+  const hechos = record
+    ? (Array.isArray(record.hechos) ? record.hechos.map((item) => String(item).trim()).filter(Boolean).slice(0, 3) : [])
     : [];
+  const motivoText =
+    (typeof record?.workerReason === "string" ? record.workerReason : null) ??
+    (typeof record?.motivoFallo === "string" ? record.motivoFallo : null);
+  const missing = [
+    ...listOfficialMissingFieldKeys(record?.missingFields),
+    ...inferOfficialMissingFieldKeys(hechos.join(" ")),
+    ...inferOfficialMissingFieldKeys(motivoText),
+  ].filter((item, index, all) => all.indexOf(item) === index);
   const fromHonesty = honestyToOfficialStatus(
     record ? String(record.honesty ?? record.estado ?? record.status ?? "") : null,
     missing,
   );
   const status = fromHonesty ?? fallback ?? "pendiente";
   const anchor = record ? readChatAnchorSource(record, source) : null;
-  const hechos = record
-    ? (Array.isArray(record.hechos) ? record.hechos.map((item) => String(item).trim()).filter(Boolean).slice(0, 3) : [])
-    : [];
   const motivoFallo =
     status === "no_se_pudo" || status === "sin_datos"
-      ? (typeof record?.workerReason === "string" ? record.workerReason : null) ??
-        (typeof record?.motivoFallo === "string" ? record.motivoFallo : null)
+      ? motivoText
       : null;
   return sourceCheck(source, status, {
     checkedAt:
@@ -392,6 +497,7 @@ function readOfficialObligationCheck(
     hechos: hechos.length > 0 ? hechos : anchor?.hechos,
     motivoFallo: motivoFallo ?? anchor?.motivoFallo ?? null,
     detail: motivoFallo ?? undefined,
+    missingFields: missing.length > 0 ? missing : anchor?.missingFields,
   });
 }
 
@@ -502,22 +608,56 @@ export function officialCheckFromBridgeReturn(params: {
     ),
   ];
   const overallStatus = rollupStatus(checks.map((item) => item.status));
+  const mergeMissing = (source: NonNullable<OfficialChatAnchor>[string], check: OfficialSourceCheck) => ({
+    ...source,
+    missingFields: [
+      ...listOfficialMissingFieldKeys(source.missingFields),
+      ...listOfficialMissingFieldKeys(check.missingFields),
+    ].filter((item, index, all) => all.indexOf(item) === index),
+    fecha: source.fecha ?? check.checkedAt,
+  });
   const resolvedAnchor: OfficialChatAnchor | null =
-    chatAnchor ??
-    ({
-      imss: readChatAnchorSource({ ...checks[0], estado: checks[0].honesty, fecha: checks[0].checkedAt }, "imss"),
-      sat: readChatAnchorSource({ ...checks[1], estado: checks[1].honesty, fecha: checks[1].checkedAt }, "sat"),
-      infonavit: readChatAnchorSource({ ...checks[2], estado: checks[2].honesty, fecha: checks[2].checkedAt }, "infonavit"),
+    chatAnchor
+      ? {
+          imss: mergeMissing(chatAnchor.imss, checks[0]),
+          sat: mergeMissing(chatAnchor.sat, checks[1]),
+          infonavit: mergeMissing(chatAnchor.infonavit, checks[2]),
+        }
+      : ({
+      imss: readChatAnchorSource({
+        ...checks[0],
+        estado: checks[0].honesty,
+        fecha: checks[0].checkedAt,
+        missingFields: checks[0].missingFields,
+      }, "imss"),
+      sat: readChatAnchorSource({
+        ...checks[1],
+        estado: checks[1].honesty,
+        fecha: checks[1].checkedAt,
+        missingFields: checks[1].missingFields,
+      }, "sat"),
+      infonavit: readChatAnchorSource({
+        ...checks[2],
+        estado: checks[2].honesty,
+        fecha: checks[2].checkedAt,
+        missingFields: checks[2].missingFields,
+      }, "infonavit"),
     } satisfies OfficialChatAnchor);
+  const missingKeys = checks.flatMap((item) => item.missingFields ?? []);
+  const identity = applyMissingFieldsToIdentity(used, missingKeys);
+  const overallDetail =
+    overallStatus === "sin_datos"
+      ? officialIdentityGapDetail(identity)
+      : OFFICIAL_CHECK_STATUS_DETAIL[overallStatus];
 
   return {
     configured: true,
     consentGranted: true,
     overallStatus,
     overallLabel: OFFICIAL_CHECK_STATUS_LABEL[overallStatus],
-    overallDetail: OFFICIAL_CHECK_STATUS_DETAIL[overallStatus],
+    overallDetail,
     checkedAt: nowIso,
-    identity: used,
+    identity,
     checks,
     chatAnchor: resolvedAnchor,
     reciboVsOficial,
@@ -567,6 +707,7 @@ export async function runOfficialGovernmentCheck(params: {
       ...emptySummary("sin_datos", identity),
       configured: true,
       consentGranted: true,
+      checkedAt: nowIso,
       overallDetail: officialIdentityGapDetail(identityFlags(identity)),
     };
   }
@@ -619,8 +760,11 @@ export async function runOfficialGovernmentCheck(params: {
       ...fromReturn,
       configured: true,
       consentGranted: true,
-      identity: used,
-      overallDetail: fromReturn.overallDetail || workerDetailForBridgeResult(fromReturn.overallStatus, posted),
+      identity: fromReturn.identity ?? used,
+      overallDetail:
+        fromReturn.overallStatus === "sin_datos"
+          ? fromReturn.overallDetail
+          : fromReturn.overallDetail || workerDetailForBridgeResult(fromReturn.overallStatus, posted),
     };
   }
 

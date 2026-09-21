@@ -123,6 +123,15 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(fallo.headline).toBe("Falló");
     expect(fallo.buttonLabel).toBe("Falló");
 
+    const faltan = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: summary("sin_datos", { checkedAt: "2026-09-21T15:30:00.000Z" }),
+      missingIdentityDetail: "Falta tu NSS y CURP en el recibo para consultar.",
+    });
+    expect(faltan.headline).toBe("Faltan datos · 21/09/2026");
+    expect(faltan.detail).toMatch(/Falta tu NSS y CURP/);
+    expect(faltan.status).toBe("sin_datos");
+
     for (const display of [vivo, pendiente, fallo]) {
       expect(display.headline).not.toMatch(/Falta tu permiso/i);
       expect(display.buttonLabel).not.toMatch(/Falta tu permiso|Helios|HMAC/i);
@@ -148,6 +157,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
 
   it("lee chatAnchor y reciboVsOficial del contrato CLK sin inventar cumple", () => {
     expect(honestyToOfficialStatus("live")).toBe("vivo");
+    expect(honestyToOfficialStatus("pending", ["nss"])).toBe("sin_datos");
+    expect(honestyToOfficialStatus("pending")).toBe("pendiente");
     expect(honestyToOfficialStatus("failed", ["nss"])).toBe("sin_datos");
     expect(honestyToOfficialStatus("failed")).toBe("no_se_pudo");
 
@@ -164,7 +175,9 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(readReciboVsOficial({ resultado: "hay_diferencia", motivo: "SBC" })?.resultado).toBe("hay_diferencia");
     expect(readReciboVsOficial(null)).toBeNull();
 
-    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine).toBe("Cuadra con tu recibo.");
+    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine).toBe("Esto vimos: bien");
+    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.seenLine).toBe("Esto vimos: hay diferencia");
+    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.seenLine).toBe("Esto vimos: no se pudo");
     expect(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.nextStep).toMatch(/patrón o RH/);
     expect(JSON.stringify(RECEIPT_OFFICIAL_COMPARISON_COPY)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
 

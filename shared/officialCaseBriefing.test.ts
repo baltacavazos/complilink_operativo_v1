@@ -122,6 +122,47 @@ describe("briefing del caso para el asesor", () => {
     expect(officialIdentityGapDetail({ nss: true, curp: false, rfc: false })).toBe(
       "Falta tu CURP y RFC en el recibo para consultar.",
     );
+    expect(officialIdentityGapDetail({ nss: true, curp: true, rfc: false })).toBe(
+      "Falta tu RFC en el recibo para consultar.",
+    );
+
+    const pendingMissing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        identity: { nss: false, curp: true, rfc: true },
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "pending",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Falta el NSS para consultar IMSS."],
+            motivoFallo: null,
+            missingFields: ["nss"],
+          },
+          sat: {
+            fuente: "sat",
+            estado: "pending",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+            motivoFallo: null,
+            missingFields: [],
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "pending",
+            fecha: "2026-09-21T15:30:00.000Z",
+            hechos: ["Falta el NSS para consultar Infonavit."],
+            motivoFallo: null,
+            missingFields: ["nss"],
+          },
+        },
+      }),
+      facts: { curp: "DILE970625HBCZPM01", workerRfc: "VECJ880326XXX" },
+    });
+    expect(pendingMissing.statusLines.some((line) => /IMSS: Faltan datos · 21\/09\/2026/.test(line))).toBe(true);
+    expect(pendingMissing.missingIdentity).toEqual(["NSS"]);
+    expect(pendingMissing.missingIdentityDetail).toBe("Falta tu NSS en el recibo para consultar.");
+    expect(pendingMissing.comparison.seenLine).toBe("Esto vimos: no se pudo");
+    expect(pendingMissing.comparison.nextStepLine).toMatch(/^Qué hacer ahora:/);
 
     const comparison = selectReceiptOfficialComparison({
       officialCheck: official("sin_datos", {
@@ -141,16 +182,18 @@ describe("briefing del caso para el asesor", () => {
       facts: {},
       reciboVsOficial: "bien",
     });
-    expect(bien.seenLine).toBe("Cuadra con tu recibo.");
+    expect(bien.seenLine).toBe("Esto vimos: bien");
     expect(bien.nextStep).toBe("Guarda este resultado con la fecha.");
+    expect(bien.nextStepLine).toBe("Qué hacer ahora: Guarda este resultado con la fecha.");
 
     const diff = selectReceiptOfficialComparison({
       officialCheck: official("vivo", { chatAnchor: liveAnchor }),
       facts: {},
       reciboVsOficial: { resultado: "hay_diferencia", motivo: "SBC distinto" },
     });
-    expect(diff.seenLine).toBe("Hay diferencia entre tu recibo y la respuesta de hoy.");
+    expect(diff.seenLine).toBe("Esto vimos: hay diferencia");
     expect(diff.nextStep).toMatch(/Anota periodo y montos/);
+    expect(diff.nextStepLine).toMatch(/^Qué hacer ahora:/);
 
     const unknown = selectReceiptOfficialComparison({
       officialCheck: official("vivo", { chatAnchor: liveAnchor }),
@@ -172,7 +215,8 @@ describe("briefing del caso para el asesor", () => {
     expect(prompt).toContain(CASE_ADVISOR_RULE);
     expect(prompt).toMatch(/IMSS: Vivo · 21\/09\/2026/);
     expect(prompt).toMatch(/Alta vigente: sí/);
-    expect(prompt).toMatch(/Hay diferencia entre tu recibo/);
+    expect(prompt).toMatch(/Esto vimos: hay diferencia/);
+    expect(prompt).toMatch(/Qué hacer ahora:/);
     expect(prompt).toMatch(/neto \$4,200/);
     expect(prompt).toMatch(/Nunca inventes: cumple, alta vigente, salario oficial/);
     expect(prompt).not.toMatch(/Helios|CompliLink|HMAC|jurisprudencia|DOF|SCJN/i);
