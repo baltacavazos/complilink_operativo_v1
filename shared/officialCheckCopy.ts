@@ -46,7 +46,7 @@ export const INSTITUTE_SILENCE_NEXT =
 export const INSTITUTE_SILENCE_SMALL =
   "Si algo falla al preguntar otra vez, no es por tu recibo.";
 export const INSTITUTE_SILENCE_RETRY = "Probar de nuevo mañana";
-export const INSTITUTE_SILENCE_ASK = "Preguntar qué significa";
+export const INSTITUTE_SILENCE_ASK = "Preguntar qué implica para mi pago";
 export const INSTITUTE_SILENCE_CHAT =
   "Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.";
 export const INSTITUTE_WAITING_HEADLINE =
@@ -99,6 +99,8 @@ export type InstituteSilencePresentation = {
   askLabel: string;
   sourceLines: string[];
   chat: string;
+  /** Apertura del chat: 3–4 frases de este caso, sin ficha técnica. */
+  opener: string;
 };
 
 export function instituteSilenceVerdict(sources?: OfficialCheckSource[] | null): string {
@@ -144,7 +146,21 @@ export function buildInstituteSilencePresentation(
     askLabel: INSTITUTE_SILENCE_ASK,
     sourceLines: listed.slice(0, 3).map((source) => instituteSilenceSourceLine(OFFICIAL_SOURCE_LABEL[source])),
     chat: instituteSilenceChat(unique),
+    opener: instituteSilenceOpener(unique),
   };
+}
+
+function instituteSilenceOpener(sources?: OfficialCheckSource[] | null): string {
+  const unique = uniqueOfficialSources(sources);
+  const who =
+    unique.length === 0 || unique.length >= 3 ? "IMSS, SAT e Infonavit" : formatOfficialSourceList(unique);
+  const verb = unique.length === 1 ? "no contestó" : "no contestaron";
+  return `Hoy ${who} ${verb}. Tu recibo ya está leído, y aún no se puede saber si tu patrón está bien dado de alta. Pregúntame qué implica para tu pago.`;
+}
+
+function capitalizeSpanish(value: string): string {
+  if (!value) return value;
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 export type OfficialSourceOutcome = {
@@ -267,8 +283,8 @@ function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSource
 function mixedOfficialPresentation(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): OfficialResultPresentation {
   const liveArticles = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
-  const still = silent.length === 1 ? "aún no contesta" : "aún no contestan";
   const liveVerb = live.length === 1 ? "sí contestó hoy" : "sí contestaron hoy";
+  const silentVerb = silent.length === 1 ? "contestó" : "contestaron";
   const maintNote =
     silent.length > 0 && silent.every((item) => item.maintenance)
       ? " (están en mantenimiento)"
@@ -284,17 +300,20 @@ function mixedOfficialPresentation(live: OfficialSourceOutcome[], silent: Offici
     }),
     ...silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance)),
   ];
+  const liveBit = capitalizeSpanish(liveArticles);
+  const liveShort = live.length === 1 ? "contestó" : "contestaron";
   return {
     kind: "mixed",
-    verdict: `Confirmamos con ${liveArticles}. ${silentNames} ${still}.`,
-    whatHappened: `${liveArticles.charAt(0).toUpperCase()}${liveArticles.slice(1)} ${liveVerb}. Pedimos la información a ${silentNames} y hoy no hubo respuesta${maintNote}.`,
-    meaning: `Tu recibo sí se leyó. Lo que ${live.length === 1 ? "contestó" : "contestaron"} ${liveArticles} no dice si tu patrón está bien registrado en ${silentNames}. Eso no quiere decir que te estén haciendo trampa.`,
-    nextStep: `Guarda lo que respondió ${liveArticles}. Vuelve a consultar ${silentNames} mañana. Si quieres, pregunta al asesor: «¿qué implica esto para mi pago?»`,
+    verdict: `${liveBit} ${liveShort}; ${silentNames} aún no.`,
+    whatHappened: `${liveBit} ${liveVerb}. ${silentNames} no ${silentVerb}${maintNote}.`,
+    meaning: `Tu recibo sí se leyó. Aún no sabemos si tu patrón está bien registrado en ${silentNames}.`,
+    nextStep: `Vuelve a consultar ${silentNames} mañana.`,
     smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
     sourceLines,
     chat: mixedOfficialChat(live, silent),
+    opener: `${liveBit} sí ${liveShort}; ${silentNames} no. Eso no dice si tu patrón está bien dado de alta. Si quieres, pregúntame qué implica para tu pago.`,
   };
 }
 

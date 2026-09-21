@@ -802,7 +802,7 @@ describe("briefing del caso para el asesor", () => {
     const answer = buildPayWellFallback(briefing);
     const prompt = formatOfficialCaseBriefingForPrompt(briefing);
 
-    expect(briefing.headline).toBe("Confirmamos con el SAT. IMSS e Infonavit aún no contestan.");
+    expect(briefing.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(briefing.instituteSilence).toBe(false);
     expect(briefing.verdict?.kind).toBe("mixed");
     expect(briefing.statusLines.some((line) => /SAT: Vivo/.test(line))).toBe(true);

@@ -279,7 +279,7 @@ export function AIChatBox({
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-muted-foreground">
               <div className="flex flex-col items-center gap-3">
                 <Sparkles className={cn("opacity-20", isCalm ? "size-8 text-teal-700" : "size-12")} />
-                <p className={cn(isCalm ? "max-w-[22rem] text-center text-[0.95rem] leading-6 text-slate-500" : "text-sm")}>
+                <p className={cn(isCalm ? "max-w-[22rem] text-center text-[0.95rem] leading-6 text-[#161616]" : "text-sm")}>
                   {emptyStateMessage}
                 </p>
               </div>
@@ -459,7 +459,7 @@ export function AIChatBox({
             className={cn(
               "shrink-0",
               isCalm
-                ? "h-10 w-10 rounded-full bg-teal-600 text-white shadow-none hover:bg-teal-700 disabled:bg-slate-200 disabled:text-slate-400"
+                ? "ap-btn-on-dark h-10 w-10 rounded-full bg-[#111111] text-white shadow-none hover:bg-[#222222] disabled:bg-slate-200 disabled:text-[#333333]"
                 : "h-[38px] w-[38px]",
             )}
           >

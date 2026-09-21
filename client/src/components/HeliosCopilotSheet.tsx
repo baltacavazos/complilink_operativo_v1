@@ -100,6 +100,7 @@ type HeliosCopilotSheetProps = {
   onConsultOfficial?: (() => void) | null;
   consultCtaLabel?: string;
   hasOfficialConsulta?: boolean;
+  hideCaseChips?: boolean;
   uiCopy?: HeliosCopilotSheetCopy;
 };
 
@@ -131,6 +132,7 @@ export function HeliosCopilotSheet({
   onConsultOfficial = null,
   consultCtaLabel = OFFICIAL_CHECK_BUTTON,
   hasOfficialConsulta = false,
+  hideCaseChips = false,
   uiCopy,
 }: HeliosCopilotSheetProps) {
   const mergedCopy = {
@@ -249,6 +251,7 @@ export function HeliosCopilotSheet({
                   {visibleSummary}
                 </p>
               ) : null}
+              {hideCaseChips ? null : (
               <div className="flex flex-wrap gap-1.5" data-testid="ap-chat-official-chips">
                 {officialStatusChips.length > 0 ? (
                   officialStatusChips.map((chip) => (
@@ -272,6 +275,7 @@ export function HeliosCopilotSheet({
                   </span>
                 ) : null}
               </div>
+              )}
               {officialComparison ? (
                 <div className="rounded-[1rem] border border-teal-100 bg-teal-50/70 px-3 py-2.5" data-testid="ap-chat-official-comparison">
                   <p className="text-sm font-semibold text-slate-950">{officialComparison.seenLine}</p>
