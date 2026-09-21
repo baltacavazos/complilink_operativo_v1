@@ -110,6 +110,7 @@ import {
   sanitizeFileName,
 } from "./caseContracts";
 import { sendDocumentToAuditaPatronEngine } from "./auditaPatronIntegrationService";
+import { slimEngineDispatchResult } from "./engineDispatchSlim";
 import { ingestCompliLinkReturnPayload } from "./auditaPatronReturnWebhook";
 import {
   applyEngineDispatchToHeliosOpinionContract,
@@ -4670,7 +4671,7 @@ export const appRouter = router({
 
         await upsertCanonicalContracts(contractsToPersist);
 
-        const engineDispatch = await sendDocumentToAuditaPatronEngine({
+        const engineDispatch = slimEngineDispatchResult(await sendDocumentToAuditaPatronEngine({
           caseContract,
           documentContract,
           sharedEngineEnvelope,
@@ -4692,7 +4693,7 @@ export const appRouter = router({
               preliminaryAnalysis,
             }),
           },
-        });
+        }));
 
         heliosOpinionContract = await finalizeHeliosOpinionAfterDispatch({
           tenantId: input.tenantId,
@@ -4703,11 +4704,19 @@ export const appRouter = router({
         });
 
         if (engineDispatch.status === "sent") {
-          await ingestSynchronousCompliLinkAckEvent({
-            engineDispatch,
-            documentId,
-            traceId: detail.case.traceId,
-          });
+          try {
+            await ingestSynchronousCompliLinkAckEvent({
+              engineDispatch,
+              documentId,
+              traceId: detail.case.traceId,
+            });
+          } catch (ingestError) {
+            console.error("[claimGuestPreview] No se pudo guardar el retorno del puente", {
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              message: ingestError instanceof Error ? ingestError.message.slice(0, 240) : "error",
+            });
+          }
         }
 
         await addCaseEvent({
@@ -5244,7 +5253,7 @@ export const appRouter = router({
           eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
         });
 
-        const engineDispatch = await sendDocumentToAuditaPatronEngine({
+        const engineDispatch = slimEngineDispatchResult(await sendDocumentToAuditaPatronEngine({
           caseContract,
           documentContract,
           sharedEngineEnvelope,
@@ -5277,8 +5286,9 @@ export const appRouter = router({
               preliminaryAnalysis,
             }),
           },
-        });
+        }));
 
+        try {
         heliosOpinionContract = await finalizeHeliosOpinionAfterDispatch({
           tenantId: input.tenantId,
           caseId: input.caseId,
@@ -5312,12 +5322,20 @@ export const appRouter = router({
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
         } else {
-          await ingestSynchronousCompliLinkAckEvent({
-            engineDispatch,
-            documentId,
-            documentNumericId: documentRecord.id,
-            traceId: detail.case.traceId,
-          });
+          try {
+            await ingestSynchronousCompliLinkAckEvent({
+              engineDispatch,
+              documentId,
+              documentNumericId: documentRecord.id,
+              traceId: detail.case.traceId,
+            });
+          } catch (ingestError) {
+            console.error("[confirmDocumentDraft] No se pudo guardar el retorno del puente", {
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              message: ingestError instanceof Error ? ingestError.message.slice(0, 240) : "error",
+            });
+          }
           caseEventsToPersist.push({
             tenantId: input.tenantId,
             caseId: input.caseId,
@@ -5412,6 +5430,13 @@ export const appRouter = router({
             },
           },
         ]);
+        } catch (closeError) {
+          console.error("[confirmDocumentDraft] El documento quedó guardado y el cierre del puente falló", {
+            tenantId: input.tenantId,
+            caseId: input.caseId,
+            message: closeError instanceof Error ? closeError.message.slice(0, 240) : "error",
+          });
+        }
 
         const refreshedDocuments = await listVisibleDocuments({
           userId: ctx.user.id,
@@ -5813,7 +5838,7 @@ export const appRouter = router({
           eventAt: new Date(heliosOpinionContract.opinion.generatedAt),
         });
 
-        const engineDispatch = await sendDocumentToAuditaPatronEngine({
+        const engineDispatch = slimEngineDispatchResult(await sendDocumentToAuditaPatronEngine({
           caseContract,
           documentContract,
           sharedEngineEnvelope,
@@ -5846,7 +5871,7 @@ export const appRouter = router({
               preliminaryAnalysis,
             }),
           },
-        });
+        }));
 
         heliosOpinionContract = await finalizeHeliosOpinionAfterDispatch({
           tenantId: input.tenantId,
@@ -5870,12 +5895,20 @@ export const appRouter = router({
             raisedAt: new Date(engineDispatch.dispatchedAt),
           });
         } else {
-          await ingestSynchronousCompliLinkAckEvent({
-            engineDispatch,
-            documentId,
-            documentNumericId: documentRecord.id,
-            traceId: detail.case.traceId,
-          });
+          try {
+            await ingestSynchronousCompliLinkAckEvent({
+              engineDispatch,
+              documentId,
+              documentNumericId: documentRecord.id,
+              traceId: detail.case.traceId,
+            });
+          } catch (ingestError) {
+            console.error("[uploadDocument] No se pudo guardar el retorno del puente", {
+              tenantId: input.tenantId,
+              caseId: input.caseId,
+              message: ingestError instanceof Error ? ingestError.message.slice(0, 240) : "error",
+            });
+          }
           await addCaseEvent({
             tenantId: input.tenantId,
             caseId: input.caseId,

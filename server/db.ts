@@ -48,6 +48,7 @@ import { ENV } from "./_core/env";
 import type { HeliosOpinion, HeliosOpinionContract } from "./heliosIntegrationService";
 import { ensureMysqlTables } from "./mysqlBootstrap";
 import { deriveBridgeCallbackAlerts } from "./operationalSignals";
+import { fitMysqlJson, fitMysqlTextColumn } from "./mysqlText";
 import {
   isDuplicateKeyError,
   logActionableDatabaseFailure,
@@ -424,7 +425,7 @@ export async function listCommercePaymentsForUser(userId: number) {
 }
 
 function toJson<T>(value: T) {
-  return JSON.stringify(value ?? null);
+  return fitMysqlJson(value ?? null);
 }
 
 function parseJsonSafely<T>(value: string): T | null {
@@ -1133,7 +1134,14 @@ export async function addCaseEvents(inputs: InsertCaseEvent[]) {
 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(caseEvents).values(inputs);
+  await db.insert(caseEvents).values(
+    inputs.map((input) => ({
+      ...input,
+      title: input.title.slice(0, 255),
+      description: input.description ? fitMysqlTextColumn(input.description) : input.description,
+      metadata: input.metadata ? fitMysqlTextColumn(input.metadata) : input.metadata,
+    })),
+  );
 }
 
 export async function addDocumentRecord(input: InsertCaseDocument) {
@@ -1224,7 +1232,12 @@ export async function upsertCanonicalContracts(inputs: InsertCanonicalContract[]
 
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  await db.insert(canonicalContracts).values(inputs);
+  await db.insert(canonicalContracts).values(
+    inputs.map((input) => ({
+      ...input,
+      payload: fitMysqlTextColumn(input.payload),
+    })),
+  );
 }
 
 export async function listCanonicalContractsByType(params: {
