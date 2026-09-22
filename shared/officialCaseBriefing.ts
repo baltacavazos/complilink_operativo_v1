@@ -24,6 +24,7 @@ import {
   formatOfficialCheckDate,
   hasLiveOfficialResult,
   humanizeOfficialHecho,
+  readInstitutePayFacts,
   honestyToOfficialStatus,
   identityFlagsFromReceiptValues,
   inferOfficialMissingFieldKeys,
@@ -66,6 +67,11 @@ export type OfficialBriefingFacts = {
   perceptions?: string | null;
   deductions?: string | null;
   salary?: string | null;
+  sdi?: string | null;
+  employerName?: string | null;
+  folio?: string | null;
+  /** Folio fiscal del CFDI. En pantalla se dice «folio fiscal», no la sigla. */
+  uuid?: string | null;
   imssWithheld?: string | null;
   isrWithheld?: string | null;
   infonavitWithheld?: string | null;
@@ -332,6 +338,10 @@ export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
     facts.netAmount ? `neto ${facts.netAmount}` : null,
     facts.perceptions ? `percepciones ${facts.perceptions}` : null,
     facts.salary ? `sueldo ${facts.salary}` : null,
+    facts.sdi ? `salario diario integrado ${displayReceiptAmount(facts.sdi)}` : null,
+    facts.employerName ? `patrón ${facts.employerName}` : null,
+    facts.folio ? `folio ${facts.folio}` : null,
+    facts.uuid ? `folio fiscal ${facts.uuid}` : null,
     facts.imssWithheld ? `IMSS del recibo ${facts.imssWithheld}` : null,
     facts.isrWithheld ? `ISR del recibo ${facts.isrWithheld}` : null,
     facts.infonavitWithheld ? `Infonavit del recibo ${facts.infonavitWithheld}` : null,
@@ -436,10 +446,6 @@ function displayReceiptAmount(value: string) {
   return trimmed;
 }
 
-function amountInHecho(text: string) {
-  return text.match(/\$\s?\d[\d,]*(?:\.\d{2})?/)?.[0]?.replace(/\s+/g, "") ?? null;
-}
-
 /**
  * Compara el recibo con lo que sí contestó SAT o IMSS.
  * No inventa cumplimiento: solo pone lado a lado los números y RFC que ya existen.
@@ -471,22 +477,27 @@ export function buildReceiptVsConfirmedLines(params: {
     }
   }
 
-  const imss = outcomes.find((item) => item.source === "imss");
-  const salaryHecho = (imss?.hechos ?? [])
-    .map((item) => humanizeOfficialHecho(item))
-    .find((item) => /salario|sueldo|registro del IMSS|\$\s?\d/i.test(item));
-  if (salaryHecho) {
-    const officialMoney = amountInHecho(salaryHecho);
-    const receiptMoney = params.facts.salary || params.facts.netAmount || params.facts.perceptions || null;
-    if (officialMoney && receiptMoney) {
-      lines.push(
-        `En tu recibo se lee ${displayReceiptAmount(receiptMoney)}. El IMSS tiene registrado ${officialMoney}.`,
-      );
-    } else if (officialMoney) {
-      lines.push(`El IMSS tiene registrado un salario de ${officialMoney}.`);
+  const attached = params.officialCheck?.institutePay;
+  const institutePay =
+    attached && (attached.salary || attached.employer)
+      ? attached
+      : readInstitutePayFacts(params.officialCheck ?? null);
+  if (institutePay?.salary) {
+    const officialMoney = displayReceiptAmount(institutePay.salary);
+    const receiptMoney = params.facts.salary || params.facts.sdi || params.facts.netAmount || params.facts.perceptions || null;
+    if (receiptMoney) {
+      lines.push(`En tu recibo se lee ${displayReceiptAmount(receiptMoney)}. El IMSS tiene registrado ${officialMoney}.`);
     } else {
-      lines.push(salaryHecho.endsWith(".") ? salaryHecho : `${salaryHecho}.`);
+      lines.push(`El IMSS tiene registrado un salario de ${officialMoney}.`);
     }
+  }
+  if (institutePay?.employer) {
+    const receiptEmployer = params.facts.employerName?.trim() || null;
+    lines.push(
+      receiptEmployer
+        ? `En tu recibo el patrón es ${receiptEmployer}. El IMSS tiene registrado a ${institutePay.employer}.`
+        : `El IMSS tiene registrado a ${institutePay.employer}.`,
+    );
   }
 
   return lines.slice(0, 3);

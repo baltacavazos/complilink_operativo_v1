@@ -268,6 +268,9 @@ describe("caseContracts", () => {
     expect(analysis.estimatedData.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
     expect(String(analysis.estimatedData.workerName)).not.toMatch(/CAMREFLEX/i);
     expect(analysis.confirmedData.payrollEmployerName).toBe("EVOLUCION CREATIVA CAMREFLEX");
+    expect(analysis.confirmedData.payrollFolio).toBe("10963");
+    expect(analysis.confirmedData.payrollUuid).toBe("8C18C713-7AFA-5EA6-B323-FA208F8A3880");
+    expect(analysis.confirmedData.integratedDailySalary).toBe("331.01");
 
     const padded = textHint.replace(
       "<cfdi:Comprobante ",
@@ -284,6 +287,8 @@ describe("caseContracts", () => {
     expect(fromHint.confirmedData.payrollCurp).toBe("UIPD921125HYNCLD03");
     expect(fromHint.confirmedData.employerRfc).toBe("ECC190605VA1");
     expect(fromHint.confirmedData.workerRfc).not.toBe(fromHint.confirmedData.employerRfc);
+    expect(fromHint.confirmedData.payrollFolio).toBe("10963");
+    expect(fromHint.confirmedData.payrollUuid).toBe("8C18C713-7AFA-5EA6-B323-FA208F8A3880");
 
     const extraction = buildStructuredExtractionFallback({
       classification: classifyMexicanLaborDocument({
@@ -343,6 +348,25 @@ describe("caseContracts", () => {
     expect(analysis.estimatedData.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
     expect(String(analysis.estimatedData.workerName)).not.toMatch(/PATRON REAL/i);
     expect(analysis.confirmedData.payrollDailySalary).toBe("$315.04");
+  });
+
+  it("separa el folio del folio fiscal y no usa el UUID del nombre del archivo", () => {
+    const labeled = buildPreliminaryLaborAnalysis({
+      fileName: "recibo.pdf",
+      mimeType: "application/pdf",
+      textHint:
+        "Recibo de nomina. Folio fiscal: 8C18C713-7AFA-5EA6-B323-FA208F8A3880. Folio: 10963. NSS: 84129214965.",
+    });
+    expect(labeled.confirmedData.payrollFolio).toBe("10963");
+    expect(labeled.confirmedData.payrollUuid).toBe("8C18C713-7AFA-5EA6-B323-FA208F8A3880");
+
+    const namedLikeUuid = buildPreliminaryLaborAnalysis({
+      fileName: "8c18c713-7afa-5ea6-b323-fa208f8a3880.pdf",
+      mimeType: "application/pdf",
+      textHint: "Recibo de nomina. NSS: 12345678901. Folio: 10963. Sueldo: $315.04.",
+    });
+    expect(namedLikeUuid.confirmedData.payrollFolio).toBe("10963");
+    expect(namedLikeUuid.confirmedData.payrollUuid ?? null).toBeNull();
   });
 
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {

@@ -17,6 +17,7 @@ import {
   canonicalizeEngineWebhookUrl,
 } from "./auditaPatronIntegrationService";
 import { buildPreliminaryLaborAnalysis } from "./caseContracts";
+import { extractStructuredLaborFiscalFacts } from "./laborFiscalSignals";
 import {
   OFFICIAL_CHECK_ACTION,
   buildOfficialCheckBridgePayload,
@@ -26,6 +27,7 @@ import {
   getOfficialCheckAvailability,
   isOfficialCheckConfigured,
   officialCheckFromBridgeReturn,
+  officialReceiptFromLaborFacts,
   resolveOfficialCheckTargetUrls,
   resolveOfficialCheckWebhookUrl,
   runOfficialGovernmentCheck,
@@ -629,6 +631,92 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(payload.recibo.rfc).toBe("UIPD9211257I0");
     expect(payload.recibo.rfcPatron).toBe("ECC190605VA1");
     expect(payload.recibo.rfc).not.toBe(payload.recibo.rfcPatron);
+  });
+
+  it("manda al puente folio, folio fiscal, SDI y patrón cuando el recibo los trae", () => {
+    const textHint = readFileSync(new URL("./fixtures/nomina-cfdi-referencia.xml", import.meta.url), "utf8");
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint,
+    });
+    const facts = extractStructuredLaborFiscalFacts({
+      documentType: "cfdi",
+      originalName: "recibo-nomina.xml",
+      preliminaryAnalysis: analysis,
+    });
+    const identity = collectWorkerOfficialIdentity({
+      nss: facts.nss,
+      curp: facts.curp,
+      workerRfc: facts.workerRfc,
+      employerRfc: facts.employerRfc,
+    });
+    const payload = buildOfficialCheckBridgePayload({
+      identity,
+      nowIso: "2026-09-21T15:30:00.000Z",
+      receipt: officialReceiptFromLaborFacts(facts),
+    });
+
+    expect(payload.autonomousInput).toMatchObject({
+      nss: "84129214965",
+      curp: "UIPD921125HYNCLD03",
+      rfc: "UIPD9211257I0",
+      rfcPatron: "ECC190605VA1",
+      nombreTrabajador: "DIDIER ANTONIO UICAB PALOMO",
+      nombrePatron: "EVOLUCION CREATIVA CAMREFLEX",
+      salario: "331.01",
+      sdi: "331.01",
+      percepciones: "$4725.60",
+      periodo: "2026-05-01 al 2026-05-15",
+      folio: "10963",
+      uuid: "8C18C713-7AFA-5EA6-B323-FA208F8A3880",
+    });
+    expect(payload.recibo.rfc).not.toBe(payload.recibo.rfcPatron);
+    expect(payload.recibo).toMatchObject({
+      folio: "10963",
+      uuid: "8C18C713-7AFA-5EA6-B323-FA208F8A3880",
+      nombrePatron: "EVOLUCION CREATIVA CAMREFLEX",
+      sdi: "331.01",
+    });
+    expect(Object.values(payload.autonomousInput).every((value) => value.trim().length > 0)).toBe(true);
+    expect(Object.values(payload.recibo).every((value) => value == null || String(value).trim().length > 0)).toBe(true);
+  });
+
+  it("si el retorno trae salario y patrón del registro, no los convierte en Vivo", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            imss: {
+              honesty: "pending",
+              status: "pending",
+              workerReason: "Todavía no hay una respuesta oficial nueva de IMSS.",
+              checkedAt: "2026-09-21T12:00:00.000Z",
+              hechos: ["Salario RPCI: $450.25", "Patrón RPCI: TALLER NORTE SA"],
+            },
+            sat: {
+              honesty: "failed",
+              status: "failed",
+              workerReason: "SAT en mantenimiento.",
+              hechos: ["SAT en mantenimiento."],
+            },
+            infonavit: {
+              honesty: "pending",
+              status: "pending",
+              workerReason: "Todavía no hay una respuesta oficial nueva de Infonavit.",
+              hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+            },
+          },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+
+    expect(parsed?.overallStatus).not.toBe("vivo");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(parsed?.institutePay).toEqual({ salary: "$450.25", employer: "TALLER NORTE SA" });
   });
 
   it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {

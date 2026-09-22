@@ -1389,6 +1389,11 @@ type ConfirmedUploadResultView = {
       isrWithheld?: string | null;
       imssWithheld?: string | null;
       infonavitWithheld?: string | null;
+      salary?: string | null;
+      sdi?: string | null;
+      employerName?: string | null;
+      folio?: string | null;
+      uuid?: string | null;
     };
     explanations?: Array<{ label: string; summary: string }>;
     reviewSource?: string | null;
@@ -5603,6 +5608,19 @@ export default function Auditar() {
     }
     return undefined;
   };
+  const readStoredPayrollFact = (...keys: string[]) => {
+    const sources = [
+      lastUpload?.preliminaryAnalysis?.confirmedData,
+      lastUpload?.preliminaryAnalysis?.estimatedData,
+    ];
+    for (const key of keys) {
+      for (const source of sources) {
+        const raw = source?.[key];
+        if (typeof raw === "string" && raw.trim()) return raw.trim();
+      }
+    }
+    return undefined;
+  };
   const lastUploadFactSignal = buildPayrollFactSignal({
     documentType: lastUpload?.classification.documentType,
     confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
@@ -5690,6 +5708,22 @@ export default function Auditar() {
         readGuestOfficialFact("payrollCurp", "curp"),
       employerRfc: officialEmployerRfc,
       workerRfc: officialWorkerRfc,
+      sdi:
+        effectiveSocialSecurityValidation?.facts?.sdi ??
+        readGuestOfficialFact("integratedDailySalary", "sdi") ??
+        readStoredPayrollFact("integratedDailySalary", "sdi"),
+      employerName:
+        effectiveSocialSecurityValidation?.facts?.employerName ??
+        readGuestOfficialFact("payrollEmployerName", "employerName") ??
+        readStoredPayrollFact("payrollEmployerName", "employerName"),
+      folio:
+        effectiveSocialSecurityValidation?.facts?.folio ??
+        readGuestOfficialFact("payrollFolio", "folio") ??
+        readStoredPayrollFact("payrollFolio", "folio"),
+      uuid:
+        effectiveSocialSecurityValidation?.facts?.uuid ??
+        readGuestOfficialFact("payrollUuid", "uuid", "folioFiscal") ??
+        readStoredPayrollFact("payrollUuid", "uuid", "folioFiscal"),
     },
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,

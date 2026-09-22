@@ -900,4 +900,159 @@ describe("briefing del caso para el asesor", () => {
     expect(visible).not.toMatch(/RPCI|ApiMarket|Syntage|CompliLink|\bcumple\b/i);
     expect(briefing.verdict?.sourceLines.join(" ")).toMatch(/salario que el IMSS tiene registrado/);
   });
+
+  it("no inventa salario del IMSS ni Vivo si el retorno no trae ese hecho", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: ["Salario registrado: $450.25"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: false, curp: true, rfc: false },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+          },
+        ],
+      }),
+      facts: {
+        salary: "331.01",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX",
+        workerRfc: "UIPD9211257I0",
+      },
+    });
+    const visible = [
+      briefing.headline,
+      ...briefing.comparisonLines,
+      ...briefing.statusLines,
+      ...briefing.receiptLines,
+    ].join(" ");
+
+    expect(briefing.comparisonLines.join(" ")).not.toMatch(/El IMSS tiene registrado/);
+    expect(briefing.officialCheck?.overallStatus).not.toBe("vivo");
+    expect(briefing.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(visible).not.toMatch(/\bVivo\b|RPCI|Syntage|CompliLink|\bcumple\b/i);
+    expect(briefing.receiptLines.join(" ")).toMatch(/EVOLUCION CREATIVA CAMREFLEX/);
+  });
+
+  it("pinta salario y patrón del registro solo cuando el retorno ya los trae, sin marcar Vivo", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: ["Salario RPCI: $450.25", "Patrón RPCI: TALLER NORTE SA"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "no_se_pudo",
+            label: "Sin respuesta",
+            detail: "503 mantenimiento",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "failed",
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: false, curp: true, rfc: false },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "pending",
+            fecha: checkedAt,
+            hechos: ["Salario RPCI: $450.25", "Patrón RPCI: TALLER NORTE SA"],
+            motivoFallo: null,
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "pending",
+            fecha: checkedAt,
+            hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+            motivoFallo: null,
+          },
+        },
+      }),
+      facts: {
+        salary: "331.01",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX",
+        folio: "10963",
+        uuid: "8C18C713-7AFA-5EA6-B323-FA208F8A3880",
+      },
+    });
+    const visible = [
+      briefing.headline,
+      ...briefing.comparisonLines,
+      ...briefing.hechoLines,
+      ...briefing.receiptLines,
+      ...(briefing.verdict?.sourceLines ?? []),
+    ].join(" ");
+
+    expect(briefing.comparisonLines.join(" ")).toMatch(/En tu recibo se lee \$331\.01/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/El IMSS tiene registrado \$450\.25/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/En tu recibo el patrón es EVOLUCION CREATIVA CAMREFLEX/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/El IMSS tiene registrado a TALLER NORTE SA/);
+    expect(briefing.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(briefing.headline ?? "").not.toMatch(/^Vivo\b/);
+    expect(visible).not.toMatch(/RPCI|Syntage|CompliLink|\bcumple\b/i);
+    expect(briefing.receiptLines.join(" ")).toMatch(/folio 10963/);
+    expect(briefing.receiptLines.join(" ")).toMatch(/folio fiscal 8C18C713-7AFA-5EA6-B323-FA208F8A3880/);
+    expect(briefing.receiptLines.join(" ")).not.toMatch(/\bUUID\b/);
+  });
 });

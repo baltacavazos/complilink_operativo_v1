@@ -711,6 +711,67 @@ export type OfficialSourceCheck = {
   missingFields?: string[];
 };
 
+/** Salario o patrón que el retorno ya trajo del registro del IMSS. No es un veredicto. */
+export type InstitutePayFacts = {
+  salary: string | null;
+  employer: string | null;
+};
+
+const INSTITUTE_PAY_TEXT = /\brpci\b|salario que el IMSS tiene registrado|registro del IMSS/i;
+
+function moneyFromInstituteText(text: string): string | null {
+  const match = text.match(/\$\s?\d[\d,]*(?:\.\d{2,4})?/) ?? text.match(/\b\d{1,6}(?:,\d{3})*(?:\.\d{2,4})\b/);
+  if (!match) return null;
+  const raw = match[0].replace(/\s+/g, "");
+  return raw.startsWith("$") ? raw : `$${raw}`;
+}
+
+function employerFromInstituteText(text: string): string | null {
+  const match = text.match(
+    /(?:patr[oó]n|raz[oó]n\s+social|empresa)\s*(?:rpci|registro del IMSS)?\s*[:\-]\s*([^.;\n]{3,120})/i,
+  );
+  if (!match?.[1]) return null;
+  const cleaned = match[1]
+    .replace(/\brpci\b/gi, "")
+    .replace(/registro del IMSS/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/[.,;:\-]+$/g, "")
+    .trim();
+  if (cleaned.length < 3 || /^\$?\d/.test(cleaned)) return null;
+  return cleaned;
+}
+
+/**
+ * Lee salario y patrón solo si el retorno ya trae ese hecho.
+ * Si no viene, regresa null: el gancho queda listo y no se inventa «Vivo».
+ */
+export function readInstitutePayFacts(value: unknown): InstitutePayFacts | null {
+  const texts: string[] = [];
+  const walk = (node: unknown, depth: number) => {
+    if (depth > 10 || node == null) return;
+    if (typeof node === "string") {
+      if (INSTITUTE_PAY_TEXT.test(node)) texts.push(node);
+      return;
+    }
+    if (typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, depth + 1);
+      return;
+    }
+    for (const item of Object.values(node as Record<string, unknown>)) walk(item, depth + 1);
+  };
+  walk(value, 0);
+  if (texts.length === 0) return null;
+  let salary: string | null = null;
+  let employer: string | null = null;
+  for (const text of texts) {
+    if (!salary && /salario|sueldo|\$\s?\d|\d+\.\d{2}/i.test(text)) salary = moneyFromInstituteText(text);
+    if (!employer) employer = employerFromInstituteText(text);
+  }
+  if (!salary && !employer) return null;
+  return { salary, employer };
+}
+
 export type OfficialCheckSummary = {
   configured: boolean;
   consentGranted: boolean;
@@ -724,6 +785,8 @@ export type OfficialCheckSummary = {
   reciboVsOficial?: ReciboVsOficial | null;
   /** El puente rechazó la consulta por el tope de un proveedor. No es silencio de IMSS, SAT o Infonavit. */
   bridgeBlock?: "provider_cap" | null;
+  /** Presente solo cuando el retorno ya trae salario o patrón del registro. Nunca inventa el estado. */
+  institutePay?: InstitutePayFacts | null;
 };
 
 export type OfficialIdentityField = keyof OfficialIdentityFlags;

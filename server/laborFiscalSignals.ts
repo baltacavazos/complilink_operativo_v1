@@ -30,7 +30,11 @@ export type LaborFiscalStructuredFacts = {
   imssWithheld: string | null;
   infonavitWithheld: string | null;
   salary: string | null;
+  sdi: string | null;
   workerName: string | null;
+  employerName: string | null;
+  folio: string | null;
+  uuid: string | null;
 };
 
 export type LaborFiscalWorkerExplanation = {
@@ -96,7 +100,11 @@ const FACT_ALIASES: Record<keyof LaborFiscalStructuredFacts, string[]> = {
   imssWithheld: ["imsswithheld", "cuotaimss", "retencionimss"],
   infonavitWithheld: ["infonavitwithheld", "pagoinfonavit", "retencioninfonavit"],
   salary: ["socialsecuritybasesalary", "salariobasecotapor", "sbc"],
+  sdi: ["integrateddailysalary", "salariodiariointegrado", "sdi"],
   workerName: ["workername", "nombretrabajador", "nombreempleado", "nombredeltrabajador"],
+  employerName: ["payrollemployername", "employername", "nombrepatron", "nombreemisor"],
+  folio: ["payrollfolio", "folio"],
+  uuid: ["payrolluuid", "uuid", "foliofiscal"],
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -198,7 +206,11 @@ function emptyFacts(): LaborFiscalStructuredFacts {
     imssWithheld: null,
     infonavitWithheld: null,
     salary: null,
+    sdi: null,
     workerName: null,
+    employerName: null,
+    folio: null,
+    uuid: null,
   };
 }
 
@@ -274,7 +286,11 @@ export function extractStructuredLaborFiscalFacts(
     imssWithheld: readAliasedFact(document, FACT_ALIASES.imssWithheld),
     infonavitWithheld: readAliasedFact(document, FACT_ALIASES.infonavitWithheld),
     salary: readAliasPriority(document, SALARY_ALIAS_PRIORITY),
+    sdi: readAliasedFact(document, FACT_ALIASES.sdi),
     workerName: readAliasedFact(document, FACT_ALIASES.workerName),
+    employerName: readAliasedFact(document, FACT_ALIASES.employerName),
+    folio: readAliasedFact(document, FACT_ALIASES.folio),
+    uuid: readAliasedFact(document, FACT_ALIASES.uuid),
   };
 }
 

@@ -257,10 +257,12 @@ function extractXmlTags(text: string, localName: string) {
 /** Conserva Emisor/Receptor/Nómina si el certificado empuja el complemento fuera del recorte. */
 export function derivePayrollXmlTextHint(xml: string) {
   const compact = xml.replace(/^\uFEFF/, "").replace(/\s+/g, " ").trim();
-  const identityTags = (compact.match(/<[^>]*\b(?:Emisor|Receptor|Nomina)\b[^>]*>/gi) ?? []).join(" ");
+  const identityTags = (compact.match(/<[^>]*\b(?:Emisor|Receptor|Nomina|TimbreFiscalDigital)\b[^>]*>/gi) ?? []).join(" ");
+  const folioAttr = compact.match(/(?:^|[\s<])Folio\s*=\s*["'][^"']+["']/i)?.[0]?.trim() ?? "";
+  const preserved = [identityTags, folioAttr].filter(Boolean).join(" ");
   const head = compact.slice(0, 6000);
-  if (!identityTags || head.includes(identityTags)) return head;
-  return `${head} ${identityTags}`.replace(/\s+/g, " ").trim().slice(0, 20000);
+  if (!preserved || head.includes(preserved)) return head;
+  return `${head} ${preserved}`.replace(/\s+/g, " ").trim().slice(0, 20000);
 }
 
 function extractTagAttribute(tag: string, attributeName: string) {
@@ -487,6 +489,26 @@ function extractExplicitWorkerRfc(text: string, employerRfc?: string | null): st
   const candidate = labeled ?? genericPerson ?? null;
   if (!candidate || (employerRfc && candidate === employerRfc)) return null;
   return candidate;
+}
+
+const FISCAL_UUID_RE = /\b[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b/i;
+
+function extractPayrollFolio(text: string): string | null {
+  const fromXml = text.match(/(?:^|[\s<])Folio\s*=\s*["']([^"']+)["']/i)?.[1]?.trim() ?? null;
+  if (fromXml && !FISCAL_UUID_RE.test(fromXml)) return fromXml;
+  const labeled = text.match(/(?:^|[^\w])folio(?!\s+fiscal)\s*[:#\-]\s*([A-Z0-9-]{1,40})/i)?.[1]?.trim() ?? null;
+  if (labeled && !FISCAL_UUID_RE.test(labeled)) return labeled;
+  return text.match(/\brecibo\s*[:#]\s*(\d{3,12})\b/i)?.[1] ?? null;
+}
+
+/** Folio fiscal del timbre. El UUID del nombre del archivo no cuenta. */
+function extractPayrollUuid(text: string): string | null {
+  const fromXml = extractXmlAttribute(text, "UUID");
+  if (fromXml && FISCAL_UUID_RE.test(fromXml)) return fromXml.toUpperCase();
+  const labeled = text.match(
+    /(?:folio\s+fiscal|uuid)\s*[:=]?\s*([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})/i,
+  );
+  return labeled?.[1]?.toUpperCase() ?? null;
 }
 
 function extractPlainDailySalary(text: string): string | null {
@@ -828,6 +850,8 @@ type PayrollHarvest = {
   sdiConfirmed: string | null;
   sdiEstimated: string | null;
   dailySalary: string | null;
+  folio: string | null;
+  uuid: string | null;
 };
 
 function emptyPayrollHarvest(): PayrollHarvest {
@@ -855,6 +879,8 @@ function emptyPayrollHarvest(): PayrollHarvest {
     sdiConfirmed: null,
     sdiEstimated: null,
     dailySalary: null,
+    folio: null,
+    uuid: null,
   };
 }
 
@@ -892,6 +918,8 @@ function harvestPayrollText(text: string): PayrollHarvest {
     sdiConfirmed: salaryIntegrated.confirmed,
     sdiEstimated: salaryIntegrated.estimated,
     dailySalary: extractPlainDailySalary(text),
+    folio: extractPayrollFolio(text),
+    uuid: extractPayrollUuid(text),
   };
 }
 
@@ -942,6 +970,8 @@ function resolvePayrollHarvest(sourceText: string) {
     sdiConfirmed: pickHarvestValue(fromXml.sdiConfirmed, fromPlain.sdiConfirmed),
     sdiEstimated: pickHarvestValue(fromXml.sdiEstimated, fromPlain.sdiEstimated),
     dailySalary: pickHarvestValue(fromXml.dailySalary, fromPlain.dailySalary),
+    folio: pickHarvestValue(fromXml.folio, fromPlain.folio),
+    uuid: pickHarvestValue(fromXml.uuid, fromPlain.uuid),
   };
 }
 
@@ -994,6 +1024,8 @@ export function buildPreliminaryLaborAnalysis(params: {
     socialSecurityBaseSalary: payroll ? (payroll.sbcConfirmed ?? payroll.sbcEstimated) : null,
     integratedDailySalary: payroll ? (payroll.sdiConfirmed ?? payroll.sdiEstimated) : null,
     payrollDailySalary: payroll?.dailySalary ?? null,
+    payrollFolio: payroll?.folio ?? null,
+    payrollUuid: payroll?.uuid ?? null,
   };
 
   const confirmedData: Record<string, AnalysisValue> = {
@@ -1022,6 +1054,8 @@ export function buildPreliminaryLaborAnalysis(params: {
     socialSecurityBaseSalary: payroll?.sbcConfirmed ?? null,
     integratedDailySalary: payroll?.sdiConfirmed ?? null,
     payrollDailySalary: payroll?.dailySalary ?? null,
+    payrollFolio: payroll?.folio ?? null,
+    payrollUuid: payroll?.uuid ?? null,
   };
 
   const extractionTargets = (() => {
