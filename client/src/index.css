@@ -1256,4 +1256,40 @@
     :is(p, li, h1, h2, h3, label, summary)[class*="text-amber-9"] {
     color: #161616 !important;
   }
+
+  /*
+   * «Ver detalle» está dentro de una superficie clara (tinta #161616),
+   * pero el <details> y las tarjetas de adentro (IMSS, retenciones, etc.)
+   * traen bg-white. En .dark el remap las pinta con --ap-panel-bg
+   * (slate oscuro, 0,5,1) y la tinta no se aclara: negro sobre oscuro.
+   * Estas reglas ganan a ese remap y dejan blanco con tinta #161616.
+   * El botón oscuro (ap-btn-on-dark) no entra aquí.
+   */
+  .ap-result-detail {
+    color-scheme: light;
+    background-color: #ffffff;
+    color: #161616;
+    border-color: #e4e4e4;
+  }
+
+  /* La tarjeta de resultado con ap-light-surface + bg-white hereda la misma tinta
+     oscura, pero el remap le deja el fondo --ap-panel-bg. Se queda en blanco. */
+  .dark .audita-auditar .ap-light-surface[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb) {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #161616 !important;
+  }
+
+  .dark .audita-auditar .ap-result-detail[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb),
+  .dark .audita-auditar .ap-result-detail :is(div, section, article)[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb) {
+    background-color: #ffffff !important;
+    background-image: none !important;
+    color: #161616 !important;
+    border-color: #e4e4e4 !important;
+  }
+
+  .ap-result-detail :is(p, li, label, summary, h1, h2, h3),
+  .dark .audita-auditar .ap-result-detail :is(p, li, label, summary, h1, h2, h3) {
+    color: #161616 !important;
+  }
 }
