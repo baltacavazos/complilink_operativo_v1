@@ -1,3 +1,4 @@
+import { installOptionalAnalytics } from "@/lib/analytics";
 import { trpc } from "@/lib/trpc";
 import { getApiBaseUrl } from "@/lib/nativeRuntime";
 import { UNAUTHED_ERR_MSG } from "@shared/const";
@@ -9,6 +10,8 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import { ViewModeProvider } from "./contexts/ViewModeContext";
 import "./index.css";
+
+installOptionalAnalytics();
 
 const queryClient = new QueryClient();
 

@@ -1,3 +1,41 @@
+const ANALYTICS_ENDPOINT_PATTERN = /^https?:\/\/[^\s%]+$/i;
+const ANALYTICS_WEBSITE_ID_PATTERN = /^[^\s%]+$/;
+
+export function isAnalyticsEndpoint(value: unknown): value is string {
+  return typeof value === "string" && ANALYTICS_ENDPOINT_PATTERN.test(value);
+}
+
+export function isAnalyticsWebsiteId(value: unknown): value is string {
+  return typeof value === "string" && ANALYTICS_WEBSITE_ID_PATTERN.test(value);
+}
+
+export function analyticsScriptSrc(endpoint: string) {
+  return `${endpoint.replace(/\/+$/, "")}/umami`;
+}
+
+export function installOptionalAnalytics() {
+  const endpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
+  const websiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
+
+  if (
+    typeof endpoint !== "string" ||
+    !ANALYTICS_ENDPOINT_PATTERN.test(endpoint) ||
+    typeof websiteId !== "string" ||
+    !ANALYTICS_WEBSITE_ID_PATTERN.test(websiteId) ||
+    typeof document === "undefined" ||
+    document.querySelector('script[data-auditapatron-analytics="1"]')
+  ) {
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.defer = true;
+  script.src = `${endpoint.replace(/\/+$/, "")}/umami`;
+  script.setAttribute("data-website-id", websiteId);
+  script.setAttribute("data-auditapatron-analytics", "1");
+  document.head.appendChild(script);
+}
+
 type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
 
 type UmamiTracker = {

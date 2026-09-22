@@ -44,8 +44,8 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | `DROPBOX_API_KEY` | Respaldo | Sí para backup | Respaldo obligatorio en Dropbox | Validación y backup |
 | `RESEND_API_KEY` | Correo | Sí si hay notificaciones | Envío de correo | Backend |
 | `RESEND_FROM_EMAIL` | Correo | Sí si hay notificaciones | Remitente operativo | Backend |
-| `VITE_ANALYTICS_ENDPOINT` | Analítica | Recomendable | Endpoint de eventos | Frontend |
-| `VITE_ANALYTICS_WEBSITE_ID` | Analítica | Recomendable | Identificador del sitio | Frontend |
+| `VITE_ANALYTICS_ENDPOINT` | Analítica | Opcional | URL http(s) de Umami. Si falta o no es URL real, no se carga el script | Frontend |
+| `VITE_ANALYTICS_WEBSITE_ID` | Analítica | Opcional | Id del sitio, sin `%`. Si falta, no se inserta el script | Frontend |
 | `VITE_APP_TITLE` | Branding | Recomendable | Título de la app | Frontend |
 | `VITE_APP_LOGO` | Branding | Recomendable | Logo de la app | Frontend |
 | `PORT` | Runtime | No | Puerto preferido del backend | Backend |
@@ -64,7 +64,7 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | Consenso multi-IA | `OPENAI_API_KEY`, `GEMINI_API_KEY` | Se pierde el contraste multimodelo solicitado |
 | Respaldo | `DROPBOX_API_KEY` | No pueden ejecutarse respaldos automáticos |
 | Comunicación | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Fallan correos y avisos operativos |
-| Branding y medición | `VITE_APP_TITLE`, `VITE_APP_LOGO`, `VITE_ANALYTICS_ENDPOINT`, `VITE_ANALYTICS_WEBSITE_ID` | No bloquea el núcleo, pero afecta identidad y medición |
+| Branding y medición | `VITE_APP_TITLE`, `VITE_APP_LOGO`, `VITE_ANALYTICS_ENDPOINT`, `VITE_ANALYTICS_WEBSITE_ID` | No bloquea el núcleo. Sin URL real de analítica no hay script ni medición |
 
 ## Puertos, rutas y URLs relevantes
 

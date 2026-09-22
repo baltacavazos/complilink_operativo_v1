@@ -1,5 +1,11 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  analyticsScriptSrc,
+  installOptionalAnalytics,
+  isAnalyticsEndpoint,
+  isAnalyticsWebsiteId,
   trackCeoConsoleViewed,
   trackCeoExport,
   trackCeoGuardrail,
@@ -23,7 +29,100 @@ const globalScope = globalThis as typeof globalThis & {
 
 afterEach(() => {
   delete globalScope.window;
+  delete (globalThis as { document?: unknown }).document;
+  vi.unstubAllEnvs();
   vi.restoreAllMocks();
+});
+
+function installFakeDocument() {
+  const scripts: Array<{
+    defer: boolean;
+    src: string;
+    attrs: Record<string, string>;
+  }> = [];
+  const document = {
+    scripts,
+    querySelector(selector: string) {
+      if (selector !== 'script[data-auditapatron-analytics="1"]') return null;
+      return scripts.find((script) => script.attrs["data-auditapatron-analytics"] === "1") ?? null;
+    },
+    createElement() {
+      const node = {
+        defer: false,
+        src: "",
+        attrs: {} as Record<string, string>,
+        setAttribute(name: string, value: string) {
+          this.attrs[name] = value;
+        },
+      };
+      return node;
+    },
+    head: {
+      appendChild(node: (typeof scripts)[number]) {
+        scripts.push(node);
+      },
+    },
+  };
+  (globalThis as { document?: typeof document }).document = document;
+  return document;
+}
+
+describe("optional analytics script", () => {
+  it("deja el HTML sin placeholder ni ruta de Umami", () => {
+    const html = readFileSync(resolve(import.meta.dirname, "../../index.html"), "utf8");
+
+    expect(html).not.toContain("VITE_ANALYTICS");
+    expect(html).not.toContain("/umami");
+    expect(html).not.toContain("%VITE_");
+  });
+
+  it("solo acepta URL http(s) y un id sin porcentaje", () => {
+    expect(isAnalyticsEndpoint("%VITE_ANALYTICS_ENDPOINT%")).toBe(false);
+    expect(isAnalyticsEndpoint("/%VITE_ANALYTICS_ENDPOINT%")).toBe(false);
+    expect(isAnalyticsEndpoint("")).toBe(false);
+    expect(isAnalyticsEndpoint(undefined)).toBe(false);
+    expect(isAnalyticsEndpoint("ftp://analytics.example")).toBe(false);
+    expect(isAnalyticsEndpoint("https://analytics.example/script%2Fumami")).toBe(false);
+    expect(isAnalyticsEndpoint("https://analytics.example/")).toBe(true);
+    expect(isAnalyticsEndpoint("http://analytics.example")).toBe(true);
+    expect(isAnalyticsWebsiteId("%VITE_ANALYTICS_WEBSITE_ID%")).toBe(false);
+    expect(isAnalyticsWebsiteId("")).toBe(false);
+    expect(isAnalyticsWebsiteId("site 1")).toBe(false);
+    expect(isAnalyticsWebsiteId("0a4e0f16-a107-4e88-876f-90bab091816b")).toBe(true);
+    expect(analyticsScriptSrc("https://analytics.example/")).toBe("https://analytics.example/umami");
+  });
+
+  it("no inserta el script si no hay endpoint real", () => {
+    const document = installFakeDocument();
+
+    installOptionalAnalytics();
+
+    expect(document.scripts).toHaveLength(0);
+  });
+
+  it("inserta el script una sola vez cuando la URL y el id son reales", () => {
+    vi.stubEnv("VITE_ANALYTICS_ENDPOINT", "https://analytics.example/");
+    vi.stubEnv("VITE_ANALYTICS_WEBSITE_ID", "site-1");
+    const document = installFakeDocument();
+
+    installOptionalAnalytics();
+    installOptionalAnalytics();
+
+    expect(document.scripts).toHaveLength(1);
+    expect(document.scripts[0]?.defer).toBe(true);
+    expect(document.scripts[0]?.src).toBe("https://analytics.example/umami");
+    expect(document.scripts[0]?.attrs["data-website-id"]).toBe("site-1");
+  });
+
+  it("ignora un id con porcentaje aunque el endpoint sea http", () => {
+    vi.stubEnv("VITE_ANALYTICS_ENDPOINT", "https://analytics.example");
+    vi.stubEnv("VITE_ANALYTICS_WEBSITE_ID", "%VITE_ANALYTICS_WEBSITE_ID%");
+    const document = installFakeDocument();
+
+    installOptionalAnalytics();
+
+    expect(document.scripts).toHaveLength(0);
+  });
 });
 
 describe("analytics helpers", () => {
