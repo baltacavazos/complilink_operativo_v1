@@ -105,6 +105,8 @@ Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con datos �
 | `VITE_ANALYTICS_WEBSITE_ID` |
 | `PORT` |
 
+Umami es opcional. El HTML no incluye el script. Solo se inserta en el navegador si `VITE_ANALYTICS_ENDPOINT` es una URL `http://` o `https://` sin `%` y `VITE_ANALYTICS_WEBSITE_ID` tampoco trae `%`. Sin esas variables no hay petición a `/umami`.
+
 ## Legacy / opcional
 
 | Variable |
