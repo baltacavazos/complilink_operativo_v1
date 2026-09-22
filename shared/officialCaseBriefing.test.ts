@@ -1055,4 +1055,115 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.receiptLines.join(" ")).toMatch(/folio fiscal 8C18C713-7AFA-5EA6-B323-FA208F8A3880/);
     expect(briefing.receiptLines.join(" ")).not.toMatch(/\bUUID\b/);
   });
+
+  it("compara sueldo y patrón cuando el retorno trae el contrato del registro, y dice qué hacer", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const different = buildOfficialCaseBriefing({
+      officialCheck: official("vivo", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "live",
+            hechos: [
+              "Salario registrado: $1,850.75.",
+              "RFC del patrón: PAG850101AB1.",
+              "Patrón: TECNOMEX SOLUCIONES, S.A. DE C.V.",
+            ],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "live",
+            hechos: ["Régimen en SAT: Sueldos y Salarios e Ingresos Asimilados a Salarios."],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "live",
+            hechos: ["Saldo de subcuenta de vivienda: $57,727.92.", "Empresa en la subcuenta: CONSTRUCTORA DEL NORTE SA."],
+          },
+        ],
+      }),
+      facts: {
+        salary: "331.01",
+        employerRfc: "ECC190605VA1",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX",
+        infonavitWithheld: "$210.00",
+        workerRfc: "UIPD9211257I0",
+      },
+    });
+    const visible = [
+      different.comparison.seenLine,
+      different.comparison.nextStepLine,
+      ...different.comparisonLines,
+    ].join(" ");
+
+    expect(different.comparison.seen).toBe("hay_diferencia");
+    expect(different.comparison.seenLine).toBe("Esto vimos: hay diferencia");
+    expect(different.comparison.nextStep).toMatch(/sueldo y patrón/);
+    expect(different.comparisonLines.join(" ")).toMatch(/\$331\.01/);
+    expect(different.comparisonLines.join(" ")).toMatch(/\$1,850\.75/);
+    expect(different.comparisonLines.join(" ")).toMatch(/TECNOMEX/);
+    expect(different.comparisonLines.join(" ")).toMatch(/Sueldos y Salarios/);
+    expect(different.comparisonLines.join(" ")).toMatch(/\$57,727\.92/);
+    expect(different.comparisonLines.join(" ")).toMatch(/No es el descuento de tu recibo/);
+    expect(visible).not.toMatch(/RPCI|Syntage|CompliLink|certificado|\bcumple\b/i);
+    expect(different.comparisonLines.join(" ")).not.toMatch(/\$210\.00/);
+
+    const same = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt,
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+          },
+        ],
+        institutePay: {
+          salary: "$331.01",
+          employer: "EVOLUCION CREATIVA CAMREFLEX",
+          employerRfc: "ECC190605VA1",
+          days: "15",
+        },
+      }),
+      facts: {
+        salary: "331.01",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V.",
+        employerRfc: "ECC190605VA1",
+      },
+    });
+
+    expect(same.comparison.seen).toBe("bien");
+    expect(same.comparison.seenLine).toBe("Esto vimos: bien");
+    expect(same.comparison.nextStep).toMatch(/Guarda este resultado/);
+    expect(same.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(same.officialCheck?.overallStatus).not.toBe("vivo");
+    expect(same.comparisonLines.join(" ")).toMatch(/15 días cotizados/);
+    expect([same.headline, same.comparison.seenLine, ...same.statusLines].join(" ")).not.toMatch(/^Vivo\b|\bVivo ·/);
+  });
 });

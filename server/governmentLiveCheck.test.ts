@@ -716,7 +716,55 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(parsed?.overallStatus).not.toBe("vivo");
     expect(parsed?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
-    expect(parsed?.institutePay).toEqual({ salary: "$450.25", employer: "TALLER NORTE SA" });
+    expect(parsed?.institutePay).toMatchObject({ salary: "$450.25", employer: "TALLER NORTE SA" });
+  });
+
+  it("lee salario base, RFC y razón social del retorno sin marcar Vivo si el IMSS sigue pendiente", () => {
+    const parsed = officialCheckFromBridgeReturn({
+      payload: {
+        event: "document.processed.v1",
+        result: {
+          officialCheck: {
+            imss: {
+              honesty: "pending",
+              status: "pending",
+              workerReason: "Todavía no hay una respuesta oficial nueva de IMSS.",
+              hechos: ["Todavía no hay una respuesta oficial nueva de IMSS."],
+              rawPayload: {
+                sourceProduct: "rpci",
+                salario_base: "1850.75",
+                rfc_patron: "PAG850101AB1",
+                razon_social: "TECNOMEX SOLUCIONES, S.A. DE C.V.",
+                dias: "15",
+              },
+            },
+            sat: {
+              honesty: "failed",
+              status: "failed",
+              workerReason: "SAT en mantenimiento.",
+              hechos: ["SAT en mantenimiento."],
+            },
+            infonavit: {
+              honesty: "pending",
+              status: "pending",
+              hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+            },
+          },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+
+    expect(parsed?.overallStatus).not.toBe("vivo");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(parsed?.institutePay?.salary).toMatch(/\$1,?850\.75/);
+    expect(parsed?.institutePay).toMatchObject({
+      employer: "TECNOMEX SOLUCIONES, S.A. DE C.V.",
+      employerRfc: "PAG850101AB1",
+      days: "15",
+    });
+    expect(JSON.stringify(parsed?.checks)).not.toMatch(/RPCI|Syntage|certificado/i);
   });
 
   it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {

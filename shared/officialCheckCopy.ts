@@ -711,13 +711,22 @@ export type OfficialSourceCheck = {
   missingFields?: string[];
 };
 
-/** Salario o patrón que el retorno ya trajo del registro del IMSS. No es un veredicto. */
+/** Salario o patrón que el retorno ya trae. No cambia el estado a Vivo. */
 export type InstitutePayFacts = {
   salary: string | null;
   employer: string | null;
+  employerRfc: string | null;
+  days: string | null;
 };
 
 const INSTITUTE_PAY_TEXT = /\brpci\b|salario que el IMSS tiene registrado|registro del IMSS/i;
+const STRUCTURED_SALARY_KEYS = new Set(["salariobase", "salariobasecotizacion", "sbc", "salariobasecotapor"]);
+const STRUCTURED_RFC_KEYS = new Set(["rfcpatron"]);
+const STRUCTURED_NAME_KEYS = new Set(["razonsocial", "nombrepatron"]);
+
+function compactInstituteKey(value: string) {
+  return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
 
 function moneyFromInstituteText(text: string): string | null {
   const match = text.match(/\$\s?\d[\d,]*(?:\.\d{2,4})?/) ?? text.match(/\b\d{1,6}(?:,\d{3})*(?:\.\d{2,4})\b/);
@@ -726,50 +735,114 @@ function moneyFromInstituteText(text: string): string | null {
   return raw.startsWith("$") ? raw : `$${raw}`;
 }
 
+function moneyFromUnknown(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  if (typeof value !== "string") return null;
+  return moneyFromInstituteText(value.trim());
+}
+
 function employerFromInstituteText(text: string): string | null {
   const match = text.match(
-    /(?:patr[oó]n|raz[oó]n\s+social|empresa)\s*(?:rpci|registro del IMSS)?\s*[:\-]\s*([^.;\n]{3,120})/i,
+    /(?<!rfc del )(?:patr[oó]n|raz[oó]n\s+social|empresa)\s*(?:rpci|registro del IMSS)?\s*[:\-]\s*([^;\n]{3,160})/i,
   );
   if (!match?.[1]) return null;
   const cleaned = match[1]
     .replace(/\brpci\b/gi, "")
     .replace(/registro del IMSS/gi, "")
     .replace(/\s+/g, " ")
-    .replace(/[.,;:\-]+$/g, "")
+    .replace(/[;]+$/g, "")
     .trim();
   if (cleaned.length < 3 || /^\$?\d/.test(cleaned)) return null;
+  if (/^rfc\b/i.test(cleaned)) return null;
   return cleaned;
 }
 
+function rfcFromInstituteText(text: string): string | null {
+  return text.match(/rfc del patr[oó]n:\s*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i)?.[1]?.toUpperCase() ?? null;
+}
+
+function daysFromInstituteText(text: string): string | null {
+  return text.match(/d[ií]as cotizados[^:]*:\s*(\d{1,4})\b/i)?.[1] ?? null;
+}
+
+function absorbInstituteText(target: InstitutePayFacts, text: string, allowContractSentence: boolean) {
+  const marked = INSTITUTE_PAY_TEXT.test(text);
+  if (!marked && !allowContractSentence) return;
+  if (!target.salary && /salario|sueldo|\$\s?\d|\d+\.\d{2}/i.test(text)) {
+    const labeled = text.match(/salario registrado:\s*(\$?\s?\d[\d,]*(?:\.\d{2,4})?)/i)?.[1];
+    target.salary = moneyFromInstituteText(labeled ?? text);
+  }
+  if (!target.employerRfc) target.employerRfc = rfcFromInstituteText(text);
+  if (!target.employer) target.employer = employerFromInstituteText(text);
+  if (!target.days) target.days = daysFromInstituteText(text);
+}
+
+function emptyInstitutePay(): InstitutePayFacts {
+  return { salary: null, employer: null, employerRfc: null, days: null };
+}
+
+function institutePayHasFact(facts: InstitutePayFacts) {
+  return Boolean(facts.salary || facts.employer || facts.employerRfc || facts.days);
+}
+
 /**
- * Lee salario y patrón solo si el retorno ya trae ese hecho.
- * Si no viene, regresa null: el gancho queda listo y no se inventa «Vivo».
+ * Lee salario base, RFC del patrón y razón social solo si el retorno ya los trae.
+ * Un sueldo suelto, sin ese hecho, no cuenta y no vuelve el estado Vivo.
  */
 export function readInstitutePayFacts(value: unknown): InstitutePayFacts | null {
-  const texts: string[] = [];
-  const walk = (node: unknown, depth: number) => {
+  const found = emptyInstitutePay();
+  const walk = (node: unknown, depth: number, fromImss: boolean) => {
     if (depth > 10 || node == null) return;
     if (typeof node === "string") {
-      if (INSTITUTE_PAY_TEXT.test(node)) texts.push(node);
+      absorbInstituteText(found, node, false);
       return;
     }
     if (typeof node !== "object") return;
     if (Array.isArray(node)) {
-      for (const item of node) walk(item, depth + 1);
+      for (const item of node) walk(item, depth + 1, fromImss);
       return;
     }
-    for (const item of Object.values(node as Record<string, unknown>)) walk(item, depth + 1);
+    const record = node as Record<string, unknown>;
+    const keys = Object.keys(record);
+    const compact = new Set(keys.map(compactInstituteKey));
+    const product = String(record.sourceProduct ?? record.source_product ?? "");
+    const source = String(record.source ?? record.fuente ?? "").toLowerCase();
+    const imssNode = fromImss || source === "imss";
+    const structured =
+      /rpci/i.test(product) ||
+      ([...STRUCTURED_SALARY_KEYS].some((key) => compact.has(key)) &&
+        (imssNode || compact.has("rfcpatron") || compact.has("razonsocial") || compact.has("nombrepatron")));
+    if (structured) {
+      for (const [key, raw] of Object.entries(record)) {
+        const name = compactInstituteKey(key);
+        if (!found.salary && STRUCTURED_SALARY_KEYS.has(name)) found.salary = moneyFromUnknown(raw);
+        if (!found.employerRfc && STRUCTURED_RFC_KEYS.has(name) && typeof raw === "string") {
+          found.employerRfc = raw.trim().toUpperCase() || null;
+        }
+        if (!found.employer && STRUCTURED_NAME_KEYS.has(name) && typeof raw === "string") {
+          const cleaned = raw.trim();
+          if (cleaned.length >= 3) found.employer = cleaned;
+        }
+        if (!found.days && name === "dias" && /^\d{1,4}$/.test(String(raw).trim())) found.days = String(raw).trim();
+      }
+    }
+    const status = String(record.status ?? record.resultado ?? "").toLowerCase();
+    const honesty = String(record.honesty ?? record.estado ?? "").toLowerCase();
+    const live = status === "vivo" || status === "live" || honesty === "live";
+    if (imssNode && Array.isArray(record.hechos)) {
+      for (const item of record.hechos) {
+        if (typeof item === "string") absorbInstituteText(found, item, live || structured);
+      }
+    }
+    for (const [key, child] of Object.entries(record)) {
+      if (key === "hechos" && imssNode) continue;
+      walk(child, depth + 1, imssNode || compactInstituteKey(key) === "imss");
+    }
   };
-  walk(value, 0);
-  if (texts.length === 0) return null;
-  let salary: string | null = null;
-  let employer: string | null = null;
-  for (const text of texts) {
-    if (!salary && /salario|sueldo|\$\s?\d|\d+\.\d{2}/i.test(text)) salary = moneyFromInstituteText(text);
-    if (!employer) employer = employerFromInstituteText(text);
-  }
-  if (!salary && !employer) return null;
-  return { salary, employer };
+  walk(value, 0, false);
+  return institutePayHasFact(found) ? found : null;
 }
 
 export type OfficialCheckSummary = {
