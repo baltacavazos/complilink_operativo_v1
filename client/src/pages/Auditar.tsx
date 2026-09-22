@@ -9756,8 +9756,8 @@ export default function Auditar() {
                   {officialCheckDisplay.detail}
                 </p>
                 {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length ? (
-                  <details className="mt-3 rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3">
-                    <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
+                  <details className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
                     {officialCaseBriefing.hechoLines.length ? (
                       <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                         {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
@@ -9858,8 +9858,8 @@ export default function Auditar() {
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
-                          <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
-                            <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#161616]">
+                          <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3 text-left">
+                            <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#111111]">
                               Ver detalle
                             </summary>
                             <p className="mt-2 text-sm leading-6 text-[#161616]">

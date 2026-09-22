@@ -194,11 +194,48 @@ function isPendingOfficialPlaceholder(source: OfficialCheckSource, text?: string
   return String(text ?? "").replace(/\s+/g, " ").trim() === `Todavía no hay una respuesta oficial nueva de ${label}.`;
 }
 
+const SAT_LEGAL_NAME_LINE_RE =
+  /^(?:sat:\s*)?(?:raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?|legal\s*name|nombre\s+fiscal)\s*[:：-]\s*(.*)$/i;
+const SAT_VAULT_NAME_RE =
+  /^(?:expediente|exp\.?|b[oó]veda|vault|placeholder|nombre\s+del\s+expediente)\b/i;
+const SAT_EMPTY_NAME_RE =
+  /^(?:sin\s+nombre|no\s+disponible|desconocido|pendiente|n\/?a|s\/n|null|undefined|none|--+|—+)$/i;
+
+/**
+ * Razón social que no se puede enseñar: vacía, igual al RFC, o el nombre
+ * interno del expediente / un placeholder de bóveda. No es la razón social.
+ */
+export function isPlaceholderSatLegalName(value?: unknown, rfcHint?: unknown): boolean {
+  const raw = String(value ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[."'\s]+|[."'\s]+$/g, "");
+  if (!raw) return true;
+  if (SAT_VAULT_NAME_RE.test(raw) || SAT_EMPTY_NAME_RE.test(raw)) return true;
+  const compact = raw.toUpperCase().replace(/[^A-Z0-9Ñ&]/g, "");
+  const hinted = normalizeRfcToken(rfcHint);
+  if (hinted && compact === hinted) return true;
+  const asRfc = normalizeRfcToken(raw);
+  if (asRfc && (PERSON_WORKER_RFC_RE.test(asRfc) || /^[A-ZÑ&]{3}\d{6}[A-Z0-9]{3}$/.test(asRfc))) {
+    return compact === asRfc;
+  }
+  return false;
+}
+
+export function isUnusableSatLegalNameLine(line: string, rfcHint?: unknown): boolean {
+  const text = String(line ?? "").replace(/\s+/g, " ").trim();
+  const match = text.match(SAT_LEGAL_NAME_LINE_RE);
+  if (match) return isPlaceholderSatLegalName(match[1], rfcHint);
+  const bare = text.replace(/[.\s]+$/g, "");
+  return SAT_VAULT_NAME_RE.test(bare);
+}
+
 /** Hechos que sí se pueden citar. La frase de espera no es un dato del SAT. */
 export function citeableOfficialHechos(source: OfficialCheckSource, hechos: string[]): string[] {
   return hechos
     .map((item) => item.replace(/\s+/g, " ").trim())
-    .filter((item) => item.length > 0 && !isPendingOfficialPlaceholder(source, item));
+    .filter((item) => item.length > 0 && !isPendingOfficialPlaceholder(source, item))
+    .filter((item) => source !== "sat" || !isUnusableSatLegalNameLine(item));
 }
 
 /** Quita siglas de proveedor. El trabajador ve el dato, no el nombre del sistema. */
@@ -223,7 +260,13 @@ function usefulOfficialHechos(hechos: string[]): string[] {
     .filter((item) => !looksLikeNoOfficialResponse(item))
     .filter((item) => !looksLikeInstituteMaintenance(item))
     .filter((item) => !/faltan datos|falta tu |falta el |falta un /i.test(item))
+    .filter((item) => !isUnusableSatLegalNameLine(item))
     .slice(0, 3);
+}
+
+/** El SAT está vivo solo si trajo un dato usable. El gancho vacío no cuenta. */
+export function hasUsableSatResponse(hechos: string[]): boolean {
+  return usefulOfficialHechos(hechos).length > 0;
 }
 
 export function sourceReportedMaintenance(parts: Array<string | null | undefined>): boolean {
@@ -242,11 +285,14 @@ export function readOfficialSourceOutcomes(
   if (!summary) return [];
   const bySource = new Map<OfficialCheckSource, OfficialSourceOutcome>();
   for (const check of summary.checks ?? []) {
+    const hechos = usefulOfficialHechos(check.hechos ?? []);
+    const status =
+      check.source === "sat" && check.status === "vivo" && hechos.length === 0 ? "no_se_pudo" : check.status;
     bySource.set(check.source, {
       source: check.source,
-      status: check.status,
+      status,
       maintenance: sourceReportedMaintenance([check.motivoFallo, ...(check.hechos ?? [])]),
-      hechos: usefulOfficialHechos(check.hechos ?? []),
+      hechos,
       checkedAt: check.checkedAt ?? summary.checkedAt ?? null,
     });
   }
@@ -254,18 +300,23 @@ export function readOfficialSourceOutcomes(
   if (anchor) {
     for (const source of [anchor.imss, anchor.sat, anchor.infonavit]) {
       const current = bySource.get(source.fuente);
-      const anchorLive = source.estado === "live";
+      const combinedHechos = [...source.hechos, ...(current?.hechos ?? [])];
+      const satUsable = source.fuente !== "sat" || hasUsableSatResponse(combinedHechos);
+      const anchorLive = source.estado === "live" && satUsable;
+      const keepCurrentLive = current?.status === "vivo" && satUsable;
       const anchorFailed = source.estado === "failed" && listOfficialMissingFieldKeys(source.missingFields).length === 0;
+      const emptySatHook =
+        source.fuente === "sat" && !satUsable && (source.estado === "live" || current?.status === "vivo");
       const status: OfficialCheckStatus = anchorLive
         ? "vivo"
-        : current?.status === "vivo"
+        : keepCurrentLive
           ? "vivo"
-          : anchorFailed
+          : emptySatHook || anchorFailed
             ? "no_se_pudo"
             : (current?.status ?? "pendiente");
       const maintenance =
         sourceReportedMaintenance([source.motivoFallo, ...source.hechos]) || Boolean(current?.maintenance && status === "no_se_pudo");
-      const hechos = anchorLive
+      const hechos = anchorLive || keepCurrentLive
         ? usefulOfficialHechos(source.hechos.length > 0 ? source.hechos : (current?.hechos ?? []))
         : (current?.hechos ?? usefulOfficialHechos(source.hechos));
       bySource.set(source.fuente, {
@@ -1042,13 +1093,15 @@ function sourceFromAnchor(
   const mapped =
     honestyToOfficialStatus(anchor.estado, missing, identity, fuente) ??
     (sourceHasRequiredOfficialIdentity(fuente, identity) ? "pendiente" : "sin_datos");
-  const status = demoteFalseIdentityFailure(
+  const demoted = demoteFalseIdentityFailure(
     fuente,
     mapped,
     identity,
     anchor.missingFields,
     `${anchor.motivoFallo ?? ""} ${anchor.hechos.join(" ")}`,
   );
+  const emptySatHook = fuente === "sat" && !hasUsableSatResponse(anchor.hechos) && (demoted === "vivo" || anchor.estado === "live");
+  const status = emptySatHook ? "no_se_pudo" : demoted;
   return {
     source: fuente,
     sourceLabel: OFFICIAL_SOURCE_LABEL[fuente],
@@ -1207,12 +1260,17 @@ export function reconcileOfficialCheckWithIdentity(
     }
     const anchor = chatAnchor?.[item.source];
     const anchorSaysLive = anchor?.estado === "live";
-    if (anchorSaysLive || honesty === "live" || item.status === "vivo") {
-      status = "vivo";
-    }
     const fromAnchor = anchorSaysLive ? citeableOfficialHechos(item.source, anchor?.hechos ?? []) : [];
     const fromItem = citeableOfficialHechos(item.source, item.hechos ?? []);
     const liveHechos = fromAnchor.length > 0 ? fromAnchor : fromItem;
+    const satUsable =
+      item.source !== "sat" ||
+      hasUsableSatResponse(liveHechos.length > 0 ? liveHechos : [...(anchor?.hechos ?? []), ...(item.hechos ?? [])]);
+    if (item.source === "sat" && !satUsable && (anchorSaysLive || honesty === "live" || status === "vivo" || item.status === "vivo")) {
+      status = "no_se_pudo";
+    } else if ((anchorSaysLive || honesty === "live" || item.status === "vivo") && satUsable) {
+      status = "vivo";
+    }
     const detail =
       status === "sin_datos"
         ? officialSourceGapDetail(item.source, options?.facts)
@@ -1538,6 +1596,8 @@ export function readChatAnchorSource(
     estado === "live" && resolvedHechos.length === 0
       ? []
       : rewriteOfficialIdentityHechos(fuente, resolvedHechos, identity);
+  const cleanedHechos =
+    fuente === "sat" ? identityHechos.filter((item) => !isUnusableSatLegalNameLine(item)) : identityHechos;
   const identityMotivo =
     motivoFallo && textContradictsVisibleReceiptIdentity(motivoFallo, identity)
       ? sourceHasRequiredOfficialIdentity(fuente, identity)
@@ -1548,7 +1608,7 @@ export function readChatAnchorSource(
     fuente,
     estado,
     fecha: asText(record.fecha) ?? asText(record.checkedAt) ?? asText(record.date),
-    hechos: identityHechos,
+    hechos: cleanedHechos,
     motivoFallo: identityMotivo,
     missingFields: missing,
   };
@@ -1660,7 +1720,7 @@ export function buildOfficialCheckHeadline(
     Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>,
 ) {
   const presentation = buildHonestOfficialPresentation(summary);
-  if (presentation?.kind === "mixed") return presentation.verdict;
+  if (presentation?.kind === "mixed" || presentation?.kind === "silent") return presentation.verdict;
   if (summary.overallStatus === "no_se_pudo") {
     if (presentation?.kind === "silent") return presentation.verdict;
     const fromChecks = listFailedOfficialSources(summary.checks);
@@ -1792,7 +1852,7 @@ export function resolveOfficialCheckDisplay(params: {
           silence: presentation,
         };
       }
-      if (honest.overallStatus === "no_se_pudo") {
+      if (presentation?.kind === "silent" || honest.overallStatus === "no_se_pudo") {
         const fromChecks = listFailedOfficialSources(honest.checks);
         const fromAnchor = listFailedOfficialSourcesFromAnchor(honest.chatAnchor);
         const silence = presentation ?? buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);

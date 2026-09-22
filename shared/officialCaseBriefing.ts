@@ -24,6 +24,8 @@ import {
   formatOfficialCheckDate,
   hasLiveOfficialResult,
   humanizeOfficialHecho,
+  isPlaceholderSatLegalName,
+  isUnusableSatLegalNameLine,
   readInstitutePayFacts,
   honestyToOfficialStatus,
   identityFlagsFromReceiptValues,
@@ -513,17 +515,22 @@ export function buildReceiptVsConfirmedLines(params: {
   const lines: string[] = [];
   const sat = outcomes.find((item) => item.source === "sat" && item.status === "vivo");
   if (sat) {
-    const hechos = sat.hechos.map((item) => humanizeOfficialHecho(item)).filter((item) => item.length > 0);
+    const hechos = sat.hechos
+      .map((item) => humanizeOfficialHecho(item))
+      .filter((item) => item.length > 0 && !isUnusableSatLegalNameLine(item, params.facts.workerRfc));
     const joined = hechos.join(" ");
     const confirmedRfc = joined.toUpperCase().match(/\b([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})\b/)?.[1] ?? null;
     const receiptRfc = params.facts.workerRfc?.trim().toUpperCase() || null;
+    const confirmedBySentence = /confirm[oó] el rfc/i.test(joined);
+    const rfcToCompare = confirmedRfc ?? (confirmedBySentence ? receiptRfc : null);
     const regimen = joined.match(/r[eé]gimen en SAT:\s*([^.]+)/i)?.[1]?.trim() ?? null;
-    const satName = joined.match(/raz[oó]n social en SAT:\s*([^.]+)/i)?.[1]?.trim() ?? null;
-    if (receiptRfc && confirmedRfc) {
+    const satNameRaw = joined.match(/raz[oó]n social en SAT:\s*([^.]+)/i)?.[1]?.trim() ?? null;
+    const satName = satNameRaw && !isPlaceholderSatLegalName(satNameRaw, receiptRfc) ? satNameRaw : null;
+    if (receiptRfc && rfcToCompare) {
       lines.push(
-        receiptRfc === confirmedRfc
+        receiptRfc === rfcToCompare
           ? `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó el mismo RFC.`
-          : `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó ${confirmedRfc}.`,
+          : `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó ${rfcToCompare}.`,
       );
     } else if (regimen || satName) {
       const bits = [

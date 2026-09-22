@@ -27,6 +27,9 @@ import {
   readChatAnchor,
   readReciboVsOficial,
   resolveOfficialCheckDisplay,
+  hasUsableSatResponse,
+  isPlaceholderSatLegalName,
+  isUnusableSatLegalNameLine,
   FALTA_NSS_Y_RFC_EXACT,
   OFFICIAL_PENDING_STALE_MS,
   officialDispatchGapDetail,
@@ -539,7 +542,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
             checkedAt: "2026-09-21T15:30:00.000Z",
             used: { nss: false, curp: false, rfc: true },
             honesty: "live",
-            hechos: [],
+            hechos: ["El SAT confirmó el RFC consultado."],
           },
         ],
       }),
@@ -665,5 +668,82 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.silence?.chat).not.toMatch(/Hoy pedimos datos a IMSS, SAT e Infonavit/);
     expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
     expect(JSON.stringify(display)).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("no enseña el nombre del expediente como razón social y no marca Vivo con el gancho vacío", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const failed = (source: "imss" | "infonavit", label: string, maintenance: boolean) => ({
+      fuente: source,
+      estado: "failed" as const,
+      fecha: checkedAt,
+      hechos: [maintenance ? `${label} en mantenimiento.` : `${label} no contestó.`],
+      motivoFallo: maintenance ? "503 mantenimiento" : "timeout",
+      missingFields: [] as string[],
+    });
+    const displayOf = (satHechos: string[]) =>
+      resolveOfficialCheckDisplay({
+        consentGranted: true,
+        summary: {
+          configured: true,
+          consentGranted: true,
+          overallStatus: "no_se_pudo",
+          overallLabel: "Sin respuesta",
+          overallDetail: "Hoy no hubo respuesta.",
+          checkedAt,
+          identity: { nss: true, curp: true, rfc: true },
+          checks: [],
+          chatAnchor: {
+            imss: failed("imss", "IMSS", false),
+            sat: {
+              fuente: "sat",
+              estado: "live",
+              fecha: checkedAt,
+              hechos: satHechos,
+              motivoFallo: null,
+              missingFields: [],
+            },
+            infonavit: failed("infonavit", "Infonavit", false),
+          },
+        },
+      });
+
+    const answered = displayOf([
+      "El SAT confirmó el RFC consultado.",
+      "Razón social en SAT: EXPEDIENTE UIPD9211257I0.",
+      "Tipo de persona en SAT: Persona física.",
+    ]);
+    const answeredLines = answered.silence?.sourceLines.join("\n") ?? "";
+    expect(answered.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
+    expect(answeredLines).toMatch(/SAT: Vivo/);
+    expect(answeredLines).toMatch(/El SAT confirmó el RFC consultado/);
+    expect(answeredLines).toMatch(/Tipo de persona en SAT: Persona física/);
+    expect(answeredLines).not.toMatch(/Razón social|EXPEDIENTE/i);
+    expect(JSON.stringify(answered)).not.toMatch(/\bcumple\b/i);
+
+    const realName = displayOf([
+      "El SAT confirmó el RFC consultado.",
+      "Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.",
+    ]);
+    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX/);
+
+    for (const hook of [
+      ["Razón social en SAT: EXPEDIENTE UIPD9211257I0."],
+      ["Razón social en SAT: UIPD9211257I0"],
+      ["Razón social en SAT:"],
+      ["Razón social en SAT: Bóveda UIPD9211257I0"],
+      [],
+    ]) {
+      const emptyHook = displayOf(hook);
+      expect(emptyHook.silence?.sourceLines.join("\n") ?? "").not.toMatch(/SAT: Vivo|Razón social|EXPEDIENTE/i);
+      expect(emptyHook.headline).toBe(INSTITUTE_SILENCE_VERDICT);
+    }
+
+    expect(isPlaceholderSatLegalName("EXPEDIENTE UIPD9211257I0", "UIPD9211257I0")).toBe(true);
+    expect(isPlaceholderSatLegalName("UIPD9211257I0", "UIPD9211257I0")).toBe(true);
+    expect(isPlaceholderSatLegalName("", "UIPD9211257I0")).toBe(true);
+    expect(isPlaceholderSatLegalName("EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.")).toBe(false);
+    expect(isUnusableSatLegalNameLine("Razón social en SAT: EXPEDIENTE UIPD9211257I0.")).toBe(true);
+    expect(hasUsableSatResponse(["Razón social en SAT: EXPEDIENTE UIPD9211257I0."])).toBe(false);
+    expect(hasUsableSatResponse(["El SAT confirmó el RFC consultado."])).toBe(true);
   });
 });

@@ -55,7 +55,7 @@ function official(status: OfficialCheckSummary["overallStatus"], extra?: Partial
         checkedAt: "2026-09-21T15:30:00.000Z",
         used: { nss: false, curp: false, rfc: true },
         honesty: status === "vivo" ? "live" : status === "no_se_pudo" ? "failed" : "pending",
-        hechos: [],
+        hechos: status === "vivo" ? ["El SAT confirmó el RFC consultado."] : [],
       },
     ],
     ...extra,
@@ -816,6 +816,51 @@ describe("briefing del caso para el asesor", () => {
     expect(JSON.stringify({ briefing, answer })).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
     expect(briefing.comparisonLines.join(" ")).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
     expect(briefing.comparisonLines.join(" ")).not.toMatch(/RPCI|ApiMarket|Syntage|CompliLink/);
+  });
+
+  it("no usa el nombre del expediente como razón social y sí confirma el RFC", () => {
+    const checkedAt = "2026-09-21T21:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("no_se_pudo", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["IMSS no contestó."],
+            motivoFallo: "timeout",
+          },
+          sat: {
+            fuente: "sat",
+            estado: "live",
+            fecha: checkedAt,
+            hechos: [
+              "El SAT confirmó el RFC consultado.",
+              "Razón social en SAT: EXPEDIENTE UIPD9211257I0.",
+              "Tipo de persona en SAT: Persona física.",
+            ],
+            motivoFallo: null,
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["Infonavit no contestó."],
+            motivoFallo: "timeout",
+          },
+        },
+      }),
+      facts: { workerRfc: "UIPD9211257I0", employerRfc: "ECC190605VA1" },
+    });
+    const visible = [...briefing.statusLines, ...briefing.comparisonLines].join("\n");
+    expect(briefing.statusLines.some((line) => /SAT: Vivo/.test(line))).toBe(true);
+    expect(visible).toMatch(/Tipo de persona en SAT: Persona física/);
+    expect(visible).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
+    expect(visible).not.toMatch(/Razón social|EXPEDIENTE/i);
+    expect(visible).not.toMatch(/\bcumple\b/i);
   });
 
   it("pone el salario parcial del IMSS junto al recibo sin siglas de sistema", () => {

@@ -5,6 +5,8 @@ import {
   buildOfficialFailedDetail,
   buildOfficialMaintenanceDetail,
   citeableOfficialHechos,
+  hasUsableSatResponse,
+  isPlaceholderSatLegalName,
   filterOfficialMissingFieldsForSource,
   honestyToOfficialStatus,
   inferOfficialMissingFieldKeys,
@@ -671,11 +673,27 @@ function normalizeReturnedOfficialStatus(value: unknown): OfficialCheckStatus | 
   return null;
 }
 
+function firstRecordText(record: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    const value = record[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return "";
+}
+
 function factsFromOfficialRecord(record: Record<string, unknown> | null): string[] {
   if (!record) return [];
   const picked: string[] = [];
   const rfc = typeof record.rfc === "string" ? record.rfc.trim() : "";
   if (rfc && !isGenericSatRfc(rfc)) picked.push(`RFC: ${rfc}`);
+  const legalName = firstRecordText(record, ["legalName", "razonSocial", "razon_social", "nombreFiscal"]);
+  if (legalName && !isPlaceholderSatLegalName(legalName, rfc)) {
+    picked.push(`Razón social en SAT: ${legalName.replace(/\.+$/g, "")}.`);
+  }
+  const personType = firstRecordText(record, ["tipoPersona", "tipo_persona", "personType"]);
+  if (personType && !isPlaceholderSatLegalName(personType)) {
+    picked.push(`Tipo de persona en SAT: ${personType}.`);
+  }
   const vigencia = typeof record.vigencia === "string" ? record.vigencia.trim() : "";
   if (vigencia) picked.push(`Vigencia: ${vigencia}`);
   const situacionRaw = record.situacionFiscal ?? record.situacion ?? record["situación"];
@@ -773,24 +791,29 @@ function readOfficialObligationCheck(
       : status === "no_se_pudo"
         ? rewriteOfficialFailedMotivo(source, rawMotivo ?? anchor?.motivoFallo)
         : null;
-  return sourceCheck(source, status, {
+  const resolvedHechos = (() => {
+    const own = citeableOfficialHechos(source, hechos);
+    const fromAnchor = citeableOfficialHechos(source, anchor?.hechos ?? []);
+    if (own.length > 0) return own;
+    if (fromAnchor.length > 0) return fromAnchor;
+    if (status === "vivo") return factsFromOfficialRecord(record);
+    return anchor?.hechos?.length ? anchor.hechos : [];
+  })();
+  const demoteEmptySat = source === "sat" && status === "vivo" && !hasUsableSatResponse(resolvedHechos);
+  const resolvedStatus = demoteEmptySat ? "no_se_pudo" : status;
+  return sourceCheck(source, resolvedStatus, {
     checkedAt:
       (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
       anchor?.fecha ??
       nowIso,
     used: usedOfficialIdentityForSource(source, used),
-    honesty: anchor?.estado ?? officialStatusToHonesty(status),
-    hechos: (() => {
-      const own = citeableOfficialHechos(source, hechos);
-      const fromAnchor = citeableOfficialHechos(source, anchor?.hechos ?? []);
-      if (own.length > 0) return own;
-      if (fromAnchor.length > 0) return fromAnchor;
-      if (status === "vivo") return factsFromOfficialRecord(record);
-      return anchor?.hechos?.length ? anchor.hechos : [];
-    })(),
-    motivoFallo,
+    honesty: demoteEmptySat ? "failed" : (anchor?.estado ?? officialStatusToHonesty(status)),
+    hechos: resolvedHechos,
+    motivoFallo: demoteEmptySat
+      ? rewriteOfficialFailedMotivo(source, rawMotivo ?? anchor?.motivoFallo)
+      : motivoFallo,
     detail:
-      status === "no_se_pudo"
+      resolvedStatus === "no_se_pudo"
         ? buildOfficialFailedDetail([source])
         : rawMotivo ?? undefined,
     missingFields: missing.length > 0 ? missing : filterOfficialMissingFieldsForSource(source, anchor?.missingFields, used),
@@ -1192,6 +1215,9 @@ export async function runOfficialGovernmentCheck(params: {
   const imssStatus = readSourceStatusFromResult(posted.responseJson, "imss") ?? overallStatus;
   const satStatus = readSourceStatusFromResult(posted.responseJson, "sat") ?? overallStatus;
   const infonavitStatus = readSourceStatusFromResult(posted.responseJson, "infonavit") ?? overallStatus;
+  const responseRoot = asRecord(posted.responseJson);
+  const satRecord = responseRoot ? readNestedOfficialRecord(pickBridgeResultRoots(responseRoot), "sat") : null;
+  const satHechos = satStatus === "vivo" ? factsFromOfficialRecord(satRecord) : [];
   const checks = [
     sourceCheck("imss", identity.nss ? imssStatus : "sin_datos", {
       checkedAt: nowIso,
@@ -1202,6 +1228,7 @@ export async function runOfficialGovernmentCheck(params: {
       checkedAt: nowIso,
       used: usedOfficialIdentityForSource("sat", used),
       missingFields: missingOfficialFieldsForSource("sat", used),
+      hechos: satHechos,
     }),
     sourceCheck("infonavit", identity.curp ? infonavitStatus : "sin_datos", {
       checkedAt: nowIso,
