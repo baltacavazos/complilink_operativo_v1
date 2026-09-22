@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildInstituteSilencePresentation, resolveOfficialCheckDisplay } from "@shared/officialCheckCopy";
 
 const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+const indexHtml = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
 const result = readFileSync(new URL("../components/WorkerOfficialResult.tsx", import.meta.url), "utf8");
 const auditar = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 const sheet = readFileSync(new URL("../components/HeliosCopilotSheet.tsx", import.meta.url), "utf8");
@@ -133,31 +134,38 @@ describe("contraste y claridad del resultado", () => {
   });
 
   it("deja «Ver detalle» en blanco con tinta oscura, por encima del remap de bg-white", () => {
-    expect(result).toMatch(/<details className="ap-result-detail[^"]*\bbg-white\b/);
+    expect(result).toMatch(/<details className="ap-result-detail /);
+    expect(result).not.toMatch(/<details[^>]*bg-white/);
     expect(auditar).toContain('className="ap-result-detail mt-2"');
-    const compactDetail = auditar.slice(auditar.indexOf('data-compact-official-detail="true"'));
+    const compactAt = auditar.indexOf('data-compact-official-detail="true"');
+    const compactDetail = auditar.slice(compactAt, compactAt + 280);
     expect(compactDetail.startsWith('data-compact-official-detail="true" className="ap-result-detail')).toBe(true);
-    expect(compactDetail.slice(0, 220)).toContain("bg-white");
+    expect(compactDetail).not.toContain("bg-white");
+    expect(auditar).toContain('className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3"');
 
     const rule = css.slice(css.indexOf(".ap-result-detail {"));
     expect(rule).toContain("color-scheme: light");
-    expect(rule).toContain(
-      '.dark .audita-auditar .ap-light-surface[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)',
-    );
-    expect(rule).toContain(
-      '.dark .audita-auditar .ap-result-detail[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)',
-    );
-    expect(rule).toContain(
-      '.dark .audita-auditar .ap-result-detail :is(div, section, article)[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)',
-    );
+    expect(rule).toContain("--ap-detail-bg: #ffffff");
+    expect(rule).toContain("--ap-detail-ink: #161616");
+    expect(rule).toContain("--ap-detail-ink-strong: #111111");
+    expect(rule).toContain("html.dark .ap-result-detail");
     expect(rule).toContain("background-color: #ffffff !important");
     expect(rule).toContain("color: #161616 !important");
-    expect(rule).toContain(".ap-result-detail :is(p, li, label, summary, h1, h2, h3)");
+    expect(rule).toContain("color: #111111 !important");
+    expect(rule).toContain(".ap-result-detail summary");
+    expect(rule).toContain("button.ap-btn-on-dark");
+    expect(rule).toContain("color: #ffffff !important");
     expect(rule).not.toMatch(/:is\([^)]*button/);
 
     expect(contrastRatio([0x16, 0x16, 0x16], [0xff, 0xff, 0xff])).toBeGreaterThan(12);
+    expect(contrastRatio([0x11, 0x11, 0x11], [0xff, 0xff, 0xff])).toBeGreaterThan(12);
     expect(contrastRatio([0x16, 0x16, 0x16], [0xf3, 0xfa, 0xf6])).toBeGreaterThan(12);
     expect(contrastRatio([0x16, 0x16, 0x16], [0x0f, 0x17, 0x2a])).toBeLessThan(3);
+  });
+
+  it("no pide Umami si la variable de analítica no es una URL", () => {
+    expect(indexHtml).not.toMatch(/src=["'][^"']*%VITE_ANALYTICS_ENDPOINT%\/umami/);
+    expect(indexHtml).toContain('if (!/^https?:\\/\\/[^\\s%]+$/i.test(endpoint)) return;');
   });
 });
 

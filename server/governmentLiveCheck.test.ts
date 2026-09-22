@@ -138,6 +138,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.overallLabel).toBe("Vivo");
     expect(result.overallDetail).toMatch(/no significa que tu patrón cumple/i);
     expect(buildOfficialCheckHeadline(result)).toBe("Vivo · 21/09/2026");
+    expect(result.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(/RFC: VECJ880326XXX/);
     expect(JSON.stringify(result)).not.toMatch(/APIMarket|Helios|CompliLink|connector/i);
 
     const posted = readPosted(fetchImpl);
@@ -1147,6 +1148,95 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Certificados|RFC: UIPD9211257I0/);
     expect(display.headline).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+  });
+
+  it("no copia el nombre del expediente como razón social y no deja vivo un SAT vacío", () => {
+    const nowIso = "2026-09-21T22:44:00.000Z";
+    const institutes = {
+      imss: {
+        honesty: "failed",
+        resultado: "no_se_pudo",
+        workerReason: "IMSS no contestó.",
+        hechos: ["IMSS no contestó."],
+      },
+      infonavit: {
+        honesty: "failed",
+        resultado: "no_se_pudo",
+        workerReason: "Infonavit no contestó.",
+        hechos: ["Infonavit no contestó."],
+      },
+    };
+    const answered = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        result: {
+          sat: {
+            honesty: "live",
+            resultado: "vivo",
+            rfc: "UIPD9211257I0",
+            legalName: "EXPEDIENTE UIPD9211257I0",
+            tipoPersona: "Persona física",
+            hechos: ["El SAT confirmó el RFC consultado."],
+          },
+          ...institutes,
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso,
+    });
+    const answeredLines = answered?.checks.find((item) => item.source === "sat")?.hechos.join("\n") ?? "";
+    expect(answered?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    expect(answeredLines).toMatch(/El SAT confirmó el RFC consultado/);
+    expect(answeredLines).not.toMatch(/Razón social|EXPEDIENTE/i);
+
+    const named = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        result: {
+          sat: {
+            honesty: "live",
+            resultado: "vivo",
+            rfc: "ECC190605VA1",
+            legalName: "EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.",
+          },
+          ...institutes,
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso,
+    });
+    expect(named?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(
+      /Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX/,
+    );
+
+    const emptyHook = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        result: {
+          sat: {
+            honesty: "live",
+            resultado: "vivo",
+            legalName: "EXPEDIENTE UIPD9211257I0",
+            razonSocial: "UIPD9211257I0",
+          },
+          ...institutes,
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso,
+    });
+    const emptySat = emptyHook?.checks.find((item) => item.source === "sat");
+    expect(emptySat?.status).toBe("no_se_pudo");
+    expect(emptySat?.hechos.join(" ")).not.toMatch(/Razón social|EXPEDIENTE|SAT: Vivo/i);
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: emptyHook,
+      identity: { nss: true, curp: true, rfc: true },
+      nowMs: Date.parse(nowIso) + OFFICIAL_PENDING_STALE_MS + 5_000,
+    });
+    expect(display.silence?.sourceLines.join("\n") ?? "").not.toMatch(/SAT: Vivo|Razón social|EXPEDIENTE/i);
+    expect(display.headline).not.toMatch(/\bcumple\b/i);
+    expect(answeredLines).not.toMatch(/\bcumple\b/i);
   });
 
   it("el tope de un proveedor no apaga un SAT vivo ni en el humo ni en guest-official", async () => {

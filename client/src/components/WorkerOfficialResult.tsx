@@ -54,8 +54,8 @@ export function WorkerOfficialResult({
       <p data-testid="official-check-detail" className="sr-only">
         {lines.map((line) => `${line.label}. ${line.text}`).join(" ")}
       </p>
-      <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3">
-        <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
+      <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
+        <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {presentation.sourceLines.length ? (
           <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
             {presentation.sourceLines.map((line) => (

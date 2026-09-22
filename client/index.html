@@ -38,10 +38,18 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script
-      defer
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <script>
+      (function () {
+        var endpoint = "%VITE_ANALYTICS_ENDPOINT%";
+        var website = "%VITE_ANALYTICS_WEBSITE_ID%";
+        if (!/^https?:\/\/[^\s%]+$/i.test(endpoint)) return;
+        var script = document.createElement("script");
+        script.defer = true;
+        script.src = endpoint.replace(/\/$/, "") + "/umami";
+        script.dataset.websiteId = website;
+        document.head.appendChild(script);
+      })();
+    </script>
   </body>
 
 </html>

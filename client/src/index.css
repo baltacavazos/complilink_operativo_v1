@@ -1266,10 +1266,14 @@
    * El botón oscuro (ap-btn-on-dark) no entra aquí.
    */
   .ap-result-detail {
+    --ap-detail-bg: #ffffff;
+    --ap-detail-ink: #161616;
+    --ap-detail-ink-strong: #111111;
     color-scheme: light;
-    background-color: #ffffff;
-    color: #161616;
-    border-color: #e4e4e4;
+    background-color: var(--ap-detail-bg) !important;
+    background-image: none !important;
+    color: var(--ap-detail-ink) !important;
+    border-color: #e4e4e4 !important;
   }
 
   /* La tarjeta de resultado con ap-light-surface + bg-white hereda la misma tinta
@@ -1288,8 +1292,42 @@
     border-color: #e4e4e4 !important;
   }
 
-  .ap-result-detail :is(p, li, label, summary, h1, h2, h3),
-  .dark .audita-auditar .ap-result-detail :is(p, li, label, summary, h1, h2, h3) {
+  .ap-result-detail :is(p, li, label, h1, h2, h3),
+  .dark .audita-auditar .ap-result-detail :is(p, li, label, h1, h2, h3) {
     color: #161616 !important;
   }
+
+  .ap-result-detail summary,
+  .dark .audita-auditar .ap-result-detail summary {
+    color: #111111 !important;
+  }
+}
+
+/*
+ * Fuera de capa: gana al remap con !important que vive en @layer components
+ * (fondo slate + tinta #161616). El panel no usa bg-white, así el remap ni lo toca.
+ */
+html.dark .ap-result-detail,
+html.dark .audita-auditar details.ap-result-detail,
+html.dark .audita-auditar .ap-result-detail[class*="bg-white"],
+html.dark .audita-auditar .ap-result-detail :is(div, section, article)[class*="bg-white"] {
+  --ap-detail-bg: #ffffff;
+  --ap-detail-ink: #161616;
+  --ap-detail-ink-strong: #111111;
+  color-scheme: light !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #161616 !important;
+  border-color: #e4e4e4 !important;
+}
+
+html.dark .ap-result-detail summary,
+html.dark .audita-auditar .ap-result-detail summary {
+  color: #111111 !important;
+}
+
+html.dark .audita-auditar .ap-result-detail button.ap-btn-on-dark,
+html.dark .audita-auditar .ap-result-detail a.ap-btn-on-dark {
+  background-color: #111111 !important;
+  color: #ffffff !important;
 }
