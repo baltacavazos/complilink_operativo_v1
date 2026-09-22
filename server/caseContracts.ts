@@ -257,10 +257,12 @@ function extractXmlTags(text: string, localName: string) {
 /** Conserva Emisor/Receptor/Nómina si el certificado empuja el complemento fuera del recorte. */
 export function derivePayrollXmlTextHint(xml: string) {
   const compact = xml.replace(/^\uFEFF/, "").replace(/\s+/g, " ").trim();
-  const identityTags = (compact.match(/<[^>]*\b(?:Emisor|Receptor|Nomina)\b[^>]*>/gi) ?? []).join(" ");
+  const identityTags = (compact.match(/<[^>]*\b(?:Emisor|Receptor|Nomina|TimbreFiscalDigital)\b[^>]*>/gi) ?? []).join(" ");
+  const folioAttr = compact.match(/(?:^|[\s<])Folio\s*=\s*["'][^"']+["']/i)?.[0]?.trim() ?? "";
+  const preserved = [identityTags, folioAttr].filter(Boolean).join(" ");
   const head = compact.slice(0, 6000);
-  if (!identityTags || head.includes(identityTags)) return head;
-  return `${head} ${identityTags}`.replace(/\s+/g, " ").trim().slice(0, 20000);
+  if (!preserved || head.includes(preserved)) return head;
+  return `${head} ${preserved}`.replace(/\s+/g, " ").trim().slice(0, 20000);
 }
 
 function extractTagAttribute(tag: string, attributeName: string) {
@@ -419,33 +421,103 @@ function extractPayrollEmployerRegistration(text: string) {
   );
 }
 
-function extractPayrollNss(text: string) {
-  const nssMatch = text.match(
-    /(?:nss|n[úu]mero\s+de\s+seguridad\s+social)\s*[:\-]?\s*(\d{11})\b/i
+function compactNss(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 10 && digits.length <= 11 ? digits : null;
+}
+
+function compactCurp(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const compact = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/.test(compact) ? compact : null;
+}
+
+function extractLabeledNss(text: string): string | null {
+  const match = text.match(
+    /(?:\bnss\b|n\s*\.\s*s\s*\.\s*s\s*\.?|n[úu]mero\s+de\s+seguridad\s+social|numseguridadsocial)\s*[:\-]?\s*((?:\d[\s.\-]*){10,11})/i,
   );
+  return compactNss(match?.[1] ?? null);
+}
+
+function extractPayrollNss(text: string) {
   const fromReceptor = extractXmlTags(text, "Receptor")
-    .map((tag) => extractTagAttribute(tag, "NumSeguridadSocial"))
+    .map((tag) => compactNss(extractTagAttribute(tag, "NumSeguridadSocial")))
     .find((value) => Boolean(value));
   return (
     fromReceptor ??
-    extractXmlAttribute(text, "NumSeguridadSocial") ??
-    nssMatch?.[1] ??
-    extractNamedField(text, ["nss", "numero de seguridad social", "número de seguridad social"])
+    compactNss(extractXmlAttribute(text, "NumSeguridadSocial")) ??
+    extractLabeledNss(text) ??
+    compactNss(extractNamedField(text, ["nss", "numero de seguridad social", "número de seguridad social"]))
   );
 }
 
 function extractPayrollCurp(text: string) {
   const fromReceptor = extractXmlTags(text, "Receptor")
-    .map((tag) => extractTagAttribute(tag, "Curp"))
+    .map((tag) => compactCurp(extractTagAttribute(tag, "Curp")))
     .find((value) => Boolean(value));
-  const labeled = text.match(
-    /(?:\bcurp\b)\s*[:=]?\s*([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})\b/i
-  )?.[1];
-  const value = (fromReceptor ?? extractXmlAttribute(text, "Curp") ?? labeled)?.toUpperCase() ?? null;
+  const fromAttribute = compactCurp(extractXmlAttribute(text, "Curp"));
+  const labeled = compactCurp(
+    text.match(/\bcurp\b\s*[:=]?\s*((?:[A-Z0-9][\s.\-]*){18})/i)?.[1] ?? null,
+  );
+  const xmlValue = fromReceptor ?? fromAttribute ?? null;
   return {
-    confirmed: fromReceptor || extractXmlAttribute(text, "Curp") ? value : null,
-    estimated: fromReceptor || extractXmlAttribute(text, "Curp") ? null : value,
+    confirmed: xmlValue,
+    estimated: xmlValue ? null : labeled,
   };
+}
+
+function extractExplicitEmployerRfc(text: string): string | null {
+  const labeled = text.match(
+    /(?:rfc\s+(?:del\s+)?(?:patr[oó]n|emisor)|rfc\s*emisor)\s*[:\-]?\s*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i,
+  )?.[1];
+  if (labeled) return labeled.toUpperCase();
+  return (
+    [...text.matchAll(/\brfc\s*[:\-]\s*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/gi)]
+      .map((item) => item[1].toUpperCase())
+      .find((rfc) => rfc.length === 12) ?? null
+  );
+}
+
+function extractExplicitWorkerRfc(text: string, employerRfc?: string | null): string | null {
+  const labeled = text.match(
+    /(?:rfc\s+(?:del\s+)?(?:trabajador|receptor|empleado)|rfc\s*receptor)\s*[:\-]?\s*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i,
+  )?.[1]?.toUpperCase();
+  const genericPerson = [...text.matchAll(/\brfc\s*[:\-]\s*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/gi)]
+    .map((item) => item[1].toUpperCase())
+    .find((rfc) => rfc.length === 13 && rfc !== employerRfc);
+  const candidate = labeled ?? genericPerson ?? null;
+  if (!candidate || (employerRfc && candidate === employerRfc)) return null;
+  return candidate;
+}
+
+const FISCAL_UUID_RE = /\b[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b/i;
+
+function extractPayrollFolio(text: string): string | null {
+  const fromXml = text.match(/(?:^|[\s<])Folio\s*=\s*["']([^"']+)["']/i)?.[1]?.trim() ?? null;
+  if (fromXml && !FISCAL_UUID_RE.test(fromXml)) return fromXml;
+  const labeled = text.match(/(?:^|[^\w])folio(?!\s+fiscal)\s*[:#\-]\s*([A-Z0-9-]{1,40})/i)?.[1]?.trim() ?? null;
+  if (labeled && !FISCAL_UUID_RE.test(labeled)) return labeled;
+  return text.match(/\brecibo\s*[:#]\s*(\d{3,12})\b/i)?.[1] ?? null;
+}
+
+/** Folio fiscal del timbre. El UUID del nombre del archivo no cuenta. */
+function extractPayrollUuid(text: string): string | null {
+  const fromXml = extractXmlAttribute(text, "UUID");
+  if (fromXml && FISCAL_UUID_RE.test(fromXml)) return fromXml.toUpperCase();
+  const labeled = text.match(
+    /(?:folio\s+fiscal|uuid)\s*[:=]?\s*([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})/i,
+  );
+  return labeled?.[1]?.toUpperCase() ?? null;
+}
+
+function extractPlainDailySalary(text: string): string | null {
+  const match = text.match(
+    /(?:\bsueldo\s+diario\b|\bsueldo\b|\bsalario\s+diario\b(?!\s+integrado))\s*[:\-]?\s*(\$?\s?\d[\d,]*(?:\.\d{2,4})?)/i,
+  );
+  const amount = match?.[1]?.replace(/\s+/g, "") ?? null;
+  if (!amount) return null;
+  return amount.startsWith("$") ? amount : `$${amount}`;
 }
 
 function fileNameLooksLikeUuid(value: string) {
@@ -745,6 +817,164 @@ export function classifyMexicanLaborDocument(params: {
   });
 }
 
+function splitPayrollTextSources(text: string): { xml: string; plain: string } {
+  const tags = text.match(/<[^>]+>/g) ?? [];
+  if (tags.length === 0) return { xml: "", plain: text };
+  return {
+    xml: tags.join(" "),
+    plain: text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+  };
+}
+
+type PayrollHarvest = {
+  employerRfcXml: string | null;
+  employerRfcLabeled: string | null;
+  employerRfcLoose: string | null;
+  workerRfcXml: string | null;
+  workerRfcLabeled: string | null;
+  workerName: string | null;
+  employerName: string | null;
+  period: string | null;
+  perceptions: string | null;
+  deductions: string | null;
+  netAmount: string | null;
+  nss: string | null;
+  curpConfirmed: string | null;
+  curpEstimated: string | null;
+  employerRegistration: string | null;
+  isrWithheld: string | null;
+  imssWithheld: string | null;
+  infonavitWithheld: string | null;
+  sbcConfirmed: string | null;
+  sbcEstimated: string | null;
+  sdiConfirmed: string | null;
+  sdiEstimated: string | null;
+  dailySalary: string | null;
+  folio: string | null;
+  uuid: string | null;
+};
+
+function emptyPayrollHarvest(): PayrollHarvest {
+  return {
+    employerRfcXml: null,
+    employerRfcLabeled: null,
+    employerRfcLoose: null,
+    workerRfcXml: null,
+    workerRfcLabeled: null,
+    workerName: null,
+    employerName: null,
+    period: null,
+    perceptions: null,
+    deductions: null,
+    netAmount: null,
+    nss: null,
+    curpConfirmed: null,
+    curpEstimated: null,
+    employerRegistration: null,
+    isrWithheld: null,
+    imssWithheld: null,
+    infonavitWithheld: null,
+    sbcConfirmed: null,
+    sbcEstimated: null,
+    sdiConfirmed: null,
+    sdiEstimated: null,
+    dailySalary: null,
+    folio: null,
+    uuid: null,
+  };
+}
+
+function harvestPayrollText(text: string): PayrollHarvest {
+  if (!text.trim()) return emptyPayrollHarvest();
+  const employerRfcXml = extractCfdiEmployerRfc(text);
+  const employerRfcLabeled = extractExplicitEmployerRfc(text);
+  const employerForWorker = employerRfcXml ?? employerRfcLabeled;
+  const salaryBase = extractSocialSecurityBaseSalary(text);
+  const salaryIntegrated = extractIntegratedDailySalary(text);
+  const curp = extractPayrollCurp(text);
+  return {
+    employerRfcXml,
+    employerRfcLabeled,
+    employerRfcLoose: extractRfc(text),
+    workerRfcXml: extractCfdiWorkerRfc(text),
+    workerRfcLabeled: extractExplicitWorkerRfc(text, employerForWorker),
+    workerName: extractCfdiWorkerName(text),
+    employerName: extractCfdiEmployerName(text),
+    period: extractPayrollPeriod(text),
+    perceptions: extractPayrollAmount(text, ["total percepciones", "percepciones"], ["TotalPercepciones"]),
+    deductions: extractPayrollAmount(text, ["total deducciones", "deducciones", "descuentos"], ["TotalDeducciones", "Descuento"]),
+    netAmount: extractPayrollNetAmount(text),
+    nss: extractPayrollNss(text),
+    curpConfirmed: curp.confirmed,
+    curpEstimated: curp.estimated,
+    employerRegistration: extractPayrollEmployerRegistration(text),
+    isrWithheld: extractXmlDeductionAmount(text, "002") ?? extractPayrollAmount(text, ["isr", "impuesto sobre la renta"]),
+    imssWithheld:
+      extractXmlDeductionAmount(text, "001") ?? extractPayrollAmount(text, ["cuota imss", "imss", "seguridad social"]),
+    infonavitWithheld:
+      extractXmlDeductionAmount(text, "010") ?? extractPayrollAmount(text, ["pago infonavit", "infonavit"]),
+    sbcConfirmed: salaryBase.confirmed,
+    sbcEstimated: salaryBase.estimated,
+    sdiConfirmed: salaryIntegrated.confirmed,
+    sdiEstimated: salaryIntegrated.estimated,
+    dailySalary: extractPlainDailySalary(text),
+    folio: extractPayrollFolio(text),
+    uuid: extractPayrollUuid(text),
+  };
+}
+
+function pickHarvestValue(primary: string | null, fallback: string | null) {
+  return primary ?? fallback ?? null;
+}
+
+/** El XML manda cuando el mismo dato también viene del PDF o del OCR. El otro solo llena huecos. */
+function resolvePayrollHarvest(sourceText: string) {
+  const { xml, plain } = splitPayrollTextSources(sourceText);
+  const fromXml = xml ? harvestPayrollText(xml) : emptyPayrollHarvest();
+  const fromPlain = xml ? harvestPayrollText(plain) : harvestPayrollText(sourceText);
+  const employerConfirmed = pickHarvestValue(fromXml.employerRfcXml, pickHarvestValue(fromXml.employerRfcLabeled, fromPlain.employerRfcLabeled));
+  const looseEmployer = pickHarvestValue(fromXml.employerRfcLoose, fromPlain.employerRfcLoose);
+  const workerFromXml =
+    fromXml.workerRfcXml && fromXml.workerRfcXml !== employerConfirmed && fromXml.workerRfcXml !== looseEmployer
+      ? fromXml.workerRfcXml
+      : null;
+  const workerFromPlain =
+    fromPlain.workerRfcLabeled &&
+    fromPlain.workerRfcLabeled !== employerConfirmed &&
+    fromPlain.workerRfcLabeled !== looseEmployer
+      ? fromPlain.workerRfcLabeled
+      : null;
+  const workerConfirmed = pickHarvestValue(workerFromXml, pickHarvestValue(fromXml.workerRfcLabeled, workerFromPlain));
+  const employerEstimated =
+    employerConfirmed ?? (looseEmployer && looseEmployer !== workerConfirmed ? looseEmployer : null);
+
+  return {
+    employerConfirmed,
+    employerEstimated,
+    workerConfirmed,
+    workerName: pickHarvestValue(fromXml.workerName, fromPlain.workerName),
+    employerName: pickHarvestValue(fromXml.employerName, fromPlain.employerName),
+    period: pickHarvestValue(fromXml.period, fromPlain.period),
+    perceptions: pickHarvestValue(fromXml.perceptions, fromPlain.perceptions),
+    deductions: pickHarvestValue(fromXml.deductions, fromPlain.deductions),
+    netAmount: pickHarvestValue(fromXml.netAmount, fromPlain.netAmount),
+    nss: pickHarvestValue(fromXml.nss, fromPlain.nss),
+    curpConfirmed: pickHarvestValue(fromXml.curpConfirmed, fromPlain.curpConfirmed),
+    curpEstimated: pickHarvestValue(fromXml.curpEstimated, fromPlain.curpEstimated),
+    employerRegistration: pickHarvestValue(fromXml.employerRegistration, fromPlain.employerRegistration),
+    isrWithheld: pickHarvestValue(fromXml.isrWithheld, fromPlain.isrWithheld),
+    imssWithheld: pickHarvestValue(fromXml.imssWithheld, fromPlain.imssWithheld),
+    infonavitWithheld: pickHarvestValue(fromXml.infonavitWithheld, fromPlain.infonavitWithheld),
+    sbcConfirmed: pickHarvestValue(fromXml.sbcConfirmed, fromPlain.sbcConfirmed),
+    sbcEstimated: pickHarvestValue(fromXml.sbcEstimated, fromPlain.sbcEstimated),
+    sdiConfirmed: pickHarvestValue(fromXml.sdiConfirmed, fromPlain.sdiConfirmed),
+    sdiEstimated: pickHarvestValue(fromXml.sdiEstimated, fromPlain.sdiEstimated),
+    dailySalary: pickHarvestValue(fromXml.dailySalary, fromPlain.dailySalary),
+    folio: pickHarvestValue(fromXml.folio, fromPlain.folio),
+    uuid: pickHarvestValue(fromXml.uuid, fromPlain.uuid),
+  };
+}
+
 export function buildPreliminaryLaborAnalysis(params: {
   fileName: string;
   mimeType: string;
@@ -764,50 +994,38 @@ export function buildPreliminaryLaborAnalysis(params: {
     normalizedText.includes("infonavit");
 
   const isPayrollDocument = classification.documentType === "cfdi" || classification.documentType === "payroll_receipt";
-  const payrollEmployerName = isPayrollDocument ? extractCfdiEmployerName(sourceText) : null;
-  const payrollPeriod = isPayrollDocument ? extractPayrollPeriod(sourceText) : null;
-  const payrollPerceptions = isPayrollDocument
-    ? extractPayrollAmount(sourceText, ["total percepciones", "percepciones"], ["TotalPercepciones"])
-    : null;
-  const payrollDeductions = isPayrollDocument
-    ? extractPayrollAmount(sourceText, ["total deducciones", "deducciones", "descuentos"], ["TotalDeducciones", "Descuento"])
-    : null;
-  const payrollNetAmount = isPayrollDocument
-    ? extractPayrollNetAmount(sourceText)
-    : null;
-  const payrollNss = isPayrollDocument ? extractPayrollNss(sourceText) : null;
-  const payrollCurp = isPayrollDocument ? extractPayrollCurp(sourceText) : { confirmed: null, estimated: null };
-  const payrollEmployerRegistration = isPayrollDocument ? extractPayrollEmployerRegistration(sourceText) : null;
-  const isrWithheld = isPayrollDocument
-    ? extractXmlDeductionAmount(sourceText, "002") ?? extractPayrollAmount(sourceText, ["isr", "impuesto sobre la renta"])
-    : null;
-  const imssWithheld = isPayrollDocument
-    ? extractXmlDeductionAmount(sourceText, "001") ?? extractPayrollAmount(sourceText, ["cuota imss", "imss", "seguridad social"])
-    : null;
-  const infonavitWithheld = isPayrollDocument
-    ? extractXmlDeductionAmount(sourceText, "010") ?? extractPayrollAmount(sourceText, ["pago infonavit", "infonavit"])
-    : null;
-  const xmlEmployerRfc = isPayrollDocument ? extractCfdiEmployerRfc(sourceText) : null;
-  const xmlWorkerRfc = isPayrollDocument ? extractCfdiWorkerRfc(sourceText) : null;
-  const labeledEmployerRfc = extractRfc(sourceText);
-  const salaryBase = isPayrollDocument ? extractSocialSecurityBaseSalary(sourceText) : { confirmed: null, estimated: null };
-  const salaryIntegrated = isPayrollDocument
-    ? extractIntegratedDailySalary(sourceText)
-    : { confirmed: null, estimated: null };
+  const payroll = isPayrollDocument ? resolvePayrollHarvest(sourceText) : null;
+  const payrollEmployerName = payroll?.employerName ?? null;
+  const payrollPeriod = payroll?.period ?? null;
+  const payrollPerceptions = payroll?.perceptions ?? null;
+  const payrollDeductions = payroll?.deductions ?? null;
+  const payrollNetAmount = payroll?.netAmount ?? null;
+  const payrollNss = payroll?.nss ?? null;
+  const payrollCurpConfirmed = payroll?.curpConfirmed ?? null;
+  const payrollCurpEstimated = payroll?.curpEstimated ?? null;
+  const payrollEmployerRegistration = payroll?.employerRegistration ?? null;
+  const isrWithheld = payroll?.isrWithheld ?? null;
+  const imssWithheld = payroll?.imssWithheld ?? null;
+  const infonavitWithheld = payroll?.infonavitWithheld ?? null;
+  const xmlEmployerRfc = payroll?.employerConfirmed ?? null;
+  const xmlWorkerRfc = payroll?.workerConfirmed ?? null;
 
   const estimatedData: Record<string, AnalysisValue> = {
-    employerRfc: xmlEmployerRfc ?? labeledEmployerRfc,
-    workerRfc: xmlWorkerRfc && xmlWorkerRfc !== (xmlEmployerRfc ?? labeledEmployerRfc) ? xmlWorkerRfc : null,
-    payrollCurp: payrollCurp.confirmed ?? payrollCurp.estimated,
+    employerRfc: payroll ? payroll.employerEstimated : extractRfc(sourceText),
+    workerRfc: xmlWorkerRfc,
+    payrollCurp: payrollCurpConfirmed ?? payrollCurpEstimated,
     period: payrollPeriod ?? extractPeriod(sourceText),
     apparentAmount: payrollNetAmount ?? extractMoney(sourceText),
     apparentEffectiveDate: extractDate(sourceText),
-    workerName: extractCfdiWorkerName(sourceText),
+    workerName: payroll?.workerName ?? extractCfdiWorkerName(sourceText),
     employerName: payrollEmployerName,
     jobTitle: extractNamedField(sourceText, ["puesto", "cargo"]),
     contractDailySalary: classification.documentType === "contract" ? extractContractDailySalary(sourceText) : null,
-    socialSecurityBaseSalary: salaryBase.confirmed ?? salaryBase.estimated,
-    integratedDailySalary: salaryIntegrated.confirmed ?? salaryIntegrated.estimated,
+    socialSecurityBaseSalary: payroll ? (payroll.sbcConfirmed ?? payroll.sbcEstimated) : null,
+    integratedDailySalary: payroll ? (payroll.sdiConfirmed ?? payroll.sdiEstimated) : null,
+    payrollDailySalary: payroll?.dailySalary ?? null,
+    payrollFolio: payroll?.folio ?? null,
+    payrollUuid: payroll?.uuid ?? null,
   };
 
   const confirmedData: Record<string, AnalysisValue> = {
@@ -826,15 +1044,18 @@ export function buildPreliminaryLaborAnalysis(params: {
     payrollPerceptions,
     payrollDeductions,
     payrollNss,
-    payrollCurp: payrollCurp.confirmed,
+    payrollCurp: payrollCurpConfirmed,
     payrollEmployerRegistration,
     isrWithheld,
     imssWithheld,
     infonavitWithheld,
     employerRfc: xmlEmployerRfc,
-    workerRfc: xmlWorkerRfc && xmlWorkerRfc !== xmlEmployerRfc ? xmlWorkerRfc : null,
-    socialSecurityBaseSalary: salaryBase.confirmed,
-    integratedDailySalary: salaryIntegrated.confirmed,
+    workerRfc: xmlWorkerRfc,
+    socialSecurityBaseSalary: payroll?.sbcConfirmed ?? null,
+    integratedDailySalary: payroll?.sdiConfirmed ?? null,
+    payrollDailySalary: payroll?.dailySalary ?? null,
+    payrollFolio: payroll?.folio ?? null,
+    payrollUuid: payroll?.uuid ?? null,
   };
 
   const extractionTargets = (() => {

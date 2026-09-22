@@ -814,5 +814,356 @@ describe("briefing del caso para el asesor", () => {
     expect(prompt).toMatch(/SAT: Vivo/);
     expect(prompt).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
     expect(JSON.stringify({ briefing, answer })).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
+    expect(briefing.comparisonLines.join(" ")).not.toMatch(/RPCI|ApiMarket|Syntage|CompliLink/);
+  });
+
+  it("pone el salario parcial del IMSS junto al recibo sin siglas de sistema", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("no_se_pudo", {
+        checkedAt,
+        identity: { nss: true, curp: false, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "live",
+            hechos: ["Salario RPCI: $450.25"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "no_se_pudo",
+            label: "Sin respuesta",
+            detail: "503 mantenimiento",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "failed",
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: "Falta tu CURP en el recibo para consultar.",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            missingFields: ["curp"],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "live",
+            fecha: checkedAt,
+            hechos: ["Salario RPCI: $450.25"],
+            motivoFallo: null,
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "pending",
+            fecha: checkedAt,
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            motivoFallo: null,
+            missingFields: ["curp"],
+          },
+        },
+      }),
+      facts: {
+        nss: "84129214965",
+        workerRfc: "UIPD9211257I0",
+        salary: "331.01",
+        netAmount: "$4,725.60",
+      },
+    });
+    const visible = [...briefing.comparisonLines, ...briefing.hechoLines, ...(briefing.verdict?.sourceLines ?? [])].join(" ");
+
+    expect(briefing.comparisonLines.join(" ")).toMatch(/En tu recibo se lee \$331\.01/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/El IMSS tiene registrado \$450\.25/);
+    expect(visible).not.toMatch(/RPCI|ApiMarket|Syntage|CompliLink|\bcumple\b/i);
+    expect(briefing.verdict?.sourceLines.join(" ")).toMatch(/salario que el IMSS tiene registrado/);
+  });
+
+  it("no inventa salario del IMSS ni Vivo si el retorno no trae ese hecho", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: ["Salario registrado: $450.25"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de SAT."],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: false, curp: true, rfc: false },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+          },
+        ],
+      }),
+      facts: {
+        salary: "331.01",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX",
+        workerRfc: "UIPD9211257I0",
+      },
+    });
+    const visible = [
+      briefing.headline,
+      ...briefing.comparisonLines,
+      ...briefing.statusLines,
+      ...briefing.receiptLines,
+    ].join(" ");
+
+    expect(briefing.comparisonLines.join(" ")).not.toMatch(/El IMSS tiene registrado/);
+    expect(briefing.officialCheck?.overallStatus).not.toBe("vivo");
+    expect(briefing.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(visible).not.toMatch(/\bVivo\b|RPCI|Syntage|CompliLink|\bcumple\b/i);
+    expect(briefing.receiptLines.join(" ")).toMatch(/EVOLUCION CREATIVA CAMREFLEX/);
+  });
+
+  it("pinta salario y patrón del registro solo cuando el retorno ya los trae, sin marcar Vivo", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: ["Salario RPCI: $450.25", "Patrón RPCI: TALLER NORTE SA"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "no_se_pudo",
+            label: "Sin respuesta",
+            detail: "503 mantenimiento",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "failed",
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: false, curp: true, rfc: false },
+            honesty: "pending",
+            hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "pending",
+            fecha: checkedAt,
+            hechos: ["Salario RPCI: $450.25", "Patrón RPCI: TALLER NORTE SA"],
+            motivoFallo: null,
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "pending",
+            fecha: checkedAt,
+            hechos: ["Todavía no hay una respuesta oficial nueva de Infonavit."],
+            motivoFallo: null,
+          },
+        },
+      }),
+      facts: {
+        salary: "331.01",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX",
+        folio: "10963",
+        uuid: "8C18C713-7AFA-5EA6-B323-FA208F8A3880",
+      },
+    });
+    const visible = [
+      briefing.headline,
+      ...briefing.comparisonLines,
+      ...briefing.hechoLines,
+      ...briefing.receiptLines,
+      ...(briefing.verdict?.sourceLines ?? []),
+    ].join(" ");
+
+    expect(briefing.comparisonLines.join(" ")).toMatch(/En tu recibo se lee \$331\.01/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/El IMSS tiene registrado \$450\.25/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/En tu recibo el patrón es EVOLUCION CREATIVA CAMREFLEX/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/El IMSS tiene registrado a TALLER NORTE SA/);
+    expect(briefing.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(briefing.headline ?? "").not.toMatch(/^Vivo\b/);
+    expect(visible).not.toMatch(/RPCI|Syntage|CompliLink|\bcumple\b/i);
+    expect(briefing.receiptLines.join(" ")).toMatch(/folio 10963/);
+    expect(briefing.receiptLines.join(" ")).toMatch(/folio fiscal 8C18C713-7AFA-5EA6-B323-FA208F8A3880/);
+    expect(briefing.receiptLines.join(" ")).not.toMatch(/\bUUID\b/);
+  });
+
+  it("compara sueldo y patrón cuando el retorno trae el contrato del registro, y dice qué hacer", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const different = buildOfficialCaseBriefing({
+      officialCheck: official("vivo", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "live",
+            hechos: [
+              "Salario registrado: $1,850.75.",
+              "RFC del patrón: PAG850101AB1.",
+              "Patrón: TECNOMEX SOLUCIONES, S.A. DE C.V.",
+            ],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "live",
+            hechos: ["Régimen en SAT: Sueldos y Salarios e Ingresos Asimilados a Salarios."],
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "live",
+            hechos: ["Saldo de subcuenta de vivienda: $57,727.92.", "Empresa en la subcuenta: CONSTRUCTORA DEL NORTE SA."],
+          },
+        ],
+      }),
+      facts: {
+        salary: "331.01",
+        employerRfc: "ECC190605VA1",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX",
+        infonavitWithheld: "$210.00",
+        workerRfc: "UIPD9211257I0",
+      },
+    });
+    const visible = [
+      different.comparison.seenLine,
+      different.comparison.nextStepLine,
+      ...different.comparisonLines,
+    ].join(" ");
+
+    expect(different.comparison.seen).toBe("hay_diferencia");
+    expect(different.comparison.seenLine).toBe("Esto vimos: hay diferencia");
+    expect(different.comparison.nextStep).toMatch(/sueldo y patrón/);
+    expect(different.comparisonLines.join(" ")).toMatch(/\$331\.01/);
+    expect(different.comparisonLines.join(" ")).toMatch(/\$1,850\.75/);
+    expect(different.comparisonLines.join(" ")).toMatch(/TECNOMEX/);
+    expect(different.comparisonLines.join(" ")).toMatch(/Sueldos y Salarios/);
+    expect(different.comparisonLines.join(" ")).toMatch(/\$57,727\.92/);
+    expect(different.comparisonLines.join(" ")).toMatch(/No es el descuento de tu recibo/);
+    expect(visible).not.toMatch(/RPCI|Syntage|CompliLink|certificado|\bcumple\b/i);
+    expect(different.comparisonLines.join(" ")).not.toMatch(/\$210\.00/);
+
+    const same = buildOfficialCaseBriefing({
+      officialCheck: official("pendiente", {
+        checkedAt,
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+          },
+        ],
+        institutePay: {
+          salary: "$331.01",
+          employer: "EVOLUCION CREATIVA CAMREFLEX",
+          employerRfc: "ECC190605VA1",
+          days: "15",
+        },
+      }),
+      facts: {
+        salary: "331.01",
+        employerName: "EVOLUCION CREATIVA CAMREFLEX S.A. DE C.V.",
+        employerRfc: "ECC190605VA1",
+      },
+    });
+
+    expect(same.comparison.seen).toBe("bien");
+    expect(same.comparison.seenLine).toBe("Esto vimos: bien");
+    expect(same.comparison.nextStep).toMatch(/Guarda este resultado/);
+    expect(same.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+    expect(same.officialCheck?.overallStatus).not.toBe("vivo");
+    expect(same.comparisonLines.join(" ")).toMatch(/15 días cotizados/);
+    expect([same.headline, same.comparison.seenLine, ...same.statusLines].join(" ")).not.toMatch(/^Vivo\b|\bVivo ·/);
   });
 });

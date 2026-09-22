@@ -268,6 +268,9 @@ describe("caseContracts", () => {
     expect(analysis.estimatedData.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
     expect(String(analysis.estimatedData.workerName)).not.toMatch(/CAMREFLEX/i);
     expect(analysis.confirmedData.payrollEmployerName).toBe("EVOLUCION CREATIVA CAMREFLEX");
+    expect(analysis.confirmedData.payrollFolio).toBe("10963");
+    expect(analysis.confirmedData.payrollUuid).toBe("8C18C713-7AFA-5EA6-B323-FA208F8A3880");
+    expect(analysis.confirmedData.integratedDailySalary).toBe("331.01");
 
     const padded = textHint.replace(
       "<cfdi:Comprobante ",
@@ -284,6 +287,8 @@ describe("caseContracts", () => {
     expect(fromHint.confirmedData.payrollCurp).toBe("UIPD921125HYNCLD03");
     expect(fromHint.confirmedData.employerRfc).toBe("ECC190605VA1");
     expect(fromHint.confirmedData.workerRfc).not.toBe(fromHint.confirmedData.employerRfc);
+    expect(fromHint.confirmedData.payrollFolio).toBe("10963");
+    expect(fromHint.confirmedData.payrollUuid).toBe("8C18C713-7AFA-5EA6-B323-FA208F8A3880");
 
     const extraction = buildStructuredExtractionFallback({
       classification: classifyMexicanLaborDocument({
@@ -299,6 +304,69 @@ describe("caseContracts", () => {
     expect(extraction.fields.some((field) => field.key === "payrollCurp" && field.value === "UIPD921125HYNCLD03")).toBe(true);
     expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "UIPD9211257I0")).toBe(true);
     expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "ECC190605VA1")).toBe(false);
+  });
+
+  it("lee un NSS con espacios y no confunde el RFC del patrón con el de la persona", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo.pdf",
+      mimeType: "application/pdf",
+      textHint:
+        "Recibo de nomina. N.S.S. 84 12 921 4965. RFC emisor: ECC190605VA1. RFC receptor: UIPD9211257I0. CURP: UIPD 921125 HYNCLD 03. Periodo: 2026-05-01 al 2026-05-15. Neto a pagar: $4,725.60. Total percepciones: $4,725.60. Cuota IMSS: $88.10. Pago Infonavit: $210.00. Sueldo: $315.04.",
+    });
+
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.workerRfc).not.toBe(analysis.confirmedData.employerRfc);
+    expect(analysis.estimatedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.confirmedData.payrollPeriod).toBe("2026-05-01 al 2026-05-15");
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$4,725.60");
+    expect(analysis.confirmedData.payrollPerceptions).toBe("$4,725.60");
+    expect(analysis.confirmedData.imssWithheld).toBe("$88.10");
+    expect(analysis.confirmedData.infonavitWithheld).toBe("$210.00");
+    expect(analysis.confirmedData.payrollDailySalary).toBe("$315.04");
+  });
+
+  it("prefiere el XML y completa con el OCR los datos que el XML no trae", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint: [
+        '<cfdi:Emisor Rfc="ECC190605VA1" Nombre="PATRON REAL SA DE CV" />',
+        '<cfdi:Receptor Rfc="UIPD9211257I0" Nombre="DIDIER ANTONIO UICAB PALOMO" NumSeguridadSocial="84129214965" />',
+        "OCR NSS: 11 111 111 111 RFC emisor: XXX010101AAA RFC receptor: UIPD9211257I0 Cuota IMSS: $120.50 Sueldo: $315.04",
+      ].join(" "),
+    });
+
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.payrollNss).not.toBe("11111111111");
+    expect(analysis.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.employerRfc).not.toBe("XXX010101AAA");
+    expect(analysis.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.workerRfc).not.toBe(analysis.confirmedData.employerRfc);
+    expect(analysis.confirmedData.imssWithheld).toBe("$120.50");
+    expect(analysis.estimatedData.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
+    expect(String(analysis.estimatedData.workerName)).not.toMatch(/PATRON REAL/i);
+    expect(analysis.confirmedData.payrollDailySalary).toBe("$315.04");
+  });
+
+  it("separa el folio del folio fiscal y no usa el UUID del nombre del archivo", () => {
+    const labeled = buildPreliminaryLaborAnalysis({
+      fileName: "recibo.pdf",
+      mimeType: "application/pdf",
+      textHint:
+        "Recibo de nomina. Folio fiscal: 8C18C713-7AFA-5EA6-B323-FA208F8A3880. Folio: 10963. NSS: 84129214965.",
+    });
+    expect(labeled.confirmedData.payrollFolio).toBe("10963");
+    expect(labeled.confirmedData.payrollUuid).toBe("8C18C713-7AFA-5EA6-B323-FA208F8A3880");
+
+    const namedLikeUuid = buildPreliminaryLaborAnalysis({
+      fileName: "8c18c713-7afa-5ea6-b323-fa208f8a3880.pdf",
+      mimeType: "application/pdf",
+      textHint: "Recibo de nomina. NSS: 12345678901. Folio: 10963. Sueldo: $315.04.",
+    });
+    expect(namedLikeUuid.confirmedData.payrollFolio).toBe("10963");
+    expect(namedLikeUuid.confirmedData.payrollUuid ?? null).toBeNull();
   });
 
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {

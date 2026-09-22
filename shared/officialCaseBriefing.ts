@@ -23,6 +23,8 @@ import {
   looksLikeRealWorkerRfc,
   formatOfficialCheckDate,
   hasLiveOfficialResult,
+  humanizeOfficialHecho,
+  readInstitutePayFacts,
   honestyToOfficialStatus,
   identityFlagsFromReceiptValues,
   inferOfficialMissingFieldKeys,
@@ -35,6 +37,7 @@ import {
   officialDispatchGapDetail,
   officialSourceGapDetail,
   officialStatusToHonesty,
+  readOfficialSourceOutcomes,
   reconcileOfficialCheckWithIdentity,
   rewriteOfficialIdentityHechos,
   sourceHasRequiredOfficialIdentity,
@@ -63,6 +66,12 @@ export type OfficialBriefingFacts = {
   netAmount?: string | null;
   perceptions?: string | null;
   deductions?: string | null;
+  salary?: string | null;
+  sdi?: string | null;
+  employerName?: string | null;
+  folio?: string | null;
+  /** Folio fiscal del CFDI. En pantalla se dice «folio fiscal», no la sigla. */
+  uuid?: string | null;
   imssWithheld?: string | null;
   isrWithheld?: string | null;
   infonavitWithheld?: string | null;
@@ -96,6 +105,8 @@ export type OfficialCaseBriefing = {
   missingIdentityDetail: string | null;
   receiptLines: string[];
   comparison: ReceiptOfficialComparison;
+  /** Recibo contra lo que sí contestó una oficina. Vacío si no hay dato oficial citable. */
+  comparisonLines: string[];
   facts: OfficialBriefingFacts;
   instituteSilence: boolean;
   verdict: OfficialResultPresentation | null;
@@ -325,6 +336,12 @@ export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
   return [
     facts.period ? `periodo ${facts.period}` : null,
     facts.netAmount ? `neto ${facts.netAmount}` : null,
+    facts.perceptions ? `percepciones ${facts.perceptions}` : null,
+    facts.salary ? `sueldo ${facts.salary}` : null,
+    facts.sdi ? `salario diario integrado ${displayReceiptAmount(facts.sdi)}` : null,
+    facts.employerName ? `patrón ${facts.employerName}` : null,
+    facts.folio ? `folio ${facts.folio}` : null,
+    facts.uuid ? `folio fiscal ${facts.uuid}` : null,
     facts.imssWithheld ? `IMSS del recibo ${facts.imssWithheld}` : null,
     facts.isrWithheld ? `ISR del recibo ${facts.isrWithheld}` : null,
     facts.infonavitWithheld ? `Infonavit del recibo ${facts.infonavitWithheld}` : null,
@@ -422,6 +439,173 @@ function formatOfficialNext(nextStep: string) {
   return `Qué hacer ahora: ${nextStep}`;
 }
 
+function displayReceiptAmount(value: string) {
+  const trimmed = value.trim();
+  if (trimmed.startsWith("$")) return trimmed;
+  if (/^\d[\d,]*(?:\.\d+)?$/.test(trimmed)) return `$${trimmed}`;
+  return trimmed;
+}
+
+function moneyCents(value: string): number | null {
+  const cleaned = value.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return null;
+  const normalized =
+    cleaned.includes(",") && cleaned.includes(".")
+      ? cleaned.replace(/,/g, "")
+      : /,\d{1,2}$/.test(cleaned)
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "");
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount)) return null;
+  return Math.round(amount * 100);
+}
+
+function foldPartyName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
+}
+
+function partyNamesMatch(left: string, right: string) {
+  const a = foldPartyName(left);
+  const b = foldPartyName(right);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const short = a.length <= b.length ? a : b;
+  const long = a.length <= b.length ? b : a;
+  return short.length >= 8 && long.includes(short);
+}
+
+type ReceiptInstituteVerdict = {
+  resultado: ReciboVsOficialResultado;
+  nextStep: string;
+};
+
+function institutePayFromCheck(check?: OfficialCheckSummary | null) {
+  const attached = check?.institutePay;
+  if (attached && (attached.salary || attached.employer || attached.employerRfc)) return attached;
+  return readInstitutePayFacts(check ?? null);
+}
+
+function receiptInstituteNextStep(diffs: Array<"sueldo" | "patron">, compared: boolean): string {
+  if (!compared) return "Revisa que el recibo traiga sueldo y patrón, y vuelve a consultar.";
+  if (diffs.length === 0) return "Guarda este resultado con la fecha.";
+  if (diffs.includes("sueldo") && diffs.includes("patron")) {
+    return "Anota sueldo y patrón del recibo junto a lo que el IMSS tiene registrado, y pide aclaración por escrito.";
+  }
+  if (diffs.includes("sueldo")) {
+    return "Anota el sueldo del recibo y el que el IMSS tiene registrado, y pide aclaración por escrito a patrón o RH.";
+  }
+  return "Anota el patrón del recibo y el que el IMSS tiene registrado, y pide aclaración por escrito.";
+}
+
+/**
+ * Compara el recibo con lo que sí contestó SAT, IMSS o Infonavit.
+ * No inventa certificado, ni iguala un descuento del recibo con un saldo.
+ */
+export function buildReceiptVsConfirmedLines(params: {
+  facts: OfficialBriefingFacts;
+  officialCheck?: OfficialCheckSummary | null;
+}): { lines: string[]; verdict: ReceiptInstituteVerdict | null } {
+  const outcomes = readOfficialSourceOutcomes(params.officialCheck ?? null);
+  const lines: string[] = [];
+  const sat = outcomes.find((item) => item.source === "sat" && item.status === "vivo");
+  if (sat) {
+    const hechos = sat.hechos.map((item) => humanizeOfficialHecho(item)).filter((item) => item.length > 0);
+    const joined = hechos.join(" ");
+    const confirmedRfc = joined.toUpperCase().match(/\b([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})\b/)?.[1] ?? null;
+    const receiptRfc = params.facts.workerRfc?.trim().toUpperCase() || null;
+    const regimen = joined.match(/r[eé]gimen en SAT:\s*([^.]+)/i)?.[1]?.trim() ?? null;
+    const satName = joined.match(/raz[oó]n social en SAT:\s*([^.]+)/i)?.[1]?.trim() ?? null;
+    if (receiptRfc && confirmedRfc) {
+      lines.push(
+        receiptRfc === confirmedRfc
+          ? `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó el mismo RFC.`
+          : `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó ${confirmedRfc}.`,
+      );
+    } else if (regimen || satName) {
+      const bits = [
+        satName ? `el nombre ${satName}` : null,
+        regimen ? `el régimen ${regimen}` : null,
+      ].filter(Boolean);
+      lines.push(`El SAT contestó con ${bits.join(" y ")}.`);
+    } else if (receiptRfc && joined && !/certificado/i.test(joined)) {
+      lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó: ${joined}.`);
+    } else if (joined && !/certificado/i.test(joined)) {
+      lines.push(`El SAT confirmó: ${joined}.`);
+    } else if (receiptRfc) {
+      lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT contestó, pero no trajo un dato para comparar.`);
+    }
+  }
+
+  const institutePay = institutePayFromCheck(params.officialCheck);
+  let verdict: ReceiptInstituteVerdict | null = null;
+  if (institutePay && (institutePay.salary || institutePay.employer || institutePay.employerRfc)) {
+    const diffs: Array<"sueldo" | "patron"> = [];
+    let compared = false;
+    const detail: string[] = [];
+    const receiptMoney = params.facts.salary || params.facts.sdi || null;
+    if (institutePay.salary && receiptMoney) {
+      compared = true;
+      const officialCents = moneyCents(institutePay.salary);
+      const receiptCents = moneyCents(receiptMoney);
+      if (officialCents != null && receiptCents != null && officialCents !== receiptCents) diffs.push("sueldo");
+      detail.push(
+        `En tu recibo se lee ${displayReceiptAmount(receiptMoney)}. El IMSS tiene registrado ${displayReceiptAmount(institutePay.salary)}.`,
+      );
+    } else if (institutePay.salary) {
+      detail.push(`El IMSS tiene registrado un salario de ${displayReceiptAmount(institutePay.salary)}. En el recibo no se leyó un sueldo para comparar.`);
+    }
+
+    const receiptRfc = params.facts.employerRfc?.trim().toUpperCase() || null;
+    const receiptName = params.facts.employerName?.trim() || null;
+    const officialRfc = institutePay.employerRfc?.trim().toUpperCase() || null;
+    const officialName = institutePay.employer?.trim() || null;
+    if ((officialRfc || officialName) && (receiptRfc || receiptName)) {
+      compared = true;
+      const rfcDiffers = Boolean(officialRfc && receiptRfc && officialRfc !== receiptRfc);
+      const nameDiffers = Boolean(officialName && receiptName && !partyNamesMatch(officialName, receiptName));
+      const rfcAgrees = Boolean(officialRfc && receiptRfc && officialRfc === receiptRfc);
+      if (rfcDiffers || (nameDiffers && !rfcAgrees)) diffs.push("patron");
+      if (receiptName && officialName) {
+        detail.push(`En tu recibo el patrón es ${receiptName}. El IMSS tiene registrado a ${officialName}.`);
+      } else if (receiptRfc && officialRfc) {
+        detail.push(`En tu recibo el RFC del patrón es ${receiptRfc}. El IMSS tiene registrado el RFC ${officialRfc}.`);
+      } else if (officialName) {
+        detail.push(`El IMSS tiene registrado a ${officialName}.`);
+      } else if (officialRfc) {
+        detail.push(`El IMSS tiene registrado el RFC ${officialRfc}.`);
+      }
+    } else if (officialName || officialRfc) {
+      detail.push(
+        officialName
+          ? `El IMSS tiene registrado a ${officialName}. En el recibo no se leyó el patrón para comparar.`
+          : `El IMSS tiene registrado el RFC ${officialRfc}. En el recibo no se leyó el RFC del patrón para comparar.`,
+      );
+    }
+    if (institutePay.days) detail.push(`El reporte trae ${institutePay.days} días cotizados.`);
+
+    const resultado: ReciboVsOficialResultado = !compared ? "no_se_pudo" : diffs.length > 0 ? "hay_diferencia" : "bien";
+    const nextStep = receiptInstituteNextStep(diffs, compared);
+    if (compared) verdict = { resultado, nextStep };
+    lines.push(...detail);
+  }
+
+  const infonavit = outcomes.find((item) => item.source === "infonavit");
+  const infonavitText = (infonavit?.hechos ?? []).join(" ");
+  const housingBalance = infonavitText.match(/saldo de subcuenta de vivienda:\s*(\$\s?\d[\d,]*(?:\.\d{2})?)/i)?.[1]?.replace(/\s+/g, "") ?? null;
+  const creditBalance = infonavitText.match(/saldo del cr[eé]dito reportado:\s*(\$\s?\d[\d,]*(?:\.\d{2})?)/i)?.[1]?.replace(/\s+/g, "") ?? null;
+  const reportedBalance = housingBalance ?? creditBalance;
+  if (reportedBalance) {
+    const kind = housingBalance ? "subcuenta de vivienda" : "crédito";
+    lines.push(`Infonavit reportó un saldo de ${kind} de ${reportedBalance}. No es el descuento de tu recibo.`);
+  }
+
+  return { lines: lines.slice(0, 5), verdict };
+}
+
 export function buildOfficialCaseBriefing(params: {
   officialCheck?: OfficialCheckSummary | null;
   facts?: OfficialBriefingFacts | null;
@@ -459,12 +643,23 @@ export function buildOfficialCaseBriefing(params: {
     identity,
     { nowMs: params.nowMs, pendingSinceMs: params.pendingSinceMs, facts },
   );
-  const comparison = selectReceiptOfficialComparison({
+  const receiptComparison = buildReceiptVsConfirmedLines({ facts, officialCheck: reconciled });
+  let comparison = selectReceiptOfficialComparison({
     officialCheck: reconciled,
     facts,
     reciboVsOficial,
     hasDifferenceSignal: params.hasDifferenceSignal,
   });
+  if (receiptComparison.verdict && receiptComparison.verdict.resultado !== "no_se_pudo") {
+    const copy = buildReceiptOfficialComparisonCopy(receiptComparison.verdict.resultado);
+    comparison = {
+      seen: receiptComparison.verdict.resultado,
+      seenLine: copy.seenLine,
+      nextStep: receiptComparison.verdict.nextStep,
+      nextStepLine: formatOfficialNext(receiptComparison.verdict.nextStep),
+      hasOfficialConsulta: true,
+    };
+  }
   const verdict = buildHonestOfficialPresentation(reconciled);
   const formattedStatusLines = formatOfficialCheckStatusLines(reconciled);
   const statusLines = verdict?.sourceLines?.length
@@ -497,6 +692,7 @@ export function buildOfficialCaseBriefing(params: {
     missingIdentityDetail: officialChatIdentityGapDetail(identity, facts),
     receiptLines: listReceiptFactLines(facts),
     comparison,
+    comparisonLines: receiptComparison.lines,
     facts,
     instituteSilence: verdict?.kind === "silent",
     verdict,
@@ -578,6 +774,9 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
       "Hechos de TU consulta (únicos que puedes citar; máximo 3 por fuente):",
       hechos,
       `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStepLine}`,
+      briefing.comparisonLines.length > 0
+        ? `Recibo contra lo que sí contestó:\n${briefing.comparisonLines.map((item) => `- ${item}`).join("\n")}`
+        : "Recibo contra lo que sí contestó: aún no hay un dato oficial para poner junto al recibo.",
       CASE_ADVISOR_FALLO_RULE,
       "Montos y datos del recibo (únicos números del papel):",
       receipt,

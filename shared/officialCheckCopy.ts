@@ -201,9 +201,23 @@ export function citeableOfficialHechos(source: OfficialCheckSource, hechos: stri
     .filter((item) => item.length > 0 && !isPendingOfficialPlaceholder(source, item));
 }
 
+/** Quita siglas de proveedor. El trabajador ve el dato, no el nombre del sistema. */
+export function humanizeOfficialHecho(text: string): string {
+  return text
+    .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
+    .replace(/\brpci\b/gi, "registro del IMSS")
+    .replace(/\bapimarket\b/gi, "")
+    .replace(/\bcomplilink\b/gi, "")
+    .replace(/\bsyntage\b/gi, "")
+    .replace(/\bhelios\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([:,.])/g, "$1")
+    .trim();
+}
+
 function usefulOfficialHechos(hechos: string[]): string[] {
   return hechos
-    .map((item) => item.replace(/\s+/g, " ").trim())
+    .map((item) => humanizeOfficialHecho(item))
     .filter((item) => item.length > 0)
     .filter((item) => !/^Todavía no hay una respuesta oficial nueva de (IMSS|SAT|Infonavit)\.$/.test(item))
     .filter((item) => !looksLikeNoOfficialResponse(item))
@@ -592,7 +606,8 @@ export function rewriteOfficialIdentityHechos(
     if (source === "infonavit") return officialSourceGapDetail("infonavit");
     return pending;
   });
-  return next.length > 0 ? next : [pending];
+  const cleaned = (next.length > 0 ? next : [pending]).map((item) => humanizeOfficialHecho(item)).filter((item) => item.length > 0);
+  return cleaned.length > 0 ? cleaned : [pending];
 }
 
 export function stripContradictoryMissingIdentityCopy(
@@ -696,6 +711,140 @@ export type OfficialSourceCheck = {
   missingFields?: string[];
 };
 
+/** Salario o patrón que el retorno ya trae. No cambia el estado a Vivo. */
+export type InstitutePayFacts = {
+  salary: string | null;
+  employer: string | null;
+  employerRfc: string | null;
+  days: string | null;
+};
+
+const INSTITUTE_PAY_TEXT = /\brpci\b|salario que el IMSS tiene registrado|registro del IMSS/i;
+const STRUCTURED_SALARY_KEYS = new Set(["salariobase", "salariobasecotizacion", "sbc", "salariobasecotapor"]);
+const STRUCTURED_RFC_KEYS = new Set(["rfcpatron"]);
+const STRUCTURED_NAME_KEYS = new Set(["razonsocial", "nombrepatron"]);
+
+function compactInstituteKey(value: string) {
+  return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+function moneyFromInstituteText(text: string): string | null {
+  const match = text.match(/\$\s?\d[\d,]*(?:\.\d{2,4})?/) ?? text.match(/\b\d{1,6}(?:,\d{3})*(?:\.\d{2,4})\b/);
+  if (!match) return null;
+  const raw = match[0].replace(/\s+/g, "");
+  return raw.startsWith("$") ? raw : `$${raw}`;
+}
+
+function moneyFromUnknown(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  if (typeof value !== "string") return null;
+  return moneyFromInstituteText(value.trim());
+}
+
+function employerFromInstituteText(text: string): string | null {
+  const match = text.match(
+    /(?<!rfc del )(?:patr[oó]n|raz[oó]n\s+social|empresa)\s*(?:rpci|registro del IMSS)?\s*[:\-]\s*([^;\n]{3,160})/i,
+  );
+  if (!match?.[1]) return null;
+  const cleaned = match[1]
+    .replace(/\brpci\b/gi, "")
+    .replace(/registro del IMSS/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/[;]+$/g, "")
+    .trim();
+  if (cleaned.length < 3 || /^\$?\d/.test(cleaned)) return null;
+  if (/^rfc\b/i.test(cleaned)) return null;
+  return cleaned;
+}
+
+function rfcFromInstituteText(text: string): string | null {
+  return text.match(/rfc del patr[oó]n:\s*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i)?.[1]?.toUpperCase() ?? null;
+}
+
+function daysFromInstituteText(text: string): string | null {
+  return text.match(/d[ií]as cotizados[^:]*:\s*(\d{1,4})\b/i)?.[1] ?? null;
+}
+
+function absorbInstituteText(target: InstitutePayFacts, text: string, allowContractSentence: boolean) {
+  const marked = INSTITUTE_PAY_TEXT.test(text);
+  if (!marked && !allowContractSentence) return;
+  if (!target.salary && /salario|sueldo|\$\s?\d|\d+\.\d{2}/i.test(text)) {
+    const labeled = text.match(/salario registrado:\s*(\$?\s?\d[\d,]*(?:\.\d{2,4})?)/i)?.[1];
+    target.salary = moneyFromInstituteText(labeled ?? text);
+  }
+  if (!target.employerRfc) target.employerRfc = rfcFromInstituteText(text);
+  if (!target.employer) target.employer = employerFromInstituteText(text);
+  if (!target.days) target.days = daysFromInstituteText(text);
+}
+
+function emptyInstitutePay(): InstitutePayFacts {
+  return { salary: null, employer: null, employerRfc: null, days: null };
+}
+
+function institutePayHasFact(facts: InstitutePayFacts) {
+  return Boolean(facts.salary || facts.employer || facts.employerRfc || facts.days);
+}
+
+/**
+ * Lee salario base, RFC del patrón y razón social solo si el retorno ya los trae.
+ * Un sueldo suelto, sin ese hecho, no cuenta y no vuelve el estado Vivo.
+ */
+export function readInstitutePayFacts(value: unknown): InstitutePayFacts | null {
+  const found = emptyInstitutePay();
+  const walk = (node: unknown, depth: number, fromImss: boolean) => {
+    if (depth > 10 || node == null) return;
+    if (typeof node === "string") {
+      absorbInstituteText(found, node, false);
+      return;
+    }
+    if (typeof node !== "object") return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, depth + 1, fromImss);
+      return;
+    }
+    const record = node as Record<string, unknown>;
+    const keys = Object.keys(record);
+    const compact = new Set(keys.map(compactInstituteKey));
+    const product = String(record.sourceProduct ?? record.source_product ?? "");
+    const source = String(record.source ?? record.fuente ?? "").toLowerCase();
+    const imssNode = fromImss || source === "imss";
+    const structured =
+      /rpci/i.test(product) ||
+      ([...STRUCTURED_SALARY_KEYS].some((key) => compact.has(key)) &&
+        (imssNode || compact.has("rfcpatron") || compact.has("razonsocial") || compact.has("nombrepatron")));
+    if (structured) {
+      for (const [key, raw] of Object.entries(record)) {
+        const name = compactInstituteKey(key);
+        if (!found.salary && STRUCTURED_SALARY_KEYS.has(name)) found.salary = moneyFromUnknown(raw);
+        if (!found.employerRfc && STRUCTURED_RFC_KEYS.has(name) && typeof raw === "string") {
+          found.employerRfc = raw.trim().toUpperCase() || null;
+        }
+        if (!found.employer && STRUCTURED_NAME_KEYS.has(name) && typeof raw === "string") {
+          const cleaned = raw.trim();
+          if (cleaned.length >= 3) found.employer = cleaned;
+        }
+        if (!found.days && name === "dias" && /^\d{1,4}$/.test(String(raw).trim())) found.days = String(raw).trim();
+      }
+    }
+    const status = String(record.status ?? record.resultado ?? "").toLowerCase();
+    const honesty = String(record.honesty ?? record.estado ?? "").toLowerCase();
+    const live = status === "vivo" || status === "live" || honesty === "live";
+    if (imssNode && Array.isArray(record.hechos)) {
+      for (const item of record.hechos) {
+        if (typeof item === "string") absorbInstituteText(found, item, live || structured);
+      }
+    }
+    for (const [key, child] of Object.entries(record)) {
+      if (key === "hechos" && imssNode) continue;
+      walk(child, depth + 1, imssNode || compactInstituteKey(key) === "imss");
+    }
+  };
+  walk(value, 0, false);
+  return institutePayHasFact(found) ? found : null;
+}
+
 export type OfficialCheckSummary = {
   configured: boolean;
   consentGranted: boolean;
@@ -709,6 +858,8 @@ export type OfficialCheckSummary = {
   reciboVsOficial?: ReciboVsOficial | null;
   /** El puente rechazó la consulta por el tope de un proveedor. No es silencio de IMSS, SAT o Infonavit. */
   bridgeBlock?: "provider_cap" | null;
+  /** Presente solo cuando el retorno ya trae salario o patrón del registro. Nunca inventa el estado. */
+  institutePay?: InstitutePayFacts | null;
 };
 
 export type OfficialIdentityField = keyof OfficialIdentityFlags;

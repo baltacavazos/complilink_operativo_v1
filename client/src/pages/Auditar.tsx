@@ -1389,6 +1389,11 @@ type ConfirmedUploadResultView = {
       isrWithheld?: string | null;
       imssWithheld?: string | null;
       infonavitWithheld?: string | null;
+      salary?: string | null;
+      sdi?: string | null;
+      employerName?: string | null;
+      folio?: string | null;
+      uuid?: string | null;
     };
     explanations?: Array<{ label: string; summary: string }>;
     reviewSource?: string | null;
@@ -5603,6 +5608,19 @@ export default function Auditar() {
     }
     return undefined;
   };
+  const readStoredPayrollFact = (...keys: string[]) => {
+    const sources = [
+      lastUpload?.preliminaryAnalysis?.confirmedData,
+      lastUpload?.preliminaryAnalysis?.estimatedData,
+    ];
+    for (const key of keys) {
+      for (const source of sources) {
+        const raw = source?.[key];
+        if (typeof raw === "string" && raw.trim()) return raw.trim();
+      }
+    }
+    return undefined;
+  };
   const lastUploadFactSignal = buildPayrollFactSignal({
     documentType: lastUpload?.classification.documentType,
     confirmedData: lastUpload?.preliminaryAnalysis?.confirmedData as Record<string, unknown> | undefined,
@@ -5668,6 +5686,12 @@ export default function Auditar() {
         guestFactSignal.payment ??
         effectiveSocialSecurityValidation?.facts?.netAmount ??
         readGuestOfficialFact("payrollNetAmount", "neto"),
+      perceptions:
+        effectiveSocialSecurityValidation?.facts?.perceptions ??
+        readGuestOfficialFact("payrollPerceptions", "percepciones"),
+      salary:
+        effectiveSocialSecurityValidation?.facts?.salary ??
+        readGuestOfficialFact("socialSecurityBaseSalary", "integratedDailySalary", "payrollDailySalary"),
       imssWithheld: effectiveSocialSecurityValidation?.facts?.imssWithheld ?? readGuestOfficialFact("imssWithheld"),
       isrWithheld: effectiveSocialSecurityValidation?.facts?.isrWithheld ?? readGuestOfficialFact("isrWithheld"),
       infonavitWithheld:
@@ -5684,6 +5708,22 @@ export default function Auditar() {
         readGuestOfficialFact("payrollCurp", "curp"),
       employerRfc: officialEmployerRfc,
       workerRfc: officialWorkerRfc,
+      sdi:
+        effectiveSocialSecurityValidation?.facts?.sdi ??
+        readGuestOfficialFact("integratedDailySalary", "sdi") ??
+        readStoredPayrollFact("integratedDailySalary", "sdi"),
+      employerName:
+        effectiveSocialSecurityValidation?.facts?.employerName ??
+        readGuestOfficialFact("payrollEmployerName", "employerName") ??
+        readStoredPayrollFact("payrollEmployerName", "employerName"),
+      folio:
+        effectiveSocialSecurityValidation?.facts?.folio ??
+        readGuestOfficialFact("payrollFolio", "folio") ??
+        readStoredPayrollFact("payrollFolio", "folio"),
+      uuid:
+        effectiveSocialSecurityValidation?.facts?.uuid ??
+        readGuestOfficialFact("payrollUuid", "uuid", "folioFiscal") ??
+        readStoredPayrollFact("payrollUuid", "uuid", "folioFiscal"),
     },
     chatAnchor: officialCheckSummary?.chatAnchor ?? null,
     reciboVsOficial: officialCheckSummary?.reciboVsOficial ?? null,
@@ -8976,6 +9016,7 @@ export default function Auditar() {
             }}
             onAsk={() => openHeliosCopilot()}
             paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
+            comparisonLines={officialCaseBriefing.comparisonLines}
           />
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
@@ -9062,8 +9103,15 @@ export default function Auditar() {
                   ))}
                 </ul>
               ) : null}
+              {officialCaseBriefing.comparisonLines.length ? (
+                <ul data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                  {officialCaseBriefing.comparisonLines.map(line => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              ) : null}
               {officialCaseBriefing.hasOfficialConsulta && officialCaseBriefing.comparison.seen !== "no_se_pudo" ? (
-                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                <div className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                   <p>{officialCaseBriefing.comparison.seenLine}</p>
                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
                 </div>
@@ -9696,6 +9744,7 @@ export default function Auditar() {
                   void handleRevalidateSocialSecurity();
                 }}
                 onAsk={() => openHeliosCopilot()}
+                comparisonLines={officialCaseBriefing.comparisonLines}
               />
             ) : null}
             {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
@@ -9706,6 +9755,25 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                   {officialCheckDisplay.detail}
                 </p>
+                {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length ? (
+                  <details className="mt-3 rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
+                    {officialCaseBriefing.hechoLines.length ? (
+                      <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                        {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {officialCaseBriefing.comparisonLines.length ? (
+                      <ul data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                        {officialCaseBriefing.comparisonLines.map(line => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </details>
+                ) : null}
                 <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-slate-800">
                   <input
                     type="checkbox"
@@ -9748,6 +9816,7 @@ export default function Auditar() {
                 }}
                 onAsk={() => openHeliosCopilot()}
                 paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
+                comparisonLines={officialCaseBriefing.comparisonLines}
               />
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && !officialCheckDisplay.silence ? (
@@ -9830,8 +9899,15 @@ export default function Auditar() {
                                   ))}
                                 </ul>
                               ) : null}
+                              {officialCaseBriefing.comparisonLines.length ? (
+                                <ul data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                                  {officialCaseBriefing.comparisonLines.map(line => (
+                                    <li key={line}>{line}</li>
+                                  ))}
+                                </ul>
+                              ) : null}
                               {!officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hasOfficialConsulta && officialCaseBriefing.comparison.seen !== "no_se_pudo" ? (
-                                <div data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
+                                <div className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
                                   <p>{officialCaseBriefing.comparison.seenLine}</p>
                                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
                                 </div>

@@ -55,6 +55,8 @@ const WORKER_FIELD_LABELS: Record<string, string> = {
   payrollNss: "NSS visible en el comprobante",
   payrollCurp: "CURP visible en el comprobante",
   payrollEmployerRegistration: "Registro patronal visible",
+  payrollFolio: "Folio visible",
+  payrollUuid: "Folio fiscal visible",
   isrWithheld: "Retención de ISR visible",
   imssWithheld: "Retención de IMSS visible",
   infonavitWithheld: "Descuento Infonavit visible",

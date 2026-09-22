@@ -269,4 +269,43 @@ describe("laborFiscalSignals", () => {
     expect(summary.facts.netAmount).toBe("$12,450");
     expect(summary.facts.period).toBe("1 al 15 de mayo");
   });
+
+  it("prefiere NSS y RFC del XML y conserva el descuento que solo está en el PDF", () => {
+    const summary = summarizeLaborFiscalSignals([
+      {
+        documentType: "payroll_receipt",
+        originalName: "recibo.pdf",
+        preliminaryAnalysis: {
+          confirmedData: {
+            mimeType: "application/pdf",
+            payrollNss: "11111111111",
+            workerRfc: "XAXX010101000",
+            employerRfc: "XXX010101AAA",
+            imssWithheld: "$120.50",
+          },
+        },
+      },
+      {
+        documentType: "cfdi",
+        originalName: "recibo.xml",
+        preliminaryAnalysis: {
+          confirmedData: {
+            mimeType: "application/xml",
+            payrollNss: "84129214965",
+            workerRfc: "UIPD9211257I0",
+            employerRfc: "ECC190605VA1",
+            socialSecurityBaseSalary: "331.01",
+            workerName: "DIDIER ANTONIO UICAB PALOMO",
+          },
+        },
+      },
+    ]);
+
+    expect(summary.facts.nss).toBe("84129214965");
+    expect(summary.facts.workerRfc).toBe("UIPD9211257I0");
+    expect(summary.facts.employerRfc).toBe("ECC190605VA1");
+    expect(summary.facts.imssWithheld).toBe("$120.50");
+    expect(summary.facts.salary).toBe("331.01");
+    expect(summary.facts.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
+  });
 });

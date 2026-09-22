@@ -131,6 +131,7 @@ import {
 import {
   collectWorkerOfficialIdentity,
   fiscalIdentitiesMatch,
+  officialReceiptFromLaborFacts,
   getOfficialCheckAvailability,
   mergeWorkerOfficialIdentities,
   readOfficialCheckFromMetadata,
@@ -857,20 +858,18 @@ function assertGuestOfficialCheckRateLimit(params: { guestPreviewId: string; ip:
   auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
 }
 
-function identityFromGuestPreview(payload: {
+function guestReceiptFacts(payload: {
   fileName: string;
   classification: { documentType: string };
   preliminaryAnalysis: unknown;
   previewOpinion?: unknown;
 }) {
-  return collectWorkerOfficialIdentity(
-    extractStructuredLaborFiscalFacts({
-      documentType: payload.classification.documentType,
-      originalName: payload.fileName,
-      preliminaryAnalysis: payload.preliminaryAnalysis,
-      heliosOpinion: payload.previewOpinion,
-    }),
-  );
+  return extractStructuredLaborFiscalFacts({
+    documentType: payload.classification.documentType,
+    originalName: payload.fileName,
+    preliminaryAnalysis: payload.preliminaryAnalysis,
+    heliosOpinion: payload.previewOpinion,
+  });
 }
 
 function assertAuditarTransientDedupInactive(params: {
@@ -4022,6 +4021,7 @@ export const appRouter = router({
             collectWorkerOfficialIdentity(socialSecurityValidation.facts),
             ...documents.map((document) => officialIdentityForEngineDispatch(document)),
           ),
+          receipt: officialReceiptFromLaborFacts(socialSecurityValidation.facts),
           consentGranted: Boolean(input.consentGranted),
           now: recordedAt,
           correlationId: detail.case.traceId,
@@ -4443,8 +4443,10 @@ export const appRouter = router({
           guestPreviewId: payload.guestPreviewId,
           ip: getClientIp(ctx.req),
         });
+        const guestFacts = guestReceiptFacts(payload);
         const officialCheck = await runOfficialGovernmentCheck({
-          identity: identityFromGuestPreview(payload),
+          identity: collectWorkerOfficialIdentity(guestFacts),
+          receipt: officialReceiptFromLaborFacts(guestFacts),
           consentGranted: input.consentGranted,
           idempotencyKey: `guest-official:${payload.guestPreviewId}`,
           correlationId: payload.traceId,
