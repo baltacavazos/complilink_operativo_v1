@@ -29,6 +29,8 @@ export type LaborFiscalStructuredFacts = {
   isrWithheld: string | null;
   imssWithheld: string | null;
   infonavitWithheld: string | null;
+  salary: string | null;
+  workerName: string | null;
 };
 
 export type LaborFiscalWorkerExplanation = {
@@ -93,6 +95,8 @@ const FACT_ALIASES: Record<keyof LaborFiscalStructuredFacts, string[]> = {
   isrWithheld: ["isrwithheld", "isr", "retencionisr"],
   imssWithheld: ["imsswithheld", "cuotaimss", "retencionimss"],
   infonavitWithheld: ["infonavitwithheld", "pagoinfonavit", "retencioninfonavit"],
+  salary: ["socialsecuritybasesalary", "salariobasecotapor", "sbc"],
+  workerName: ["workername", "nombretrabajador", "nombreempleado", "nombredeltrabajador"],
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -193,7 +197,30 @@ function emptyFacts(): LaborFiscalStructuredFacts {
     isrWithheld: null,
     imssWithheld: null,
     infonavitWithheld: null,
+    salary: null,
+    workerName: null,
   };
+}
+
+const SALARY_ALIAS_PRIORITY = [
+  ["socialsecuritybasesalary", "salariobasecotapor", "sbc"],
+  ["integrateddailysalary", "salariodiariointegrado", "sdi"],
+  ["payrolldailysalary", "salariodiario", "sueldodiario", "sueldo"],
+] as const;
+
+function readAliasPriority(document: DocumentLaborFiscalInput, groups: readonly (readonly string[])[]) {
+  for (const aliases of groups) {
+    const value = readAliasedFact(document, [...aliases]);
+    if (value) return value;
+  }
+  return null;
+}
+
+function documentLooksLikeXml(document: DocumentLaborFiscalInput) {
+  const { confirmedData } = collectAnalysisRecords(document);
+  const mime = asText(confirmedData?.mimeType)?.toLowerCase() ?? "";
+  if (mime.includes("xml")) return true;
+  return (document.originalName ?? "").toLowerCase().endsWith(".xml");
 }
 
 export function mergeLaborFiscalFacts(
@@ -246,6 +273,8 @@ export function extractStructuredLaborFiscalFacts(
     isrWithheld: readAliasedFact(document, FACT_ALIASES.isrWithheld),
     imssWithheld: readAliasedFact(document, FACT_ALIASES.imssWithheld),
     infonavitWithheld: readAliasedFact(document, FACT_ALIASES.infonavitWithheld),
+    salary: readAliasPriority(document, SALARY_ALIAS_PRIORITY),
+    workerName: readAliasedFact(document, FACT_ALIASES.workerName),
   };
 }
 
@@ -447,7 +476,20 @@ export function summarizeLaborFiscalSignals(documents: DocumentLaborFiscalInput[
   const infonavitSignalsCount = snapshots.filter((item) => item.hasInfonavitSignal).length;
   const fiscalSignalsCount = snapshots.filter((item) => item.hasFiscalSignal).length;
   const preferredOpinion = pickPreferredWorkerOpinion(documents.map((document) => document.heliosOpinion));
-  const facts = mergeLaborFiscalFacts(snapshots.map((item) => item.facts));
+  const otherFacts = mergeLaborFiscalFacts(
+    documents
+      .map((document, index) => (documentLooksLikeXml(document) ? null : snapshots[index]?.facts))
+      .filter((facts): facts is LaborFiscalStructuredFacts => Boolean(facts)),
+  );
+  const xmlFacts = mergeLaborFiscalFacts(
+    documents
+      .map((document, index) => (documentLooksLikeXml(document) ? snapshots[index]?.facts : null))
+      .filter((facts): facts is LaborFiscalStructuredFacts => Boolean(facts)),
+  );
+  const facts = { ...otherFacts };
+  (Object.keys(facts) as Array<keyof LaborFiscalStructuredFacts>).forEach((key) => {
+    if (xmlFacts[key]) facts[key] = xmlFacts[key];
+  });
 
   return {
     liveImssValidation: false as const,

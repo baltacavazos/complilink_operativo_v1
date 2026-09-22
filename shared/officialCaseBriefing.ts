@@ -23,6 +23,7 @@ import {
   looksLikeRealWorkerRfc,
   formatOfficialCheckDate,
   hasLiveOfficialResult,
+  humanizeOfficialHecho,
   honestyToOfficialStatus,
   identityFlagsFromReceiptValues,
   inferOfficialMissingFieldKeys,
@@ -35,6 +36,7 @@ import {
   officialDispatchGapDetail,
   officialSourceGapDetail,
   officialStatusToHonesty,
+  readOfficialSourceOutcomes,
   reconcileOfficialCheckWithIdentity,
   rewriteOfficialIdentityHechos,
   sourceHasRequiredOfficialIdentity,
@@ -63,6 +65,7 @@ export type OfficialBriefingFacts = {
   netAmount?: string | null;
   perceptions?: string | null;
   deductions?: string | null;
+  salary?: string | null;
   imssWithheld?: string | null;
   isrWithheld?: string | null;
   infonavitWithheld?: string | null;
@@ -96,6 +99,8 @@ export type OfficialCaseBriefing = {
   missingIdentityDetail: string | null;
   receiptLines: string[];
   comparison: ReceiptOfficialComparison;
+  /** Recibo contra lo que sí contestó una oficina. Vacío si no hay dato oficial citable. */
+  comparisonLines: string[];
   facts: OfficialBriefingFacts;
   instituteSilence: boolean;
   verdict: OfficialResultPresentation | null;
@@ -325,6 +330,8 @@ export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
   return [
     facts.period ? `periodo ${facts.period}` : null,
     facts.netAmount ? `neto ${facts.netAmount}` : null,
+    facts.perceptions ? `percepciones ${facts.perceptions}` : null,
+    facts.salary ? `sueldo ${facts.salary}` : null,
     facts.imssWithheld ? `IMSS del recibo ${facts.imssWithheld}` : null,
     facts.isrWithheld ? `ISR del recibo ${facts.isrWithheld}` : null,
     facts.infonavitWithheld ? `Infonavit del recibo ${facts.infonavitWithheld}` : null,
@@ -422,6 +429,69 @@ function formatOfficialNext(nextStep: string) {
   return `Qué hacer ahora: ${nextStep}`;
 }
 
+function displayReceiptAmount(value: string) {
+  const trimmed = value.trim();
+  if (trimmed.startsWith("$")) return trimmed;
+  if (/^\d[\d,]*(?:\.\d+)?$/.test(trimmed)) return `$${trimmed}`;
+  return trimmed;
+}
+
+function amountInHecho(text: string) {
+  return text.match(/\$\s?\d[\d,]*(?:\.\d{2})?/)?.[0]?.replace(/\s+/g, "") ?? null;
+}
+
+/**
+ * Compara el recibo con lo que sí contestó SAT o IMSS.
+ * No inventa cumplimiento: solo pone lado a lado los números y RFC que ya existen.
+ */
+export function buildReceiptVsConfirmedLines(params: {
+  facts: OfficialBriefingFacts;
+  officialCheck?: OfficialCheckSummary | null;
+}): string[] {
+  const outcomes = readOfficialSourceOutcomes(params.officialCheck ?? null);
+  const lines: string[] = [];
+  const sat = outcomes.find((item) => item.source === "sat" && item.status === "vivo");
+  if (sat) {
+    const hechos = sat.hechos.map((item) => humanizeOfficialHecho(item)).filter((item) => item.length > 0);
+    const joined = hechos.join(" ");
+    const confirmedRfc = joined.toUpperCase().match(/\b([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})\b/)?.[1] ?? null;
+    const receiptRfc = params.facts.workerRfc?.trim().toUpperCase() || null;
+    if (receiptRfc && confirmedRfc) {
+      lines.push(
+        receiptRfc === confirmedRfc
+          ? `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó el mismo RFC.`
+          : `Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó ${confirmedRfc}.`,
+      );
+    } else if (receiptRfc && joined) {
+      lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó: ${joined}.`);
+    } else if (joined) {
+      lines.push(`El SAT confirmó: ${joined}.`);
+    } else if (receiptRfc) {
+      lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT contestó, pero no trajo un dato para comparar.`);
+    }
+  }
+
+  const imss = outcomes.find((item) => item.source === "imss");
+  const salaryHecho = (imss?.hechos ?? [])
+    .map((item) => humanizeOfficialHecho(item))
+    .find((item) => /salario|sueldo|registro del IMSS|\$\s?\d/i.test(item));
+  if (salaryHecho) {
+    const officialMoney = amountInHecho(salaryHecho);
+    const receiptMoney = params.facts.salary || params.facts.netAmount || params.facts.perceptions || null;
+    if (officialMoney && receiptMoney) {
+      lines.push(
+        `En tu recibo se lee ${displayReceiptAmount(receiptMoney)}. El IMSS tiene registrado ${officialMoney}.`,
+      );
+    } else if (officialMoney) {
+      lines.push(`El IMSS tiene registrado un salario de ${officialMoney}.`);
+    } else {
+      lines.push(salaryHecho.endsWith(".") ? salaryHecho : `${salaryHecho}.`);
+    }
+  }
+
+  return lines.slice(0, 3);
+}
+
 export function buildOfficialCaseBriefing(params: {
   officialCheck?: OfficialCheckSummary | null;
   facts?: OfficialBriefingFacts | null;
@@ -497,6 +567,7 @@ export function buildOfficialCaseBriefing(params: {
     missingIdentityDetail: officialChatIdentityGapDetail(identity, facts),
     receiptLines: listReceiptFactLines(facts),
     comparison,
+    comparisonLines: buildReceiptVsConfirmedLines({ facts, officialCheck: reconciled }),
     facts,
     instituteSilence: verdict?.kind === "silent",
     verdict,
@@ -578,6 +649,9 @@ export function formatOfficialCaseBriefingForPrompt(briefing: OfficialCaseBriefi
       "Hechos de TU consulta (únicos que puedes citar; máximo 3 por fuente):",
       hechos,
       `Comparación recibo vs oficial: ${briefing.comparison.seenLine} ${briefing.comparison.nextStepLine}`,
+      briefing.comparisonLines.length > 0
+        ? `Recibo contra lo que sí contestó:\n${briefing.comparisonLines.map((item) => `- ${item}`).join("\n")}`
+        : "Recibo contra lo que sí contestó: aún no hay un dato oficial para poner junto al recibo.",
       CASE_ADVISOR_FALLO_RULE,
       "Montos y datos del recibo (únicos números del papel):",
       receipt,

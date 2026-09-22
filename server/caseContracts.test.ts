@@ -301,6 +301,50 @@ describe("caseContracts", () => {
     expect(extraction.fields.some((field) => field.key === "workerRfc" && field.value === "ECC190605VA1")).toBe(false);
   });
 
+  it("lee un NSS con espacios y no confunde el RFC del patrón con el de la persona", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo.pdf",
+      mimeType: "application/pdf",
+      textHint:
+        "Recibo de nomina. N.S.S. 84 12 921 4965. RFC emisor: ECC190605VA1. RFC receptor: UIPD9211257I0. CURP: UIPD 921125 HYNCLD 03. Periodo: 2026-05-01 al 2026-05-15. Neto a pagar: $4,725.60. Total percepciones: $4,725.60. Cuota IMSS: $88.10. Pago Infonavit: $210.00. Sueldo: $315.04.",
+    });
+
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.workerRfc).not.toBe(analysis.confirmedData.employerRfc);
+    expect(analysis.estimatedData.payrollCurp).toBe("UIPD921125HYNCLD03");
+    expect(analysis.confirmedData.payrollPeriod).toBe("2026-05-01 al 2026-05-15");
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$4,725.60");
+    expect(analysis.confirmedData.payrollPerceptions).toBe("$4,725.60");
+    expect(analysis.confirmedData.imssWithheld).toBe("$88.10");
+    expect(analysis.confirmedData.infonavitWithheld).toBe("$210.00");
+    expect(analysis.confirmedData.payrollDailySalary).toBe("$315.04");
+  });
+
+  it("prefiere el XML y completa con el OCR los datos que el XML no trae", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-nomina.xml",
+      mimeType: "application/xml",
+      textHint: [
+        '<cfdi:Emisor Rfc="ECC190605VA1" Nombre="PATRON REAL SA DE CV" />',
+        '<cfdi:Receptor Rfc="UIPD9211257I0" Nombre="DIDIER ANTONIO UICAB PALOMO" NumSeguridadSocial="84129214965" />',
+        "OCR NSS: 11 111 111 111 RFC emisor: XXX010101AAA RFC receptor: UIPD9211257I0 Cuota IMSS: $120.50 Sueldo: $315.04",
+      ].join(" "),
+    });
+
+    expect(analysis.confirmedData.payrollNss).toBe("84129214965");
+    expect(analysis.confirmedData.payrollNss).not.toBe("11111111111");
+    expect(analysis.confirmedData.employerRfc).toBe("ECC190605VA1");
+    expect(analysis.confirmedData.employerRfc).not.toBe("XXX010101AAA");
+    expect(analysis.confirmedData.workerRfc).toBe("UIPD9211257I0");
+    expect(analysis.confirmedData.workerRfc).not.toBe(analysis.confirmedData.employerRfc);
+    expect(analysis.confirmedData.imssWithheld).toBe("$120.50");
+    expect(analysis.estimatedData.workerName).toBe("DIDIER ANTONIO UICAB PALOMO");
+    expect(String(analysis.estimatedData.workerName)).not.toMatch(/PATRON REAL/i);
+    expect(analysis.confirmedData.payrollDailySalary).toBe("$315.04");
+  });
+
   it("derives a Helios-first stage for the expediente and an explicit state for each document", () => {
     expect(
       getHeliosExpedienteStage({

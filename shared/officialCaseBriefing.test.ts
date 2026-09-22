@@ -814,5 +814,90 @@ describe("briefing del caso para el asesor", () => {
     expect(prompt).toMatch(/SAT: Vivo/);
     expect(prompt).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
     expect(JSON.stringify({ briefing, answer })).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
+    expect(briefing.comparisonLines.join(" ")).not.toMatch(/RPCI|ApiMarket|Syntage|CompliLink/);
+  });
+
+  it("pone el salario parcial del IMSS junto al recibo sin siglas de sistema", () => {
+    const checkedAt = "2026-09-21T12:00:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("no_se_pudo", {
+        checkedAt,
+        identity: { nss: true, curp: false, rfc: true },
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "vivo",
+            label: "Vivo",
+            detail: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
+            checkedAt,
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "live",
+            hechos: ["Salario RPCI: $450.25"],
+          },
+          {
+            source: "sat",
+            sourceLabel: "SAT",
+            status: "no_se_pudo",
+            label: "Sin respuesta",
+            detail: "503 mantenimiento",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: true },
+            honesty: "failed",
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          {
+            source: "infonavit",
+            sourceLabel: "Infonavit",
+            status: "sin_datos",
+            label: "Faltan datos",
+            detail: "Falta tu CURP en el recibo para consultar.",
+            checkedAt,
+            used: { nss: false, curp: false, rfc: false },
+            honesty: "failed",
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            missingFields: ["curp"],
+          },
+        ],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "live",
+            fecha: checkedAt,
+            hechos: ["Salario RPCI: $450.25"],
+            motivoFallo: null,
+          },
+          sat: {
+            fuente: "sat",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["SAT en mantenimiento."],
+            motivoFallo: "503 mantenimiento",
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "pending",
+            fecha: checkedAt,
+            hechos: ["Falta el CURP para consultar Infonavit."],
+            motivoFallo: null,
+            missingFields: ["curp"],
+          },
+        },
+      }),
+      facts: {
+        nss: "84129214965",
+        workerRfc: "UIPD9211257I0",
+        salary: "331.01",
+        netAmount: "$4,725.60",
+      },
+    });
+    const visible = [...briefing.comparisonLines, ...briefing.hechoLines, ...(briefing.verdict?.sourceLines ?? [])].join(" ");
+
+    expect(briefing.comparisonLines.join(" ")).toMatch(/En tu recibo se lee \$331\.01/);
+    expect(briefing.comparisonLines.join(" ")).toMatch(/El IMSS tiene registrado \$450\.25/);
+    expect(visible).not.toMatch(/RPCI|ApiMarket|Syntage|CompliLink|\bcumple\b/i);
+    expect(briefing.verdict?.sourceLines.join(" ")).toMatch(/salario que el IMSS tiene registrado/);
   });
 });

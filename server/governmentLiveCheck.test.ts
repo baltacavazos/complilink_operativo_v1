@@ -578,6 +578,59 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
   });
 
+  it("lee un NSS separado y manda patrón y sueldo junto con NSS, CURP y RFC", () => {
+    expect(extractReceiptOfficialIdentity("N.S.S. 84 12 921 4965 RFC receptor UIPD9211257I0 RFC del patrón ECC190605VA1")).toMatchObject({
+      nss: "84129214965",
+      rfc: "UIPD9211257I0",
+    });
+    expect(
+      collectWorkerOfficialIdentity({
+        employerRfc: "ECC190605VA1",
+        text: "RFC emisor ECC190605VA1 RFC receptor UIPD9211257I0",
+      }).rfc,
+    ).toBe("UIPD9211257I0");
+
+    const payload = buildOfficialCheckBridgePayload({
+      identity: {
+        nss: "84129214965",
+        curp: "UIPD921125HYNCLD03",
+        rfc: "UIPD9211257I0",
+      },
+      nowIso: "2026-09-21T15:30:00.000Z",
+      receipt: {
+        employerRfc: "ECC190605VA1",
+        salary: "331.01",
+        netAmount: "$4,725.60",
+        perceptions: "$4,725.60",
+        imssWithheld: "$88.10",
+        infonavitWithheld: "$210.00",
+        period: "2026-05-01 al 2026-05-15",
+        workerName: "DIDIER ANTONIO UICAB PALOMO",
+        employerRegistration: "R1379389106",
+      },
+    });
+
+    expect(payload.autonomousInput).toMatchObject({
+      nss: "84129214965",
+      curp: "UIPD921125HYNCLD03",
+      rfc: "UIPD9211257I0",
+      rfcPatron: "ECC190605VA1",
+      salario: "331.01",
+      neto: "$4,725.60",
+      percepciones: "$4,725.60",
+      descuentoImss: "$88.10",
+      descuentoInfonavit: "$210.00",
+      periodo: "2026-05-01 al 2026-05-15",
+      nombreTrabajador: "DIDIER ANTONIO UICAB PALOMO",
+      registroPatronal: "R1379389106",
+    });
+    expect(payload.patronRfc).toBe("ECC190605VA1");
+    expect(payload.salary).toBe("331.01");
+    expect(payload.recibo.rfc).toBe("UIPD9211257I0");
+    expect(payload.recibo.rfcPatron).toBe("ECC190605VA1");
+    expect(payload.recibo.rfc).not.toBe(payload.recibo.rfcPatron);
+  });
+
   it("consume chatAnchor + officialCheck + reciboVsOficial del contrato CLK #97", () => {
     const parsed = officialCheckFromBridgeReturn({
       payload: {

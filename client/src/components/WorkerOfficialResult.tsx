@@ -7,6 +7,7 @@ type WorkerOfficialResultProps = {
   onAsk: () => void;
   retryPending?: boolean;
   paperRead?: string | null;
+  comparisonLines?: string[];
 };
 
 /**
@@ -19,6 +20,7 @@ export function WorkerOfficialResult({
   onAsk,
   retryPending = false,
   paperRead,
+  comparisonLines = [],
 }: WorkerOfficialResultProps) {
   const lines = [
     { label: "Qué pasó", text: presentation.whatHappened },
@@ -63,6 +65,13 @@ export function WorkerOfficialResult({
         ) : null}
         {paperRead ? (
           <p className="mt-3 text-sm leading-6 text-[#161616]">{paperRead}</p>
+        ) : null}
+        {comparisonLines.length ? (
+          <ul data-testid="official-check-comparison" className="mt-3 space-y-1 text-sm leading-6 text-[#161616]">
+            {comparisonLines.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
         ) : null}
       </details>
       <Button

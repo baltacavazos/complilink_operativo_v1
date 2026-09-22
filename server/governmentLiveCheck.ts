@@ -119,7 +119,7 @@ export function normalizeNss(value: unknown): string | null {
 
 export function normalizeCurp(value: unknown): string | null {
   if (typeof value !== "string") return null;
-  const normalized = value.trim().toUpperCase();
+  const normalized = value.toUpperCase().replace(/[^A-Z0-9]/g, "");
   return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/.test(normalized) ? normalized : null;
 }
 
@@ -134,9 +134,9 @@ export function normalizeRfc(value: unknown, options?: { allowGeneric?: boolean 
 }
 
 const NSS_LABELED_RE =
-  /(?:nss|n\.?\s*s\.?\s*s\.?|num(?:ero)?\s+(?:de\s+)?seguro\s+social|seguridad\s+social|numseguridadsocial)\D{0,24}(\d{10,11})/i;
+  /(?:nss|n\.?\s*s\.?\s*s\.?|num(?:ero)?\s+(?:de\s+)?seguro\s+social|seguridad\s+social|numseguridadsocial)\D{0,16}((?:\d[\s.\-]*){10,11})/i;
 const NSS_BARE_RE = /\b(\d{11})\b/;
-const CURP_LABELED_RE = /(?:curp)\D{0,16}([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})/i;
+const CURP_LABELED_RE = /(?:curp)\D{0,16}((?:[A-Z0-9][\s.\-]*){18})/i;
 const CURP_BARE_RE = /\b([A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2})\b/;
 const RFC_TRABAJADOR_RE =
   /rfc\s+(?:del\s+)?(?:trabajador|receptor|empleado)[:\s]*([A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3})/i;
@@ -332,6 +332,37 @@ function fitBridgeField(value: string | null | undefined, min: number, max: numb
   return trimmed;
 }
 
+export type OfficialReceiptBridgeFacts = {
+  employerRfc?: string | null;
+  workerName?: string | null;
+  salary?: string | null;
+  netAmount?: string | null;
+  perceptions?: string | null;
+  imssWithheld?: string | null;
+  infonavitWithheld?: string | null;
+  period?: string | null;
+  employerRegistration?: string | null;
+};
+
+export function officialReceiptFromLaborFacts(facts: OfficialReceiptBridgeFacts | null | undefined): OfficialReceiptBridgeFacts {
+  return {
+    employerRfc: facts?.employerRfc ?? null,
+    workerName: facts?.workerName ?? null,
+    salary: facts?.salary ?? null,
+    netAmount: facts?.netAmount ?? null,
+    perceptions: facts?.perceptions ?? null,
+    imssWithheld: facts?.imssWithheld ?? null,
+    infonavitWithheld: facts?.infonavitWithheld ?? null,
+    period: facts?.period ?? null,
+    employerRegistration: facts?.employerRegistration ?? null,
+  };
+}
+
+function putReceiptField(target: Record<string, string>, key: string, value: string | null | undefined, max = 80) {
+  const fitted = fitBridgeField(value, 1, max);
+  if (fitted) target[key] = fitted;
+}
+
 export function buildOfficialCheckBridgePayload(params: {
   identity: WorkerOfficialIdentity;
   nowIso: string;
@@ -340,16 +371,41 @@ export function buildOfficialCheckBridgePayload(params: {
   traceId?: string | null;
   caseId?: string | null;
   sourceDocumentId?: string | null;
+  receipt?: OfficialReceiptBridgeFacts | null;
 }) {
   const autonomousInput: Record<string, string> = {};
   if (params.identity.nss) autonomousInput.nss = params.identity.nss;
   if (params.identity.curp) autonomousInput.curp = params.identity.curp;
   if (params.identity.rfc) autonomousInput.rfc = params.identity.rfc;
+  const receipt = officialReceiptFromLaborFacts(params.receipt);
+  putReceiptField(autonomousInput, "rfcPatron", receipt.employerRfc, 13);
+  putReceiptField(autonomousInput, "salario", receipt.salary, 40);
+  putReceiptField(autonomousInput, "neto", receipt.netAmount, 40);
+  putReceiptField(autonomousInput, "percepciones", receipt.perceptions, 40);
+  putReceiptField(autonomousInput, "descuentoImss", receipt.imssWithheld, 40);
+  putReceiptField(autonomousInput, "descuentoInfonavit", receipt.infonavitWithheld, 40);
+  putReceiptField(autonomousInput, "periodo", receipt.period, 80);
+  putReceiptField(autonomousInput, "nombreTrabajador", receipt.workerName, 120);
+  putReceiptField(autonomousInput, "registroPatronal", receipt.employerRegistration, 20);
 
   const worker = {
     nss: params.identity.nss,
     curp: params.identity.curp,
     rfc: params.identity.rfc,
+  };
+  const recibo = {
+    nss: params.identity.nss,
+    curp: params.identity.curp,
+    rfc: params.identity.rfc,
+    rfcPatron: receipt.employerRfc,
+    salario: receipt.salary,
+    neto: receipt.netAmount,
+    percepciones: receipt.perceptions,
+    descuentoImss: receipt.imssWithheld,
+    descuentoInfonavit: receipt.infonavitWithheld,
+    periodo: receipt.period,
+    nombreTrabajador: receipt.workerName,
+    registroPatronal: receipt.employerRegistration,
   };
 
   return {
@@ -365,6 +421,9 @@ export function buildOfficialCheckBridgePayload(params: {
     nss: params.identity.nss,
     curp: params.identity.curp,
     rfc: params.identity.rfc,
+    patronRfc: receipt.employerRfc,
+    salary: receipt.salary,
+    recibo,
     sourceModule: "auditapatron_official_check",
     requestedAt: params.nowIso,
     idempotencyKey: params.idempotencyKey,
@@ -969,6 +1028,7 @@ export async function runOfficialGovernmentCheck(params: {
   traceId?: string | null;
   caseId?: string | null;
   sourceDocumentId?: string | null;
+  receipt?: OfficialReceiptBridgeFacts | null;
 }): Promise<OfficialCheckSummary> {
   const env = params.env ?? process.env;
   const identity = {
@@ -1016,6 +1076,7 @@ export async function runOfficialGovernmentCheck(params: {
     traceId: params.traceId,
     caseId: params.caseId,
     sourceDocumentId: params.sourceDocumentId,
+    receipt: params.receipt,
   });
 
   const targetUrls = resolveOfficialCheckTargetUrls(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? engine.webhookUrl));

@@ -201,9 +201,23 @@ export function citeableOfficialHechos(source: OfficialCheckSource, hechos: stri
     .filter((item) => item.length > 0 && !isPendingOfficialPlaceholder(source, item));
 }
 
+/** Quita siglas de proveedor. El trabajador ve el dato, no el nombre del sistema. */
+export function humanizeOfficialHecho(text: string): string {
+  return text
+    .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
+    .replace(/\brpci\b/gi, "registro del IMSS")
+    .replace(/\bapimarket\b/gi, "")
+    .replace(/\bcomplilink\b/gi, "")
+    .replace(/\bsyntage\b/gi, "")
+    .replace(/\bhelios\b/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .replace(/\s+([:,.])/g, "$1")
+    .trim();
+}
+
 function usefulOfficialHechos(hechos: string[]): string[] {
   return hechos
-    .map((item) => item.replace(/\s+/g, " ").trim())
+    .map((item) => humanizeOfficialHecho(item))
     .filter((item) => item.length > 0)
     .filter((item) => !/^Todavía no hay una respuesta oficial nueva de (IMSS|SAT|Infonavit)\.$/.test(item))
     .filter((item) => !looksLikeNoOfficialResponse(item))
@@ -592,7 +606,8 @@ export function rewriteOfficialIdentityHechos(
     if (source === "infonavit") return officialSourceGapDetail("infonavit");
     return pending;
   });
-  return next.length > 0 ? next : [pending];
+  const cleaned = (next.length > 0 ? next : [pending]).map((item) => humanizeOfficialHecho(item)).filter((item) => item.length > 0);
+  return cleaned.length > 0 ? cleaned : [pending];
 }
 
 export function stripContradictoryMissingIdentityCopy(
