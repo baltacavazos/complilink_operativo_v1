@@ -9087,7 +9087,7 @@ export default function Auditar() {
                   {officialCheckDisplay.detail}
                 </p>
               {officialCaseBriefing.statusLines.length ? (
-                <details className="mt-2">
+                <details className="ap-result-detail mt-2">
                   <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
                   <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                     {officialCaseBriefing.statusLines.map(line => (
@@ -9858,7 +9858,7 @@ export default function Auditar() {
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
-                          <details data-compact-official-detail="true" className="mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
+                          <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-slate-200 bg-white px-3 py-3 text-left">
                             <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#161616]">
                               Ver detalle
                             </summary>

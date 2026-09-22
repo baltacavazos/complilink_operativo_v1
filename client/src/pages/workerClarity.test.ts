@@ -131,4 +131,48 @@ describe("contraste y claridad del resultado", () => {
     expect(display.silence?.sourceLines.join(" ")).toMatch(/UIPD9211257I0/);
     expect(display.headline).not.toMatch(/UIPD|Vivo|Falló/);
   });
+
+  it("deja «Ver detalle» en blanco con tinta oscura, por encima del remap de bg-white", () => {
+    expect(result).toMatch(/<details className="ap-result-detail[^"]*\bbg-white\b/);
+    expect(auditar).toContain('className="ap-result-detail mt-2"');
+    const compactDetail = auditar.slice(auditar.indexOf('data-compact-official-detail="true"'));
+    expect(compactDetail.startsWith('data-compact-official-detail="true" className="ap-result-detail')).toBe(true);
+    expect(compactDetail.slice(0, 220)).toContain("bg-white");
+
+    const rule = css.slice(css.indexOf(".ap-result-detail {"));
+    expect(rule).toContain("color-scheme: light");
+    expect(rule).toContain(
+      '.dark .audita-auditar .ap-light-surface[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)',
+    );
+    expect(rule).toContain(
+      '.dark .audita-auditar .ap-result-detail[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)',
+    );
+    expect(rule).toContain(
+      '.dark .audita-auditar .ap-result-detail :is(div, section, article)[class*="bg-white"]:not(.ap-theme-toggle-track):not(.ap-theme-toggle-thumb)',
+    );
+    expect(rule).toContain("background-color: #ffffff !important");
+    expect(rule).toContain("color: #161616 !important");
+    expect(rule).toContain(".ap-result-detail :is(p, li, label, summary, h1, h2, h3)");
+    expect(rule).not.toMatch(/:is\([^)]*button/);
+
+    expect(contrastRatio([0x16, 0x16, 0x16], [0xff, 0xff, 0xff])).toBeGreaterThan(12);
+    expect(contrastRatio([0x16, 0x16, 0x16], [0xf3, 0xfa, 0xf6])).toBeGreaterThan(12);
+    expect(contrastRatio([0x16, 0x16, 0x16], [0x0f, 0x17, 0x2a])).toBeLessThan(3);
+  });
 });
+
+function relativeLuminance(r: number, g: number, b: number) {
+  const toLinear = (channel: number) => {
+    const next = channel / 255;
+    return next <= 0.03928 ? next / 12.92 : ((next + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+function contrastRatio(left: [number, number, number], right: [number, number, number]) {
+  const first = relativeLuminance(...left);
+  const second = relativeLuminance(...right);
+  const lighter = Math.max(first, second);
+  const darker = Math.min(first, second);
+  return (lighter + 0.05) / (darker + 0.05);
+}
