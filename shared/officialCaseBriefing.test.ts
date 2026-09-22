@@ -857,10 +857,93 @@ describe("briefing del caso para el asesor", () => {
     });
     const visible = [...briefing.statusLines, ...briefing.comparisonLines].join("\n");
     expect(briefing.statusLines.some((line) => /SAT: Vivo/.test(line))).toBe(true);
-    expect(visible).toMatch(/Tipo de persona en SAT: Persona física/);
+    expect(visible).toMatch(/Tipo de persona en SAT: Persona física\./);
     expect(visible).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
     expect(visible).not.toMatch(/Razón social|EXPEDIENTE/i);
     expect(visible).not.toMatch(/\bcumple\b/i);
+    expect(visible).not.toMatch(/\.\./);
+  });
+
+  it("deja un solo punto en Persona física", () => {
+    const checkedAt = "2026-09-21T22:44:00.000Z";
+    const briefing = buildOfficialCaseBriefing({
+      officialCheck: official("no_se_pudo", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["IMSS no contestó."],
+            motivoFallo: "timeout",
+          },
+          sat: {
+            fuente: "sat",
+            estado: "live",
+            fecha: checkedAt,
+            hechos: [
+              "El SAT confirmó el RFC consultado.",
+              "Tipo de persona en SAT: Persona física..",
+            ],
+            motivoFallo: null,
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["Infonavit no contestó."],
+            motivoFallo: "timeout",
+          },
+        },
+      }),
+      facts: { workerRfc: "UIPD9211257I0" },
+    });
+    const visible = [...briefing.statusLines, ...briefing.comparisonLines].join("\n");
+    expect(visible).toMatch(/Tipo de persona en SAT: Persona física\./);
+    expect(visible).not.toMatch(/Persona física\.\./);
+    expect(visible).not.toMatch(/\.\./);
+    expect(briefing.comparisonLines.join(" ")).toBe(
+      "Tu recibo muestra el RFC UIPD9211257I0. El SAT confirmó el mismo RFC.",
+    );
+
+    const onlyType = buildOfficialCaseBriefing({
+      officialCheck: official("no_se_pudo", {
+        checkedAt,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [],
+        chatAnchor: {
+          imss: {
+            fuente: "imss",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["IMSS no contestó."],
+            motivoFallo: "timeout",
+          },
+          sat: {
+            fuente: "sat",
+            estado: "live",
+            fecha: checkedAt,
+            hechos: ["Tipo de persona en SAT: Persona física."],
+            motivoFallo: null,
+          },
+          infonavit: {
+            fuente: "infonavit",
+            estado: "failed",
+            fecha: checkedAt,
+            hechos: ["Infonavit no contestó."],
+            motivoFallo: "timeout",
+          },
+        },
+      }),
+      facts: { workerRfc: "UIPD9211257I0" },
+    });
+    expect(onlyType.comparisonLines.join(" ")).toBe(
+      "Tu recibo muestra el RFC UIPD9211257I0. El SAT confirmó: Tipo de persona en SAT: Persona física.",
+    );
+    expect(onlyType.statusLines.join(" ")).toMatch(/Persona física\./);
+    expect([...onlyType.statusLines, ...onlyType.comparisonLines].join("\n")).not.toMatch(/\.\./);
   });
 
   it("pone el salario parcial del IMSS junto al recibo sin siglas de sistema", () => {

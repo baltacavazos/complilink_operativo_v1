@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { buildInstituteSilencePresentation, resolveOfficialCheckDisplay } from "@shared/officialCheckCopy";
 
 const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
+const indexHtml = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
 const result = readFileSync(new URL("../components/WorkerOfficialResult.tsx", import.meta.url), "utf8");
 const auditar = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 const sheet = readFileSync(new URL("../components/HeliosCopilotSheet.tsx", import.meta.url), "utf8");
@@ -160,6 +161,11 @@ describe("contraste y claridad del resultado", () => {
     expect(contrastRatio([0x11, 0x11, 0x11], [0xff, 0xff, 0xff])).toBeGreaterThan(12);
     expect(contrastRatio([0x16, 0x16, 0x16], [0xf3, 0xfa, 0xf6])).toBeGreaterThan(12);
     expect(contrastRatio([0x16, 0x16, 0x16], [0x0f, 0x17, 0x2a])).toBeLessThan(3);
+  });
+
+  it("no pide Umami si la variable de analítica no es una URL", () => {
+    expect(indexHtml).not.toMatch(/src=["'][^"']*%VITE_ANALYTICS_ENDPOINT%\/umami/);
+    expect(indexHtml).toContain('if (!/^https?:\\/\\/[^\\s%]+$/i.test(endpoint)) return;');
   });
 });
 

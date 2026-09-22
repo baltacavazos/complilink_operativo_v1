@@ -42,7 +42,7 @@
       (function () {
         var endpoint = "%VITE_ANALYTICS_ENDPOINT%";
         var website = "%VITE_ANALYTICS_WEBSITE_ID%";
-        if (!/^https?:\/\//.test(endpoint)) return;
+        if (!/^https?:\/\/[^\s%]+$/i.test(endpoint)) return;
         var script = document.createElement("script");
         script.defer = true;
         script.src = endpoint.replace(/\/$/, "") + "/umami";

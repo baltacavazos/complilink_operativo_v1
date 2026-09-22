@@ -491,6 +491,12 @@ function institutePayFromCheck(check?: OfficialCheckSummary | null) {
   return readInstitutePayFacts(check ?? null);
 }
 
+/** Un solo punto al final. «Persona física.» no se vuelve «Persona física..». */
+function closeOfficialSentence(text: string): string {
+  const body = text.replace(/\s+/g, " ").trim().replace(/\.+$/g, "");
+  return body ? `${body}.` : "";
+}
+
 function receiptInstituteNextStep(diffs: Array<"sueldo" | "patron">, compared: boolean): string {
   if (!compared) return "Revisa que el recibo traiga sueldo y patrón, y vuelve a consultar.";
   if (diffs.length === 0) return "Guarda este resultado con la fecha.";
@@ -539,9 +545,9 @@ export function buildReceiptVsConfirmedLines(params: {
       ].filter(Boolean);
       lines.push(`El SAT contestó con ${bits.join(" y ")}.`);
     } else if (receiptRfc && joined && !/certificado/i.test(joined)) {
-      lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó: ${joined}.`);
+      lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT confirmó: ${closeOfficialSentence(joined)}`);
     } else if (joined && !/certificado/i.test(joined)) {
-      lines.push(`El SAT confirmó: ${joined}.`);
+      lines.push(`El SAT confirmó: ${closeOfficialSentence(joined)}`);
     } else if (receiptRfc) {
       lines.push(`Tu recibo muestra el RFC ${receiptRfc}. El SAT contestó, pero no trajo un dato para comparar.`);
     }

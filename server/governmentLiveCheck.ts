@@ -692,7 +692,7 @@ function factsFromOfficialRecord(record: Record<string, unknown> | null): string
   }
   const personType = firstRecordText(record, ["tipoPersona", "tipo_persona", "personType"]);
   if (personType && !isPlaceholderSatLegalName(personType)) {
-    picked.push(`Tipo de persona en SAT: ${personType}.`);
+    picked.push(`Tipo de persona en SAT: ${personType.replace(/\.+$/g, "")}.`);
   }
   const vigencia = typeof record.vigencia === "string" ? record.vigencia.trim() : "";
   if (vigencia) picked.push(`Vigencia: ${vigencia}`);

@@ -249,6 +249,7 @@ export function humanizeOfficialHecho(text: string): string {
     .replace(/\bhelios\b/gi, "")
     .replace(/\s{2,}/g, " ")
     .replace(/\s+([:,.])/g, "$1")
+    .replace(/\.{2,}/g, ".")
     .trim();
 }
 
