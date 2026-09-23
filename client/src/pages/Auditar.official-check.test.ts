@@ -13,7 +13,10 @@ const source = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 describe("Auditar consult UI — permiso y CTA", () => {
   it("usa la máquina de permiso y no deja Falta tu permiso encima del checkbox", () => {
     expect(source).toContain("resolveOfficialCheckDisplay");
-    expect(source).toContain("pickHonestOfficialCheck");
+    expect(source).toContain("pickPromptOfficialCheck");
+    expect(source).toContain("shouldPollOfficialCheck");
+    expect(source).toContain('data-testid="save-waiting"');
+    expect(source).toContain('data-testid="official-check-waiting"');
     expect(source).toContain("officialCheckConsent");
     expect(source).toContain('data-testid="official-check-card"');
     expect(source).toContain("documents.length > 0 && !pendingDraft && !lastUpload");

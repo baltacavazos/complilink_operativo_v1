@@ -23,8 +23,12 @@ import {
   hasLiveOfficialResult,
   reconcileOfficialCheckWithIdentity,
   honestyToOfficialStatus,
+  OFFICIAL_ALTERNATE_ROUTE_NOTE,
   pickHonestOfficialCheck,
+  pickPromptOfficialCheck,
+  readAlternateOfficialRoute,
   readChatAnchor,
+  shouldPollOfficialCheck,
   readReciboVsOficial,
   resolveOfficialCheckDisplay,
   hasUsableSatResponse,
@@ -745,5 +749,147 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(isUnusableSatLegalNameLine("Razón social en SAT: EXPEDIENTE UIPD9211257I0.")).toBe(true);
     expect(hasUsableSatResponse(["Razón social en SAT: EXPEDIENTE UIPD9211257I0."])).toBe(false);
     expect(hasUsableSatResponse(["El SAT confirmó el RFC consultado."])).toBe(true);
+  });
+});
+
+function instituteCheck(
+  source: "imss" | "sat" | "infonavit",
+  status: OfficialCheckSummary["overallStatus"],
+  hechos: string[] = [],
+): OfficialCheckSummary["checks"][number] {
+  return {
+    source,
+    sourceLabel: source === "sat" ? "SAT" : source === "imss" ? "IMSS" : "Infonavit",
+    status,
+    label: OFFICIAL_CHECK_STATUS_LABEL[status],
+    detail: OFFICIAL_CHECK_STATUS_DETAIL[status],
+    checkedAt: "2026-09-21T12:00:00.000Z",
+    used: { nss: source === "imss", curp: source === "infonavit", rfc: source === "sat" },
+    honesty: status === "vivo" ? "live" : status === "pendiente" ? "pending" : "failed",
+    hechos,
+  };
+}
+
+describe("resultado parcial sin esperar al instituto lento", () => {
+  const now = Date.parse("2026-09-21T12:00:05.000Z");
+
+  it("muestra el SAT en cuanto hay hechos y deja sin respuesta hoy en los que siguen pendientes", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: now,
+      pendingSinceMs: now,
+      summary: summary("pendiente", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+          instituteCheck("imss", "pendiente"),
+          instituteCheck("infonavit", "pendiente"),
+        ],
+      }),
+    });
+
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
+    expect(display.status).toBe("vivo");
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS — sin respuesta hoy/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Infonavit — sin respuesta hoy/);
+    expect(display.headline).not.toBe(INSTITUTE_WAITING_HEADLINE);
+    expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
+    expect(display.silence?.whatHappened).not.toMatch(/otra consulta oficial/);
+  });
+
+  it("sigue en espera si nadie ha contestado", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: now,
+      pendingSinceMs: now,
+      summary: summary("pendiente", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        checks: [
+          instituteCheck("sat", "pendiente"),
+          instituteCheck("imss", "pendiente"),
+          instituteCheck("infonavit", "pendiente"),
+        ],
+      }),
+    });
+    expect(display.status).toBe("pendiente");
+    expect(display.headline).toBe(INSTITUTE_WAITING_HEADLINE);
+    expect(display.silence).toBeFalsy();
+  });
+
+  it("no tapa los hechos ya vivos mientras sigue la consulta", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      isPending: true,
+      nowMs: now,
+      summary: summary("vivo", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+          instituteCheck("imss", "no_se_pudo"),
+          instituteCheck("infonavit", "no_se_pudo"),
+        ],
+      }),
+    });
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
+    expect(display.buttonLabel).toBe(OFFICIAL_CHECK_LOADING_LABEL);
+    expect(display.silence?.sourceLines.join(" ")).toMatch(/UIPD9211257I0/);
+  });
+
+  it("menciona la otra consulta oficial solo si el retorno trae la señal", () => {
+    expect(readAlternateOfficialRoute({ failover: true })).toBe(true);
+    expect(readAlternateOfficialRoute({ result: { sat: { providerRole: "backup" } } })).toBe(true);
+    expect(readAlternateOfficialRoute({ providerId: 30001, provider: "syntage" })).toBe(false);
+    expect(readAlternateOfficialRoute({ sat: { rfc: "UIPD9211257I0" } })).toBe(false);
+
+    const withSignal = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: now,
+      summary: summary("vivo", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        alternateRoute: true,
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+          instituteCheck("imss", "no_se_pudo"),
+          instituteCheck("infonavit", "no_se_pudo"),
+        ],
+      }),
+    });
+    expect(withSignal.detail).toContain(OFFICIAL_ALTERNATE_ROUTE_NOTE);
+    expect(withSignal.silence?.whatHappened).toContain("otra consulta oficial");
+    expect(withSignal.detail).not.toMatch(/\bbackup\b|failover|proveedor|Helios/i);
+
+    const withoutSignal = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: now,
+      summary: summary("vivo", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"])],
+      }),
+    });
+    expect(withoutSignal.detail).not.toContain("otra consulta oficial");
+  });
+
+  it("al refrescar, prefiere la consulta que ya tiene hechos vivos", () => {
+    const olderSilence = summary("no_se_pudo", { checkedAt: "2026-09-21T12:00:00.000Z" });
+    const newerSat = summary("vivo", {
+      checkedAt: "2026-09-21T12:00:20.000Z",
+      checks: [instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"])],
+    });
+    expect(pickPromptOfficialCheck({ consentGranted: true, candidates: [olderSilence, newerSat] })?.overallStatus).toBe("vivo");
+    expect(
+      shouldPollOfficialCheck(
+        summary("vivo", {
+          checkedAt: "2026-09-21T12:00:00.000Z",
+          checks: [instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]), instituteCheck("imss", "pendiente")],
+        }),
+      ),
+    ).toBe(true);
+    expect(shouldPollOfficialCheck(summary("no_se_pudo", { checkedAt: "2026-09-21T12:00:00.000Z", bridgeBlock: "provider_cap" }))).toBe(false);
   });
 });

@@ -1368,6 +1368,52 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(display.headline).not.toMatch(/acceso gratuito|proveedor/i);
   });
 
+  it("marca otra consulta oficial solo cuando el retorno trae la señal", () => {
+    const withSignal = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        failover: true,
+        result: {
+          sat: {
+            honesty: "live",
+            resultado: "vivo",
+            rfc: "UIPD9211257I0",
+            hechos: ["RFC: UIPD9211257I0"],
+            providerRole: "backup",
+          },
+          imss: { honesty: "pending", resultado: "pendiente", hechos: ["Todavía no hay una respuesta oficial nueva de IMSS."] },
+          infonavit: { honesty: "failed", resultado: "no_se_pudo", workerReason: "Infonavit no contestó.", hechos: ["Infonavit no contestó."] },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+    expect(withSignal?.alternateRoute).toBe(true);
+    expect(withSignal?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: withSignal,
+      identity: { nss: true, curp: true, rfc: true },
+      nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
+    });
+    expect(display.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
+    expect(display.detail).toMatch(/otra consulta oficial/);
+    expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
+
+    const plain = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        providerId: 30001,
+        result: {
+          sat: { honesty: "live", resultado: "vivo", rfc: "UIPD9211257I0", hechos: ["RFC: UIPD9211257I0"] },
+        },
+      },
+      identity: { nss: false, curp: false, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+    expect(plain?.alternateRoute).toBeUndefined();
+  });
+
   it("no lee APIMARKET_* ni las trata como configuración", async () => {
     const fetchImpl = vi.fn();
     const result = await runOfficialGovernmentCheck({

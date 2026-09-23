@@ -53,9 +53,10 @@ import {
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
-  pickHonestOfficialCheck,
+  pickPromptOfficialCheck,
   resolveBriefingWorkerRfc,
   resolveOfficialCheckDisplay,
+  shouldPollOfficialCheck,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -386,9 +387,9 @@ export function getHumanUploadProgressMessages(
       ];
     case "save":
       return [
-        "Guardando tu archivo...",
-        "Asegurando tu información...",
-        "Listo para tu revisión...",
+        "Guardando tu revisión...",
+        "En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí.",
+        "Si tardan, es de esas oficinas.",
       ];
     default:
       return [];
@@ -5013,6 +5014,14 @@ export default function Auditar() {
     {
       enabled: auth.isAuthenticated && Boolean(caseDetailInput),
       refetchOnWindowFocus: false,
+      refetchInterval: (query) => {
+        if (revalidateSocialSecurityMutation.isPending || guestOfficialCheckMutation.isPending) {
+          return 4_000;
+        }
+        return shouldPollOfficialCheck(query.state.data?.socialSecurityValidation?.officialCheck)
+          ? 4_000
+          : false;
+      },
     }
   );
   const commerceStatusQuery = trpc.commerce.status.useQuery(undefined, {
@@ -5591,7 +5600,7 @@ export default function Auditar() {
     lastUpload?.socialSecurityValidation ?? null;
   const effectiveSocialSecurityValidation =
     uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
-  const officialCheckSummary = pickHonestOfficialCheck({
+  const officialCheckSummary = pickPromptOfficialCheck({
     consentGranted: officialCheckConsent,
     candidates: [
       officialCheckResult,
@@ -6385,6 +6394,9 @@ export default function Auditar() {
       : officialCaseBriefing.missingIdentityDetail,
   });
   const officialCheckHeadline = officialCheckDisplay.headline;
+  const officialWaitLeads =
+    !officialCheckDisplay.silence &&
+    (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
   const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
       plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -9049,8 +9061,10 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
-            {officialCheckDisplay.status === "pendiente" ? null : (
+            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
+            {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
+              <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
+            ) : (
               <>
                 <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
                 <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
@@ -9375,6 +9389,23 @@ export default function Auditar() {
         </div>
         </>
         )}
+
+        {confirmDraftMutation.isPending ? (
+          <section
+            data-testid="save-waiting"
+            className="ap-light-surface mt-4 rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4 text-left text-[#161616]"
+          >
+            <p className="text-lg font-semibold tracking-[-0.03em] text-[#111111]">Guardando tu revisión</p>
+            <p className="mt-2 text-sm leading-6 text-[#161616]">
+              En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí. Si tardan, es de esas oficinas.
+            </p>
+            <div className="mt-3 space-y-2" aria-hidden="true">
+              <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#e6e6e6]" />
+              <div className="h-3 w-3/5 animate-pulse rounded-full bg-[#e6e6e6]" />
+              <div className="h-3 w-2/5 animate-pulse rounded-full bg-[#e6e6e6]" />
+            </div>
+          </section>
+        ) : null}
 
         {privacySignal.ready ? null : (
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
@@ -9833,7 +9864,7 @@ export default function Auditar() {
                       </div>
                     )}
                     <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
-                      {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
+                      {officialCheckDisplay.silence || officialWaitLeads ? null : (
                         <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
                       )}
                       <div className="min-w-0">
@@ -9842,17 +9873,29 @@ export default function Auditar() {
                           className={`font-semibold tracking-[-0.05em] text-[#111111] ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
                         >
                           {shouldCompactPostUploadExperience
-                            ? officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente"
+                            ? officialCheckDisplay.silence || officialWaitLeads
                               ? officialCheckDisplay.headline
                               : lastUploadFiveSecond.seenLine
                             : lastUploadVerdict.label}
                         </h2>
-                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
+                        {shouldCompactPostUploadExperience && officialWaitLeads ? (
+                          <div className="mt-3">
+                            <p className="text-base leading-6 text-[#161616]">{officialCheckDisplay.detail}</p>
+                            {officialCheckDisplay.status === "consultando" ? (
+                              <div data-testid="official-check-waiting" className="mt-3 space-y-2" aria-hidden="true">
+                                <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#e6e6e6]" />
+                                <div className="h-3 w-3/5 animate-pulse rounded-full bg-[#e6e6e6]" />
+                                <div className="h-3 w-2/5 animate-pulse rounded-full bg-[#e6e6e6]" />
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">
                             {lastUploadFiveSecond.nextStepLine}
                           </p>
                         ) : null}
-                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
+                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p className="mt-2 text-sm leading-6 text-[#1a1a1a]">
                             {lastUploadFiveSecond.disclaimer}
                           </p>
@@ -12142,7 +12185,7 @@ export default function Auditar() {
                         onClick={() => void handleConfirmDraft()}
                       >
                         {confirmDraftMutation.isPending
-                          ? "Guardando documento..."
+                          ? "Guardando tu revisión..."
                           : acceptLegalPackageMutation.isPending
                             ? "Registrando autorización..."
                             : confirmPrimaryActionLabel}
@@ -16316,7 +16359,7 @@ Reforzar con otro documento
           >
             {isProcessingDocument
               ? pendingDraft
-                ? "Guardando..."
+                ? "Guardando tu revisión..."
                 : autoAdvanceFlash
                   ? "Preparando revisión..."
                   : "Procesando..."
