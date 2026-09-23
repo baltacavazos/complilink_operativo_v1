@@ -454,9 +454,9 @@ function unansweredOfficialSourceLine(item: OfficialSourceOutcome): string {
   return silentOfficialSourceLine(label, item.maintenance);
 }
 
-function appendAlternateRouteNote(text: string, enabled: boolean): string {
-  if (!enabled || text.includes(OFFICIAL_ALTERNATE_ROUTE_NOTE)) return text;
-  return `${text} ${OFFICIAL_ALTERNATE_ROUTE_NOTE}`.replace(/\s+/g, " ").trim();
+function appendAlternateRouteNote(text: string, note: string, enabled: boolean): string {
+  if (!enabled || text.includes(note)) return text;
+  return `${text} ${note}`.replace(/\s+/g, " ").trim();
 }
 
 function withAlternateRouteCopy(
@@ -466,7 +466,7 @@ function withAlternateRouteCopy(
   if (!enabled) return presentation;
   return {
     ...presentation,
-    meaning: appendAlternateRouteNote(presentation.meaning, true),
+    meaning: appendAlternateRouteNote(presentation.meaning, OFFICIAL_ALTERNATE_ROUTE_NOTE, true),
   };
 }
 
@@ -481,6 +481,17 @@ function fillUnansweredWhileLive(outcomes: OfficialSourceOutcome[]): OfficialSou
     checkedAt: null,
   }));
   return missing.length > 0 ? [...outcomes, ...missing] : outcomes;
+}
+
+function withAlternateRouteEmptyCopy<T extends InstituteSilencePresentation>(
+  presentation: T,
+  enabled: boolean,
+): T {
+  if (!enabled) return presentation;
+  return {
+    ...presentation,
+    meaning: appendAlternateRouteNote(presentation.meaning, OFFICIAL_ALTERNATE_ROUTE_EMPTY_NOTE, true),
+  };
 }
 
 function alternateRouteContributedFacts(
@@ -586,7 +597,10 @@ export function buildHonestOfficialPresentation(
     silent.length > 0
       ? silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance))
       : base.sourceLines;
-  return { ...base, kind: "silent", sourceLines: lines };
+  return withAlternateRouteEmptyCopy(
+    { ...base, kind: "silent", sourceLines: lines },
+    summary.alternateRoute === true,
+  );
 }
 
 /** Qué pasó cuando la oficina no contestó. Sin culpar a la app y sin la palabra Falló. */
@@ -1923,6 +1937,9 @@ export const OFFICIAL_CHECK_LOADING_DETAIL =
   "Estamos preguntando a IMSS, SAT e Infonavit. Si hoy no contestan, te lo diremos.";
 /** Solo si el retorno dice que otra consulta oficial aportó el dato. Nunca dice «backup». */
 export const OFFICIAL_ALTERNATE_ROUTE_NOTE = "Consultamos otra vía oficial.";
+/** Otra vía se intentó y no dejó un dato usable. Nunca dice «backup». */
+export const OFFICIAL_ALTERNATE_ROUTE_EMPTY_NOTE =
+  "Consultamos otra vía oficial y hoy no hubo datos útiles.";
 export const OFFICIAL_CHECK_READY_HEADLINE = "Consulta IMSS y SAT";
 export const OFFICIAL_CHECK_READY_DETAIL =
   "Con tu permiso preguntamos a IMSS y SAT. Si hoy no contestan, te lo diremos. No inventamos que tu patrón cumple.";
@@ -2001,6 +2018,14 @@ function compactRouteKey(value: string) {
   return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
 }
 
+function secondaryAttemptPresent(raw: unknown): boolean {
+  if (raw === true || raw === "true" || raw === 1) return true;
+  if (typeof raw === "number") return raw > 0;
+  if (Array.isArray(raw)) return raw.length > 0;
+  if (raw && typeof raw === "object") return Object.keys(raw as Record<string, unknown>).length > 0;
+  return false;
+}
+
 /**
  * Señal explícita de que otra consulta oficial aportó el dato.
  * Sin esa señal, no se dice nada. No inventa un proveedor.
@@ -2015,6 +2040,7 @@ export function readAlternateOfficialRoute(value: unknown): boolean {
     for (const [key, raw] of Object.entries(record)) {
       const name = compactRouteKey(key);
       if (ALTERNATE_ROUTE_TRUE_KEYS.has(name) && (raw === true || raw === "true" || raw === 1)) return true;
+      if ((name === "backupjumps" || name === "backupjump") && secondaryAttemptPresent(raw)) return true;
       if (ALTERNATE_ROUTE_ROLE_KEYS.has(name) && ALTERNATE_ROUTE_ROLE_VALUES.has(String(raw ?? "").trim().toLowerCase())) {
         return true;
       }
@@ -2151,7 +2177,14 @@ export function resolveOfficialCheckDisplay(params: {
       if (presentation?.kind === "silent" || honest.overallStatus === "no_se_pudo") {
         const fromChecks = listFailedOfficialSources(honest.checks);
         const fromAnchor = listFailedOfficialSourcesFromAnchor(honest.chatAnchor);
-        const silence = presentation ?? buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
+        const silenceBase = presentation ?? buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
+        const silence = presentation?.kind === "silent"
+          ? silenceBase
+          : withAlternateRouteEmptyCopy(
+              silenceBase,
+              honest.alternateRoute === true &&
+                !readOfficialSourceOutcomes(honest).some((item) => item.status === "vivo" && item.hechos.length > 0),
+            );
         return {
           headline: silence.verdict,
           detail: `${silence.whatHappened} ${silence.meaning} ${silence.nextStep}`,

@@ -872,6 +872,9 @@ describe("resultado parcial sin esperar al instituto lento", () => {
   it("menciona la otra consulta oficial solo si el retorno trae la señal", () => {
     expect(readAlternateOfficialRoute({ failover: true })).toBe(true);
     expect(readAlternateOfficialRoute({ result: { sat: { providerRole: "backup" } } })).toBe(true);
+    expect(readAlternateOfficialRoute({ backupJumps: [{ from: "principal", to: "secundaria" }] })).toBe(true);
+    expect(readAlternateOfficialRoute({ helios: { backupJumps: [1] } })).toBe(true);
+    expect(readAlternateOfficialRoute({ backupJumps: [] })).toBe(false);
     expect(readAlternateOfficialRoute({ providerId: 30001, provider: "syntage" })).toBe(false);
     expect(readAlternateOfficialRoute({ sat: { rfc: "UIPD9211257I0" } })).toBe(false);
 
@@ -890,6 +893,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       }),
     });
     expect(withSignal.silence?.meaning).toContain("Consultamos otra vía oficial.");
+    expect(withSignal.silence?.meaning).not.toContain("no hubo datos útiles");
     expect(withSignal.detail).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
     expect(withSignal.silence?.verdict).not.toContain("Consultamos otra vía oficial");
     expect(withSignal.silence?.whatHappened).not.toContain("Consultamos otra vía oficial");
@@ -922,8 +926,11 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       }),
     });
     expect(signalWithoutFacts.headline).toBe("Hoy no se pudo comprobar. No prueba que te engañen.");
-    expect(JSON.stringify(signalWithoutFacts)).not.toContain("Consultamos otra vía oficial");
-    expect(JSON.stringify(signalWithoutFacts)).not.toMatch(/\bbackup\b|failover|Syntage/i);
+    expect(signalWithoutFacts.silence?.whatHappened).toBe("Hoy IMSS, SAT e Infonavit no contestaron. No es un error de tu recibo.");
+    expect(signalWithoutFacts.silence?.meaning).toContain("Consultamos otra vía oficial y hoy no hubo datos útiles.");
+    expect(signalWithoutFacts.headline).not.toContain("Consultamos otra vía oficial");
+    expect(signalWithoutFacts.silence?.whatHappened).not.toContain("Consultamos otra vía oficial");
+    expect(JSON.stringify(signalWithoutFacts)).not.toMatch(/\bbackup\b|failover|Syntage|\bcumple\b/i);
   });
 
   it("al refrescar, prefiere la consulta que ya tiene hechos vivos", () => {

@@ -1399,7 +1399,8 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.detail).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
-    expect(display.silence?.meaning).toMatch(/Consultamos otra vía oficial/);
+    expect(display.silence?.meaning).toContain("Consultamos otra vía oficial.");
+    expect(display.silence?.meaning).not.toContain("no hubo datos útiles");
     expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
     expect(display.silence?.meaning).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
 
@@ -1415,6 +1416,31 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nowIso: "2026-09-21T12:00:00.000Z",
     });
     expect(plain?.alternateRoute).toBeUndefined();
+
+    const triedEmpty = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        backupJumps: [{ from: "principal", to: "secundaria" }],
+        result: {
+          imss: { honesty: "failed", resultado: "no_se_pudo", workerReason: "IMSS no contestó.", hechos: ["IMSS no contestó."] },
+          sat: { honesty: "failed", resultado: "no_se_pudo", workerReason: "SAT no contestó.", hechos: ["SAT no contestó."] },
+          infonavit: { honesty: "failed", resultado: "no_se_pudo", workerReason: "Infonavit no contestó.", hechos: ["Infonavit no contestó."] },
+        },
+      },
+      identity: { nss: true, curp: true, rfc: true },
+      nowIso: "2026-09-21T12:00:00.000Z",
+    });
+    expect(triedEmpty?.alternateRoute).toBe(true);
+    const emptyDisplay = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: triedEmpty,
+      identity: { nss: true, curp: true, rfc: true },
+      nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
+    });
+    expect(emptyDisplay.silence?.whatHappened).toMatch(/Hoy IMSS, SAT e Infonavit no contestaron/);
+    expect(emptyDisplay.silence?.meaning).toContain("Consultamos otra vía oficial y hoy no hubo datos útiles.");
+    expect(emptyDisplay.headline).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
+    expect(JSON.stringify(emptyDisplay)).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
   });
 
   it("no lee APIMARKET_* ni las trata como configuración", async () => {
