@@ -2004,7 +2004,8 @@ export function buildOfficialCheckHeadline(
   return date ? `${label} · ${date}` : label;
 }
 
-export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando...";
+export const OFFICIAL_CONSULTING_HEADLINE = "Ya leímos el recibo. Consultando oficinas…";
+export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando oficinas…";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
   "Estamos preguntando a IMSS, SAT e Infonavit. Si hoy no contestan, te lo diremos.";
 /** Solo si el retorno dice que otra consulta oficial aportó el dato. Nunca dice «backup». */
@@ -2187,7 +2188,7 @@ export function resolveOfficialCheckDisplay(params: {
       };
     }
     return {
-      headline: INSTITUTE_WAITING_HEADLINE,
+      headline: OFFICIAL_CONSULTING_HEADLINE,
       detail: INSTITUTE_WAITING_DETAIL,
       buttonLabel: OFFICIAL_CHECK_LOADING_LABEL,
       status: "consultando",

@@ -58,6 +58,7 @@ import {
   INSTITUTE_SILENCE_RETRY,
   INSTITUTE_WAITING_DETAIL,
   INSTITUTE_WAITING_HEADLINE,
+  OFFICIAL_CONSULTING_HEADLINE,
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
@@ -167,7 +168,7 @@ Histórico comparable por periodo
 Qué significa jurídicamente
 Diferencia estimada
 Calculadora visual rápida
-Así se ve el cruce de montos del periodo activo
+Así se ven los dos montos del mismo periodo
 Semáforo laboral
 Mensajes listos para actuar
 Mensaje diplomático para RH
@@ -2176,8 +2177,8 @@ const analysisFieldLabels: Record<string, string> = {
   processingProfile: "Nivel de revisión",
   structuredExtractionReady: "Puede leer detalles",
   benefitEstimationReady: "Puede estimar prestaciones",
-  employerRfc: "RFC visible",
-  workerRfc: "RFC de la persona trabajadora",
+  employerRfc: "RFC del patrón (registro fiscal)",
+  workerRfc: "Tu RFC (registro fiscal)",
   period: "Periodo visible",
   apparentAmount: "Monto visible",
   apparentEffectiveDate: "Fecha visible",
@@ -2189,7 +2190,7 @@ const analysisFieldLabels: Record<string, string> = {
   payrollNetAmount: "Pago neto visible",
   payrollPerceptions: "Total de percepciones",
   payrollDeductions: "Total de deducciones",
-  payrollNss: "NSS visible en el comprobante",
+  payrollNss: "NSS (tu número del IMSS)",
   payrollEmployerRegistration: "Registro patronal visible",
   isrWithheld: "Retención de ISR visible",
   imssWithheld: "Retención de IMSS visible",
@@ -2199,8 +2200,8 @@ const analysisFieldLabels: Record<string, string> = {
 };
 
 const missingAnalysisFieldLabels: Record<string, string> = {
-  rfctrabajador: "RFC de la persona trabajadora",
-  rfcworker: "RFC de la persona trabajadora",
+  rfctrabajador: "Tu RFC (registro fiscal)",
+  rfcworker: "Tu RFC (registro fiscal)",
   infonavit: "descuento o referencia de Infonavit",
   imss: "retención o cuota de IMSS",
   isr: "retención de ISR",
@@ -2509,7 +2510,7 @@ export function buildPayrollFactSignal(params: {
   const infonavitWithheld = readValue(["infonavitwithheld", "pagoinfonavit", "retencioninfonavit"]);
   const deductionsAreZero = Boolean(deductions && /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions));
   const imss = nss || employerRegistration
-    ? `IMSS: ${nss ? `se ve el NSS ${nss}` : "no se alcanzó a leer el NSS"}${nss && employerRegistration ? " y " : ""}${employerRegistration ? `se ve el registro patronal ${employerRegistration}` : ""}. Por lo que aparece en estos papeles, parece que hay referencia a aseguramiento ante IMSS. Esto sale de tus papeles; no es una constancia oficial.`
+    ? `IMSS: ${nss ? `se ve el NSS ${nss}` : "no se alcanzó a leer el NSS"}${nss && employerRegistration ? " y " : ""}${employerRegistration ? `se ve el registro patronal ${employerRegistration}` : ""}. Por lo que aparece en estos papeles, parece que hay referencia a aseguramiento ante IMSS. Esto sale de tus papeles; no es una respuesta del IMSS.`
     : "IMSS: en este archivo no se alcanzaron a leer NSS ni registro patronal. Si los necesitas revisar, busca una constancia de semanas cotizadas o un recibo donde esos datos sean visibles.";
   const listedRetentions = [
     isrWithheld ? `ISR ${isrWithheld}` : null,
@@ -3726,7 +3727,7 @@ function getContextualNextDocumentPreset(
       headline: "Sigue con tu nómina para darle contexto al comprobante fiscal (CFDI)",
       intro:
         "Si ya tienes el comprobante fiscal (CFDI), sumar recibos de nómina ayuda a aterrizar pagos, descuentos y periodos con más claridad.",
-      reasonTitle: "Lo que ganas con este cruce",
+      reasonTitle: "Lo que ganas con esta comparación",
       reasonBody:
         "La nómina suele ser la pieza que mejor explica lo fiscal frente a lo laboral y te deja una lectura más entendible del caso.",
       coverage:
@@ -3755,7 +3756,7 @@ function getContextualNextDocumentPreset(
       headline: "Sigue con tu nómina para comparar mejor tu dato de IMSS",
       intro:
         "Como ya tienes un soporte IMSS, los recibos de nómina ayudan a revisar si pagos, periodos y seguridad social cuentan la misma historia.",
-      reasonTitle: "Por qué conviene hacer este cruce ahora",
+      reasonTitle: "Por qué conviene comparar ahora",
       reasonBody:
         "Ese contraste suele aclarar rápido diferencias útiles y darle más sustento a la lectura del expediente.",
       coverage:
@@ -6708,7 +6709,7 @@ export default function Auditar() {
           action: "Revisa esto primero",
           headline: "Faltan dos montos para comparar",
           supportingText:
-            "En cuanto tengas nómina y CFDI del mismo periodo, te diremos si el cruce se ve sano, si requiere atención o si ya amerita revisión prioritaria.",
+            "En cuanto tengas el recibo y el comprobante fiscal (CFDI) del mismo periodo, te diremos si los montos se parecen, si conviene revisarlos o si ya hay una diferencia grande.",
           progress: 34,
           toneClasses: "border-amber-200 bg-amber-50 text-amber-950",
           barClasses: "bg-amber-500",
@@ -6730,7 +6731,7 @@ export default function Auditar() {
             barClasses: "bg-slate-400",
             checklist: [
               "Comparar periodo y concepto del mismo mes.",
-              "Guardar este cruce como referencia sana.",
+              "Guardar esta comparación como referencia.",
               "Subir otro mes si quieres ver tendencia.",
             ],
           }
@@ -6778,7 +6779,7 @@ export default function Auditar() {
                 checklist: [
                   "Verificar si ambos archivos son del mismo periodo.",
                   "Revisar si hubo ajuste o pago extraordinario.",
-                  "Guardar este cruce para no perder contexto.",
+                  "Guardar esta comparación para no perder el contexto.",
                 ],
               };
   const quickScriptPeriodLabel =
@@ -9038,7 +9039,7 @@ export default function Auditar() {
                 "Periodo 2026-05-01 al 2026-05-15. IMSS $120.50. ISR $310.00. Infonavit $80.00. NSS 12345678901.",
                 "",
                 "Lo que falta",
-                "No se ve una constancia oficial de alta, vigencia o semanas cotizadas.",
+                "En este papel no aparece el alta, la vigencia ni las semanas del IMSS.",
                 "",
                 "Siguiente paso",
                 "Cruza el descuento IMSS $120.50 y el NSS 12345678901 del periodo 2026-05-01 al 2026-05-15 con tu siguiente recibo o con un papel IMSS que tú subas; eso no confirma el alta oficial. Cruza también la retención ISR $310.00 con el CFDI o con lo que te depositaron del mismo periodo. Cruza también el descuento Infonavit $80.00 con tu aviso de retención o estado de crédito, si lo tienes. Verlo en el recibo no prueba el entero.",
@@ -9545,7 +9546,7 @@ export default function Auditar() {
             {renderReceiptArrival()}
             {receiptAck !== "failed" ? (
               <p className="mt-3 text-sm leading-6 text-[#161616]">
-                {INSTITUTE_WAITING_HEADLINE} {INSTITUTE_WAITING_DETAIL}
+                {OFFICIAL_CONSULTING_HEADLINE} {INSTITUTE_WAITING_DETAIL}
               </p>
             ) : null}
           </section>
@@ -11595,7 +11596,7 @@ export default function Auditar() {
                   </div>
                 </div>
 
-                {pendingDraft ? (
+                {pendingDraft && !freePlanDocumentLimitNotice ? (
                   <div className="mt-3 hidden rounded-[1.1rem] border border-sky-200 bg-sky-50 p-3 text-sm text-sky-950 sm:block">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-semibold">Vista previa lista</p>
@@ -11658,7 +11659,7 @@ export default function Auditar() {
                 <span>Si algo falla, puedes reintentar.</span>
               </div>
 
-              {pendingDraft ? (
+              {pendingDraft && !freePlanDocumentLimitNotice ? (
                 <>
                   {confirmDraftMutation.isPending ? null : (
                     <div className="ap-light-surface mt-4 rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4">
@@ -12005,7 +12006,7 @@ export default function Auditar() {
 
                       <div className="rounded-[1.2rem] border border-white/80 bg-white p-4">
                         <p className="text-sm font-semibold tracking-tight text-slate-400">
-                          Lectura estructurada
+                          Lo que leímos del papel
                         </p>
                         <h4 className="mt-2 font-semibold text-slate-950">
                           {displayPreviewStructuredExtraction?.headline ??
@@ -12396,22 +12397,21 @@ export default function Auditar() {
                 >
                   <p className="font-semibold">{FREE_TIER_EXHAUSTED_COPY}</p>
                   <p className="mt-2 text-teal-900">{FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE}</p>
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                  <div className="mt-4 flex flex-col items-start gap-2">
                     <Button
                       type="button"
-                      className="h-11 rounded-full bg-teal-700 px-5 text-white hover:bg-teal-800"
+                      className="h-12 w-full rounded-full bg-teal-700 px-5 text-base font-semibold text-white hover:bg-teal-800 sm:max-w-md"
                       onClick={openFreePlanDocumentLimitPlans}
                     >
                       Ver Audita Esencial
                     </Button>
-                    <Button
+                    <button
                       type="button"
-                      variant="ghost"
-                      className="text-teal-950 hover:bg-teal-100"
+                      className="text-sm font-medium text-teal-900 underline decoration-teal-300 underline-offset-4 hover:text-teal-950"
                       onClick={() => setSubmitError(null)}
                     >
                       Cerrar mensaje
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ) : submitError ? (
@@ -12839,7 +12839,7 @@ export default function Auditar() {
                                   Compara tu nómina contra tu comprobante fiscal (CFDI)
                                 </p>
                                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                                  Tomamos los montos visibles del expediente para preparar un cruce por periodo y dejamos la diferencia en una capa determinística y auditable. Puedes ajustar los montos manualmente si quieres validar otro escenario.
+                                  Comparamos el monto de tu recibo con el del comprobante fiscal (CFDI), que es el comprobante fiscal de tu sueldo. Puedes corregir los montos si no se leyeron bien.
                                 </p>
                                 {quickCalculatorPeriodHint ? (
                                   <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-900">
@@ -12940,7 +12940,7 @@ export default function Auditar() {
                               </label>
                               <label className="rounded-[0.95rem] border border-white/90 bg-white p-3">
                                 <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                  Monto en CFDI
+                                  Monto en el comprobante fiscal (CFDI)
                                 </span>
                                 <input
                                   type="number"
@@ -12980,7 +12980,7 @@ export default function Auditar() {
                                     Calculadora visual rápida
                                   </p>
                                   <p className="mt-2 text-base font-semibold text-slate-950">
-                                    Así se ve el cruce de montos del periodo activo
+                                    Así se ven los dos montos del mismo periodo
                                   </p>
                                 </div>
                                 {quickCalculatorPeriodHint ? (
@@ -13001,7 +13001,7 @@ export default function Auditar() {
                                 </div>
                                 <div>
                                   <div className="flex items-center justify-between gap-3 text-sm font-medium text-slate-700">
-                                    <span>CFDI</span>
+                                    <span>Comprobante fiscal</span>
                                     <span>{quickCfdiNumeric !== null ? formatQuickCalculatorAmount(quickCfdiNumeric) : "Pendiente"}</span>
                                   </div>
                                   <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
@@ -14832,7 +14832,7 @@ Reforzar con otro documento
                             </p>
                             <p className="mt-1">
                               {warmVisibleNamingCopy(heliosDocument?.summary) ??
-                                "Tu asesor laboral tomará este documento como una unidad laboral visible para futuras lecturas, cruces y recomendaciones dentro del expediente."}
+                                "Tu asesor laboral tomará este documento como una pieza de tu caso para lecturas y recomendaciones posteriores."}
                             </p>
                           </div>
 

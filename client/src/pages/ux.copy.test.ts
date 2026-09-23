@@ -174,7 +174,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Qué significa jurídicamente');
     expect(source).toContain('Diferencia estimada');
     expect(source).toContain('Calculadora visual rápida');
-    expect(source).toContain('Así se ve el cruce de montos del periodo activo');
+    expect(source).toContain('Así se ven los dos montos del mismo periodo');
     expect(source).toContain('Semáforo laboral');
     expect(source).toContain('Mensajes listos para actuar');
     expect(source).toContain('Mensaje diplomático para RH');

@@ -136,7 +136,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       summary: summary("sin_permiso"),
     });
 
-    expect(display.headline).toBe(INSTITUTE_WAITING_HEADLINE);
+    expect(display.headline).toBe("Ya leímos el recibo. Consultando oficinas…");
     expect(display.buttonLabel).toBe(OFFICIAL_CHECK_LOADING_LABEL);
     expect(display.status).toBe("consultando");
     expect(display.headline).not.toMatch(/Falta tu permiso/i);
