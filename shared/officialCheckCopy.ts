@@ -42,7 +42,8 @@ export const POCKET_PARTIAL_TWO_OFFICES =
 export const POCKET_PARTIAL_SAT_DETAIL =
   "El SAT ya contestó; IMSS e Infonavit aún no.";
 export const EMPTY_OFFICIAL_CONSULT_VERDICT = "Hoy no pudimos consultar.";
-export const EMPTY_OFFICIAL_CONSULT_LIMIT = "No prueba cumplimiento.";
+export const EMPTY_OFFICIAL_CONSULT_LIMIT =
+  "No prueba que tu patrón cumpla ni que falle.";
 export const POCKET_BIEN_VERDICT =
   "Por lo que vimos hoy, lo que comparamos cuadra con tu recibo.";
 export const POCKET_BIEN_LIMIT =
@@ -208,18 +209,27 @@ export function pocketOfficeStatusLine(live: OfficialCheckSource[], missing: Off
   return `${liveBit} ${verb}; ${falta} ${missingNames}.`;
 }
 
-export function emptyOfficialConsultPresentation(): OfficialResultPresentation {
+export function emptyOfficialConsultPresentation(
+  sources?: OfficialCheckSource[] | null,
+): OfficialResultPresentation {
+  const unique = uniqueOfficialSources(sources);
+  const who = unique.length > 0
+    ? joinSpanishLabels(unique.map((source) => OFFICIAL_SOURCE_LABEL[source]))
+    : "";
+  const verdict = who ? `Hoy no pudimos consultar ${who}.` : EMPTY_OFFICIAL_CONSULT_VERDICT;
   return {
     kind: "silent",
-    verdict: EMPTY_OFFICIAL_CONSULT_VERDICT,
+    verdict,
     whatHappened: EMPTY_OFFICIAL_CONSULT_LIMIT,
     meaning: "Sin un dato de la consulta, no podemos decir que tu patrón esté bien registrado.",
     nextStep: "Prueba de nuevo mañana.",
     smallPrint: EMPTY_OFFICIAL_CONSULT_LIMIT,
     retryLabel: INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
-    sourceLines: [],
-    chat: `${EMPTY_OFFICIAL_CONSULT_VERDICT} ${EMPTY_OFFICIAL_CONSULT_LIMIT}`,
+    sourceLines: unique.map(
+      (source) => `Hoy no pudimos consultar ${OFFICIAL_SOURCE_LABEL[source]}. ${EMPTY_OFFICIAL_CONSULT_LIMIT}`,
+    ),
+    chat: `${verdict} ${EMPTY_OFFICIAL_CONSULT_LIMIT}`,
     opener: WORKER_RESULT_CHAT_OPENER,
   };
 }
@@ -249,7 +259,7 @@ function isPendingOfficialPlaceholder(source: OfficialCheckSource, text?: string
 }
 
 const SAT_LEGAL_NAME_LINE_RE =
-  /^(?:sat:\s*)?(?:raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?|nombre\s+del\s+rfc\s+consultado(?:\s+en\s+el\s+sat)?|nombre\s+en\s+el\s+sat|legal\s*name|nombre\s+fiscal)\s*[:：-]\s*(.*)$/i;
+  /^(?:sat:\s*)?(?:raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?|nombre\s+del\s+rfc\s+consultado(?:\s+en\s+el\s+sat)?|nombre\s+en\s+el\s+sat(?:\s*\(rfc\s+consultado\))?|legal\s*name|nombre\s+fiscal)\s*[:：-]\s*(.*)$/i;
 const SAT_VAULT_NAME_RE =
   /^(?:expediente|exp\.?|b[oó]veda|vault|placeholder|nombre\s+del\s+expediente)\b/i;
 const SAT_EMPTY_NAME_RE =
@@ -297,7 +307,7 @@ export function humanizeOfficialHecho(text: string): string {
   return text
     .replace(
       /raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?\s*[:：-]\s*/gi,
-      "Nombre en el SAT: ",
+      "Nombre en el SAT (RFC consultado): ",
     )
     .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
     .replace(/\brpci\b/gi, "registro del IMSS")
@@ -585,7 +595,16 @@ function settledOfficialPresentation(
       opener: WORKER_RESULT_CHAT_OPENER,
     };
   }
-  if (fine) {
+  const everyOfficeHasFacts = OFFICIAL_CHECK_SOURCES.every((source) =>
+    outcomes.some((item) => item.source === source && item.status === "vivo" && item.hechos.length > 0),
+  );
+  if (fine && !everyOfficeHasFacts) {
+    const missing = OFFICIAL_CHECK_SOURCES.filter(
+      (source) => !outcomes.some((item) => item.source === source && item.status === "vivo" && item.hechos.length > 0),
+    );
+    return emptyOfficialConsultPresentation(missing);
+  }
+  if (fine && everyOfficeHasFacts) {
     return {
       kind: "settled",
       verdict: POCKET_BIEN_VERDICT,
@@ -2195,6 +2214,23 @@ export function resolveOfficialCheckDisplay(params: {
       ? null
       : reconciled;
 
+  if (
+    consentGranted &&
+    honest?.bridgeBlock === "provider_cap" &&
+    !hasCiteableOfficialFacts(readOfficialSourceOutcomes(honest))
+  ) {
+    const named = readOfficialSourceOutcomes(honest).map((item) => item.source);
+    const silence = emptyOfficialConsultPresentation(named.length > 0 ? named : [...OFFICIAL_CHECK_SOURCES]);
+    return {
+      headline: silence.verdict,
+      detail: `${silence.verdict} ${silence.whatHappened}`,
+      buttonLabel: silence.retryLabel,
+      status: "no_se_pudo",
+      showPermissionCopy: false,
+      silence,
+    };
+  }
+
   if (consentGranted) {
     if (honest && !isPermissionBlockedStatus(honest.overallStatus)) {
       if (honest.overallStatus === "sin_datos" && canDispatch) {
@@ -2255,7 +2291,9 @@ export function resolveOfficialCheckDisplay(params: {
             pendingSinceMs: params.pendingSinceMs,
           });
         if (eternalEmptyWait) {
-          const silence = emptyOfficialConsultPresentation();
+          const silence = emptyOfficialConsultPresentation(
+            outcomes.filter((item) => item.hechos.length === 0).map((item) => item.source),
+          );
           return {
             headline: silence.verdict,
             detail: `${silence.verdict} ${silence.whatHappened}`,
@@ -2280,7 +2318,11 @@ export function resolveOfficialCheckDisplay(params: {
         honest.overallStatus === "vivo" &&
         !hasCiteableOfficialFacts(readOfficialSourceOutcomes(honest))
       ) {
-        const silence = emptyOfficialConsultPresentation();
+        const silence = emptyOfficialConsultPresentation(
+          readOfficialSourceOutcomes(honest)
+            .filter((item) => item.hechos.length === 0)
+            .map((item) => item.source),
+        );
         return {
           headline: silence.verdict,
           detail: `${silence.verdict} ${silence.whatHappened}`,

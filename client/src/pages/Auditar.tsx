@@ -29,6 +29,7 @@ import {
   formatDossierProgressCopy,
   formatWorkerVisibleAccountName,
   humanizeDossierProgressLabel,
+  isSmokeOrInternalAccountHandle,
   humanizeWorkerVisibleScalar,
   isWorkerInternalFieldValue,
   isWorkerSystemFieldLabel,
@@ -2718,11 +2719,11 @@ function getDocumentReadiness(confidence?: number | null) {
 function getDocumentVerdictState(confidence?: number | null) {
   if ((confidence ?? 0) >= 85) {
     return {
-      label: "Bien detectado",
-      shortLabel: "Bien",
-      classes: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-      panelClasses: "border-emerald-100 bg-emerald-50",
-      description: "Ya funciona como un resultado fuerte dentro del expediente.",
+      label: "Lectura clara",
+      shortLabel: "Clara",
+      classes: "bg-slate-200 text-slate-800 border border-slate-300",
+      panelClasses: "border-slate-200 bg-slate-50",
+      description: "El papel se lee. Eso no prueba que tu patrón cumpla ni que falle.",
     } as const;
   }
 
@@ -2797,9 +2798,9 @@ function getHeliosRiskCopy(value?: string | null) {
       } as const;
     case "low":
       return {
-        label: "Bien",
-        action: "Todo en orden por ahora",
-        classes: "bg-emerald-100 text-emerald-800",
+        label: "Sin alerta en el papel",
+        action: "No prueba que tu patrón cumpla ni que falle.",
+        classes: "bg-slate-200 text-slate-800",
       } as const;
     default:
       return {
@@ -2841,12 +2842,12 @@ function getHeliosSeverityNarrative(value?: string | null) {
       } as const;
     case "low":
       return {
-        eyebrow: "Bien",
-        title: "Por ahora no vemos un resultado grave",
+        eyebrow: "Lectura del papel",
+        title: "En este papel no vemos una alerta fuerte",
         description:
-          "Con lo que la inteligencia laboral ya revisó, no aparece una alerta fuerte; aun así puede hacer falta un documento más para darte más certeza.",
-        panelClasses: "border-emerald-200 bg-emerald-50",
-        eyebrowClasses: "text-emerald-800",
+          "Eso no prueba que tu patrón cumpla ni que falle. Hace falta lo que contesten IMSS, SAT o Infonavit.",
+        panelClasses: "border-slate-200 bg-slate-50",
+        eyebrowClasses: "text-slate-700",
       } as const;
     default:
       return {
@@ -5052,6 +5053,13 @@ export default function Auditar() {
     enabled: auth.isAuthenticated,
     refetchOnWindowFocus: false,
   });
+  const sessionAccount = (auth.realUser ?? auth.user) as { name?: string | null; email?: string | null } | null | undefined;
+  const exampleCaseVisible = [
+    sessionAccount?.name,
+    sessionAccount?.email,
+    caseDetailQuery.data?.case.employeeName,
+    caseDetailQuery.data?.case.title,
+  ].some((value) => isSmokeOrInternalAccountHandle(value) || /\b(?:tester|demo)\b/i.test(String(value ?? "")));
   const remoteAdvisorMemory = caseDetailQuery.data?.advisorMemory;
   const heliosCopilotHistoryStorageKey = useMemo(() => {
     if (!auditarPersistenceKey || !currentCaseScopeKey) {
@@ -6696,9 +6704,9 @@ export default function Auditar() {
   const quickLaborHealthSignal =
     quickDifferenceAmount === null || quickDifferenceAbsolute === null
       ? {
-          badge: "Semáforo en preparación",
+          badge: "Faltan montos",
           action: "Revisa esto primero",
-          headline: "Faltan dos montos para medir el riesgo visible",
+          headline: "Faltan dos montos para comparar",
           supportingText:
             "En cuanto tengas nómina y CFDI del mismo periodo, te diremos si el cruce se ve sano, si requiere atención o si ya amerita revisión prioritaria.",
           progress: 34,
@@ -6712,14 +6720,14 @@ export default function Auditar() {
         }
       : quickDifferenceAmount === 0
         ? {
-            badge: "Semáforo laboral: bajo",
-            action: "Todo en orden por ahora",
+            badge: "Montos iguales en el papel",
+            action: "No prueba que tu patrón cumpla ni que falle.",
             headline: "Por monto no se ve una diferencia inmediata",
             supportingText:
-              "La lectura inicial luce estable en este periodo, pero todavía conviene revisar conceptos, fechas y deducciones para cerrar bien la comparación.",
+              "Los montos de este periodo coinciden en el papel. Eso no prueba que tu patrón cumpla ni que falle.",
             progress: 82,
-            toneClasses: "border-emerald-200 bg-emerald-50 text-emerald-950",
-            barClasses: "bg-emerald-500",
+            toneClasses: "border-slate-200 bg-slate-50 text-slate-950",
+            barClasses: "bg-slate-400",
             checklist: [
               "Comparar periodo y concepto del mismo mes.",
               "Guardar este cruce como referencia sana.",
@@ -9432,6 +9440,11 @@ export default function Auditar() {
         </div>
       ) : null}
       <div className="container mx-auto max-w-6xl">
+        {exampleCaseVisible ? (
+          <p className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-950">
+            Ejemplo. Estos papeles no son tu caso.
+          </p>
+        ) : null}
         {officialCheckDisplay.silence ? null : (
         <>
         <MobileAppShell
@@ -13657,12 +13670,12 @@ Reforzar con otro documento
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs font-semibold">
                           <span
-                            className={`rounded-full px-3 py-1 ${getHeliosRiskCopy(lastHeliosOpinion.riskLevel).classes}`}
+                            className={`rounded-full px-3 py-1 ${lastUploadRiskCopy.classes}`}
                           >
-                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).label}
+                            {lastUploadRiskCopy.label}
                           </span>
                           <span className="rounded-full bg-white px-3 py-1 text-slate-700">
-                            {getHeliosRiskCopy(lastHeliosOpinion.riskLevel).action}
+                            {lastUploadRiskCopy.action}
                           </span>
                           {typeof lastHeliosOpinion.confidenceScore === "number" &&
                           lastHeliosOpinion.confidenceScore > 0 ? (

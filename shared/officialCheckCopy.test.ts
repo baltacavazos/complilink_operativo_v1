@@ -161,7 +161,33 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     });
 
     expect(vivo.headline).toBe("Hoy no pudimos consultar.");
-    expect(vivo.detail).toContain("No prueba cumplimiento.");
+    expect(vivo.detail).toContain("No prueba que tu patrón cumpla ni que falle.");
+
+    const capped = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: summary("pendiente", {
+        bridgeBlock: "provider_cap",
+        checkedAt: "2026-09-21T20:39:00.000Z",
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt: "2026-09-21T20:39:00.000Z",
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+          },
+        ],
+      }),
+      nowMs: Date.parse("2026-09-21T20:39:00.000Z"),
+    });
+    expect(capped.headline).toBe("Hoy no pudimos consultar IMSS.");
+    expect(capped.detail).toContain("No prueba que tu patrón cumpla ni que falle.");
+    expect(capped.status).toBe("no_se_pudo");
+    expect(capped.headline).not.toMatch(/Pendiente|Bien|Vivo|cumple/i);
     expect(vivo.headline).not.toMatch(/\bVivo\b|certificado|RFC confirmado/);
     expect(vivo.status).toBe("no_se_pudo");
     expect(vivo.status).not.toBe("vivo");
@@ -208,7 +234,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       expect(display.buttonLabel).not.toMatch(/\bcumple\b/i);
       expect(display.detail).not.toMatch(/Helios|CompliLink|HMAC/i);
     }
-    expect(vivo.detail).toMatch(/No prueba cumplimiento/);
+    expect(vivo.detail).toMatch(/No prueba que tu patrón cumpla ni que falle/);
     expect(vivo.detail).not.toMatch(/\bcumple\b/i);
   });
 
@@ -739,7 +765,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       "El SAT confirmó el RFC consultado.",
       "Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.",
     ]);
-    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre en el SAT: EVOLUCION CREATIVA CAMREFLEX/);
+    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre en el SAT \(RFC consultado\): EVOLUCION CREATIVA CAMREFLEX/);
 
     for (const hook of [
       ["Razón social en SAT: EXPEDIENTE UIPD9211257I0."],
