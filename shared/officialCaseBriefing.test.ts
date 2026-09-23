@@ -120,7 +120,8 @@ describe("briefing del caso para el asesor", () => {
       }),
     );
     expect(withConsulta.clearAnswer).toContain(RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine);
-    expect(withConsulta.clearAnswer).toMatch(/IMSS: Vivo · 21\/09\/2026/);
+    expect(withConsulta.clearAnswer).toMatch(/IMSS contestó · 21\/09\/2026/);
+    expect(withConsulta.clearAnswer).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(withConsulta.clearAnswer).toMatch(/\$8,420/);
     expect(withConsulta.clearAnswer).toMatch(/no significa que tu patrón esté al corriente/i);
     expect(withConsulta.clearAnswer).not.toMatch(/Helios|CompliLink|HMAC/i);
@@ -371,7 +372,7 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.headline).not.toMatch(/Faltan datos/i);
     expect(briefing.statusLines.some((line) => /IMSS: Faltan datos/.test(line))).toBe(false);
     expect(briefing.statusLines.some((line) => /IMSS y SAT: Faltan datos/.test(line))).toBe(false);
-    expect(briefing.statusLines.some((line) => /IMSS — esperando hoy|Hoy IMSS no contestó. No es un error de tu recibo.|IMSS: Vivo/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /IMSS — esperando hoy|Hoy IMSS no contestó. No es un error de tu recibo.|IMSS contestó/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /SAT: Faltan datos/.test(line))).toBe(true);
     expect(briefing.statusLines.some((line) => /Infonavit: Faltan datos/.test(line))).toBe(true);
     expect(briefing.missingIdentity).toEqual(["CURP", "RFC"]);
@@ -383,7 +384,7 @@ describe("briefing del caso para el asesor", () => {
     expect(prompt).not.toMatch(/IMSS y SAT: Faltan datos/);
     expect(prompt).toMatch(/NSS en recibo: 12345678901/);
     expect(prompt).toMatch(/PROHIBIDO escribir «Falta tu NSS»/);
-    expect(prompt).toMatch(/IMSS — esperando hoy|Hoy IMSS no contestó. No es un error de tu recibo.|IMSS: Vivo/);
+    expect(prompt).toMatch(/IMSS — esperando hoy|Hoy IMSS no contestó. No es un error de tu recibo.|IMSS contestó/);
     expect(prompt).toMatch(/SAT: Faltan datos|RFC real|RFC del recibo es genérico/);
     expect(JSON.stringify(briefing)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
@@ -463,7 +464,7 @@ describe("briefing del caso para el asesor", () => {
     });
     const prompt = formatOfficialCaseBriefingForPrompt(briefing);
     expect(prompt).toContain(CASE_ADVISOR_RULE);
-    expect(prompt).toMatch(/IMSS: Vivo · 21\/09\/2026/);
+    expect(prompt).toMatch(/IMSS contestó · 21\/09\/2026/);
     expect(prompt).toMatch(/Alta vigente: sí/);
     expect(prompt).toMatch(/Esto vimos: hay diferencia/);
     expect(prompt).toMatch(/Qué hacer ahora:/);
@@ -805,13 +806,15 @@ describe("briefing del caso para el asesor", () => {
     expect(briefing.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(briefing.instituteSilence).toBe(false);
     expect(briefing.verdict?.kind).toBe("mixed");
-    expect(briefing.statusLines.some((line) => /SAT: Vivo/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /SAT contestó/.test(line))).toBe(true);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(briefing.statusLines.some((line) => line.includes("UIPD9211257I0"))).toBe(true);
     expect(briefing.statusLines.some((line) => line === "Hoy IMSS no contestó. No es un error de tu recibo. Está en mantenimiento.")).toBe(true);
     expect(briefing.statusLines.join(" ")).not.toMatch(/SAT — sin respuesta|Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(answer.clearAnswer).toMatch(/UIPD9211257I0/);
     expect(answer.clearAnswer).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
-    expect(prompt).toMatch(/SAT: Vivo/);
+    expect(prompt).toMatch(/SAT contestó/);
+    expect(prompt).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(prompt).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(JSON.stringify({ briefing, answer })).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
     expect(briefing.comparisonLines.join(" ")).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
@@ -856,7 +859,8 @@ describe("briefing del caso para el asesor", () => {
       facts: { workerRfc: "UIPD9211257I0", employerRfc: "ECC190605VA1" },
     });
     const visible = [...briefing.statusLines, ...briefing.comparisonLines].join("\n");
-    expect(briefing.statusLines.some((line) => /SAT: Vivo/.test(line))).toBe(true);
+    expect(briefing.statusLines.some((line) => /SAT contestó/.test(line))).toBe(true);
+    expect(briefing.statusLines.join(" ")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(visible).toMatch(/Tipo de persona en SAT: Persona física\./);
     expect(visible).toMatch(/Tu recibo muestra el RFC UIPD9211257I0\. El SAT confirmó el mismo RFC/);
     expect(visible).not.toMatch(/Razón social|EXPEDIENTE/i);

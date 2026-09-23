@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
+import { INSTITUTE_SILENCE_SMALL, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
 
 type WorkerOfficialResultProps = {
@@ -58,6 +58,9 @@ export function WorkerOfficialResult({
       <p data-testid="official-check-detail" className="sr-only">
         {lines.map((line) => `${line.label}. ${line.text}`).join(" ")}
       </p>
+      {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
+        <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
+      ) : null}
       <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {presentation.sourceLines.length ? (

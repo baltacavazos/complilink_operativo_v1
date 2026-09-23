@@ -135,7 +135,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
 
     expect(result.overallStatus).toBe("vivo");
-    expect(result.overallLabel).toBe("Vivo");
+    expect(result.overallLabel).toBe("Contestó");
     expect(result.overallDetail).toMatch(/no significa que tu patrón cumple/i);
     expect(buildOfficialCheckHeadline(result)).toBe("Hoy no se pudo comprobar. No prueba que te engañen.");
     expect(buildOfficialCheckHeadline(result)).not.toMatch(/\bVivo\b|certificado|RFC confirmado/);
@@ -328,7 +328,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
 
     expect(vivo?.checks.map((item) => `${item.sourceLabel}: ${item.label}`)).toEqual([
-      "IMSS: Vivo",
+      "IMSS: Contestó",
       "SAT: Pendiente",
       "Infonavit: Sin respuesta",
     ]);
@@ -980,7 +980,8 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.headline).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy IMSS no contestó. No es un error de tu recibo. Está en mantenimiento./);
     expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
@@ -1099,7 +1100,8 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.headline).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy IMSS no contestó. No es un error de tu recibo./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/en mantenimiento/);

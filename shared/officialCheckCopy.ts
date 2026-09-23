@@ -21,7 +21,7 @@ export const OFFICIAL_CHECK_CONSENT =
   "Autorizo que pregunten a IMSS y SAT con los datos de mi recibo, solo para ver la respuesta de hoy.";
 
 export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = {
-  vivo: "Vivo",
+  vivo: "Contestó",
   pendiente: "Pendiente",
   no_se_pudo: "Sin respuesta",
   no_configurado: "Aún no configurado",
@@ -38,7 +38,9 @@ export const OFFICIAL_SOURCE_LABEL: Record<OfficialCheckSource, string> = {
 export const POCKET_PARTIAL_VERDICT =
   "Aún no te podemos decir si tu patrón te tiene bien registrado.";
 export const POCKET_BIEN_VERDICT =
-  "Por lo que vimos hoy, tu patrón aparece en orden en lo consultado.";
+  "Por lo que vimos hoy, lo que comparamos cuadra con tu recibo.";
+export const POCKET_BIEN_LIMIT =
+  "Esto es solo lo consultado hoy. No cubre todo tu trabajo.";
 export const POCKET_OJO_VERDICT =
   "Hay algo que no cuadra con lo que dice tu recibo. Conviene revisar.";
 export const POCKET_COULDNT_VERDICT =
@@ -351,7 +353,7 @@ export function readOfficialSourceOutcomes(
   );
 }
 
-export const LABOR_REVIEW_READY = "Ya revisamos lo laboral.";
+export const LABOR_REVIEW_READY = "Ya preguntamos a IMSS e Infonavit.";
 export const RECEIPT_RECEIVED_ACK = "Recibo recibido ✓";
 export const RECEIPT_VALIDATION_CORRECTION = "No pudimos validar el recibo. Intenta de nuevo.";
 
@@ -410,6 +412,12 @@ function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSource
   return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. Prueba mañana, o pregúntame qué implica para tu pago.`;
 }
 
+/** Línea de detalle. Nunca dice «Vivo». */
+export function answeredOfficialSourceLine(label: string, checkedAt?: string | null): string {
+  const date = formatOfficialCheckDate(checkedAt);
+  return date ? `${label} contestó · ${date}` : `${label} contestó`;
+}
+
 function mixedOfficialPresentation(
   live: OfficialSourceOutcome[],
   silent: OfficialSourceOutcome[],
@@ -419,9 +427,7 @@ function mixedOfficialPresentation(
   const sourceLines = [
     ...live.flatMap((item) => {
       const label = OFFICIAL_SOURCE_LABEL[item.source];
-      const date = formatOfficialCheckDate(item.checkedAt);
-      const head = date ? `${label}: Vivo · ${date}` : `${label}: Vivo`;
-      return [head, ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
+      return [answeredOfficialSourceLine(label, item.checkedAt), ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
     }),
     ...silent.map((item) => unansweredOfficialSourceLine(item)),
   ];
@@ -513,9 +519,7 @@ function settledOfficialPresentation(
   const fine = resultado === "bien";
   const sourceLines = outcomes.flatMap((item) => {
     const label = OFFICIAL_SOURCE_LABEL[item.source];
-    const date = formatOfficialCheckDate(item.checkedAt);
-    const head = date ? `${label}: Vivo · ${date}` : `${label}: Vivo`;
-    return [head, ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
+    return [answeredOfficialSourceLine(label, item.checkedAt), ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
   });
   if (watch) {
     return {
@@ -536,10 +540,10 @@ function settledOfficialPresentation(
     return {
       kind: "settled",
       verdict: POCKET_BIEN_VERDICT,
-      whatHappened: "IMSS, SAT e Infonavit contestaron y lo comparado cuadra con tu recibo.",
-      meaning: "Esto es lo que se vio hoy en lo consultado. No dice que todo tu trabajo esté en orden.",
+      whatHappened: "IMSS, SAT e Infonavit contestaron.",
+      meaning: "Lo que comparamos cuadra con tu recibo.",
       nextStep: "Puedes guardar este resultado.",
-      smallPrint: INSTITUTE_SILENCE_SMALL,
+      smallPrint: POCKET_BIEN_LIMIT,
       retryLabel: POCKET_CTA_SAVE,
       askLabel: POCKET_ASK,
       sourceLines,

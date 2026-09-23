@@ -361,7 +361,8 @@ describe("workerChatUx grounding", () => {
     expect(answer).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(lied).toMatch(/UIPD9211257I0/);
     expect(lied).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
-    expect(instructions).toMatch(/SAT: Vivo|UIPD9211257I0/);
+    expect(instructions).toMatch(/SAT contestó|UIPD9211257I0/);
+    expect(instructions).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(instructions).not.toMatch(/Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron/);
     expect(answer).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
   });
@@ -500,7 +501,8 @@ describe("workerChatUx grounding", () => {
     expect(grounding.reciboVsOficial?.resultado).toBe("hay_diferencia");
     expect(answer).toContain(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.seenLine);
     expect(answer).toContain(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.nextStep);
-    expect(answer).toMatch(/Alta vigente: sí|IMSS: Vivo/);
+    expect(answer).toMatch(/Alta vigente: sí|IMSS contestó/);
+    expect(answer).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(answer).not.toMatch(/Helios|CompliLink|HMAC/i);
     expect(prompts).toContain("¿Hay diferencia con mi recibo?");
     expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);

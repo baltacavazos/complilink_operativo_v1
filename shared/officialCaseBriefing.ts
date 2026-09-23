@@ -10,6 +10,7 @@ import {
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
   OFFICIAL_FAILED_MISSING,
+  answeredOfficialSourceLine,
   buildHonestOfficialPresentation,
   buildInstituteSilencePresentation,
   buildOfficialCheckHeadline,
@@ -224,6 +225,7 @@ export function formatOfficialStatusLine(params: {
     return silentOfficialSourceLine(params.sourceLabel, Boolean(params.maintenance));
   }
   if (params.status === "pendiente") return `${params.sourceLabel} — esperando hoy`;
+  if (params.status === "vivo") return answeredOfficialSourceLine(params.sourceLabel, params.checkedAt);
   const date = formatOfficialCheckDate(params.checkedAt);
   const label = OFFICIAL_CHECK_STATUS_LABEL[params.status];
   return date ? `${params.sourceLabel}: ${label} · ${date}` : `${params.sourceLabel}: ${label}`;
@@ -253,6 +255,7 @@ export function formatChatAnchorStatusLine(
     return silentOfficialSourceLine(sourceLabel(source.fuente), maintenance);
   }
   if (status === "pendiente") return `${sourceLabel(source.fuente)} — esperando hoy`;
+  if (status === "vivo") return answeredOfficialSourceLine(sourceLabel(source.fuente), source.fecha ?? fallbackDate);
   const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
   const fail = status === "sin_datos" && source.motivoFallo ? ` · ${source.motivoFallo}` : "";
   const label = OFFICIAL_CHECK_STATUS_LABEL[status];
@@ -929,8 +932,8 @@ export function buildNoLiveOfficialAnswer(briefing: OfficialCaseBriefing): {
   const statuses = briefing.statusLines.join(". ");
   return {
     clearAnswer: statuses ? `${statuses}. Pulsa ${OFFICIAL_CHECK_BUTTON}.` : WORKER_CHAT_NO_CONSULTA_EMPTY,
-    known: [statuses, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" ") || "Hay una consulta, pero sin un resultado vivo.",
-    missing: briefing.missingIdentityDetail ?? "Todavía no hay un resultado vivo de IMSS, SAT o Infonavit.",
+    known: [statuses, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" ") || "Hay una consulta, pero sin una respuesta de las oficinas.",
+    missing: briefing.missingIdentityDetail ?? "Todavía no hay una respuesta de IMSS, SAT o Infonavit.",
     nextStep: OFFICIAL_CHECK_BUTTON,
   };
 }

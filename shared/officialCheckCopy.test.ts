@@ -669,7 +669,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.silence?.whatHappened).not.toMatch(/en mantenimiento|\bVivo\b/);
     expect(display.silence?.meaning).toMatch(/Tu recibo sí se leyó/);
     expect(display.silence?.meaning).not.toMatch(/SAT también|SAT no contest/);
-    expect(display.silence?.sourceLines.some((line) => line.startsWith("SAT: Vivo"))).toBe(true);
+    expect(display.silence?.sourceLines.some((line) => line.startsWith("SAT contestó"))).toBe(true);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.some((line) => line.includes("UIPD9211257I0"))).toBe(true);
     expect(display.silence?.sourceLines.some((line) => line === "Hoy IMSS no contestó. No es un error de tu recibo. Está en mantenimiento.")).toBe(true);
     expect(display.silence?.sourceLines.some((line) => line === "Hoy Infonavit no contestó. No es un error de tu recibo. Está en mantenimiento.")).toBe(true);
@@ -725,7 +726,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     ]);
     const answeredLines = answered.silence?.sourceLines.join("\n") ?? "";
     expect(answered.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
-    expect(answeredLines).toMatch(/SAT: Vivo/);
+    expect(answeredLines).toMatch(/SAT contestó/);
+    expect(answeredLines).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(answeredLines).toMatch(/El SAT confirmó el RFC consultado/);
     expect(answeredLines).toMatch(/Tipo de persona en SAT: Persona física/);
     expect(answeredLines).not.toMatch(/Razón social|EXPEDIENTE/i);
@@ -745,7 +747,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       [],
     ]) {
       const emptyHook = displayOf(hook);
-      expect(emptyHook.silence?.sourceLines.join("\n") ?? "").not.toMatch(/SAT: Vivo|Razón social|EXPEDIENTE/i);
+      expect(emptyHook.silence?.sourceLines.join("\n") ?? "").not.toMatch(/SAT contestó|Razón social|EXPEDIENTE/i);
       expect(emptyHook.headline).toBe(INSTITUTE_SILENCE_VERDICT);
     }
 
@@ -798,7 +800,8 @@ describe("resultado parcial sin esperar al instituto lento", () => {
 
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.status).toBe("vivo");
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT: Vivo/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
     expect(display.silence?.whatHappened).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
@@ -1040,7 +1043,9 @@ describe("veredicto de bolsillo", () => {
         checks: answered,
       }),
     });
-    expect(fine.headline).toBe("Por lo que vimos hoy, tu patrón aparece en orden en lo consultado.");
+    expect(fine.headline).toBe("Por lo que vimos hoy, lo que comparamos cuadra con tu recibo.");
+    expect(fine.silence?.meaning).not.toMatch(/en orden/);
+    expect(fine.silence?.smallPrint).toBe("Esto es solo lo consultado hoy. No cubre todo tu trabajo.");
     expect(fine.buttonLabel).toBe("Guardar y listo");
     expect(fine.headline).not.toMatch(/\bVivo\b|certificado|RFC confirmado|\bcumple\b/i);
 
