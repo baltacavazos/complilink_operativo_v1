@@ -2739,7 +2739,7 @@ function PrivacySection() {
               <Lock className="mt-0.5 h-5 w-5 shrink-0 text-teal-800" strokeWidth={1.8} />
               <div>
                 <p className="text-sm leading-7 text-teal-950">
-                  Tus documentos pueden fortalecer tu expediente y darte más respaldo laboral sin perder trazabilidad, control ni disponibilidad cuando los necesites.
+                  Tus documentos pueden fortalecer tu caso y darte más respaldo laboral. El historial sigue disponible cuando lo necesites.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {LEGAL_DOCUMENTS.map((document) => (
@@ -2790,7 +2790,7 @@ function MobilePriorityPathSection() {
       bullets: [
         "Tus recibos, CFDI y soportes dejan de quedar sueltos.",
         "La comparación entre piezas gana claridad con cada archivo.",
-        "El expediente conserva trazabilidad y acceso cuando lo necesites.",
+        "El historial de este caso sigue disponible cuando lo necesites.",
       ],
       secondaryLabel: "Ver preguntas frecuentes",
       secondaryHref: "#preguntas",

@@ -2968,7 +2968,7 @@ function getHeliosStageCopy(params: {
       description:
         "El documento ya quedó protegido y la interfaz mostrará la lectura apenas regrese más detalle.",
       detail:
-        "Mientras tanto, puedes seguir reuniendo documentos sin perder trazabilidad ni contexto del expediente.",
+        "Mientras tanto, puedes seguir reuniendo documentos. El historial de este caso se conserva.",
       tone: "processing" as const,
     };
   }
@@ -4113,7 +4113,7 @@ function buildHeliosComparisonCopy(params: {
       : "Si tienes otro archivo relacionado, subirlo puede ayudar a confirmar mejor este contraste.");
 
   return {
-    badge: sameType ? "Comparación lista" : "Cruce útil disponible",
+    badge: sameType ? "Comparación lista" : "Listo para comparar",
     headline: sameType
       ? `Ya se pueden revisar dos ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()} para buscar cambios útiles`
       : `Ya se pueden cruzar ${getSimpleDocumentTypeLabel(leftDocument.documentType).toLowerCase()} y ${getSimpleDocumentTypeLabel(rightDocument.documentType).toLowerCase()}`,
@@ -5984,10 +5984,10 @@ export default function Auditar() {
     effectiveSocialSecurityValidation?.statusLabel ?? "Todavía no hay consulta";
   const socialSecuritySummary =
     effectiveSocialSecurityValidation?.summary ??
-    "Todavía faltan datos suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
+    "Todavía faltan datos de IMSS e Infonavit en tus papeles.";
   const socialSecurityRecommendedNextStep =
     effectiveSocialSecurityValidation?.recommendedNextStep ??
-    "Empieza por un soporte IMSS o un estado relacionado con Infonavit para abrir este cruce dentro del expediente.";
+    "Empieza por un papel del IMSS o una constancia de Infonavit.";
   const socialSecurityLastCheckLabel =
     effectiveSocialSecurityValidation?.lastRevalidatedAt
       ? `Última revisión de lo que se ve: ${formatDate(effectiveSocialSecurityValidation.lastRevalidatedAt)}`
@@ -7114,9 +7114,6 @@ export default function Auditar() {
           : "Aún no hay documentos incorporados al expediente visible.",
     },
   ] as const;
-  const operationalFunnelCompletedCount = operationalFunnelSteps.filter(
-    step => step.completed
-  ).length;
   const operationalFunnelNextStep =
     operationalFunnelSteps.find(step => !step.completed) ?? null;
 
@@ -10319,7 +10316,7 @@ export default function Auditar() {
 
                 <div className="motion-hover-lift w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
                   <p className="text-sm font-semibold text-teal-900">
-                    Consulta IMSS e Infonavit hoy
+                    Pregunta a IMSS e Infonavit
                   </p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
                     {socialSecurityStatusLabel}
@@ -10779,7 +10776,7 @@ export default function Auditar() {
 
                   <div className={`rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2 ${isFirstDocumentFlow ? "hidden" : ""}`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      Consulta IMSS e Infonavit
+                      Pregunta a IMSS e Infonavit
                     </p>
                     <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                       {socialSecurityStatusLabel}
@@ -14190,7 +14187,7 @@ Reforzar con otro documento
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold tracking-tight text-slate-500">
-                    Actividad completa del expediente
+                    Actividad de tu caso
                   </p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
                     Línea de tiempo, historial y comparaciones
@@ -15412,7 +15409,7 @@ Reforzar con otro documento
                   <p className="mt-2 text-sm leading-6 text-sky-950">
                     {monitoringDocuments.length === 0
                       ? "Cuando haya seguimiento activo, aquí verás cómo la revisión automática vuelve con más detalle para fortalecer el expediente."
-                      : `Hoy hay ${monitoringDocuments.length} documento${monitoringDocuments.length === 1 ? "" : "s"} dentro del ciclo automático de revisión.`}
+                      : `Hoy hay ${monitoringDocuments.length} documento${monitoringDocuments.length === 1 ? "" : "s"} en el historial de este caso.`}
                   </p>
                 </article>
                 <article className="rounded-[1.25rem] border border-emerald-100 bg-emerald-50 p-4">
@@ -15492,15 +15489,14 @@ Reforzar con otro documento
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Embudo operativo mínimo
+                      Historial de este caso
                     </p>
                     <p className="mt-2 text-lg font-semibold text-slate-950">
                       Del acceso inicial al primer documento útil
                     </p>
                   </div>
                   <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                    {operationalFunnelCompletedCount}/
-                    {operationalFunnelSteps.length} hitos visibles
+                    Historial de este caso
                   </span>
                 </div>
 
@@ -15540,8 +15536,8 @@ Reforzar con otro documento
 
                 <div className="mt-4 rounded-[1rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
                   {operationalFunnelNextStep
-                    ? `Siguiente hito visible: ${operationalFunnelNextStep.label.toLowerCase()}. Cuando ese paso cambie, esta lectura mínima te dejará ver rápidamente en qué parte exacta se está cayendo el recorrido.`
-                    : "Los cuatro hitos mínimos ya aparecen cubiertos en este expediente. A partir de aquí el valor operativo se concentra en la calidad del seguimiento y en las respuestas automáticas."}
+                    ? `Siguiente paso: ${operationalFunnelNextStep.label.toLowerCase()}.`
+                    : "Esos pasos ya están cubiertos en este caso."}
                 </div>
               </div>
 
@@ -16004,7 +16000,7 @@ Reforzar con otro documento
               </p>
               <div className="mt-4 space-y-3">
                 {[
-                  "Tu archivo queda guardado con trazabilidad.",
+                  "Tu archivo queda en el historial de este caso.",
                   "Lo confirmado y lo estimado se muestran por separado.",
                   "Si algo necesita revisión humana, te lo diremos con claridad.",
                 ].map(item => (

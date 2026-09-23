@@ -51,7 +51,7 @@ export const PRIVACY_CENTER_COPY = {
     "Oposición: puedes oponerte a tratamientos específicos, en particular finalidades secundarias o usos no indispensables para la prestación principal.",
   ],
   revocationNotice:
-    "La revocación de consentimientos se procesa con una ventana de gracia de 5 días hábiles para completar cierres operativos, preservar evidencia y atender obligaciones legales o contractuales que sigan vigentes.",
+    "Tienes 5 días hábiles para cerrar lo que ya empezaste, conservar lo que la ley pide y atender lo que sigue vigente.",
   contactEmail: LEGAL_CONTACT_EMAIL,
   responseWindow: "20 días hábiles para responder la solicitud ARCO.",
 } as const;

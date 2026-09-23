@@ -526,7 +526,7 @@ describe("appRouter case workflows", () => {
     expect(result.legalAcceptance.documents).toHaveLength(LEGAL_DOCUMENTS.length);
     expect(result.legalAcceptance.missingDocuments).toHaveLength(LEGAL_DOCUMENTS.length);
     expect(result.socialSecurityValidation).toMatchObject({
-      statusLabel: "Cruce pendiente",
+      statusLabel: "Todavía no hay respuesta",
       actionLabel: "Revisar señales visibles de IMSS e Infonavit",
       liveImssValidation: false,
       hasImssSignal: false,
@@ -616,7 +616,7 @@ describe("appRouter case workflows", () => {
     });
 
     expect(result.socialSecurityValidation).toMatchObject({
-      statusLabel: "Cruce visible listo",
+      statusLabel: "Ya hay respuesta",
       hasImssSignal: true,
       hasInfonavitSignal: true,
       imssDocumentsCount: 1,
@@ -625,8 +625,8 @@ describe("appRouter case workflows", () => {
       lastRevalidatedAt: "2026-04-06T12:00:00.000Z",
       lastRevalidationSummary: "Cruce confirmado con nuevas señales visibles.",
       recommendedDocumentKey: null,
-      recommendedDocumentTitle: "Cruce base cubierto",
-      recommendedDocumentReason: expect.stringContaining("revisar las señales"),
+      recommendedDocumentTitle: "Ya hay respuesta",
+      recommendedDocumentReason: expect.stringContaining("ya aparecen en tus papeles"),
       hasNewClarity: false,
       clarityDelta: 0,
     });
@@ -708,7 +708,7 @@ describe("appRouter case workflows", () => {
       hasInfonavitSignal: true,
       infonavitSignalsCount: 1,
       liveImssValidation: false,
-      statusLabel: "Cruce parcial",
+      statusLabel: "Falta una respuesta",
       recommendedDocumentKey: "imss",
     });
   });
@@ -789,7 +789,7 @@ describe("appRouter case workflows", () => {
       imssDocumentsCount: 1,
       liveImssValidation: false,
       validationMode: "document_signals",
-      statusLabel: "Cruce parcial",
+      statusLabel: "Falta una respuesta",
       recommendedDocumentKey: "infonavit",
       reviewSource: "local",
       reviewSourceLabel: "Revisión local",
@@ -1356,7 +1356,7 @@ describe("appRouter case workflows", () => {
     });
 
     expect(result).toMatchObject({
-      statusLabel: "Cruce visible listo",
+      statusLabel: "Ya hay respuesta",
       actionLabel: "Revisar señales visibles de IMSS e Infonavit",
       liveImssValidation: false,
       hasImssSignal: true,
@@ -1365,7 +1365,7 @@ describe("appRouter case workflows", () => {
       infonavitSignalsCount: 1,
       documentsWithOpinion: 2,
       lastRevalidationSummary:
-        "Ya hay señales visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente.",
+        "Ya hay datos de IMSS e Infonavit en tus papeles. Esto no es una consulta en vivo: solo lee lo que ya aparece en tu caso.",
     });
     expect(result.coverageScore).toBeGreaterThan(60);
     expect(result.lastRevalidatedAt).toMatch(/^2026-/);
@@ -1386,7 +1386,7 @@ describe("appRouter case workflows", () => {
       scope: "social_security",
       status: "document_signals",
       liveImssValidation: false,
-      statusLabel: "Cruce visible listo",
+      statusLabel: "Ya hay respuesta",
       signals: {
         imssDocumentsCount: 1,
         infonavitSignalsCount: 1,
