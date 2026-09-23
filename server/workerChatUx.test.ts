@@ -242,9 +242,9 @@ describe("workerChatUx grounding", () => {
 
     expect(grounding.laborFacts.workerRfc).toBe("UIPD9211257I0");
     expect(grounding.officialBriefing.facts.workerRfc).toBe("UIPD9211257I0");
-    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy IMSS no contestó. No es un error de tu recibo."))).toBe(true);
-    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy SAT no contestó. No es un error de tu recibo."))).toBe(true);
-    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy Infonavit no contestó. No es un error de tu recibo."))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla."))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy no pudimos consultar SAT. No prueba que tu patrón cumpla."))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy no pudimos consultar Infonavit. No prueba que tu patrón cumpla."))).toBe(true);
     expect(blob).not.toMatch(/Falta un RFC/i);
     expect(blob).not.toMatch(/RFC real/i);
     expect(blob).not.toMatch(/IMSS: Pendiente/);

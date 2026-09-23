@@ -58,7 +58,7 @@ export const POCKET_ASK = "¿Qué implica esto para mi pago?";
 
 export const INSTITUTE_SILENCE_VERDICT = POCKET_COULDNT_VERDICT;
 export const INSTITUTE_SILENCE_WHAT_HAPPENED =
-  "Hoy IMSS, SAT e Infonavit no contestaron. No es un error de tu recibo.";
+  "Hoy no pudimos consultar IMSS, SAT e Infonavit. No prueba que tu patrón cumpla.";
 export const INSTITUTE_SILENCE_MEANING =
   "Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado ahí. Eso no quiere decir que te estén haciendo trampa; solo que hoy no se pudo comprobar.";
 export const INSTITUTE_SILENCE_NEXT =
@@ -73,9 +73,17 @@ export const INSTITUTE_SILENCE_CHAT =
 export const WORKER_RESULT_CHAT_OPENER =
   "Esto es de tu consulta de hoy. Si te preocupa el sueldo, te lo explico en corto. No voy a repetir lo que ya dice la tarjeta. Dime qué duda te quedó.";
 export const INSTITUTE_WAITING_HEADLINE =
-  "Estamos preguntando a IMSS, SAT e Infonavit…";
+  "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.";
 export const INSTITUTE_WAITING_DETAIL =
-  "Si tarda, casi siempre es la oficina, no tu recibo.";
+  "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.";
+export const OFFICIAL_FAILURE_SHIELD_TAIL = "No prueba que tu patrón cumpla.";
+
+/** Frase terminal cuando una oficina no contestó. No es prueba de que el patrón cumpla. */
+export function officialConsultFailureShield(office?: string | null): string {
+  const name = String(office ?? "").replace(/\s+/g, " ").trim();
+  if (!name) return `Hoy no pudimos consultar. ${OFFICIAL_FAILURE_SHIELD_TAIL}`;
+  return `Hoy no pudimos consultar ${name}. ${OFFICIAL_FAILURE_SHIELD_TAIL}`;
+}
 
 export const OFFICIAL_FAILED_NEXT_STEP = "Vuelve a consultar mañana.";
 export const OFFICIAL_FAILED_MISSING =
@@ -132,11 +140,8 @@ export function instituteSilenceVerdict(_sources?: OfficialCheckSource[] | null)
 
 export function instituteSilenceWhatHappened(sources?: OfficialCheckSource[] | null): string {
   const unique = uniqueOfficialSources(sources);
-  if (unique.length === 1) return `Hoy ${OFFICIAL_SOURCE_LABEL[unique[0]]} no contestó. No es un error de tu recibo.`;
-  if (unique.length === 2) {
-    return `Hoy ${formatOfficialSourceList(unique)} no contestaron. No es un error de tu recibo.`;
-  }
-  return INSTITUTE_SILENCE_WHAT_HAPPENED;
+  if (unique.length === 0 || unique.length >= 3) return INSTITUTE_SILENCE_WHAT_HAPPENED;
+  return officialConsultFailureShield(formatOfficialSourceList(unique));
 }
 
 export function instituteSilenceChat(sources?: OfficialCheckSource[] | null): string {
@@ -146,7 +151,7 @@ export function instituteSilenceChat(sources?: OfficialCheckSource[] | null): st
 }
 
 export function instituteSilenceSourceLine(label: string): string {
-  return `Hoy ${label} no contestó. No es un error de tu recibo.`;
+  return officialConsultFailureShield(label);
 }
 
 export function buildInstituteSilencePresentation(
@@ -172,11 +177,6 @@ function instituteSilenceOpener(_sources?: OfficialCheckSource[] | null): string
   return WORKER_RESULT_CHAT_OPENER;
 }
 
-function capitalizeSpanish(value: string): string {
-  if (!value) return value;
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
 export type OfficialSourceOutcome = {
   source: OfficialCheckSource;
   status: OfficialCheckStatus;
@@ -189,24 +189,15 @@ export type OfficialResultPresentation = InstituteSilencePresentation & {
   kind: "silent" | "mixed" | "settled";
 };
 
-/** Línea corta bajo el veredicto. Sin fechas ni «Vivo». */
-export function pocketOfficeStatusLine(live: OfficialCheckSource[], missing: OfficialCheckSource[]): string {
-  const liveOrdered = OFFICIAL_CHECK_SOURCES.filter((source) => live.includes(source));
+/** Línea corta bajo el veredicto. Habla del caso del trabajador, no de la oficina. */
+export function pocketOfficeStatusLine(_live: OfficialCheckSource[], missing: OfficialCheckSource[]): string {
   const missingOrdered = OFFICIAL_CHECK_SOURCES.filter((source) => missing.includes(source));
-  if (
-    liveOrdered.length === 1 &&
-    liveOrdered[0] === "sat" &&
-    missingOrdered.length === 2 &&
-    missingOrdered.includes("imss") &&
-    missingOrdered.includes("infonavit")
-  ) {
-    return POCKET_PARTIAL_TWO_OFFICES;
+  if (missingOrdered.length <= 0) return "Ya tenemos las respuestas de hoy sobre tu registro.";
+  if (missingOrdered.length === 1) {
+    return "Todavía falta una respuesta para saber si tu patrón te tiene bien registrado.";
   }
-  const liveBit = capitalizeSpanish(joinSpanishLabels(liveOrdered.map((source) => officialSourceWithArticle(source))));
-  const verb = liveOrdered.length === 1 ? "ya respondió" : "ya respondieron";
-  const missingNames = joinSpanishLabels(missingOrdered.map((source) => OFFICIAL_SOURCE_LABEL[source]));
-  const falta = missingOrdered.length === 1 ? "falta" : "faltan";
-  return `${liveBit} ${verb}; ${falta} ${missingNames}.`;
+  if (missingOrdered.length === 2) return POCKET_PARTIAL_TWO_OFFICES;
+  return INSTITUTE_WAITING_HEADLINE;
 }
 
 export function emptyOfficialConsultPresentation(
@@ -220,15 +211,13 @@ export function emptyOfficialConsultPresentation(
   return {
     kind: "silent",
     verdict,
-    whatHappened: EMPTY_OFFICIAL_CONSULT_LIMIT,
+    whatHappened: OFFICIAL_FAILURE_SHIELD_TAIL,
     meaning: "Sin un dato de la consulta, no podemos decir que tu patrón esté bien registrado.",
     nextStep: "Prueba de nuevo mañana.",
-    smallPrint: EMPTY_OFFICIAL_CONSULT_LIMIT,
+    smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
-    sourceLines: unique.map(
-      (source) => `Hoy no pudimos consultar ${OFFICIAL_SOURCE_LABEL[source]}. ${EMPTY_OFFICIAL_CONSULT_LIMIT}`,
-    ),
+    sourceLines: unique.map((source) => officialConsultFailureShield(OFFICIAL_SOURCE_LABEL[source])),
     chat: `${verdict} ${EMPTY_OFFICIAL_CONSULT_LIMIT}`,
     opener: WORKER_RESULT_CHAT_OPENER,
   };
@@ -307,7 +296,7 @@ export function humanizeOfficialHecho(text: string): string {
   return text
     .replace(
       /raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?\s*[:：-]\s*/gi,
-      "Nombre en el SAT (RFC consultado): ",
+      "Nombre en el SAT: ",
     )
     .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
     .replace(/\brpci\b/gi, "registro del IMSS")
@@ -584,7 +573,7 @@ function settledOfficialPresentation(
     return {
       kind: "settled",
       verdict: POCKET_OJO_VERDICT,
-      whatHappened: "Hay una diferencia entre tu recibo y lo que contestaron las oficinas.",
+      whatHappened: "Hay una diferencia en tu caso. Conviene ver qué no cuadra con tu recibo.",
       meaning: "Conviene mirar el detalle antes de sacar conclusiones. No quiere decir que te estén engañando.",
       nextStep: "Abre el detalle y anota lo que no cuadra.",
       smallPrint: INSTITUTE_SILENCE_SMALL,
@@ -608,7 +597,7 @@ function settledOfficialPresentation(
     return {
       kind: "settled",
       verdict: POCKET_BIEN_VERDICT,
-      whatHappened: "IMSS, SAT e Infonavit contestaron.",
+      whatHappened: "Ya tenemos las respuestas de hoy sobre tu registro.",
       meaning: "Lo que comparamos cuadra con tu recibo.",
       nextStep: "Puedes guardar este resultado.",
       smallPrint: POCKET_BIEN_LIMIT,
@@ -622,7 +611,7 @@ function settledOfficialPresentation(
   return {
     kind: "settled",
     verdict: POCKET_COULDNT_VERDICT,
-    whatHappened: "Las oficinas contestaron, pero hoy no alcanzó para comprobar tu registro.",
+    whatHappened: "Hoy no alcanzó para saber si tu patrón te tiene bien registrado.",
     meaning: "No prueba que te engañen. Solo que hoy no se pudo cerrar la comparación.",
     nextStep: "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
@@ -2004,10 +1993,11 @@ export function buildOfficialCheckHeadline(
   return date ? `${label} · ${date}` : label;
 }
 
-export const OFFICIAL_CONSULTING_HEADLINE = "Ya leímos el recibo. Consultando oficinas…";
-export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando oficinas…";
+export const OFFICIAL_CONSULTING_HEADLINE =
+  "Ya leímos tu recibo. Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.";
+export const OFFICIAL_CHECK_LOADING_LABEL = "Seguimos con tu caso…";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
-  "Estamos preguntando a IMSS, SAT e Infonavit. Si hoy no contestan, te lo diremos.";
+  "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado. Si hoy no llegan, te lo diremos.";
 /** Solo si el retorno dice que otra consulta oficial aportó el dato. Nunca dice «backup». */
 export const OFFICIAL_ALTERNATE_ROUTE_NOTE = "Consultamos otra vía oficial.";
 /** Otra vía se intentó y no dejó un dato usable. Nunca dice «backup». */

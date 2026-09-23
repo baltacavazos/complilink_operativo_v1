@@ -218,8 +218,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(result.overallStatus).toBe("no_se_pudo");
     expect(result.overallLabel).toBe(OFFICIAL_CHECK_STATUS_LABEL.no_se_pudo);
-    expect(result.overallDetail).toMatch(/no hubo respuesta|Pedimos la información|no contestó|No es un error de tu recibo/i);
-    expect(result.overallDetail).toMatch(/instituto|IMSS|SAT|oficinas/);
+    expect(result.overallDetail).toMatch(/Hoy no pudimos consultar/);
+    expect(result.overallDetail).toMatch(/No prueba que tu patrón cumpla/);
+    expect(result.overallDetail).toMatch(/IMSS|SAT|Infonavit/);
     expect(result.overallDetail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(result.overallDetail).not.toMatch(/HMAC|Helios|cumple|respuesta usable/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
@@ -241,7 +242,8 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(result.overallStatus).toBe("no_se_pudo");
     expect(result.overallLabel).toBe("Sin respuesta");
-    expect(result.overallDetail).toMatch(/Hoy IMSS y SAT no contestaron/);
+    expect(result.overallDetail).toMatch(/Hoy no pudimos consultar IMSS y SAT/);
+    expect(result.overallDetail).toMatch(/No prueba que tu patrón cumpla/);
     expect(result.overallDetail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(result.overallDetail).not.toMatch(/Provider|Helios|cumple|respuesta usable/i);
     expect(result.checkedAt).toBe("2026-09-21T12:00:00.000Z");
@@ -283,8 +285,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(timedOut.overallStatus).toBe("no_se_pudo");
     expect(timedOut.overallLabel).toBe("Sin respuesta");
-    expect(timedOut.overallDetail).toMatch(/no contestó|no contestaron|Pedimos la información/);
-    expect(timedOut.overallDetail).toMatch(/no hubo respuesta|IMSS/);
+    expect(timedOut.overallDetail).toMatch(/Hoy no pudimos consultar/);
+    expect(timedOut.overallDetail).toMatch(/No prueba que tu patrón cumpla/);
+    expect(timedOut.overallDetail).toMatch(/IMSS/);
     expect(timedOut.overallDetail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(timedOut.overallDetail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
     expect(timedOut.checkedAt).toBeTruthy();
@@ -895,8 +898,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(parsed?.chatAnchor?.imss.fecha).toBe("2026-09-21T12:00:00.000Z");
     expect(parsed?.chatAnchor?.imss.motivoFallo).toMatch(/no contestó hoy/);
     expect(parsed?.chatAnchor?.imss.motivoFallo).not.toMatch(/no de AuditaPatrón/);
-    expect(parsed?.overallDetail).toMatch(/no contestó|no contestaron|Pedimos la información/);
-    expect(parsed?.overallDetail).toMatch(/IMSS|Infonavit|oficinas/);
+    expect(parsed?.overallDetail).toMatch(/Hoy no pudimos consultar/);
+    expect(parsed?.overallDetail).toMatch(/No prueba que tu patrón cumpla/);
+    expect(parsed?.overallDetail).toMatch(/IMSS|Infonavit/);
     expect(parsed?.overallDetail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(parsed?.overallDetail).not.toMatch(/El instituto no respondió hoy|respuesta usable/);
     expect(JSON.stringify(parsed)).not.toMatch(/APIMarket|Helios|CompliLink|HMAC|\b(sí )?cumple\b/i);
@@ -983,7 +987,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy IMSS no contestó. No es un error de tu recibo. Está en mantenimiento./);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla. Está en mantenimiento./);
     expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
   });
 
@@ -1103,7 +1107,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy IMSS no contestó. No es un error de tu recibo./);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/en mantenimiento/);
     expect(briefing.instituteSilence).toBe(false);
     expect(briefing.hasLiveOfficialResult).toBe(true);
@@ -1209,7 +1213,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nowIso,
     });
     expect(named?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(
-      /Nombre en el SAT \(RFC consultado\): EVOLUCION CREATIVA CAMREFLEX/,
+      /Nombre en el SAT: EVOLUCION CREATIVA CAMREFLEX/,
     );
 
     const emptyHook = officialCheckFromBridgeReturn({
@@ -1439,7 +1443,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       identity: { nss: true, curp: true, rfc: true },
       nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
     });
-    expect(emptyDisplay.silence?.whatHappened).toMatch(/Hoy IMSS, SAT e Infonavit no contestaron/);
+    expect(emptyDisplay.silence?.whatHappened).toBe(
+      "Hoy no pudimos consultar IMSS, SAT e Infonavit. No prueba que tu patrón cumpla.",
+    );
     expect(emptyDisplay.silence?.meaning).toContain("Consultamos otra vía oficial y hoy no hubo datos útiles.");
     expect(emptyDisplay.headline).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
     expect(JSON.stringify(emptyDisplay)).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);

@@ -145,6 +145,25 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).not.toContain("Sube tu recibo o comprobante");
   });
 
+  it("detalle de bolsillo, un CTA de home y blindaje si la oficina no contesta", () => {
+    const auditar = readClientSource("pages/Auditar.tsx");
+    const home = readClientSource("pages/Home.tsx");
+    const result = readClientSource("components/WorkerOfficialResult.tsx");
+
+    expect(auditar).toContain("workerPocketDetail.lead");
+    expect(auditar).toContain("WorkerRegistrationFold");
+    expect(auditar).toContain("Nombre en el SAT");
+    expect(auditar).not.toMatch(/raz[oó]n social/i);
+    expect(result).toContain("Ver datos de registro");
+    expect(result).not.toContain("Datos del recibo");
+    expect(home).toContain('const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis"');
+    expect(home).toContain("Gratis · $0 · 1 documento");
+    expect(home).not.toContain("Sube tu documento gratis");
+    expect(home).not.toContain(">Empezar<");
+    expect(auditar).toContain("Ver Audita Esencial");
+    expect(auditar).toContain('triggerPoint === "document_limit_blocked"');
+  });
+
   it("deja /auditar sin Helios, CompliLink ni Webhook en copy que se renderiza", () => {
     const auditar = readClientSource("pages/Auditar.tsx");
     const renderPaths = auditarClientFacingRenderPaths(auditar);

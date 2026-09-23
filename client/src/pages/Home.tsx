@@ -523,13 +523,6 @@ const heroPrediagnosticOptions = [
   },
 ] as const;
 
-const heroVariantReadiness = {
-  alert: 64,
-  control: 72,
-  short_paid_campaign: 64,
-  direct_money_check: 68,
-} as const;
-
 type InteractiveHeroVariantKey = Exclude<keyof typeof heroCopyVariants, "short_paid_campaign" | "direct_money_check">;
 
 const heroFindingSlides = [
@@ -937,7 +930,6 @@ function HeroSection() {
   const activeFinding = heroFindingSlides[activeFindingIndex];
   const activeReportDemoState = reportDemoStates.find((state) => state.id === selectedReportDemoState) ?? reportDemoStates[1];
   const activeMicroDemoScene = heroMicroDemoScenes[activeMicroDemoSceneIndex] ?? heroMicroDemoScenes[0];
-  const dossierReadiness = heroVariantReadiness[trackedHeroVariant];
   const activeReportDemoCopy = useMemo(() => {
     if (selectedReportDemoState === "documento-recibido") {
       return {
@@ -1310,16 +1302,10 @@ function HeroSection() {
               {activeHeroVariant.ctaPrimary}
               <ArrowRight className="motion-arrow ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
             </Button>
-            <Button
-              variant="outline"
-              className="motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto"
-              onClick={() => {
-                window.location.href = PLANS_PATH;
-              }}
-            >
-              Ver planes y activar
-            </Button>
             </div>
+            <a href={PLANS_PATH} className="text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4">
+              Ver planes y activar
+            </a>
               <div className="min-w-0 space-y-1.5">
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">{activeHeroVariant.microDescription}</p>
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">{activeHeroVariant.honestyLine}</p>
@@ -1424,49 +1410,12 @@ function HeroSection() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                trackEvent("audipatron_home_sidebar_cta_redirected_to_guest_preview", {
-                  entry_point: "hero_sidebar",
-                  placement: "hero_sidebar",
-                  hero_variant: trackedHeroVariant,
-                  prediagnostic: selectedHeroPrediagnostic,
-                  cta_label: "Siguiente paso sugerido",
-                });
-                scrollToId("lectura-gratis");
-              }}
-              className="mt-4 block w-full rounded-[1.25rem] border border-teal-200 bg-[linear-gradient(180deg,_#ecfdf9_0%,_#dff7f1_100%)] px-4 py-3.5 text-left shadow-[0_20px_46px_-34px_rgba(13,148,136,0.24)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-[linear-gradient(180deg,_#e6fbf5_0%,_#d7f3eb_100%)] hover:shadow-[0_26px_56px_-36px_rgba(13,148,136,0.28)] active:scale-[0.995]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-[11px] font-semibold tracking-tight text-teal-700">
-                    Sube tu documento gratis
-                  </p>
-                  <p className="mt-1 text-sm font-semibold leading-5 text-teal-950">
-                    Empieza con {activePrediagnostic.document.toLowerCase()} y recibe una primera lectura clara desde el primer intento.
-                  </p>
-                </div>
-                <ArrowRight className="mt-0.5 h-4.5 w-4.5 shrink-0 text-teal-700" strokeWidth={1.8} />
-              </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/90 shadow-inner">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-teal-500 to-cyan-500"
-                  style={{ width: `${dossierReadiness}%` }}
-                />
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  {activePrediagnostic.badge}
-                </span>
-                <span className="rounded-full border border-white/80 bg-white px-3 py-1.5 text-xs font-medium text-teal-900 shadow-sm">
-                  Lo ves primero y decides después
-                </span>
-              </div>
-              <p className="mt-2 text-sm leading-5 text-teal-800">
-                Un solo archivo gratis y luego decides si sigues o lo guardas.
+            <div className="mt-4 rounded-[1.25rem] border border-slate-200 bg-white px-4 py-3.5 text-left">
+              <p className="text-sm font-semibold text-slate-950">Gratis · $0 · 1 documento</p>
+              <p className="mt-1 text-sm leading-5 text-slate-700">
+                Un recibo. El único botón para empezar es «{HOME_HERO_PRIMARY_CTA}».
               </p>
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1719,10 +1668,14 @@ function HeliosFirstEntrySection() {
                   Empieza con una foto o PDF. Primero ves si te sirve; después decides si lo guardas en tu expediente.
                 </p>
               </div>
-              <Button variant="outline" className="h-11 rounded-full border-slate-200 bg-white px-5 text-slate-800 hover:bg-slate-50" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
-                {guestAnalyzeMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" strokeWidth={1.8} />}
-                {guestPreview ? "Cambiar documento" : "Sube una foto o PDF"}
-              </Button>
+              <button
+                type="button"
+                className="text-left text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4"
+                onClick={handleGuestUploadClick}
+                disabled={guestAnalyzeMutation.isPending || isSavingPreview}
+              >
+                {guestAnalyzeMutation.isPending ? "Leyendo…" : guestPreview ? "Cambiar documento" : "Elegir archivo"}
+              </button>
             </div>
 
             {guestError ? (
@@ -3075,17 +3028,18 @@ function HomePlansStrip() {
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
+                {plan.key === "free" ? (
+                  <p className="mt-4 text-sm font-semibold leading-6 text-slate-800">Gratis · $0 · 1 documento. Empieza con el botón de arriba.</p>
+                ) : (
                 <Button
                   className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                   onClick={() => {
-                    window.location.href =
-                      plan.key === "free"
-                        ? "/auditar"
-                        : `/auditar?plan=${encodeURIComponent(plan.key)}`;
+                    window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
                   }}
                 >
-                  {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
+                  {PLAN_PRIMARY_CTA}
                 </Button>
+                )}
               </article>
             ))}
           </div>
@@ -3117,23 +3071,20 @@ function FinalCtaSection() {
               {pricingExperience.landing.description}
             </p>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <Button
-                className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto"
-                onClick={() => goToAuditFlow({ placement: "final_block_cta" })}
-              >
-                {PRIMARY_CTA_LABEL}
-                <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-              </Button>
-              <Button
-                variant="outline"
-                className="motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-6 text-sm text-slate-700 hover:bg-slate-50 sm:w-auto"
-                onClick={() => {
-                  window.location.href = PLANS_PATH;
+            <div className="mt-6 flex flex-col gap-2">
+              <a
+                href="/auditar"
+                className="w-fit text-left text-sm font-semibold text-slate-800 underline decoration-slate-300 underline-offset-4"
+                onClick={(event) => {
+                  event.preventDefault();
+                  goToAuditFlow({ placement: "final_block_cta" });
                 }}
               >
+                {PRIMARY_CTA_LABEL}
+              </a>
+              <a href={PLANS_PATH} className="w-fit text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4">
                 Ver planes y activar
-              </Button>
+              </a>
             </div>
             <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
               <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>

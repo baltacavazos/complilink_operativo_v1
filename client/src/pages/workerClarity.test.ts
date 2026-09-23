@@ -5,6 +5,7 @@ import { buildInstituteSilencePresentation, resolveOfficialCheckDisplay } from "
 
 const css = readFileSync(new URL("../index.css", import.meta.url), "utf8");
 const indexHtml = readFileSync(new URL("../../index.html", import.meta.url), "utf8");
+const analytics = readFileSync(new URL("../lib/analytics.ts", import.meta.url), "utf8");
 const result = readFileSync(new URL("../components/WorkerOfficialResult.tsx", import.meta.url), "utf8");
 const auditar = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 const sheet = readFileSync(new URL("../components/HeliosCopilotSheet.tsx", import.meta.url), "utf8");
@@ -37,6 +38,8 @@ describe("contraste y claridad del resultado", () => {
     const detailAt = result.indexOf(">Ver detalle<");
     const ctaAt = result.indexOf('data-testid="official-check-cta"');
     expect(result).toContain("Qué pasó");
+    expect(result).toContain("Ver datos de registro");
+    expect(result).not.toContain("Datos del recibo");
     expect(result).toContain("Qué significa");
     expect(result).toContain("Qué hacer");
     expect(detailAt).toBeGreaterThan(0);
@@ -65,6 +68,7 @@ describe("contraste y claridad del resultado", () => {
     const compactAt = auditar.indexOf('data-compact-official-detail="true"');
     const compactRegion = auditar.slice(compactAt - 12, auditar.indexOf("handlePrimaryVerdictCta", compactAt));
     expect(compactRegion.match(/<details/g)?.length).toBe(1);
+    expect(compactRegion).toContain("WorkerRegistrationFold");
     expect(compactRegion).toContain('data-testid="official-check-card"');
     expect(compactRegion).toContain('data-testid="official-check-hechos"');
     expect(compactRegion).toContain('data-testid="official-check-chat-cta"');
@@ -167,7 +171,8 @@ describe("contraste y claridad del resultado", () => {
 
   it("no pide Umami si la variable de analítica no es una URL", () => {
     expect(indexHtml).not.toMatch(/src=["'][^"']*%VITE_ANALYTICS_ENDPOINT%\/umami/);
-    expect(indexHtml).toContain('if (!/^https?:\\/\\/[^\\s%]+$/i.test(endpoint)) return;');
+    expect(analytics).toContain("!ANALYTICS_ENDPOINT_PATTERN.test(endpoint)");
+    expect(analytics).toContain("/^https?:\\/\\/[^\\s%]+$/i");
   });
 });
 

@@ -14,6 +14,30 @@ type WorkerOfficialResultProps = {
   receiptData?: string[];
 };
 
+const WORKER_IDENTIFIER_RE = /\b(RFC|CURP|NSS|registro patronal)\b/i;
+
+/** Identificadores de registro. El nombre en el SAT se queda en las líneas de bolsillo. */
+export function isWorkerIdentifierLine(line: string) {
+  if (/nombre en el sat/i.test(line)) return false;
+  if (/coincide con el SAT/i.test(line)) return false;
+  return WORKER_IDENTIFIER_RE.test(line);
+}
+
+export function WorkerRegistrationFold({ lines }: { lines: string[] }) {
+  const unique = [...new Set(lines.map((line) => line.trim()).filter(Boolean))];
+  if (!unique.length) return null;
+  return (
+    <details className="mt-3">
+      <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver datos de registro</summary>
+      <ul data-testid="official-check-registration" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+        {unique.map((line) => (
+          <li key={line}>{line}</li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
 /**
  * Primera pantalla: un veredicto, tres líneas, «Ver detalle» cerrado y un solo botón.
  * SAT, RFC, certificados y NSS no salen hasta abrir el detalle.
@@ -35,6 +59,8 @@ export function WorkerOfficialResult({
     { label: "Qué significa", text: presentation.meaning },
     { label: "Qué hacer", text: presentation.nextStep },
   ];
+  const visibleSources = presentation.sourceLines.filter((line) => !isWorkerIdentifierLine(line));
+  const hiddenSources = presentation.sourceLines.filter((line) => isWorkerIdentifierLine(line));
 
   return (
     <section
@@ -51,6 +77,13 @@ export function WorkerOfficialResult({
       <p data-testid="official-check-headline" className="sr-only">
         {presentation.verdict}
       </p>
+      {pocketLead.length ? (
+        <ul data-testid="official-check-pocket" className="mt-4 space-y-1 text-[0.98rem] leading-6 text-[#161616]">
+          {pocketLead.slice(0, 3).map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      ) : null}
       <div data-testid="official-check-silence" className="mt-4 space-y-3">
         {lines.map((line) => (
           <p key={line.label} className="text-[0.98rem] leading-6 text-[#161616]">
@@ -67,35 +100,14 @@ export function WorkerOfficialResult({
       ) : null}
       <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
-        {pocketLead.length ? (
-          <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-            {pocketLead.map((line) => (
-              <li key={line}>{line}</li>
-            ))}
-          </ul>
-        ) : null}
-        {presentation.sourceLines.length ? (
+        {visibleSources.length ? (
           <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-            {presentation.sourceLines
-              .filter((line) => !/\b(RFC|CURP|NSS)\b/.test(line) || /coincide con el SAT/i.test(line))
-              .map((line) => (
+            {visibleSources.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
         ) : null}
-        {receiptData.length || presentation.sourceLines.some((line) => /\b(RFC|CURP|NSS)\b/.test(line) && !/coincide con el SAT/i.test(line)) ? (
-          <details className="mt-3">
-            <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Datos del recibo</summary>
-            <ul className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-              {(receiptData.length
-                ? receiptData
-                : presentation.sourceLines.filter((line) => /\b(RFC|CURP|NSS)\b/.test(line) && !/coincide con el SAT/i.test(line))
-              ).map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-          </details>
-        ) : null}
+        <WorkerRegistrationFold lines={[...receiptData, ...hiddenSources]} />
         {paperRead ? (
           <p className="mt-3 text-sm leading-6 text-[#161616]">{paperRead}</p>
         ) : null}

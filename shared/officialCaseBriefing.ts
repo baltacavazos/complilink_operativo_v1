@@ -336,24 +336,44 @@ export function listChatAnchorHechos(
   });
 }
 
+function satLegalNameFromHechos(hechoLines: string[]): string | null {
+  for (const line of hechoLines) {
+    const match = line.match(/nombre en el sat(?:\s*\([^)]*\))?\s*[:：-]\s*(.+)$/i);
+    if (!match) continue;
+    const name = match[1].replace(/\.+$/g, "").trim();
+    if (name && !isPlaceholderSatLegalName(name)) return name;
+  }
+  return null;
+}
+
 export function buildWorkerPocketLead(
   facts: OfficialBriefingFacts,
   hechoLines: string[] = [],
 ): { lead: string[]; receiptData: string[] } {
   const lead: string[] = [];
-  if (facts.employerName) {
-    lead.push(`Tu patrón en el recibo: ${facts.employerName}`);
+  const employer = facts.employerName?.trim() || "";
+  if (employer && !isPlaceholderSatLegalName(employer, facts.employerRfc)) {
+    lead.push(`Tu patrón en el recibo: ${employer}`);
+  }
+  const satName = satLegalNameFromHechos(hechoLines);
+  if (satName && satName.toLocaleLowerCase("es-MX") !== employer.toLocaleLowerCase("es-MX")) {
+    lead.push(`Nombre en el SAT: ${satName}`);
   }
   const amount = facts.netAmount || facts.perceptions;
   if (amount && facts.period) {
     lead.push(`Te pagaron: ${amount} · del ${facts.period}`);
   } else if (amount) {
     lead.push(`Te pagaron: ${amount}`);
+  } else if (facts.period) {
+    lead.push(`Periodo de este recibo: ${facts.period}`);
+  }
+  if (lead.length < 3 && facts.deductions) {
+    lead.push(`Descuentos en este recibo: ${facts.deductions}`);
   }
   const satConfirmedRfc = hechoLines.some((line) =>
     /SAT confirmó el RFC|RFC coincide con el SAT/i.test(line),
   );
-  if (satConfirmedRfc) {
+  if (satConfirmedRfc && lead.length < 3) {
     lead.push("Tu RFC coincide con el SAT");
   }
   const receiptData = [
@@ -390,7 +410,9 @@ export function briefingHasInstituteFailure(briefing: OfficialCaseBriefing): boo
   if (briefing.officialCheck?.overallStatus === "no_se_pudo") return true;
   if (listFailedOfficialSources(briefing.officialCheck?.checks).length > 0) return true;
   if (listFailedOfficialSourcesFromAnchor(briefing.chatAnchor).length > 0) return true;
-  return briefing.statusLines.some((line) => /sin respuesta hoy|no contestó|: Falló/.test(line));
+  return briefing.statusLines.some((line) =>
+    /sin respuesta hoy|no contestó|: Falló|Hoy no pudimos consultar/i.test(line),
+  );
 }
 
 function consultAttempted(check?: OfficialCheckSummary | null): boolean {
@@ -760,7 +782,7 @@ export function alignVisibleChatWithBriefing(
   const identity = briefing ? identityFlagsFromFacts(briefing.facts) : null;
   let next = stripContradictoryMissingIdentityCopy(raw, identity, briefing?.facts);
   const failedLines = (briefing?.statusLines ?? []).filter((line) =>
-    /:\s*Falló|— sin respuesta hoy|no contestó/.test(line),
+    /:\s*Falló|— sin respuesta hoy|no contestó|Hoy no pudimos consultar/i.test(line),
   );
   if (failedLines.length > 0) {
     const sat = failedLines.find((line) => /\bSAT\b/.test(line));
@@ -769,9 +791,12 @@ export function alignVisibleChatWithBriefing(
       next = next.replace(/SAT\/Infonavit:\s*Faltan datos(?:\s*·\s*\d{2}\/\d{2}\/\d{4})?/gi, [sat, infonavit].filter(Boolean).join(". "));
     }
     for (const line of failedLines) {
-      const source = line.match(/^(?:Hoy\s+)?(IMSS|SAT|Infonavit)/)?.[1];
+      const source =
+        line.match(/consultar\s+(IMSS|SAT|Infonavit)\b/i)?.[1] ??
+        line.match(/^(?:Hoy\s+)?(IMSS|SAT|Infonavit)/)?.[1];
       if (!source) continue;
-      next = next.replace(STALE_SOURCE_STATUS_RE(source), line.trim());
+      const canonical = /^imss$/i.test(source) ? "IMSS" : /^sat$/i.test(source) ? "SAT" : "Infonavit";
+      next = next.replace(STALE_SOURCE_STATUS_RE(canonical), line.trim());
     }
     next = next.replace(
       /IMSS:\s*Pendiente[^.\n]{0,80}SAT\/Infonavit:\s*Faltan datos[^.\n]*/gi,

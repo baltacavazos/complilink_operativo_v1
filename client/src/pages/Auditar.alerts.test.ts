@@ -121,7 +121,7 @@ describe("compact mobile upload entry", () => {
     expect(auditarSource).toContain("lastUploadFiveSecond.nextStepLine");
     expect(auditarSource).toContain("lastUploadFiveSecond.disclaimer");
     expect(auditarSource).not.toContain("Resultado listo");
-    expect(auditarSource).toContain('"flex flex-wrap items-center justify-center gap-2 text-center sm:justify-start"');
+    expect(auditarSource).toContain('"flex items-center justify-center sm:mt-4 sm:justify-start"');
     expect(auditarSource).toContain('"text-[1.85rem] leading-[1.02] sm:text-[2.3rem]"');
     expect(auditarSource).toContain('data-testid="five-second-verdict-seen"');
     expect(auditarSource).toContain('data-testid="five-second-verdict-next"');
@@ -734,8 +734,8 @@ describe("buildUploadProgressState", () => {
       stepKey: "save",
       humanMessages: [
         "Guardando tu revisión...",
-        "Estamos preguntando a IMSS, SAT e Infonavit…",
-        "Si tarda, casi siempre es la oficina, no tu recibo.",
+        "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.",
+        "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.",
       ],
     });
   });
@@ -816,8 +816,8 @@ describe("getHumanUploadProgressMessages", () => {
     ]);
     expect(getHumanUploadProgressMessages("save")).toEqual([
       "Guardando tu revisión...",
-      "Estamos preguntando a IMSS, SAT e Infonavit…",
-      "Si tarda, casi siempre es la oficina, no tu recibo.",
+      "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.",
+      "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.",
     ]);
     expect(getHumanUploadProgressMessages("review")).toEqual([]);
   });
@@ -1395,6 +1395,8 @@ describe("tope del plan gratis en la carga", () => {
     const notice = auditarSource.slice(noticeStart, noticeStart + 900);
     expect(notice).toContain("FREE_TIER_EXHAUSTED_COPY");
     expect(notice).toContain("FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE");
+    expect(notice).toContain("Ver Audita Esencial");
+    expect(notice).not.toContain("Confirmar y guardar");
     expect(notice).not.toContain("Algo interrumpió la carga");
     expect(notice).not.toContain("No pudimos validar el recibo");
     expect(notice).not.toContain("Reintentar ahora");

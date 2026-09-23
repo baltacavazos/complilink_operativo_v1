@@ -49,7 +49,7 @@ import {
 } from "./officialCheckCopy";
 
 function expectPlainNoResponseCopy(value: string) {
-  expect(value).toMatch(/Pedimos la información|no hubo respuesta|no contestó|no contestaron/);
+  expect(value).toMatch(/Pedimos la información|no hubo respuesta|no contestó|no contestaron|Hoy no pudimos consultar/);
   expect(value).not.toMatch(/no de AuditaPatrón/);
   expect(value).not.toMatch(/\bFalló\b/);
   expect(value).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
@@ -136,12 +136,12 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       summary: summary("sin_permiso"),
     });
 
-    expect(display.headline).toBe("Ya leímos el recibo. Consultando oficinas…");
+    expect(display.headline).toBe("Ya leímos tu recibo. Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.");
     expect(display.buttonLabel).toBe(OFFICIAL_CHECK_LOADING_LABEL);
     expect(display.status).toBe("consultando");
     expect(display.headline).not.toMatch(/Falta tu permiso/i);
     expect(display.detail).toBe(INSTITUTE_WAITING_DETAIL);
-    expect(display.detail).toMatch(/Si tarda, casi siempre es la oficina/);
+    expect(display.detail).toMatch(/no es por tu recibo/i);
     expect(display.detail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(display.detail).not.toMatch(/Falta tu permiso|Helios|HMAC|cumple/i);
   });
@@ -161,7 +161,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     });
 
     expect(vivo.headline).toBe("Hoy no pudimos consultar.");
-    expect(vivo.detail).toContain("No prueba que tu patrón cumpla ni que falle.");
+    expect(vivo.detail).toContain("Hoy no pudimos consultar. No prueba que tu patrón cumpla.");
 
     const capped = resolveOfficialCheckDisplay({
       consentGranted: true,
@@ -185,7 +185,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       nowMs: Date.parse("2026-09-21T20:39:00.000Z"),
     });
     expect(capped.headline).toBe("Hoy no pudimos consultar IMSS.");
-    expect(capped.detail).toContain("No prueba que tu patrón cumpla ni que falle.");
+    expect(capped.detail).toBe("Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla.");
     expect(capped.status).toBe("no_se_pudo");
     expect(capped.headline).not.toMatch(/Pendiente|Bien|Vivo|cumple/i);
     expect(vivo.headline).not.toMatch(/\bVivo\b|certificado|RFC confirmado/);
@@ -208,9 +208,9 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(fallo.buttonLabel).toBe(INSTITUTE_SILENCE_RETRY);
     expect(fallo.silence?.meaning).toMatch(/Tu recibo sí se leyó/);
     expect(fallo.silence?.sourceLines).toEqual([
-      "Hoy IMSS no contestó. No es un error de tu recibo.",
-      "Hoy SAT no contestó. No es un error de tu recibo.",
-      "Hoy Infonavit no contestó. No es un error de tu recibo.",
+      "Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla.",
+      "Hoy no pudimos consultar SAT. No prueba que tu patrón cumpla.",
+      "Hoy no pudimos consultar Infonavit. No prueba que tu patrón cumpla.",
     ]);
     expectPlainNoResponseCopy(fallo.detail);
     expect(fallo.detail).toContain(OFFICIAL_CHECK_STATUS_DETAIL.no_se_pudo);
@@ -234,7 +234,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       expect(display.buttonLabel).not.toMatch(/\bcumple\b/i);
       expect(display.detail).not.toMatch(/Helios|CompliLink|HMAC/i);
     }
-    expect(vivo.detail).toMatch(/No prueba que tu patrón cumpla ni que falle/);
+    expect(vivo.detail).toMatch(/Hoy no pudimos consultar\. No prueba que tu patrón cumpla/);
     expect(vivo.detail).not.toMatch(/\bcumple\b/i);
   });
 
@@ -313,10 +313,11 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(noResponse?.infonavit.estado).toBe("failed");
     expect(noResponse?.sat.estado).toBe("pending");
 
-    expect(buildOfficialFailedDetail(["imss"])).toBe("Hoy IMSS no contestó. No es un error de tu recibo.");
+    expect(buildOfficialFailedDetail(["imss"])).toBe("Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla.");
     expect(buildOfficialFailedDetail(["imss"])).not.toMatch(/SAT|Infonavit/);
-    expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/Hoy IMSS y SAT no contestaron/);
-    expect(buildOfficialFailedDetail(["imss", "sat"])).toMatch(/No es un error de tu recibo/);
+    expect(buildOfficialFailedDetail(["imss", "sat"])).toBe(
+      "Hoy no pudimos consultar IMSS y SAT. No prueba que tu patrón cumpla.",
+    );
     expectPlainNoResponseCopy(buildOfficialFailedDetail(["imss"]));
     expectPlainNoResponseCopy(buildOfficialFailedDetail(["imss", "sat", "infonavit"]));
 
@@ -434,7 +435,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.headline).not.toMatch(/Faltan datos/i);
     expect(display.buttonLabel).not.toMatch(/Faltan datos/i);
     expect(display.status).not.toBe("sin_datos");
-    expect(display.headline).toMatch(/Pendiente|Vivo|Hoy no se pudo comprobar|Estamos preguntando|Aún no te podemos decir|Consulta IMSS y SAT/);
+    expect(display.headline).toMatch(/Pendiente|Vivo|Hoy no se pudo comprobar|Todavía faltan respuestas|Aún no te podemos decir|Consulta IMSS y SAT/);
     expect(JSON.stringify(display)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
   });
 
@@ -700,8 +701,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.silence?.sourceLines.some((line) => line.startsWith("SAT contestó"))).toBe(true);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.some((line) => line.includes("UIPD9211257I0"))).toBe(true);
-    expect(display.silence?.sourceLines.some((line) => line === "Hoy IMSS no contestó. No es un error de tu recibo. Está en mantenimiento.")).toBe(true);
-    expect(display.silence?.sourceLines.some((line) => line === "Hoy Infonavit no contestó. No es un error de tu recibo. Está en mantenimiento.")).toBe(true);
+    expect(display.silence?.sourceLines.some((line) => line === "Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla. Está en mantenimiento.")).toBe(true);
+    expect(display.silence?.sourceLines.some((line) => line === "Hoy no pudimos consultar Infonavit. No prueba que tu patrón cumpla. Está en mantenimiento.")).toBe(true);
     expect(display.silence?.sourceLines.join(" ")).not.toMatch(/SAT — sin respuesta/);
     expect(display.silence?.chat).toMatch(/UIPD9211257I0/);
     expect(display.silence?.chat).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
@@ -765,7 +766,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       "El SAT confirmó el RFC consultado.",
       "Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.",
     ]);
-    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre en el SAT \(RFC consultado\): EVOLUCION CREATIVA CAMREFLEX/);
+    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre en el SAT: EVOLUCION CREATIVA CAMREFLEX/);
 
     for (const hook of [
       ["Razón social en SAT: EXPEDIENTE UIPD9211257I0."],
@@ -957,7 +958,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       }),
     });
     expect(signalWithoutFacts.headline).toBe("Hoy no se pudo comprobar. No prueba que te engañen.");
-    expect(signalWithoutFacts.silence?.whatHappened).toBe("Hoy IMSS, SAT e Infonavit no contestaron. No es un error de tu recibo.");
+    expect(signalWithoutFacts.silence?.whatHappened).toBe("Hoy no pudimos consultar IMSS, SAT e Infonavit. No prueba que tu patrón cumpla.");
     expect(signalWithoutFacts.silence?.meaning).toContain("Consultamos otra vía oficial y hoy no hubo datos útiles.");
     expect(signalWithoutFacts.headline).not.toContain("Consultamos otra vía oficial");
     expect(signalWithoutFacts.silence?.whatHappened).not.toContain("Consultamos otra vía oficial");
