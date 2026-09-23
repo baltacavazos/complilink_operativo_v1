@@ -7238,6 +7238,7 @@ export default function Auditar() {
   const isNativeAppExperience = canUseNativeDocumentInput();
   const isFirstDocumentFlow =
     documents.length === 0 && !pendingDraft && !lastUpload;
+  const presentEmptyWorkerUpload = isFirstDocumentFlow || exampleCaseVisible;
   const shouldCompactPostUploadExperience =
     Boolean(lastUpload) && !pendingDraft && !selectedFile;
   const receiptPayroll = lastUpload
@@ -7283,18 +7284,19 @@ export default function Auditar() {
   const condensedPriorityUploadGuides = shouldCompactPostUploadExperience
     ? visiblePriorityUploadGuides.slice(0, 1)
     : visiblePriorityUploadGuides;
-  const shouldCompactMobileUploadEntry = isFirstDocumentFlow;
+  const shouldCompactMobileUploadEntry = presentEmptyWorkerUpload;
   const hasDossierActivity =
     documents.length > 0 || Boolean(lastUpload) || Boolean(pendingDraft);
   const showWorkspaceSectionSelector =
+    !presentEmptyWorkerUpload &&
     hasDossierActivity &&
     documents.length > 1 &&
     !selectedFile &&
     !pendingDraft &&
     !shouldCompactPostUploadExperience;
-  const isSummaryWorkspaceSection = workspaceSection === "resumen";
-  const isDossierWorkspaceSection = workspaceSection === "expediente";
-  const isAdvancedWorkspaceSection = workspaceSection === "herramientas";
+  const isSummaryWorkspaceSection = presentEmptyWorkerUpload || workspaceSection === "resumen";
+  const isDossierWorkspaceSection = !presentEmptyWorkerUpload && workspaceSection === "expediente";
+  const isAdvancedWorkspaceSection = !presentEmptyWorkerUpload && workspaceSection === "herramientas";
   const workspaceSectionCards: Array<{
     key: AuditarWorkspaceSection;
     label: string;
@@ -9488,7 +9490,7 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                {isFirstDocumentFlow
+                {presentEmptyWorkerUpload
                   ? EMPTY_UPLOAD_TITLE
                   : isNativeAppExperience
                     ? "Tu documento"
@@ -9496,7 +9498,7 @@ export default function Auditar() {
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
-              {shouldCompactPostUploadExperience ? null : isFirstDocumentFlow ? (
+              {shouldCompactPostUploadExperience ? null : presentEmptyWorkerUpload ? (
                 EMPTY_UPLOAD_HELP
               ) : isNativeAppExperience ? (
                 <>
@@ -9518,7 +9520,7 @@ export default function Auditar() {
                 </>
               )}
             </p>
-            {!shouldCompactPostUploadExperience && !isFirstDocumentFlow ? (
+            {!shouldCompactPostUploadExperience && !presentEmptyWorkerUpload ? (
               <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
                 <ShieldCheck
                   className="h-3.5 w-3.5 text-teal-300"
@@ -9552,7 +9554,7 @@ export default function Auditar() {
           </section>
         ) : null}
 
-        {privacySignal.ready || isFirstDocumentFlow ? null : (
+        {privacySignal.ready || presentEmptyWorkerUpload ? null : (
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
           <div
             data-ap-privacy-bar
@@ -9889,7 +9891,7 @@ export default function Auditar() {
 
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
           <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
-            {documents.length > 0 && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
+            {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
               <>
                 {renderReceiptArrival(false)}
                 <WorkerOfficialResult
@@ -9908,7 +9910,7 @@ export default function Auditar() {
                 />
               </>
             ) : null}
-            {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
+            {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
               <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
                 <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
                   {officialCheckDisplay.headline}
@@ -10186,7 +10188,7 @@ export default function Auditar() {
               </div>
             ) : null}
 
-            <div className={shouldCompactPostUploadExperience || isFirstDocumentFlow ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
+            <div className={shouldCompactPostUploadExperience || presentEmptyWorkerUpload ? "hidden" : "rounded-[1.7rem] border border-teal-100 bg-[radial-gradient(circle_at_top_left,_rgba(45,212,191,0.14),_transparent_35%),linear-gradient(180deg,_#ffffff_0%,_#f0fdfa_100%)] p-5 shadow-sm sm:p-6"}>
               {shouldCompactPostUploadExperience ? (
                 <details className="rounded-[1.2rem] border border-white/80 bg-white/90 p-4 shadow-sm sm:hidden">
                   <summary className="flex list-none items-center justify-between gap-3 text-left">
@@ -10227,7 +10229,7 @@ export default function Auditar() {
                   </div>
                 </details>
               ) : null}
-              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView || isFirstDocumentFlow ? "hidden" : ""}`}>
+              <div className={`grid gap-4 xl:grid-cols-[1.22fr_0.78fr] xl:items-start ${shouldCompactPostUploadExperience || auth.canToggleUserView || presentEmptyWorkerUpload ? "hidden" : ""}`}>
                 <div data-ap-upload-copy>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
                     {shouldCompactPostUploadExperience
@@ -10788,7 +10790,7 @@ export default function Auditar() {
                     </div>
                   </div>
 
-                  <div className={`rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2 ${isFirstDocumentFlow ? "hidden" : ""}`}>
+                  <div className={`rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2 ${presentEmptyWorkerUpload ? "hidden" : ""}`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                       Pregunta a IMSS e Infonavit
                     </p>
@@ -10979,7 +10981,7 @@ export default function Auditar() {
               </div>
             </div>
 
-            <div className="sm:hidden rounded-[1.2rem] border border-slate-200 bg-white px-3 py-2.5 shadow-sm">
+            <div className={`sm:hidden rounded-[1.2rem] border border-slate-200 bg-white px-3 py-2.5 shadow-sm ${presentEmptyWorkerUpload ? "hidden" : ""}`}>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-teal-50 px-2.5 py-1 text-[11px] font-semibold tracking-tight text-teal-800">
                   {mobileDossierProgressCopy}
@@ -11081,7 +11083,7 @@ export default function Auditar() {
               </div>
 
               <div
-                className={`mt-6 gap-4 md:grid-cols-2 ${shouldHideUploadSelectors || auth.canToggleUserView ? "hidden" : "grid"}`}
+                className={`mt-6 gap-4 md:grid-cols-2 ${shouldHideUploadSelectors || auth.canToggleUserView || exampleCaseVisible ? "hidden" : "grid"}`}
               >
                 <label className="block">
                   <span className="text-sm font-medium text-slate-700">
@@ -11143,7 +11145,7 @@ export default function Auditar() {
                   ref={uploadSectionRef}
                   className="mt-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3.5 sm:p-4"
                 >
-                  <div className={`flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5 ${isFirstDocumentFlow ? "hidden" : ""}`}>
+                  <div className={`flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5 ${presentEmptyWorkerUpload ? "hidden" : ""}`}>
                     <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
                       <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
                     </div>
@@ -11207,7 +11209,7 @@ export default function Auditar() {
                 ) : null}
 
                 <div
-                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${isFirstDocumentFlow || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
+                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${presentEmptyWorkerUpload || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
                 >
                   <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3.5">
                     <div className="flex items-start gap-2.5">
@@ -11380,7 +11382,7 @@ export default function Auditar() {
                               ? "Cambiar documento"
                               : uploadPrimaryActionLabel}
                         </Button>
-                        {isFirstDocumentFlow && !selectedFile ? (
+                        {presentEmptyWorkerUpload && !selectedFile ? (
                           <p className="mx-auto max-w-[22rem] text-center text-sm font-medium leading-5 text-slate-800">
                             {EMPTY_UPLOAD_TRUST}
                           </p>
@@ -11407,7 +11409,7 @@ export default function Auditar() {
                             ? "Cambiar documento"
                             : uploadPrimaryActionLabel}
                       </Button>
-                      {isFirstDocumentFlow && !selectedFile ? (
+                      {presentEmptyWorkerUpload && !selectedFile ? (
                         <p className="mx-auto max-w-[22rem] text-center text-sm font-medium leading-5 text-slate-800">
                           {EMPTY_UPLOAD_TRUST}
                         </p>
@@ -11418,7 +11420,7 @@ export default function Auditar() {
                       <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-700">
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento se está analizando."
-                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. ${isFirstDocumentFlow ? "El CFDI es el comprobante fiscal de tu sueldo. " : ""}Sube tu documento y en minutos ves el resultado y qué hacer.`}
+                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. ${presentEmptyWorkerUpload ? "El CFDI es el comprobante fiscal de tu sueldo. " : ""}Sube tu documento y en minutos ves el resultado y qué hacer.`}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
                         <div className="rounded-[0.95rem] border border-teal-200 bg-teal-50/80 px-3.5 py-2.5 text-teal-950 shadow-sm">
@@ -11466,7 +11468,7 @@ export default function Auditar() {
                           ? "Cambiar documento"
                           : uploadPrimaryActionLabel}
                     </Button>
-                    {isFirstDocumentFlow && !selectedFile ? (
+                    {presentEmptyWorkerUpload && !selectedFile ? (
                       <p className="text-sm font-medium leading-5 text-slate-800">{EMPTY_UPLOAD_TRUST}</p>
                     ) : null}
                     <button
@@ -16449,7 +16451,7 @@ Reforzar con otro documento
         </DrawerContent>
       </Drawer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || officialCheckDisplay.silence || freePlanDocumentLimitNotice || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || officialCheckDisplay.silence || freePlanDocumentLimitNotice || (presentEmptyWorkerUpload && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
           {privacySignal.ready ? null : (
           <div
