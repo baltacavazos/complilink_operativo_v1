@@ -297,7 +297,7 @@ export function humanizeOfficialHecho(text: string): string {
   return text
     .replace(
       /raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?\s*[:：-]\s*/gi,
-      "Nombre del RFC consultado en el SAT: ",
+      "Nombre en el SAT: ",
     )
     .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
     .replace(/\brpci\b/gi, "registro del IMSS")

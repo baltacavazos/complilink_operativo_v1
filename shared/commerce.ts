@@ -153,12 +153,12 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
   {
     key: "essential",
     name: "Audita Esencial",
-    headline: "Para ordenar mejor tu expediente y comparar más contexto.",
+    headline: "Para guardar más recibos en tu caso y compararlos.",
     monthlyPriceMx: 79,
     badge: "Más vendido",
     ctaLabel: "Elegir plan",
     description:
-      "Desbloquea más documentos por expediente, comparativas más claras y continuidad útil del asesor laboral para llevar mejor tu caso.",
+      "Más recibos en tu caso, para comparar lo que te pagaron y lo que ya vimos.",
     highlighted: true,
     limits: {
       maxDocumentsPerCase: ESSENTIAL_MAX_DOCUMENTS_PER_CASE,
@@ -175,7 +175,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
   {
     key: "pro",
     name: "Audita Pro",
-    headline: "Para operar expedientes con seguimiento más profundo.",
+    headline: "Para seguir tu caso y avisarte si algo cambia.",
     monthlyPriceMx: 199,
     badge: "Operación completa",
     ctaLabel: "Elegir plan",
@@ -189,7 +189,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
       includedProactiveAlerts: true,
     },
     featureBullets: [
-      formatCommerceDocumentLimitBullet(PRO_MAX_DOCUMENTS_PER_CASE),
+      "Hasta 50 recibos en tu caso.",
       "Asesor laboral con el historial de tu caso.",
       "Volvemos a preguntar a IMSS e Infonavit y te avisamos si algo cambia.",
     ],

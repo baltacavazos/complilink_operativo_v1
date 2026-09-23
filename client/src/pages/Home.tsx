@@ -312,7 +312,7 @@ function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
 }
 
 const navLinks = [
-  { href: "#lectura-gratis", label: "Empezar" },
+  { href: "#lectura-gratis", label: "Tu recibo" },
   { href: "#como-funciona", label: "Cómo funciona" },
   { href: "/aviso-de-privacidad", label: "Privacidad" },
 ];
@@ -1719,9 +1719,9 @@ function HeliosFirstEntrySection() {
                   Empieza con una foto o PDF. Primero ves si te sirve; después decides si lo guardas en tu expediente.
                 </p>
               </div>
-              <Button className="h-11 rounded-full bg-teal-600 px-5 text-white hover:bg-teal-700" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
+              <Button variant="outline" className="h-11 rounded-full border-slate-200 bg-white px-5 text-slate-800 hover:bg-slate-50" onClick={handleGuestUploadClick} disabled={guestAnalyzeMutation.isPending || isSavingPreview}>
                 {guestAnalyzeMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" strokeWidth={1.8} />}
-                {guestPreview ? "Cambiar documento" : "Empezar con una foto o PDF"}
+                {guestPreview ? "Cambiar documento" : "Sube una foto o PDF"}
               </Button>
             </div>
 
@@ -2171,7 +2171,7 @@ function CopilotPreviewSection() {
             Asesor laboral de AuditaPatron
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Una capa extra para hacer preguntas rápidas sobre tu expediente.
+            Preguntas cortas sobre tu caso, cuando ya subiste un recibo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asesor laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro del expediente.
@@ -3191,7 +3191,7 @@ function SiteFooter() {
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
           <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
-            Empezar
+            Tu recibo
           </a>
 
           <a href="#como-funciona" className="transition-colors hover:text-slate-900">

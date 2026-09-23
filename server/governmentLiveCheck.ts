@@ -689,7 +689,7 @@ function factsFromOfficialRecord(record: Record<string, unknown> | null): string
   if (rfc && !isGenericSatRfc(rfc)) picked.push(`RFC: ${rfc}`);
   const legalName = firstRecordText(record, ["legalName", "razonSocial", "razon_social", "nombreFiscal"]);
   if (legalName && !isPlaceholderSatLegalName(legalName, rfc)) {
-    picked.push(`Nombre del RFC consultado en el SAT: ${legalName.replace(/\.+$/g, "")}.`);
+    picked.push(`Nombre en el SAT: ${legalName.replace(/\.+$/g, "")}.`);
   }
   const personType = firstRecordText(record, ["tipoPersona", "tipo_persona", "personType"]);
   if (personType && !isPlaceholderSatLegalName(personType)) {

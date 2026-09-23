@@ -16,7 +16,7 @@ test.describe("navegación pública del landing", () => {
 
     await desktopHeader.getByRole("link", { name: "Asistente" }).click();
     await expect(page).toHaveURL(/#copiloto$/);
-    await expect(page.getByRole("heading", { name: "Una capa extra para hacer preguntas rápidas sobre tu expediente." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Preguntas cortas sobre tu caso, cuando ya subiste un recibo." })).toBeVisible();
   });
 
   test("el menú móvil lleva a destinos visibles equivalentes y se cierra tras navegar", async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe("navegación pública del landing", () => {
     await menuButton.click();
     await page.locator("header").getByRole("link", { name: "Asistente" }).click();
     await expect(page).toHaveURL(/#copiloto$/);
-    await expect(page.getByRole("heading", { name: "Una capa extra para hacer preguntas rápidas sobre tu expediente." })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Preguntas cortas sobre tu caso, cuando ya subiste un recibo." })).toBeVisible();
     await expect(menuButton).toBeVisible();
   });
 });

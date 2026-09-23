@@ -1209,7 +1209,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nowIso,
     });
     expect(named?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(
-      /Nombre del RFC consultado en el SAT: EVOLUCION CREATIVA CAMREFLEX/,
+      /Nombre en el SAT: EVOLUCION CREATIVA CAMREFLEX/,
     );
 
     const emptyHook = officialCheckFromBridgeReturn({

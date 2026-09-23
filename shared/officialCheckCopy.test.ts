@@ -739,7 +739,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       "El SAT confirmó el RFC consultado.",
       "Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.",
     ]);
-    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre del RFC consultado en el SAT: EVOLUCION CREATIVA CAMREFLEX/);
+    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre en el SAT: EVOLUCION CREATIVA CAMREFLEX/);
 
     for (const hook of [
       ["Razón social en SAT: EXPEDIENTE UIPD9211257I0."],
