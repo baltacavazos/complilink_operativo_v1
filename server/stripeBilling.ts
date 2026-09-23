@@ -219,7 +219,10 @@ function normalizeOneShotFromSession(session: Stripe.Checkout.Session): Commerce
   if (normalized.includes("informe premium")) {
     return "informe_premium";
   }
-  if (normalized.includes("expediente para abogado")) {
+  if (
+    normalized.includes("expediente para abogado") ||
+    normalized.includes("paquete para tu abogado")
+  ) {
     return "expediente_abogado";
   }
 

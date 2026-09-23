@@ -14,7 +14,7 @@ describe("getAuditapatronPricingExperience", () => {
       "La primera lectura sigue siendo gratis."
     );
     expect(experience.landing.principles).toContain(
-      "El plan gratis incluye un documento por expediente."
+      "El plan gratis incluye un documento."
     );
     expect(experience.landing.principles.some(item => /3 documentos|varios recibos/i.test(item))).toBe(false);
   });
@@ -53,18 +53,42 @@ describe("getAuditapatronPricingExperience", () => {
     expect(freePlan?.featureBullets.join(" ")).not.toMatch(/3 documentos|varios recibos/i);
   });
 
-  it("incluye productos one-shot para informe premium y expediente para abogado", () => {
+  it("incluye el informe y el paquete para tu abogado, sin decir expediente", () => {
     const experience = getAuditapatronPricingExperience(1);
+    const informe = experience.platform.oneShots.find(product => product.key === "informe_premium");
+    const lawyer = experience.platform.oneShots.find(product => product.key === "expediente_abogado");
 
     expect(experience.platform.oneShots).toHaveLength(2);
     expect(
       experience.platform.oneShots.map(product => product.key)
     ).toEqual(["informe_premium", "expediente_abogado"]);
-    expect(
-      experience.platform.oneShots.some(product =>
-        product.description.toLowerCase().includes("expediente")
-      )
-    ).toBe(true);
+    expect(lawyer?.name).toBe("Paquete para tu abogado");
+    expect(lawyer?.ctaLabel).toBe("Preparar paquete");
+    expect(lawyer?.featureBullets.join(" ")).not.toMatch(/expediente/i);
+    expect(informe?.description).not.toMatch(/expediente/i);
+    expect(informe?.deliveryLabel).not.toMatch(/expediente/i);
+    const visible = [
+      ...experience.platform.plans.flatMap((plan) => [
+        plan.name,
+        plan.headline,
+        plan.description,
+        plan.ctaLabel,
+        plan.badge,
+        ...plan.featureBullets,
+      ]),
+      ...experience.platform.oneShots.flatMap((product) => [
+        product.name,
+        product.description,
+        product.deliveryLabel,
+        product.ctaLabel,
+        product.badge,
+        ...product.featureBullets,
+      ]),
+      experience.platform.title,
+      experience.platform.description,
+      experience.platform.reassurance,
+    ].join(" ");
+    expect(visible).not.toMatch(/expediente|revalidacion/i);
   });
 
   it("no deja Helios ni CompliLink en el copy de planes visible", () => {

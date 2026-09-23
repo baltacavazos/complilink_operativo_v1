@@ -79,7 +79,7 @@ export function getVisiblePaidPlans() {
     ctaLabel: PLAN_PRIMARY_CTA,
     highlighted: plan.highlighted,
     includes: plan.featureBullets.map((bullet) =>
-      /^Hasta \d+ documentos por expediente\.?$/i.test(bullet)
+      /^Hasta \d+ documentos (por expediente|en tu caso)\.?$/i.test(bullet)
         ? formatCommerceDocumentLimitBullet(plan.limits.maxDocumentsPerCase)
         : bullet,
     ),

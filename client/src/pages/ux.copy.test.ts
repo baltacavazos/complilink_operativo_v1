@@ -223,7 +223,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Productos puntuales');
     expect(source).toContain('Gestionar suscripción y cobros');
     expect(source).toContain('Checkout listo en sandbox para validación.');
-    expect(source).toContain('Elige seguir gratis o activar más profundidad cuando tu expediente lo necesite.');
+    expect(source).toContain('Elige seguir gratis o activar más profundidad cuando tu caso lo necesite.');
     expect(source).toContain('Vista normal de usuario con acceso CEO');
     expect(source).toContain('Vista operativa base con acceso CEO');
     expect(source).toContain('Abrir acciones CEO');

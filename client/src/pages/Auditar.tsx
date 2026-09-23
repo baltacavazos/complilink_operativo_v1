@@ -799,7 +799,7 @@ function getCommerceProductLabel(productKey: CommerceProductKey) {
     case "informe_premium":
       return "Informe Premium";
     case "expediente_abogado":
-      return "Expediente para abogado";
+      return "Paquete para tu abogado";
     default:
       return "Audita Gratis";
   }
@@ -810,9 +810,9 @@ function getCommerceTriggerLabel(triggerPoint: CommerceTriggerPoint) {
     case "document_limit_blocked":
       return "Bloqueo por límite de documentos";
     case "helios_multi_document_blocked":
-      return "Bloqueo por lectura avanzada del expediente";
+      return "Bloqueo por lectura de varios documentos";
     case "revalidation_blocked":
-      return "Bloqueo por revalidación avanzada";
+      return "Revisión de IMSS e Infonavit";
     case "one_shot_card":
       return "Interés en producto puntual";
     case "checkout_return_success":
@@ -832,7 +832,7 @@ function buildManualCommercePromptContext(activePlanKey: CommercePlanKey): Comme
     title: "Elige solo cuando te ayude de verdad",
     body:
       targetPlan === "essential"
-        ? `Si ya vas a seguir armando tu expediente, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`
+        ? `Si ya vas a seguir armando tu caso, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`
         : `Si ya necesitas memoria histórica, revisión de lo que se ve en el papel y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
     targetPlan,
     triggerPoint: "manual_drawer_open",
@@ -863,12 +863,12 @@ function buildCommercePromptContext(params: {
     return {
       title:
         targetPlan === "pro"
-          ? "Activa la lectura más profunda del expediente"
+          ? "Activa la lectura más profunda de tu caso"
           : "Conecta más documentos en la misma conversación",
       body:
         targetPlan === "pro"
           ? `Para una lectura más profunda con memoria histórica y seguimiento ampliado, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`
-          : `Para que tu asesor conecte varios documentos dentro de este mismo expediente, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`,
+          : `Para que tu asesor conecte varios documentos dentro de este mismo caso, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`,
       targetPlan,
       triggerPoint: "helios_multi_document_blocked",
       productKey: targetPlan,
@@ -878,7 +878,7 @@ function buildCommercePromptContext(params: {
   if (/Revalidaciones IMSS e Infonavit/i.test(params.message)) {
     return {
       title: "Activa revisión avanzada de lo que se ve en el papel",
-      body: `La revisión de lo que se ve de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommercePriceMx(199)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu expediente.`,
+      body: `La revisión de lo que se ve de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommercePriceMx(199)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu caso.`,
       targetPlan: "pro",
       triggerPoint: "revalidation_blocked",
       productKey: "pro",
@@ -897,7 +897,7 @@ function buildCommerceCheckoutToast(productKey: CommerceProductKey) {
     case "informe_premium":
       return `Te estamos llevando al checkout seguro de Informe Premium por ${formatCommercePriceMx(299)}.`;
     case "expediente_abogado":
-      return `Te estamos llevando al checkout seguro de Expediente para abogado por ${formatCommercePriceMx(499)}.`;
+      return `Te estamos llevando al checkout seguro de Paquete para tu abogado por ${formatCommercePriceMx(499)}.`;
     default:
       return "Te estamos llevando al checkout seguro.";
   }
@@ -5407,7 +5407,7 @@ export default function Auditar() {
       setCommercePromptContext({
         title:
           productKey === "informe_premium"
-            ? "Compra puntual para este expediente"
+            ? "Compra puntual para este caso"
             : "Prepara el paquete para compartir",
         body:
           productKey === "informe_premium"
@@ -5534,13 +5534,13 @@ export default function Auditar() {
       setCommercePromptContext({
         title: auth.canToggleUserView ? "Pago detectado en sandbox" : "Pago detectado",
         body: auth.canToggleUserView
-          ? `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este expediente.`
-          : `${planName} ya quedó registrado. Si el pago se confirmó, tu acceso debería verse en este expediente.`,
+          ? `${planName} ya regresó desde Stripe. Si el checkout terminó bien, tu acceso debería reflejarse al volver a consultar este caso.`
+          : `${planName} ya quedó registrado. Si el pago se confirmó, tu acceso debería verse en este caso.`,
         targetPlan: billingReturnState.productKey,
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
       });
-      sonnerToast(`Pago detectado. Validaremos ${planName} dentro de tu expediente.`);
+      sonnerToast(`Pago detectado. Validaremos ${planName} en tu caso.`);
     } else {
       const productName = getCommerceProductLabel(billingReturnState.productKey);
       trackCommerceOneShotPurchased(productName, {
@@ -5549,8 +5549,8 @@ export default function Auditar() {
       setCommercePromptContext({
         title: "Pago puntual detectado",
         body: auth.canToggleUserView
-          ? `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu expediente.`
-          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu expediente.`,
+          ? `${productName} regresó desde Stripe. Si el cobro quedó confirmado en sandbox, esta compra ya debe poder verse reflejada en tu caso.`
+          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu caso.`,
         targetPlan: activeCommercePlanKey,
         triggerPoint: "checkout_return_success",
         productKey: billingReturnState.productKey,
@@ -5558,7 +5558,7 @@ export default function Auditar() {
       sonnerToast(
         auth.canToggleUserView
           ? `${productName} regresó desde Stripe para validación.`
-          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu expediente.`,
+          : `${productName} ya quedó registrado. Si el pago se confirmó, esta compra debería verse en tu caso.`,
       );
     }
 
@@ -16138,7 +16138,7 @@ Reforzar con otro documento
               </p>
               <div className="mt-3 grid gap-2 text-sm text-slate-700 sm:grid-cols-3">
                 <div className="rounded-2xl bg-white/80 p-3">
-                  <p className="font-semibold text-slate-950">Documentos por expediente</p>
+                  <p className="font-semibold text-slate-950">Documentos en tu caso</p>
                   <p className="mt-1">
                     {formatActiveDocumentCapCopy(
                       commerceStatusQuery.data?.entitlements.maxDocumentsPerCase ?? FREE_MAX_DOCUMENTS_PER_CASE,
@@ -16149,10 +16149,10 @@ Reforzar con otro documento
                   <p className="font-semibold text-slate-950">Asesor laboral</p>
                   <p className="mt-1">
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
-                      ? "Memoria histórica de expediente"
+                      ? "Historial de tu caso"
                       : commerceStatusQuery.data?.entitlements.canUseHeliosMultiDocument
-                        ? "Puede leer varios documentos de tu expediente"
-                        : "Sobre el documento de tu expediente"}
+                        ? "Puede leer varios documentos de tu caso"
+                        : "Sobre el documento de tu caso"}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
@@ -16258,7 +16258,7 @@ Reforzar con otro documento
               <div>
                 <p className="text-sm font-semibold text-slate-950">Planes mensuales</p>
                 <p className="text-sm text-slate-600">
-                  Elige seguir gratis o activar más profundidad cuando tu expediente lo necesite.
+                  Elige seguir gratis o activar más profundidad cuando tu caso lo necesite.
                 </p>
               </div>
               <div className="grid gap-3">
@@ -16391,7 +16391,7 @@ Reforzar con otro documento
                         commerceStatusQuery.data?.environment?.checkoutReady
                           ? alreadyPurchased
                             ? "Comprar otra vez"
-                            : "Ver el entregable"
+                            : product.ctaLabel
                           : "El cobro aún no está activo"}
                       </Button>
                     </article>
