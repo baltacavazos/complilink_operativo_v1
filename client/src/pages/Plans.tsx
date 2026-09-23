@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 const visiblePaidPlans = getVisibleCatalogPlans();
+const visibleOneShots = getAuditapatronPricingExperience(0).platform.oneShots;
 
 export default function Plans() {
   return (
@@ -39,14 +41,20 @@ export default function Plans() {
               }`}
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-base font-semibold text-slate-950">{plan.name}</p>
-                <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800">
-                  {plan.badge}
-                </span>
+                <p className="text-base font-semibold text-slate-950">
+                  {plan.key === "free" ? "Gratis · $0 · 1 documento" : plan.name}
+                </p>
+                {plan.key === "free" ? null : (
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                    {plan.badge}
+                  </span>
+                )}
               </div>
-              <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                {plan.priceLabel}
-              </p>
+              {plan.key === "free" ? null : (
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                  {plan.priceLabel}
+                </p>
+              )}
               <p className="mt-1 text-sm leading-6 text-slate-700">{plan.headline}</p>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
                 {plan.includes.map((feature) => (
@@ -69,6 +77,49 @@ export default function Plans() {
               </Button>
             </article>
           ))}
+        </section>
+
+        <section data-testid="planes-one-shots" className="space-y-3">
+          <div className="px-1">
+            <p className="text-sm font-semibold text-teal-800">Pago único</p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Productos puntuales</h2>
+            <p className="mt-1 text-sm leading-6 text-slate-600">
+              Útiles cuando no quieres una suscripción, sino un entregable concreto.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {visibleOneShots.map((product) => (
+              <article
+                key={product.key}
+                className="rounded-[1.5rem] border border-slate-200 bg-white p-5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-base font-semibold text-slate-950">{product.name}</p>
+                  <span className="rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-teal-800">
+                    {product.badge}
+                  </span>
+                </div>
+                <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                  {product.priceLabel}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{product.description}</p>
+                <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                  {product.featureBullets.map((feature) => (
+                    <li key={feature} className="flex gap-2">
+                      <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button
+                  asChild
+                  className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                >
+                  <a href="/auditar">{product.ctaLabel}</a>
+                </Button>
+              </article>
+            ))}
+          </div>
         </section>
 
         <section className="rounded-[1.5rem] border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700">
