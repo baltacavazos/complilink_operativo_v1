@@ -35,6 +35,7 @@ import {
   isWorkerSystemFieldLabel,
   sanitizeClientVisibleCopy,
 } from "@/lib/clientVisibleCopy";
+import { isSmokeAuthEmail } from "@shared/smokeAuth";
 import {
   WORKER_CHAT_ASK_CTA,
   WORKER_CHAT_DISCLAIMER,
@@ -5060,7 +5061,8 @@ export default function Auditar() {
     sessionAccount?.email,
     caseDetailQuery.data?.case.employeeName,
     caseDetailQuery.data?.case.title,
-  ].some((value) => isSmokeOrInternalAccountHandle(value) || /\b(?:tester|demo)\b/i.test(String(value ?? "")));
+  ].some((value) => isSmokeOrInternalAccountHandle(value) || /\b(?:tester|demo)\b/i.test(String(value ?? "")))
+    || isSmokeAuthEmail(sessionAccount?.email ?? "");
   const remoteAdvisorMemory = caseDetailQuery.data?.advisorMemory;
   const heliosCopilotHistoryStorageKey = useMemo(() => {
     if (!auditarPersistenceKey || !currentCaseScopeKey) {
@@ -9444,15 +9446,19 @@ export default function Auditar() {
       ) : null}
       <div className="container mx-auto max-w-6xl">
         {exampleCaseVisible ? (
-          <p className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm font-semibold leading-6 text-amber-950">
+          <section
+            role="status"
+            data-testid="example-case-banner"
+            className="mb-4 rounded-2xl border-2 border-amber-500 bg-amber-100 px-4 py-4 text-base font-semibold leading-6 text-amber-950 shadow-sm"
+          >
             Ejemplo. Estos papeles no son tu caso.
-          </p>
+          </section>
         ) : null}
         {officialCheckDisplay.silence ? null : (
         <>
         <MobileAppShell
           current="auditar"
-          title={shouldCompactPostUploadExperience ? "Tu auditoría" : "Empieza tu auditoría"}
+          title={shouldCompactPostUploadExperience ? "Tu auditoría" : presentEmptyWorkerUpload ? EMPTY_UPLOAD_TITLE : "Empieza tu auditoría"}
           subtitle={shouldCompactPostUploadExperience ? "Sigue con tu revisión." : "Primero revisas. Guardas solo si te sirve."}
         />
         <div
@@ -11001,13 +11007,15 @@ export default function Auditar() {
                     {isNativeAppExperience ? "Sube y revisa" : "Sube tu archivo"}
                   </p>
                   <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-2xl">
-                    Revisa lo importante
+                    {presentEmptyWorkerUpload ? EMPTY_UPLOAD_TITLE : "Revisa lo importante"}
                   </h2>
                 </div>
                 <p className="max-w-lg text-sm leading-5 text-slate-600">
-                  {isNativeAppExperience
-                    ? "Primero revisas. Guardas solo si te sirve."
-                    : "Primero ves lo importante y después decides si lo guardas."}
+                  {presentEmptyWorkerUpload
+                    ? "El CFDI es el comprobante fiscal de tu sueldo."
+                    : isNativeAppExperience
+                      ? "Primero revisas. Guardas solo si te sirve."
+                      : "Primero ves lo importante y después decides si lo guardas."}
                 </p>
               </div>
 
@@ -11592,6 +11600,11 @@ export default function Auditar() {
                     <p className="font-semibold text-slate-950">
                       {getUploadCompactGuardrails().fileRules}
                     </p>
+                    {presentEmptyWorkerUpload ? (
+                      <p className="mt-1.5 font-medium text-slate-950">
+                        El CFDI es el comprobante fiscal de tu sueldo.
+                      </p>
+                    ) : null}
                     <p className="mt-1.5">
                       {getUploadCompactGuardrails().privacyRules}
                     </p>
