@@ -223,12 +223,15 @@ Checkouts iniciados
 Pagos detectados
 */
 import { toast as sonnerToast } from "sonner";
+import { freePlanUploadNoticeFromError } from "@/lib/freePlanUploadNotice";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
   formatActiveDocumentCapCopy,
   formatCommercePriceMx,
+  FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE,
   FREE_MAX_DOCUMENTS_PER_CASE,
   FREE_TIER_EXHAUSTED_COPY,
+  isFreePlanDocumentLimitMessage,
   type CommercePlanKey,
   type CommerceProductKey,
 } from "@shared/commerce";
@@ -7242,11 +7245,15 @@ export default function Auditar() {
     guestAnalyzeMutation.isPending ||
     analyzeDraftMutation.isPending ||
     confirmDraftMutation.isPending;
-  const receiptAckVisible: ReceiptAck = receiptAck ?? (receiptInFlight ? "received" : null);
+  const freePlanDocumentLimitNotice = isFreePlanDocumentLimitMessage(submitError ?? "");
+  const receiptAckVisible: ReceiptAck = freePlanDocumentLimitNotice
+    ? null
+    : (receiptAck ?? (receiptInFlight ? "received" : null));
   const showReceiptBanner =
-    analyzeDraftMutation.isPending ||
-    confirmDraftMutation.isPending ||
-    (receiptAck === "failed" && !pendingDraft && !shouldCompactPostUploadExperience);
+    !freePlanDocumentLimitNotice &&
+    (analyzeDraftMutation.isPending ||
+      confirmDraftMutation.isPending ||
+      (receiptAck === "failed" && !pendingDraft && !shouldCompactPostUploadExperience));
   const renderReceiptArrival = (showSkeleton = true) => (
     <ReceiptArrival
       ack={showSkeleton ? receiptAckVisible : null}
@@ -8650,6 +8657,32 @@ export default function Auditar() {
     setSubmitError(null);
   };
 
+  const openFreePlanDocumentLimitPlans = () => {
+    const prompt = buildCommercePromptContext({
+      message: FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE,
+      activePlanKey: activeCommercePlanKey,
+    });
+    if (prompt) {
+      setCommercePromptContext(prompt);
+    }
+    setCasePreparationDrawerOpen(true);
+  };
+
+  const reportAuditarUploadFailure = (error: unknown, fallback: string) => {
+    const freePlanNotice = freePlanUploadNoticeFromError(error);
+    setSaveNotice(null);
+    if (freePlanNotice) {
+      setReceiptAck(null);
+      setSubmitError(freePlanNotice.message);
+      sonnerToast(freePlanNotice.message, { id: "guardar-revision" });
+      return;
+    }
+
+    setReceiptAck("failed");
+    sonnerToast.dismiss("guardar-revision");
+    setSubmitError(toFriendlyAuditarRuntimeMessage(error, fallback));
+  };
+
   const handleUpload = async () => {
     setAutoAnalyzeRequested(false);
 
@@ -8715,13 +8748,7 @@ export default function Auditar() {
       setTextHint("");
       setPickerKey(value => value + 1);
     } catch (error) {
-      setReceiptAck("failed");
-      setSubmitError(
-        toFriendlyAuditarRuntimeMessage(
-          error,
-          "No fue posible analizar el archivo."
-        )
-      );
+      reportAuditarUploadFailure(error, "No fue posible analizar el archivo.");
     }
   };
 
@@ -8933,15 +8960,7 @@ export default function Auditar() {
         }),
       ]);
     } catch (error) {
-      setReceiptAck("failed");
-      setSaveNotice(null);
-      sonnerToast.dismiss("guardar-revision");
-      setSubmitError(
-        toFriendlyAuditarRuntimeMessage(
-          error,
-          "No fue posible guardar el documento."
-        )
-      );
+      reportAuditarUploadFailure(error, "No fue posible guardar el documento.");
     }
   };
 
@@ -12329,7 +12348,32 @@ export default function Auditar() {
                 </>
               ) : null}
 
-              {submitError ? (
+              {submitError && freePlanDocumentLimitNotice ? (
+                <div
+                  data-testid="free-plan-document-limit"
+                  className="mt-6 rounded-[1.2rem] border border-teal-200 bg-teal-50 p-4 text-sm leading-7 text-teal-950"
+                >
+                  <p className="font-semibold">{FREE_TIER_EXHAUSTED_COPY}</p>
+                  <p className="mt-2 text-teal-900">{FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE}</p>
+                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      type="button"
+                      className="h-11 rounded-full bg-teal-700 px-5 text-white hover:bg-teal-800"
+                      onClick={openFreePlanDocumentLimitPlans}
+                    >
+                      Ver Audita Esencial
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-teal-950 hover:bg-teal-100"
+                      onClick={() => setSubmitError(null)}
+                    >
+                      Cerrar mensaje
+                    </Button>
+                  </div>
+                </div>
+              ) : submitError ? (
                 <div className="mt-6 rounded-[1.2rem] border border-amber-200 bg-amber-50 p-4 text-sm leading-7 text-amber-950">
                   <div className="flex items-start gap-3">
                     <AlertCircle

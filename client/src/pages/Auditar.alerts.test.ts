@@ -1387,3 +1387,47 @@ describe("preview sanitization", () => {
     });
   });
 });
+
+describe("tope del plan gratis en la carga", () => {
+  it("muestra la frase de Claridad y no la disfraza de carga interrumpida ni de recibo inválido", () => {
+    const noticeStart = auditarSource.indexOf('data-testid="free-plan-document-limit"');
+    expect(noticeStart).toBeGreaterThan(-1);
+    const notice = auditarSource.slice(noticeStart, noticeStart + 900);
+    expect(notice).toContain("FREE_TIER_EXHAUSTED_COPY");
+    expect(notice).toContain("FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE");
+    expect(notice).not.toContain("Algo interrumpió la carga");
+    expect(notice).not.toContain("No pudimos validar el recibo");
+    expect(notice).not.toContain("Reintentar ahora");
+    expect(notice).not.toContain("Puedes reintentar ahora mismo");
+
+    const reporter = auditarSource.slice(
+      auditarSource.indexOf("const reportAuditarUploadFailure"),
+      auditarSource.indexOf("const handleUpload = async"),
+    );
+    expect(reporter).toContain("freePlanUploadNoticeFromError");
+    expect(reporter).toContain("setReceiptAck(null)");
+    expect(reporter).toContain("setSubmitError(freePlanNotice.message)");
+    expect(reporter).toContain('setReceiptAck("failed")');
+
+    const analyzeCatch = auditarSource.slice(
+      auditarSource.indexOf("const handleUpload = async"),
+      auditarSource.indexOf("const handleConfirmDraft = async"),
+    );
+    const analyzeFailure = analyzeCatch.slice(analyzeCatch.lastIndexOf("} catch (error)"));
+    expect(analyzeFailure).toContain(
+      'reportAuditarUploadFailure(error, "No fue posible analizar el archivo.")',
+    );
+    expect(analyzeFailure).not.toContain('setReceiptAck("failed")');
+
+    const confirmFn = auditarSource.slice(
+      auditarSource.indexOf("const handleConfirmDraft = async"),
+      auditarSource.indexOf("const guestSignalFallback"),
+    );
+    const confirmFailure = confirmFn.slice(confirmFn.lastIndexOf("} catch (error)"));
+    expect(confirmFailure).toContain(
+      'reportAuditarUploadFailure(error, "No fue posible guardar el documento.")',
+    );
+    expect(confirmFailure).not.toContain('setReceiptAck("failed")');
+    expect(auditarSource).toContain("freePlanDocumentLimitNotice\n    ? null");
+  });
+});

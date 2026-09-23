@@ -10,6 +10,7 @@ import {
   formatFreePlanLandingPrinciple,
   FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE,
   FREE_TIER_EXHAUSTED_COPY,
+  isFreePlanDocumentLimitMessage,
 } from "./commerce";
 
 describe("tope de documentos por plan", () => {
@@ -47,5 +48,10 @@ describe("tope de documentos por plan", () => {
       "Subir más de 15 documentos en este expediente",
     );
     expect(formatDocumentLimitBlockedMessage(15)).toMatch(/Subir más de 15 documentos en este expediente está disponible desde Audita Esencial/);
+    expect(isFreePlanDocumentLimitMessage(formatDocumentLimitBlockedMessage(1))).toBe(true);
+    expect(isFreePlanDocumentLimitMessage(FREE_TIER_EXHAUSTED_COPY)).toBe(true);
+    expect(isFreePlanDocumentLimitMessage(formatDocumentLimitBlockedMessage(15))).toBe(false);
+    expect(isFreePlanDocumentLimitMessage("No pudimos validar el recibo. Intenta de nuevo.")).toBe(false);
+    expect(isFreePlanDocumentLimitMessage("Algo interrumpió la carga, pero tus datos siguen a salvo.")).toBe(false);
   });
 });
