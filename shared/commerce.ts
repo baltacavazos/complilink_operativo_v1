@@ -52,10 +52,10 @@ export const FREE_MAX_DOCUMENTS_PER_CASE = 1;
 
 export function formatCommerceDocumentLimitBullet(maxDocumentsPerCase: number) {
   if (maxDocumentsPerCase === 1) {
-    return "1 documento por expediente.";
+    return "1 documento en tu caso.";
   }
 
-  return `Hasta ${maxDocumentsPerCase} documentos por expediente.`;
+  return `Hasta ${maxDocumentsPerCase} documentos en tu caso.`;
 }
 
 export function formatActiveDocumentCapCopy(maxDocumentsPerCase: number) {
@@ -88,10 +88,10 @@ export function isFreePlanDocumentLimitMessage(message: string) {
 
 export function formatExceededDocumentLimitFeatureLabel(maxDocumentsPerCase: number) {
   if (maxDocumentsPerCase <= 1) {
-    return "Subir otro documento en este expediente";
+    return "Subir otro documento en este caso";
   }
 
-  return `Subir más de ${maxDocumentsPerCase} documentos en este expediente`;
+  return `Subir más de ${maxDocumentsPerCase} documentos en este caso`;
 }
 
 export function formatDocumentLimitBlockedMessage(maxDocumentsPerCase: number) {
@@ -107,10 +107,10 @@ export function formatDocumentLimitBlockedMessage(maxDocumentsPerCase: number) {
 
 export function formatFreePlanLandingPrinciple(maxDocumentsPerCase: number) {
   if (maxDocumentsPerCase === 1) {
-    return "El plan gratis incluye un documento por expediente.";
+    return "El plan gratis incluye un documento.";
   }
 
-  return `El expediente básico incluye hasta ${maxDocumentsPerCase} documentos.`;
+  return `El plan básico incluye hasta ${maxDocumentsPerCase} documentos en tu caso.`;
 }
 
 function formatFreePlanDescription(maxDocumentsPerCase: number) {
@@ -118,7 +118,7 @@ function formatFreePlanDescription(maxDocumentsPerCase: number) {
     return "1 documento. Primera lectura y asesor básico.";
   }
 
-  return `Incluye tu primera lectura, hasta ${maxDocumentsPerCase} documentos en tu expediente y el asesor laboral básico sobre ese contexto.`;
+  return `Incluye tu primera lectura, hasta ${maxDocumentsPerCase} documentos en tu caso y el asesor laboral básico sobre ese contexto.`;
 }
 
 function formatFreePlanAdvisorBullet(maxDocumentsPerCase: number) {
@@ -126,7 +126,7 @@ function formatFreePlanAdvisorBullet(maxDocumentsPerCase: number) {
     return "Asesor laboral básico sobre ese documento.";
   }
 
-  return "Asesor laboral básico sobre los documentos de tu expediente.";
+  return "Asesor laboral básico sobre los documentos de tu caso.";
 }
 
 const ESSENTIAL_MAX_DOCUMENTS_PER_CASE = 15;
@@ -204,27 +204,27 @@ export const COMMERCE_ONE_SHOTS: CommerceOneShotDefinition[] = [
     badge: "Pago único",
     ctaLabel: "Comprar informe",
     description:
-      "Entrega una síntesis más ejecutiva del expediente con hallazgos, puntos por confirmar y siguiente paso sugerido.",
-    deliveryLabel: "Generación puntual dentro del expediente",
+      "Entrega una síntesis más ejecutiva de tu caso, con hallazgos, puntos por confirmar y el siguiente paso sugerido.",
+    deliveryLabel: "Generación puntual dentro de tu caso",
     featureBullets: [
-      "Resumen ejecutivo del expediente.",
+      "Resumen ejecutivo de tu caso.",
       "Hallazgos, huecos y siguiente paso sugerido.",
       "Útil para preparar orientación o conciliación.",
     ],
   },
   {
     key: "expediente_abogado",
-    name: "Expediente para abogado",
+    name: "Paquete para tu abogado",
     priceMx: 499,
     badge: "Pago único",
-    ctaLabel: "Preparar expediente",
+    ctaLabel: "Preparar paquete",
     description:
       "Ordena un paquete de contexto para compartir con una abogada o abogado sin empezar desde cero.",
     deliveryLabel: "Preparación puntual para compartir",
     featureBullets: [
-      "Cronología base del expediente.",
+      "Cronología base del caso.",
       "Documentos confirmados y huecos detectados.",
-      "Lista de preguntas útiles para orientación legal.",
+      "Lista de preguntas útiles para tu abogado.",
     ],
   },
 ];

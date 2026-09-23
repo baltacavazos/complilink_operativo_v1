@@ -108,7 +108,7 @@ export default function Payments() {
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="sm:hidden">Volver</span>
-            <span className="hidden sm:inline">Volver al expediente</span>
+            <span className="hidden sm:inline">Volver a tu caso</span>
           </a>
           <p className="mt-5 text-sm font-semibold text-teal-800">Tus pagos</p>
           <h1 className="mt-2 text-[1.85rem] font-semibold leading-tight tracking-[-0.03em] text-slate-950 sm:text-4xl">

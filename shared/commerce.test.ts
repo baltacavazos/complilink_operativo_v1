@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  COMMERCE_ONE_SHOTS,
   COMMERCE_PLANS,
   FREE_MAX_DOCUMENTS_PER_CASE,
   buildCommerceEntitlements,
@@ -34,8 +35,8 @@ describe("tope de documentos por plan", () => {
 
     expect(visible).toMatch(/un documento|1 documento/i);
     expect(visible).not.toMatch(/3 documentos|varios recibos/i);
-    expect(formatCommerceDocumentLimitBullet(1)).toBe("1 documento por expediente.");
-    expect(formatCommerceDocumentLimitBullet(15)).toBe("Hasta 15 documentos por expediente.");
+    expect(formatCommerceDocumentLimitBullet(1)).toBe("1 documento en tu caso.");
+    expect(formatCommerceDocumentLimitBullet(15)).toBe("Hasta 15 documentos en tu caso.");
     expect(formatActiveDocumentCapCopy(1)).toBe("1 documento con tu plan actual.");
     expect(FREE_TIER_EXHAUSTED_COPY).toBe(
       "En el plan gratis ya usaste tu documento. Si quieres subir otro, activa Audita Esencial.",
@@ -45,13 +46,57 @@ describe("tope de documentos por plan", () => {
       "Subir otro documento en este caso está disponible desde Audita Esencial.",
     );
     expect(formatExceededDocumentLimitFeatureLabel(15)).toBe(
-      "Subir más de 15 documentos en este expediente",
+      "Subir más de 15 documentos en este caso",
     );
-    expect(formatDocumentLimitBlockedMessage(15)).toMatch(/Subir más de 15 documentos en este expediente está disponible desde Audita Esencial/);
+    expect(formatDocumentLimitBlockedMessage(15)).toMatch(/Subir más de 15 documentos en este caso está disponible desde Audita Esencial/);
     expect(isFreePlanDocumentLimitMessage(formatDocumentLimitBlockedMessage(1))).toBe(true);
     expect(isFreePlanDocumentLimitMessage(FREE_TIER_EXHAUSTED_COPY)).toBe(true);
     expect(isFreePlanDocumentLimitMessage(formatDocumentLimitBlockedMessage(15))).toBe(false);
     expect(isFreePlanDocumentLimitMessage("No pudimos validar el recibo. Intenta de nuevo.")).toBe(false);
     expect(isFreePlanDocumentLimitMessage("Algo interrumpió la carga, pero tus datos siguen a salvo.")).toBe(false);
+  });
+
+  it("el catálogo visible no dice expediente ni revalidaciones", () => {
+    const visible = [
+      ...COMMERCE_PLANS.flatMap((plan) => [
+        plan.name,
+        plan.headline,
+        plan.description,
+        plan.ctaLabel,
+        plan.badge,
+        ...plan.featureBullets,
+      ]),
+      ...COMMERCE_ONE_SHOTS.flatMap((item) => [
+        item.name,
+        item.description,
+        item.deliveryLabel,
+        item.ctaLabel,
+        item.badge,
+        ...item.featureBullets,
+      ]),
+      formatFreePlanLandingPrinciple(1),
+      formatCommerceDocumentLimitBullet(1),
+      formatCommerceDocumentLimitBullet(15),
+    ].join(" ");
+
+    expect(visible).not.toMatch(/expediente|revalidacion/i);
+    expect(COMMERCE_ONE_SHOTS.map((item) => item.key)).toEqual([
+      "informe_premium",
+      "expediente_abogado",
+    ]);
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "pro")?.limits.includedRevalidations).toBe(true);
+    expect(COMMERCE_ONE_SHOTS.find((item) => item.key === "expediente_abogado")).toMatchObject({
+      name: "Paquete para tu abogado",
+      ctaLabel: "Preparar paquete",
+    });
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "free")?.featureBullets).toContain(
+      "1 documento. Primera lectura y asesor básico.",
+    );
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "essential")?.featureBullets[0]).toMatch(
+      /^Hasta 15 recibos/,
+    );
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "pro")?.featureBullets.join(" ")).toMatch(
+      /Volvemos a preguntar a IMSS e Infonavit/,
+    );
   });
 });

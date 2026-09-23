@@ -749,6 +749,11 @@ function scrollToId(id: string) {
 }
 
 const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
+const FREE_HOME_PLAN_BULLETS = [
+  "1 documento. Primera lectura y asesor básico.",
+  "Tu empresa no lo ve.",
+  "Borras tu archivo cuando quieras.",
+] as const;
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -1412,9 +1417,14 @@ function HeroSection() {
 
             <div className="mt-4 rounded-[1.25rem] border border-slate-200 bg-white px-4 py-3.5 text-left">
               <p className="text-sm font-semibold text-slate-950">Gratis · $0 · 1 documento</p>
-              <p className="mt-1 text-sm leading-5 text-slate-700">
-                Un recibo. El único botón para empezar es «{HOME_HERO_PRIMARY_CTA}».
-              </p>
+              <ul className="mt-2 space-y-1.5 text-sm leading-5 text-slate-700">
+                {FREE_HOME_PLAN_BULLETS.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -3019,18 +3029,22 @@ function HomePlansStrip() {
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-slate-950">{plan.name}</p>
-                  <span className="text-[11px] font-semibold text-teal-800">{plan.badge}</span>
+                  <p className="font-semibold text-slate-950">
+                    {plan.key === "free" ? "Gratis · $0 · 1 documento" : plan.name}
+                  </p>
+                  {plan.key === "free" ? null : (
+                    <span className="text-[11px] font-semibold text-teal-800">{plan.badge}</span>
+                  )}
                 </div>
-                <p className="mt-2 text-xl font-semibold text-slate-950">{plan.priceLabel}</p>
+                {plan.key === "free" ? null : (
+                  <p className="mt-2 text-xl font-semibold text-slate-950">{plan.priceLabel}</p>
+                )}
                 <ul className="mt-3 space-y-1.5 text-sm leading-5 text-slate-700">
                   {plan.includes.map((feature) => (
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
-                {plan.key === "free" ? (
-                  <p className="mt-4 text-sm font-semibold leading-6 text-slate-800">Gratis · $0 · 1 documento. Empieza con el botón de arriba.</p>
-                ) : (
+                {plan.key === "free" ? null : (
                 <Button
                   className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                   onClick={() => {
@@ -3100,7 +3114,7 @@ function FinalCtaSection() {
                 </span>
               ))}
               <span className="text-sm leading-6 text-slate-600">
-                Si más adelante quieres avanzar, lo activas dentro de tu expediente.
+                Si más adelante quieres avanzar, lo activas en un plan.
               </span>
             </div>
           </div>
