@@ -749,6 +749,11 @@ function scrollToId(id: string) {
 }
 
 const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
+const FREE_HOME_PLAN_BULLETS = [
+  "1 documento. Primera lectura y asesor básico.",
+  "Tu empresa no lo ve.",
+  "Borras tu archivo cuando quieras.",
+] as const;
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -1296,6 +1301,7 @@ function HeroSection() {
           >
             <div className="ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <Button
+              data-home-hero-cta=""
               className="h-12 w-full min-w-0 rounded-full bg-teal-600 px-6 text-pretty text-white hover:bg-teal-700 sm:w-auto motion-hover-lift text-base font-semibold shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.99]"
               onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}
             >
@@ -1412,9 +1418,14 @@ function HeroSection() {
 
             <div className="mt-4 rounded-[1.25rem] border border-slate-200 bg-white px-4 py-3.5 text-left">
               <p className="text-sm font-semibold text-slate-950">Gratis · $0 · 1 documento</p>
-              <p className="mt-1 text-sm leading-5 text-slate-700">
-                Un recibo. El único botón para empezar es «{HOME_HERO_PRIMARY_CTA}».
-              </p>
+              <ul className="mt-2 space-y-1.5 text-sm leading-5 text-slate-700">
+                {FREE_HOME_PLAN_BULLETS.map((item) => (
+                  <li key={item} className="flex gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
@@ -3019,18 +3030,22 @@ function HomePlansStrip() {
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-slate-950">{plan.name}</p>
-                  <span className="text-[11px] font-semibold text-teal-800">{plan.badge}</span>
+                  <p className="font-semibold text-slate-950">
+                    {plan.key === "free" ? "Gratis · $0 · 1 documento" : plan.name}
+                  </p>
+                  {plan.key === "free" ? null : (
+                    <span className="text-[11px] font-semibold text-teal-800">{plan.badge}</span>
+                  )}
                 </div>
-                <p className="mt-2 text-xl font-semibold text-slate-950">{plan.priceLabel}</p>
+                {plan.key === "free" ? null : (
+                  <p className="mt-2 text-xl font-semibold text-slate-950">{plan.priceLabel}</p>
+                )}
                 <ul className="mt-3 space-y-1.5 text-sm leading-5 text-slate-700">
                   {plan.includes.map((feature) => (
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
-                {plan.key === "free" ? (
-                  <p className="mt-4 text-sm font-semibold leading-6 text-slate-800">Gratis · $0 · 1 documento. Empieza con el botón de arriba.</p>
-                ) : (
+                {plan.key === "free" ? null : (
                 <Button
                   className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                   onClick={() => {
@@ -3166,14 +3181,37 @@ function SiteFooter() {
 }
 
 export default function Home() {
+  const [heroCtaInView, setHeroCtaInView] = useState(true);
+
   useEffect(() => {
     trackFunnelStep("home_viewed", {
       source: "landing",
     });
   }, []);
 
+  useEffect(() => {
+    const target = document.querySelector("[data-home-hero-cta]");
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setHeroCtaInView(false);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setHeroCtaInView(Boolean(entries[0]?.isIntersecting));
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <main className="audita-home min-h-screen bg-background pb-20 font-sans text-slate-950 sm:pb-0">
+    <main
+      className={`audita-home min-h-screen bg-background font-sans text-slate-950 ${
+        heroCtaInView ? "" : "pb-20 sm:pb-0"
+      }`}
+    >
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
@@ -3181,7 +3219,7 @@ export default function Home() {
       <HomePlansStrip />
       <FinalCtaSection />
       <SiteFooter />
-      <MobileStickyCta />
+      {heroCtaInView ? null : <MobileStickyCta />}
     </main>
   );
 }

@@ -69,4 +69,19 @@ describe("Home pública · mix aprobado del hero", () => {
     expect(home).not.toContain("CompliLink");
     expect(home).not.toMatch(/\bHelios\b/);
   });
+
+  it("la card Gratis del home dice el precio en una línea y bullets de trabajador", () => {
+    const home = readHome();
+    const bulletsStart = home.indexOf("const FREE_HOME_PLAN_BULLETS");
+    const bullets = home.slice(bulletsStart, home.indexOf("] as const;", bulletsStart));
+
+    expect(home).toContain("Gratis · $0 · 1 documento");
+    expect(bullets).toContain("1 documento. Primera lectura y asesor básico.");
+    expect(bullets).toContain("Tu empresa no lo ve.");
+    expect(bullets).toContain("Borras tu archivo cuando quieras.");
+    expect(bullets).not.toMatch(/HUD|expediente|revalidacion|\bHelios\b/i);
+    expect(home).not.toMatch(/\bHUD\b/);
+    expect(home).toContain("data-home-hero-cta");
+    expect(home).toContain("heroCtaInView ? null : <MobileStickyCta />");
+  });
 });

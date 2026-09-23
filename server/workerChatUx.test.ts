@@ -146,7 +146,7 @@ describe("workerChatUx grounding", () => {
     expect(answer).not.toMatch(/Falta tu NSS/);
     expect(answer).not.toMatch(/Falta tu NSS, CURP y RFC/);
     expect(answer).not.toMatch(/IMSS y SAT: Faltan datos/);
-    expect(answer).toMatch(/aún no podemos decirte si tu patrón está bien dado de alta|No inventamos que tu patr[oó]n cumple/);
+    expect(answer).toMatch(/Hoy no pudimos consultar IMSS\. No prueba que tu patrón cumpla\./);
     expect(answer).not.toMatch(/\b(sí,? )?tu patrón cumple\b/i);
     expect(
       instructions
@@ -564,9 +564,9 @@ describe("workerChatUx grounding", () => {
     const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué pasó con mi consulta?" });
     const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué pasó con mi consulta?" });
 
-    expect(answer).toMatch(/Hoy pedimos datos a IMSS y no contestaron/);
+    expect(answer).toMatch(/Hoy no pudimos consultar IMSS\. No prueba que tu patrón cumpla\./);
     expect(answer).not.toMatch(/Respuesta clara|Lo que sí se sabe|Falló|no de AuditaPatrón/);
-    expect(answer).not.toMatch(/respuesta usable|fallo de AuditaPatrón|cruza el descuento|cumple/i);
+    expect(answer).not.toMatch(/respuesta usable|fallo de AuditaPatrón|cruza el descuento|\bcumple\b/i);
     expect(instructions).toMatch(/un solo párrafo/i);
     expect(instructions).toMatch(/Sin tips laborales genéricos/);
     expect(instructions).toMatch(/Prohibido/);

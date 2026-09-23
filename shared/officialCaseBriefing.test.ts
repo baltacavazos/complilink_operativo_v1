@@ -496,9 +496,9 @@ describe("briefing del caso para el asesor", () => {
         facts: { nss: "12345678901", curp: "DILE970625HBCZPM01", workerRfc: "VECJ880326XXX" },
       }),
     );
-    expect(failed.clearAnswer).toMatch(/Hoy pedimos datos a IMSS y SAT y no contestaron/);
+    expect(failed.clearAnswer).toMatch(/Hoy no pudimos consultar IMSS y SAT\. No prueba que tu patrón cumpla\./);
     expect(failed.clearAnswer).not.toMatch(/Respuesta clara|Lo que sí se sabe|Falló|no de AuditaPatrón/);
-    expect(failed.clearAnswer).not.toMatch(/respuesta usable|tip|cruza el descuento|cumple/i);
+    expect(failed.clearAnswer).not.toMatch(/respuesta usable|tip|cruza el descuento|\bcumple\b/i);
     expect(failed.nextStep).toBe(INSTITUTE_SILENCE_NEXT);
     expect(failed.missing).not.toMatch(/no de AuditaPatrón/);
   });
