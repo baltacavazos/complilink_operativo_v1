@@ -81,7 +81,5 @@ describe("Home pública · mix aprobado del hero", () => {
     expect(bullets).toContain("Borras tu archivo cuando quieras.");
     expect(bullets).not.toMatch(/HUD|expediente|revalidacion|\bHelios\b/i);
     expect(home).not.toMatch(/\bHUD\b/);
-    expect(home).toContain("data-home-hero-cta");
-    expect(home).toContain("heroCtaInView ? null : <MobileStickyCta />");
   });
 });

@@ -67,7 +67,8 @@ export const INSTITUTE_SILENCE_SMALL =
   "Si algo falla al preguntar otra vez, no es por tu recibo.";
 export const INSTITUTE_SILENCE_RETRY = "Probar de nuevo mañana";
 export const INSTITUTE_SILENCE_ASK = POCKET_ASK;
-export const INSTITUTE_SILENCE_CHAT = INSTITUTE_SILENCE_WHAT_HAPPENED;
+export const INSTITUTE_SILENCE_CHAT =
+  "Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.";
 /** Apertura del chat: no repite el veredicto ni las tres líneas de la tarjeta. */
 export const WORKER_RESULT_CHAT_OPENER =
   "Esto es de tu consulta de hoy. Si te preocupa el sueldo, te lo explico en corto. No voy a repetir lo que ya dice la tarjeta. Dime qué duda te quedó.";
@@ -146,7 +147,7 @@ export function instituteSilenceWhatHappened(sources?: OfficialCheckSource[] | n
 export function instituteSilenceChat(sources?: OfficialCheckSource[] | null): string {
   const unique = uniqueOfficialSources(sources);
   if (unique.length === 0 || unique.length >= 3) return INSTITUTE_SILENCE_CHAT;
-  return officialConsultFailureShield(formatOfficialSourceList(unique));
+  return `Hoy pedimos datos a ${formatOfficialSourceList(unique)} y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.`;
 }
 
 export function instituteSilenceSourceLine(label: string): string {

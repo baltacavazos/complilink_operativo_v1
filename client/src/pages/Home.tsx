@@ -1301,7 +1301,6 @@ function HeroSection() {
           >
             <div className="ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <Button
-              data-home-hero-cta=""
               className="h-12 w-full min-w-0 rounded-full bg-teal-600 px-6 text-pretty text-white hover:bg-teal-700 sm:w-auto motion-hover-lift text-base font-semibold shadow-[0_20px_38px_-24px_rgba(13,148,136,0.55)] transition duration-200 ease-out hover:-translate-y-0.5 active:scale-[0.99]"
               onClick={() => goToAuditFlow({ placement: "hero_primary", source: "hero" })}
             >
@@ -3115,7 +3114,7 @@ function FinalCtaSection() {
                 </span>
               ))}
               <span className="text-sm leading-6 text-slate-600">
-                Si más adelante quieres avanzar, lo activas dentro de tu expediente.
+                Si más adelante quieres avanzar, lo activas en un plan.
               </span>
             </div>
           </div>
@@ -3181,37 +3180,14 @@ function SiteFooter() {
 }
 
 export default function Home() {
-  const [heroCtaInView, setHeroCtaInView] = useState(true);
-
   useEffect(() => {
     trackFunnelStep("home_viewed", {
       source: "landing",
     });
   }, []);
 
-  useEffect(() => {
-    const target = document.querySelector("[data-home-hero-cta]");
-    if (!target || typeof IntersectionObserver === "undefined") {
-      setHeroCtaInView(false);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        setHeroCtaInView(Boolean(entries[0]?.isIntersecting));
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <main
-      className={`audita-home min-h-screen bg-background font-sans text-slate-950 ${
-        heroCtaInView ? "" : "pb-20 sm:pb-0"
-      }`}
-    >
+    <main className="audita-home min-h-screen bg-background pb-20 font-sans text-slate-950 sm:pb-0">
       <SiteHeader />
       <HeroSection />
       <HeliosFirstEntrySection />
@@ -3219,7 +3195,7 @@ export default function Home() {
       <HomePlansStrip />
       <FinalCtaSection />
       <SiteFooter />
-      {heroCtaInView ? null : <MobileStickyCta />}
+      <MobileStickyCta />
     </main>
   );
 }
