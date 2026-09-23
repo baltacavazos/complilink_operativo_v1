@@ -11,7 +11,7 @@ import {
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
-import { WorkerOfficialResult } from "@/components/WorkerOfficialResult";
+import { isWorkerIdentifierLine, WorkerOfficialResult, WorkerRegistrationFold } from "@/components/WorkerOfficialResult";
 import {
   ReceiptArrival,
   buildReceiptFactSlots,
@@ -2528,8 +2528,8 @@ export function buildPayrollFactSignal(params: {
     employer
       ? `Empresa que aparece: ${employer}.`
       : employerRfc
-        ? `No se alcanzó a leer con claridad la razón social; sí aparece este RFC: ${employerRfc}.`
-        : "No se alcanzó a leer con claridad la empresa o razón social que aparece en el recibo.",
+        ? `No se alcanzó a leer el nombre en el SAT. RFC: ${employerRfc}.`
+        : "No se alcanzó a leer el nombre en el SAT que aparece en el recibo.",
     period ? `Periodo identificado: ${period}.` : "El periodo de pago no se alcanzó a leer completo.",
     workerRfc ? `RFC de la persona trabajadora: ${workerRfc}.` : null,
     curp ? `CURP: ${curp}.` : null,
@@ -3314,8 +3314,12 @@ function getReturnEventLabel(value?: string | null) {
   }
 }
 
+function workerSatNameLabel(label: string) {
+  return label.replace(/raz[oó]n social/gi, "Nombre en el SAT");
+}
+
 function getAnalysisFieldLabel(key: string) {
-  if (analysisFieldLabels[key]) return analysisFieldLabels[key];
+  if (analysisFieldLabels[key]) return workerSatNameLabel(analysisFieldLabels[key]);
 
   return "Dato visible en el documento";
 }
@@ -3489,11 +3493,11 @@ export function sanitizeStructuredExtractionView(
       )
       .map(field => ({
         ...field,
-        label: sanitizePreviewText(field.label, {
+        label: workerSatNameLabel(sanitizePreviewText(field.label, {
           maxLength: 60,
           emptyFallback: "Dato detectado",
           technicalFallback: "Dato detectado",
-        }),
+        })),
         value: sanitizePreviewText(field.value, {
           maxLength: 160,
           emptyFallback: "",
@@ -3648,7 +3652,7 @@ function getEditableFieldSupportCopy(key: string) {
     case "workerName":
       return "Úsalo si el nombre visible quedó incompleto o con un orden raro.";
     case "employerName":
-      return "Corrígelo si la razón social no coincide con lo que realmente aparece en el documento.";
+      return "Corrígelo si el nombre en el SAT no coincide con lo que realmente aparece en el documento.";
     case "period":
       return "Ajusta este dato cuando el periodo laboral o de pago se vea cortado o ambiguo.";
     case "apparentAmount":
@@ -9226,23 +9230,46 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
                   {officialCheckDisplay.detail}
                 </p>
-              {officialCaseBriefing.statusLines.length ? (
-                <details className="ap-result-detail mt-2">
-                  <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
-                  <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-                    {officialCaseBriefing.statusLines.map(line => (
-                      <li key={line}>{line}</li>
-                    ))}
-                  </ul>
-                </details>
-              ) : null}
-              {officialCaseBriefing.hechoLines.length ? (
-                <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                  {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
+              {workerPocketDetail.lead.length ? (
+                <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                  {workerPocketDetail.lead.map(line => (
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
               ) : null}
+              {officialCaseBriefing.statusLines.some(line => !isWorkerIdentifierLine(line)) || officialCaseBriefing.hechoLines.some(line => !isWorkerIdentifierLine(line)) ? (
+                <details className="ap-result-detail mt-2">
+                  <summary className="cursor-pointer text-sm font-semibold text-[#161616]">Ver detalle</summary>
+                  {officialCaseBriefing.statusLines.some(line => !isWorkerIdentifierLine(line)) ? (
+                    <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                      {officialCaseBriefing.statusLines.filter(line => !isWorkerIdentifierLine(line)).map(line => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  {officialCaseBriefing.hechoLines.some(line => !isWorkerIdentifierLine(line)) ? (
+                    <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
+                      {officialCaseBriefing.hechoLines.filter(line => !isWorkerIdentifierLine(line)).slice(0, 3).map(line => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  ) : null}
+                  <WorkerRegistrationFold
+                    lines={[
+                      ...workerPocketDetail.receiptData,
+                      ...officialCaseBriefing.hechoLines.filter(isWorkerIdentifierLine),
+                      ...officialCaseBriefing.statusLines.filter(isWorkerIdentifierLine),
+                    ]}
+                  />
+                </details>
+              ) : (
+                <WorkerRegistrationFold
+                  lines={[
+                    ...workerPocketDetail.receiptData,
+                    ...officialCaseBriefing.hechoLines.filter(isWorkerIdentifierLine),
+                  ]}
+                />
+              )}
               {officialCaseBriefing.comparisonLines.length ? (
                 <ul data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                   {officialCaseBriefing.comparisonLines.map(line => (
@@ -9925,36 +9952,32 @@ export default function Auditar() {
                   {officialCheckDisplay.detail}
                 </p>
                 {renderReceiptArrival(false)}
-                {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length ? (
+                {workerPocketDetail.lead.length ? (
+                  <ul data-testid="official-check-pocket" className="mt-3 space-y-1 text-sm leading-6 text-[#161616]">
+                    {workerPocketDetail.lead.map(line => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                ) : null}
+                {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length || workerPocketDetail.receiptData.length ? (
                   <details className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
                     <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
-                    {workerPocketDetail.lead.length ? (
-                      <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-                        {workerPocketDetail.lead.map(line => (
-                          <li key={line}>{line}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {officialCaseBriefing.hechoLines.some(line => !/\b(RFC|CURP|NSS)\b/.test(line) || /coincide con el SAT/i.test(line)) ? (
+                    {officialCaseBriefing.hechoLines.some(line => !isWorkerIdentifierLine(line)) ? (
                       <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                         {officialCaseBriefing.hechoLines
-                          .filter(line => !/\b(RFC|CURP|NSS)\b/.test(line) || /coincide con el SAT/i.test(line))
-                          .slice(0, 9)
+                          .filter(line => !isWorkerIdentifierLine(line))
+                          .slice(0, 3)
                           .map(line => (
                           <li key={line}>{line}</li>
                         ))}
                       </ul>
                     ) : null}
-                    {workerPocketDetail.receiptData.length ? (
-                      <details className="mt-3">
-                        <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Datos del recibo</summary>
-                        <ul className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-                          {workerPocketDetail.receiptData.map(line => (
-                            <li key={line}>{line}</li>
-                          ))}
-                        </ul>
-                      </details>
-                    ) : null}
+                    <WorkerRegistrationFold
+                      lines={[
+                        ...workerPocketDetail.receiptData,
+                        ...officialCaseBriefing.hechoLines.filter(isWorkerIdentifierLine),
+                      ]}
+                    />
                     {officialCaseBriefing.comparisonLines.length ? (
                       <ul data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                         {officialCaseBriefing.comparisonLines.map(line => (
@@ -10009,7 +10032,7 @@ export default function Auditar() {
                     void handleRevalidateSocialSecurity();
                   }}
                   onAsk={() => openHeliosCopilot()}
-                  paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
+                  paperRead={lastUploadResultHeadline}
                   comparisonLines={officialCaseBriefing.comparisonLines}
                   onDone={() => {
                     verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -10063,26 +10086,35 @@ export default function Auditar() {
                         {shouldCompactPostUploadExperience ? (
                           <>
                           {renderReceiptArrival()}
+                          {workerPocketDetail.lead.length ? (
+                            <ul data-testid="official-check-pocket" className="mt-3 space-y-1 text-sm leading-6 text-[#161616]">
+                              {workerPocketDetail.lead.map(line => (
+                                <li key={line}>{line}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="mt-3 text-sm leading-6 text-[#161616]">
+                              {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}. {lastUploadResultHeadline}
+                            </p>
+                          )}
                           <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3 text-left">
                             <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#111111]">
                               Ver detalle
                             </summary>
-                            <p className="mt-2 text-sm leading-6 text-[#161616]">
-                              {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}. {lastUploadResultHeadline}. {lastUploadResultLead}
-                            </p>
-                            <p className="mt-3 text-sm leading-6 text-[#161616]">
-                              {lastUploadFactSignal.attention}
-                            </p>
-                            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                              <div className="rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3 text-left">
-                                <p className="text-sm font-semibold tracking-tight text-[#111111]">IMSS según este documento</p>
-                                <p className="mt-1 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.imss}</p>
-                              </div>
-                              <div className="rounded-[1rem] border border-[#e4e4e4] bg-white px-3 py-3 text-left">
-                                <p className="text-sm font-semibold tracking-tight text-[#111111]">Impuestos y retenciones</p>
-                                <p className="mt-1 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.retentions}</p>
-                              </div>
-                            </div>
+                            {lastUploadFactSignal.attention && !isWorkerIdentifierLine(lastUploadFactSignal.attention) ? (
+                              <p className="mt-2 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.attention}</p>
+                            ) : null}
+                            {lastUploadFactSignal.retentions && !isWorkerIdentifierLine(lastUploadFactSignal.retentions) ? (
+                              <p className="mt-2 text-sm leading-6 text-[#161616]">{lastUploadFactSignal.retentions}</p>
+                            ) : null}
+                            <WorkerRegistrationFold
+                              lines={[
+                                ...workerPocketDetail.receiptData,
+                                ...officialCaseBriefing.hechoLines.filter(isWorkerIdentifierLine),
+                                ...officialCaseBriefing.statusLines.filter(isWorkerIdentifierLine),
+                                ...(isWorkerIdentifierLine(lastUploadFactSignal.imss) ? [lastUploadFactSignal.imss] : []),
+                              ]}
+                            />
                             <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-3 rounded-[1rem] border px-3 py-3 text-left">
                                   <p data-testid="official-check-headline" className={`font-semibold tracking-tight text-[#161616] ${officialCheckDisplay.status === "pendiente" ? "sr-only" : "text-sm"}`}>
                                     {officialCheckDisplay.headline}
@@ -10090,16 +10122,16 @@ export default function Auditar() {
                                   <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
                                     {officialCheckDisplay.detail}
                                   </p>
-                              {officialCaseBriefing.statusLines.length ? (
+                              {officialCaseBriefing.statusLines.some(line => !isWorkerIdentifierLine(line)) ? (
                                 <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-                                  {officialCaseBriefing.statusLines.map(line => (
+                                  {officialCaseBriefing.statusLines.filter(line => !isWorkerIdentifierLine(line)).map(line => (
                                     <li key={line}>{line}</li>
                                   ))}
                                 </ul>
                               ) : null}
-                              {officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hechoLines.length ? (
+                              {officialCheckDisplay.status !== "pendiente" && officialCaseBriefing.hechoLines.some(line => !isWorkerIdentifierLine(line)) ? (
                                 <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-slate-800">
-                                  {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
+                                  {officialCaseBriefing.hechoLines.filter(line => !isWorkerIdentifierLine(line)).slice(0, 3).map(line => (
                                     <li key={line}>{line}</li>
                                   ))}
                                 </ul>
@@ -16272,6 +16304,9 @@ Reforzar con otro documento
                         ))}
                       </ul>
                       <div className="mt-4">
+                        {plan.key === "free" && visibleCommercePromptContext.triggerPoint === "document_limit_blocked" ? (
+                          <p className="text-sm leading-6 text-slate-600">En gratis ya usaste tu documento. El siguiente paso es un plan.</p>
+                        ) : (
                         <Button
                           className="rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
                           disabled={
@@ -16300,6 +16335,7 @@ Reforzar con otro documento
                               ? "Empezar"
                               : "Ver el plan"}
                         </Button>
+                        )}
                       </div>
                     </article>
                   );
