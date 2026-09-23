@@ -17,6 +17,7 @@ import {
   looksLikeNoOfficialResponse,
   readInstitutePayFacts,
   officialStatusToHonesty,
+  readAlternateOfficialRoute,
   readChatAnchor,
   readChatAnchorSource,
   readReciboVsOficial,
@@ -903,6 +904,7 @@ export function officialCheckFromBridgeReturn(params: {
     readReciboVsOficial(currentResult?.reciboVsOficial) ??
     readReciboVsOficial(currentResult?.receiptVsOfficial);
   const nowIso = params.nowIso ?? null;
+  const alternateRoute = readAlternateOfficialRoute(root) || undefined;
   const imssStatus = readNestedOfficialSource(roots, "imss");
   const satStatus = readNestedOfficialSource(roots, "sat");
   const infonavitStatus = readNestedOfficialSource(roots, "infonavit");
@@ -1047,6 +1049,7 @@ export function officialCheckFromBridgeReturn(params: {
     chatAnchor: resolvedAnchor,
     reciboVsOficial,
     institutePay,
+    alternateRoute,
   };
 }
 

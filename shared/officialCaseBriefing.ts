@@ -10,6 +10,7 @@ import {
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
   OFFICIAL_FAILED_MISSING,
+  answeredOfficialSourceLine,
   buildHonestOfficialPresentation,
   buildInstituteSilencePresentation,
   buildOfficialCheckHeadline,
@@ -43,6 +44,7 @@ import {
   reconcileOfficialCheckWithIdentity,
   rewriteOfficialIdentityHechos,
   sourceHasRequiredOfficialIdentity,
+  silentOfficialSourceLine,
   stripContradictoryMissingIdentityCopy,
   type OfficialChatAnchor,
   type OfficialChatAnchorSource,
@@ -220,10 +222,10 @@ export function formatOfficialStatusLine(params: {
   maintenance?: boolean;
 }): string {
   if (params.status === "no_se_pudo") {
-    const base = `${params.sourceLabel} — sin respuesta hoy`;
-    return params.maintenance ? `${base} · en mantenimiento` : base;
+    return silentOfficialSourceLine(params.sourceLabel, Boolean(params.maintenance));
   }
   if (params.status === "pendiente") return `${params.sourceLabel} — esperando hoy`;
+  if (params.status === "vivo") return answeredOfficialSourceLine(params.sourceLabel, params.checkedAt);
   const date = formatOfficialCheckDate(params.checkedAt);
   const label = OFFICIAL_CHECK_STATUS_LABEL[params.status];
   return date ? `${params.sourceLabel}: ${label} · ${date}` : `${params.sourceLabel}: ${label}`;
@@ -250,10 +252,10 @@ export function formatChatAnchorStatusLine(
       : (mapped ?? "pendiente");
   if (status === "no_se_pudo") {
     const maintenance = /mantenimiento/i.test(`${source.motivoFallo ?? ""} ${source.hechos.join(" ")}`);
-    const base = `${sourceLabel(source.fuente)} — sin respuesta hoy`;
-    return maintenance ? `${base} · en mantenimiento` : base;
+    return silentOfficialSourceLine(sourceLabel(source.fuente), maintenance);
   }
   if (status === "pendiente") return `${sourceLabel(source.fuente)} — esperando hoy`;
+  if (status === "vivo") return answeredOfficialSourceLine(sourceLabel(source.fuente), source.fecha ?? fallbackDate);
   const date = formatOfficialCheckDate(source.fecha ?? fallbackDate);
   const fail = status === "sin_datos" && source.motivoFallo ? ` · ${source.motivoFallo}` : "";
   const label = OFFICIAL_CHECK_STATUS_LABEL[status];
@@ -358,7 +360,7 @@ export function briefingHasInstituteFailure(briefing: OfficialCaseBriefing): boo
   if (briefing.officialCheck?.overallStatus === "no_se_pudo") return true;
   if (listFailedOfficialSources(briefing.officialCheck?.checks).length > 0) return true;
   if (listFailedOfficialSourcesFromAnchor(briefing.chatAnchor).length > 0) return true;
-  return briefing.statusLines.some((line) => /sin respuesta hoy|: Falló/.test(line));
+  return briefing.statusLines.some((line) => /sin respuesta hoy|no contestó|: Falló/.test(line));
 }
 
 function consultAttempted(check?: OfficialCheckSummary | null): boolean {
@@ -728,16 +730,16 @@ export function alignVisibleChatWithBriefing(
   const identity = briefing ? identityFlagsFromFacts(briefing.facts) : null;
   let next = stripContradictoryMissingIdentityCopy(raw, identity, briefing?.facts);
   const failedLines = (briefing?.statusLines ?? []).filter((line) =>
-    /:\s*Falló|— sin respuesta hoy/.test(line),
+    /:\s*Falló|— sin respuesta hoy|no contestó/.test(line),
   );
   if (failedLines.length > 0) {
-    const sat = failedLines.find((line) => /^SAT\b/.test(line));
-    const infonavit = failedLines.find((line) => /^Infonavit\b/.test(line));
+    const sat = failedLines.find((line) => /\bSAT\b/.test(line));
+    const infonavit = failedLines.find((line) => /\bInfonavit\b/.test(line));
     if (sat || infonavit) {
       next = next.replace(/SAT\/Infonavit:\s*Faltan datos(?:\s*·\s*\d{2}\/\d{2}\/\d{4})?/gi, [sat, infonavit].filter(Boolean).join(". "));
     }
     for (const line of failedLines) {
-      const source = line.match(/^(IMSS|SAT|Infonavit)/)?.[1];
+      const source = line.match(/^(?:Hoy\s+)?(IMSS|SAT|Infonavit)/)?.[1];
       if (!source) continue;
       next = next.replace(STALE_SOURCE_STATUS_RE(source), line.trim());
     }
@@ -823,10 +825,24 @@ export function buildPayWellFallback(briefing: OfficialCaseBriefing): {
   }
 
   if (briefing.verdict?.kind === "mixed") {
+    const statuses = briefing.statusLines.join(". ");
     return {
-      clearAnswer: briefing.verdict.chat,
-      known: [briefing.verdict.verdict, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" "),
+      clearAnswer: `${briefing.comparison.seenLine} ${statuses}. ${receipt} Eso no significa que tu patrón esté al corriente.`.replace(/\s+/g, " ").trim(),
+      known: [briefing.verdict.verdict, statuses, receipt].filter(Boolean).join(" "),
       missing: "Todavía falta la respuesta de las oficinas que hoy no contestaron.",
+      nextStep: briefing.verdict.nextStep,
+    };
+  }
+
+  if (briefing.verdict?.kind === "settled") {
+    const statuses = briefing.statusLines.join(". ");
+    return {
+      clearAnswer: `${briefing.comparison.seenLine} ${briefing.verdict.verdict} ${statuses}. ${receipt} Eso no significa que tu patrón esté al corriente.`.replace(/\s+/g, " ").trim(),
+      known: [briefing.verdict.verdict, statuses, receipt].filter(Boolean).join(" "),
+      missing:
+        briefing.comparison.seen === "hay_diferencia"
+          ? "Hay una diferencia entre el recibo y lo consultado."
+          : "La consulta no confirma que el pago sea el correcto.",
       nextStep: briefing.verdict.nextStep,
     };
   }
@@ -916,8 +932,8 @@ export function buildNoLiveOfficialAnswer(briefing: OfficialCaseBriefing): {
   const statuses = briefing.statusLines.join(". ");
   return {
     clearAnswer: statuses ? `${statuses}. Pulsa ${OFFICIAL_CHECK_BUTTON}.` : WORKER_CHAT_NO_CONSULTA_EMPTY,
-    known: [statuses, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" ") || "Hay una consulta, pero sin un resultado vivo.",
-    missing: briefing.missingIdentityDetail ?? "Todavía no hay un resultado vivo de IMSS, SAT o Infonavit.",
+    known: [statuses, ...briefing.hechoLines.slice(0, 3)].filter(Boolean).join(" ") || "Hay una consulta, pero sin una respuesta de las oficinas.",
+    missing: briefing.missingIdentityDetail ?? "Todavía no hay una respuesta de IMSS, SAT o Infonavit.",
     nextStep: OFFICIAL_CHECK_BUTTON,
   };
 }

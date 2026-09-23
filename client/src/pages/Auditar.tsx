@@ -12,6 +12,11 @@ import {
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { WorkerOfficialResult } from "@/components/WorkerOfficialResult";
+import {
+  ReceiptArrival,
+  buildReceiptFactSlots,
+  type ReceiptAck,
+} from "@/components/ReceiptFactSkeleton";
 import MobileAppShell from "@/components/MobileAppShell";
 import {
   canUseNativeDocumentInput,
@@ -50,12 +55,18 @@ import {
   INSTITUTE_SILENCE_ASK,
   INSTITUTE_SILENCE_CHAT,
   INSTITUTE_SILENCE_RETRY,
+  INSTITUTE_WAITING_DETAIL,
+  INSTITUTE_WAITING_HEADLINE,
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
-  pickHonestOfficialCheck,
+  buildReceiptEstatusLine,
+  laborInstitutesSettled,
+  liveSatFactLines,
+  pickPromptOfficialCheck,
   resolveBriefingWorkerRfc,
   resolveOfficialCheckDisplay,
+  shouldPollOfficialCheck,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -386,9 +397,9 @@ export function getHumanUploadProgressMessages(
       ];
     case "save":
       return [
-        "Guardando tu archivo...",
-        "Asegurando tu información...",
-        "Listo para tu revisión...",
+        "Guardando tu revisión...",
+        INSTITUTE_WAITING_HEADLINE,
+        INSTITUTE_WAITING_DETAIL,
       ];
     default:
       return [];
@@ -4363,6 +4374,8 @@ export default function Auditar() {
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
+  const [receiptAck, setReceiptAck] = useState<ReceiptAck>(null);
+  const [saveNotice, setSaveNotice] = useState<"listo" | null>(null);
   const [officialCheckResult, setOfficialCheckResult] =
     useState<OfficialCheckSummary | null>(null);
   const officialPendingSinceRef = useRef<number | null>(null);
@@ -5013,6 +5026,14 @@ export default function Auditar() {
     {
       enabled: auth.isAuthenticated && Boolean(caseDetailInput),
       refetchOnWindowFocus: false,
+      refetchInterval: (query) => {
+        if (revalidateSocialSecurityMutation.isPending || guestOfficialCheckMutation.isPending) {
+          return 4_000;
+        }
+        return shouldPollOfficialCheck(query.state.data?.socialSecurityValidation?.officialCheck)
+          ? 4_000
+          : false;
+      },
     }
   );
   const commerceStatusQuery = trpc.commerce.status.useQuery(undefined, {
@@ -5591,7 +5612,7 @@ export default function Auditar() {
     lastUpload?.socialSecurityValidation ?? null;
   const effectiveSocialSecurityValidation =
     uploadSocialSecurityValidation ?? socialSecurityValidation ?? null;
-  const officialCheckSummary = pickHonestOfficialCheck({
+  const officialCheckSummary = pickPromptOfficialCheck({
     consentGranted: officialCheckConsent,
     candidates: [
       officialCheckResult,
@@ -5630,6 +5651,11 @@ export default function Auditar() {
     documentType: guestReview?.preview.classification.documentType,
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
+  });
+  const pendingDraftFactSignal = buildPayrollFactSignal({
+    documentType: pendingDraft?.classification.documentType,
+    confirmedData: pendingDraft?.preliminaryAnalysis?.confirmedData,
+    estimatedData: pendingDraft?.preliminaryAnalysis?.estimatedData,
   });
   const officialEmployerRfc =
     lastUploadFactSignal.employerRfc ??
@@ -6385,6 +6411,9 @@ export default function Auditar() {
       : officialCaseBriefing.missingIdentityDetail,
   });
   const officialCheckHeadline = officialCheckDisplay.headline;
+  const officialWaitLeads =
+    !officialCheckDisplay.silence &&
+    (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
   const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
       plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -7189,6 +7218,39 @@ export default function Auditar() {
     documents.length === 0 && !pendingDraft && !lastUpload;
   const shouldCompactPostUploadExperience =
     Boolean(lastUpload) && !pendingDraft && !selectedFile;
+  const receiptPayroll = lastUpload
+    ? lastUploadFactSignal
+    : pendingDraft
+      ? pendingDraftFactSignal
+      : guestFactSignal;
+  const receiptOfficialCheck = officialCaseBriefing.officialCheck ?? officialCheckSummary;
+  const receiptFactSlots = buildReceiptFactSlots({
+    employer: receiptPayroll.employer,
+    employerRfc: receiptPayroll.employerRfc,
+    payment: receiptPayroll.payment,
+    period: receiptPayroll.period,
+    estatus: buildReceiptEstatusLine(receiptOfficialCheck),
+  });
+  const satLiveFacts = liveSatFactLines(receiptOfficialCheck);
+  const laborReviewReady = laborInstitutesSettled(receiptOfficialCheck);
+  const receiptInFlight =
+    guestAnalyzeMutation.isPending ||
+    analyzeDraftMutation.isPending ||
+    confirmDraftMutation.isPending;
+  const receiptAckVisible: ReceiptAck = receiptAck ?? (receiptInFlight ? "received" : null);
+  const showReceiptBanner =
+    analyzeDraftMutation.isPending ||
+    confirmDraftMutation.isPending ||
+    (receiptAck === "failed" && !pendingDraft && !shouldCompactPostUploadExperience);
+  const renderReceiptArrival = (showSkeleton = true) => (
+    <ReceiptArrival
+      ack={showSkeleton ? receiptAckVisible : null}
+      slots={receiptFactSlots}
+      satFacts={satLiveFacts}
+      laborReady={laborReviewReady}
+      showSkeleton={showSkeleton}
+    />
+  );
   const condensedDossierTargets = shouldCompactPostUploadExperience
     ? dossierTargets.slice(0, 1)
     : dossierTargets;
@@ -8070,6 +8132,12 @@ export default function Auditar() {
   }, [autoAdvanceFlash]);
 
   useEffect(() => {
+    if (saveNotice !== "listo") return;
+    const timeoutId = window.setTimeout(() => setSaveNotice(null), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [saveNotice]);
+
+  useEffect(() => {
     if (!lastUpload) {
       setSaveStatusFlash(false);
       return;
@@ -8287,6 +8355,7 @@ export default function Auditar() {
     setPendingDraft(null);
     setTextHint("");
     setSubmitError(null);
+    setReceiptAck(null);
     setPickerKey(value => value + 1);
     setUploadSourceOpen(false);
   };
@@ -8314,6 +8383,7 @@ export default function Auditar() {
       setPendingDraft(null);
       setLastUpload(null);
       setSubmitError(validationMessage);
+      setReceiptAck("failed");
       setPickerKey(value => value + 1);
       setUploadSourceOpen(false);
       return;
@@ -8354,6 +8424,7 @@ export default function Auditar() {
       );
     }
     setSubmitError(null);
+    setReceiptAck(null);
     setUploadSourceOpen(false);
   };
 
@@ -8367,11 +8438,13 @@ export default function Auditar() {
 
     const validationMessage = validateDocumentUploadFile(file);
     if (validationMessage) {
+      setReceiptAck("failed");
       setGuestReviewError(validationMessage);
       event.target.value = "";
       return;
     }
 
+    setReceiptAck("received");
     setGuestReviewError(null);
     setGuestReviewClaimStarted(false);
     setOfficialCheckResult(null);
@@ -8394,6 +8467,7 @@ export default function Auditar() {
         heliosOpinion: result.heliosOpinion,
       } as StoredGuestReview);
     } catch (error) {
+      setReceiptAck("failed");
       setGuestReviewError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -8557,6 +8631,7 @@ export default function Auditar() {
     setSelectedCaptureMode(null);
     setAutoAnalyzeRequested(false);
     setSubmitError(null);
+    setReceiptAck(null);
     setPickerKey(value => value + 1);
 
     openPreferredPicker();
@@ -8574,6 +8649,7 @@ export default function Auditar() {
     setAutoAnalyzeRequested(false);
 
     if (!selectedTenantId || !selectedCaseId || !selectedFile) {
+      setReceiptAck("failed");
       setSubmitError(
         "Selecciona un expediente y un archivo antes de continuar."
       );
@@ -8583,6 +8659,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       const accepted = await handleAcceptLegalPackage();
       if (!accepted) {
+        setReceiptAck("failed");
         setSubmitError(
           "Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar."
         );
@@ -8591,6 +8668,7 @@ export default function Auditar() {
     }
 
     try {
+      setReceiptAck("received");
       setSubmitError(null);
       const base64Content = await fileToBase64(selectedFile);
       const result = await analyzeDraftMutation.mutateAsync({
@@ -8632,6 +8710,7 @@ export default function Auditar() {
       setTextHint("");
       setPickerKey(value => value + 1);
     } catch (error) {
+      setReceiptAck("failed");
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -8751,6 +8830,7 @@ export default function Auditar() {
 
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
+      setReceiptAck("failed");
       setSubmitError(
         "Primero analiza un documento para revisarlo antes de guardarlo."
       );
@@ -8760,6 +8840,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       const accepted = await handleAcceptLegalPackage();
       if (!accepted) {
+        setReceiptAck("failed");
         setSubmitError(
           "Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar."
         );
@@ -8768,7 +8849,10 @@ export default function Auditar() {
     }
 
     try {
+      setReceiptAck("received");
+      setSaveNotice(null);
       setSubmitError(null);
+      sonnerToast.loading("Guardando…", { id: "guardar-revision" });
       if (viewportSegment === "mobile") {
         verdictAnalyticsStartedAtRef.current = Date.now();
         verdictAnalyticsTrackedIdRef.current = null;
@@ -8785,6 +8869,8 @@ export default function Auditar() {
       });
 
       setLastUpload(result as ConfirmedUploadResultView);
+      setSaveNotice("listo");
+      sonnerToast.success("Listo", { id: "guardar-revision" });
       trackFirstDossierReviewOutcome("confirmed");
       const selectionToConfirmedSeconds =
         documentSelectionStartedAtRef.current === null
@@ -8842,6 +8928,9 @@ export default function Auditar() {
         }),
       ]);
     } catch (error) {
+      setReceiptAck("failed");
+      setSaveNotice(null);
+      sonnerToast.dismiss("guardar-revision");
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -9008,6 +9097,7 @@ export default function Auditar() {
             onChange={handleGuestFileChange}
             className="hidden"
           />
+          {renderReceiptArrival()}
           <WorkerOfficialResult
             presentation={officialCheckDisplay.silence}
             retryPending={guestOfficialCheckMutation.isPending}
@@ -9017,6 +9107,9 @@ export default function Auditar() {
             onAsk={() => openHeliosCopilot()}
             paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
             comparisonLines={officialCaseBriefing.comparisonLines}
+            onDone={() => {
+              window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
+            }}
           />
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
@@ -9049,8 +9142,11 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
-            {officialCheckDisplay.status === "pendiente" ? null : (
+            <div className="mt-5">{renderReceiptArrival()}</div>
+            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
+            {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
+              <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
+            ) : (
               <>
                 <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
                 <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
@@ -9246,6 +9342,14 @@ export default function Auditar() {
                   Entrar si ya empezaste
                 </button>
               </div>
+              {guestAnalyzeMutation.isPending || receiptAck ? (
+                <section
+                  data-testid="save-waiting"
+                  className="ap-light-surface mt-5 w-full rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4 text-left text-[#161616]"
+                >
+                  {renderReceiptArrival()}
+                </section>
+              ) : null}
             </div>
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
@@ -9289,6 +9393,15 @@ export default function Auditar() {
 
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-10 text-slate-950 sm:py-8">
+      {confirmDraftMutation.isPending || saveNotice === "listo" ? (
+        <div
+          data-testid="save-notice"
+          role="status"
+          className="fixed inset-x-3 top-3 z-[80] mx-auto max-w-md rounded-2xl border border-[#e4e4e4] bg-white px-4 py-3 text-center text-base font-semibold text-[#111111] shadow-[0_12px_40px_-24px_rgba(0,0,0,0.45)]"
+        >
+          {confirmDraftMutation.isPending ? "Guardando…" : "Listo"}
+        </div>
+      ) : null}
       <div className="container mx-auto max-w-6xl">
         {officialCheckDisplay.silence ? null : (
         <>
@@ -9375,6 +9488,20 @@ export default function Auditar() {
         </div>
         </>
         )}
+
+        {showReceiptBanner ? (
+          <section
+            data-testid="save-waiting"
+            className="ap-light-surface mt-4 rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4 text-left text-[#161616]"
+          >
+            {renderReceiptArrival()}
+            {receiptAck !== "failed" ? (
+              <p className="mt-3 text-sm leading-6 text-[#161616]">
+                {INSTITUTE_WAITING_HEADLINE} {INSTITUTE_WAITING_DETAIL}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
 
         {privacySignal.ready ? null : (
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
@@ -9737,15 +9864,21 @@ export default function Auditar() {
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
           <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
             {documents.length > 0 && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
-              <WorkerOfficialResult
-                presentation={officialCheckDisplay.silence}
-                retryPending={revalidateSocialSecurityMutation.isPending}
-                onRetry={() => {
-                  void handleRevalidateSocialSecurity();
-                }}
-                onAsk={() => openHeliosCopilot()}
-                comparisonLines={officialCaseBriefing.comparisonLines}
-              />
+              <>
+                {renderReceiptArrival(false)}
+                <WorkerOfficialResult
+                  presentation={officialCheckDisplay.silence}
+                  retryPending={revalidateSocialSecurityMutation.isPending}
+                  onRetry={() => {
+                    void handleRevalidateSocialSecurity();
+                  }}
+                  onAsk={() => openHeliosCopilot()}
+                  comparisonLines={officialCaseBriefing.comparisonLines}
+                  onDone={() => {
+                    verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                />
+              </>
             ) : null}
             {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
               <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
@@ -9755,6 +9888,7 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                   {officialCheckDisplay.detail}
                 </p>
+                {renderReceiptArrival(false)}
                 {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length ? (
                   <details className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
                     <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
@@ -9802,22 +9936,28 @@ export default function Auditar() {
                     className="mt-2 h-auto bg-transparent px-0 text-sm font-semibold text-[#161616] underline shadow-none hover:bg-transparent"
                     onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                   >
-                    {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
+                    {INSTITUTE_SILENCE_ASK}
                   </Button>
                 ) : null}
               </div>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && officialCheckDisplay.silence ? (
-              <WorkerOfficialResult
-                presentation={officialCheckDisplay.silence}
-                retryPending={revalidateSocialSecurityMutation.isPending}
-                onRetry={() => {
-                  void handleRevalidateSocialSecurity();
-                }}
-                onAsk={() => openHeliosCopilot()}
-                paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
-                comparisonLines={officialCaseBriefing.comparisonLines}
-              />
+              <>
+                {renderReceiptArrival()}
+                <WorkerOfficialResult
+                  presentation={officialCheckDisplay.silence}
+                  retryPending={revalidateSocialSecurityMutation.isPending}
+                  onRetry={() => {
+                    void handleRevalidateSocialSecurity();
+                  }}
+                  onAsk={() => openHeliosCopilot()}
+                  paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
+                  comparisonLines={officialCaseBriefing.comparisonLines}
+                  onDone={() => {
+                    verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                />
+              </>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && !officialCheckDisplay.silence ? (
               <div className="ap-light-surface w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-white px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
@@ -9833,7 +9973,7 @@ export default function Auditar() {
                       </div>
                     )}
                     <div className={`flex items-start gap-2.5 ${shouldCompactPostUploadExperience ? "mt-3" : "sm:mt-1"}`}>
-                      {officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente" ? null : (
+                      {officialCheckDisplay.silence || officialWaitLeads ? null : (
                         <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
                       )}
                       <div className="min-w-0">
@@ -9842,22 +9982,29 @@ export default function Auditar() {
                           className={`font-semibold tracking-[-0.05em] text-[#111111] ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
                         >
                           {shouldCompactPostUploadExperience
-                            ? officialCheckDisplay.silence || officialCheckDisplay.status === "pendiente"
+                            ? officialCheckDisplay.silence || officialWaitLeads
                               ? officialCheckDisplay.headline
                               : lastUploadFiveSecond.seenLine
                             : lastUploadVerdict.label}
                         </h2>
-                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
+                        {shouldCompactPostUploadExperience && officialWaitLeads ? (
+                          <p data-testid="official-check-waiting" className="mt-3 text-base leading-6 text-[#161616]">
+                            {officialCheckDisplay.detail}
+                          </p>
+                        ) : null}
+                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">
                             {lastUploadFiveSecond.nextStepLine}
                           </p>
                         ) : null}
-                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && officialCheckDisplay.status !== "pendiente" ? (
+                        {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p className="mt-2 text-sm leading-6 text-[#1a1a1a]">
                             {lastUploadFiveSecond.disclaimer}
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
+                          <>
+                          {renderReceiptArrival()}
                           <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3 text-left">
                             <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#111111]">
                               Ver detalle
@@ -9940,11 +10087,12 @@ export default function Auditar() {
                                   className="mt-2 h-auto bg-transparent px-0 text-sm font-semibold text-[#161616] underline shadow-none hover:bg-transparent"
                                   onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                                 >
-                                  {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
+                                  {INSTITUTE_SILENCE_ASK}
                                 </Button>
                               ) : null}
                             </div>
                           </details>
+                          </>
                         ) : null}
                       </div>
                     </div>
@@ -11269,7 +11417,7 @@ export default function Auditar() {
 
                   <div
                     aria-describedby="upload-guardrails-summary"
-                    className={`${pendingDraft ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                    className={`${pendingDraft && !confirmDraftMutation.isPending ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
                     <p
                       className="sr-only"
@@ -11449,6 +11597,11 @@ export default function Auditar() {
 
               {pendingDraft ? (
                 <>
+                  {confirmDraftMutation.isPending ? null : (
+                    <div className="ap-light-surface mt-4 rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4">
+                      {renderReceiptArrival()}
+                    </div>
+                  )}
                   <div className="mt-6 space-y-3 sm:hidden">
                     <div className="overflow-hidden rounded-[1.5rem] bg-slate-950 p-5 text-white shadow-[0_28px_70px_-42px_rgba(2,6,23,0.8)]">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-teal-200">
@@ -12142,7 +12295,7 @@ export default function Auditar() {
                         onClick={() => void handleConfirmDraft()}
                       >
                         {confirmDraftMutation.isPending
-                          ? "Guardando documento..."
+                          ? "Guardando tu revisión..."
                           : acceptLegalPackageMutation.isPending
                             ? "Registrando autorización..."
                             : confirmPrimaryActionLabel}
@@ -16316,7 +16469,7 @@ Reforzar con otro documento
           >
             {isProcessingDocument
               ? pendingDraft
-                ? "Guardando..."
+                ? "Guardando tu revisión..."
                 : autoAdvanceFlash
                   ? "Preparando revisión..."
                   : "Procesando..."

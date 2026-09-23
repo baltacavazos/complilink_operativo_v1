@@ -21,7 +21,7 @@ export const OFFICIAL_CHECK_CONSENT =
   "Autorizo que pregunten a IMSS y SAT con los datos de mi recibo, solo para ver la respuesta de hoy.";
 
 export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = {
-  vivo: "Vivo",
+  vivo: "Contestó",
   pendiente: "Pendiente",
   no_se_pudo: "Sin respuesta",
   no_configurado: "Aún no configurado",
@@ -35,27 +35,40 @@ export const OFFICIAL_SOURCE_LABEL: Record<OfficialCheckSource, string> = {
   infonavit: "Infonavit",
 };
 
-export const INSTITUTE_SILENCE_VERDICT =
-  "Hoy no pudimos confirmar con IMSS, SAT e Infonavit";
+export const POCKET_PARTIAL_VERDICT =
+  "Aún no te podemos decir si tu patrón te tiene bien registrado.";
+export const POCKET_BIEN_VERDICT =
+  "Por lo que vimos hoy, lo que comparamos cuadra con tu recibo.";
+export const POCKET_BIEN_LIMIT =
+  "Esto es solo lo consultado hoy. No cubre todo tu trabajo.";
+export const POCKET_OJO_VERDICT =
+  "Hay algo que no cuadra con lo que dice tu recibo. Conviene revisar.";
+export const POCKET_COULDNT_VERDICT =
+  "Hoy no se pudo comprobar. No prueba que te engañen.";
+export const POCKET_CTA_MISMATCH = "Ver qué no cuadra";
+export const POCKET_CTA_SAVE = "Guardar y listo";
+export const POCKET_ASK = "¿Qué implica esto para mi pago?";
+
+export const INSTITUTE_SILENCE_VERDICT = POCKET_COULDNT_VERDICT;
 export const INSTITUTE_SILENCE_WHAT_HAPPENED =
-  "Pedimos la información a esas oficinas y hoy no hubo respuesta (a veces están saturadas o en mantenimiento).";
+  "Hoy IMSS, SAT e Infonavit no contestaron. No es un error de tu recibo.";
 export const INSTITUTE_SILENCE_MEANING =
   "Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado ahí. Eso no quiere decir que te estén haciendo trampa; solo que hoy no se pudo comprobar.";
 export const INSTITUTE_SILENCE_NEXT =
-  "Vuelve a consultar mañana. Si quieres, pregunta al asesor: «¿qué implica esto para mi pago?»";
+  "Prueba de nuevo mañana. Si quieres, pregunta: «¿qué implica esto para mi pago?»";
 export const INSTITUTE_SILENCE_SMALL =
   "Si algo falla al preguntar otra vez, no es por tu recibo.";
 export const INSTITUTE_SILENCE_RETRY = "Probar de nuevo mañana";
-export const INSTITUTE_SILENCE_ASK = "Preguntar qué implica para mi pago";
+export const INSTITUTE_SILENCE_ASK = POCKET_ASK;
 export const INSTITUTE_SILENCE_CHAT =
   "Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron. Tu recibo ya está leído; aún no podemos decirte si tu patrón está bien dado de alta. Prueba mañana, o pregúntame qué implica para tu pago.";
 /** Apertura del chat: no repite el veredicto ni las tres líneas de la tarjeta. */
 export const WORKER_RESULT_CHAT_OPENER =
   "Esto es de tu consulta de hoy. Si te preocupa el sueldo, te lo explico en corto. No voy a repetir lo que ya dice la tarjeta. Dime qué duda te quedó.";
 export const INSTITUTE_WAITING_HEADLINE =
-  "Todavía esperamos respuesta de IMSS, SAT e Infonavit";
+  "Estamos preguntando a IMSS, SAT e Infonavit…";
 export const INSTITUTE_WAITING_DETAIL =
-  "Pedimos la información y hoy aún no contestan. Si no hay respuesta, te lo diremos.";
+  "Si tarda, casi siempre es la oficina, no tu recibo.";
 
 export const OFFICIAL_FAILED_NEXT_STEP = "Vuelve a consultar mañana.";
 export const OFFICIAL_FAILED_MISSING =
@@ -106,20 +119,15 @@ export type InstituteSilencePresentation = {
   opener: string;
 };
 
-export function instituteSilenceVerdict(sources?: OfficialCheckSource[] | null): string {
-  const unique = uniqueOfficialSources(sources);
-  if (unique.length === 0 || unique.length >= 3) return INSTITUTE_SILENCE_VERDICT;
-  return `Hoy no pudimos confirmar con ${formatOfficialSourceList(unique)}`;
+export function instituteSilenceVerdict(_sources?: OfficialCheckSource[] | null): string {
+  return INSTITUTE_SILENCE_VERDICT;
 }
 
 export function instituteSilenceWhatHappened(sources?: OfficialCheckSource[] | null): string {
   const unique = uniqueOfficialSources(sources);
-  if (unique.length === 1) {
-    const name = OFFICIAL_SOURCE_LABEL[unique[0]];
-    return `Pedimos la información a ${name} y hoy no hubo respuesta (a veces está saturado o en mantenimiento).`;
-  }
+  if (unique.length === 1) return `Hoy ${OFFICIAL_SOURCE_LABEL[unique[0]]} no contestó. No es un error de tu recibo.`;
   if (unique.length === 2) {
-    return `Pedimos la información a ${formatOfficialSourceList(unique)} y hoy no hubo respuesta (a veces están saturadas o en mantenimiento).`;
+    return `Hoy ${formatOfficialSourceList(unique)} no contestaron. No es un error de tu recibo.`;
   }
   return INSTITUTE_SILENCE_WHAT_HAPPENED;
 }
@@ -131,7 +139,7 @@ export function instituteSilenceChat(sources?: OfficialCheckSource[] | null): st
 }
 
 export function instituteSilenceSourceLine(label: string): string {
-  return `${label} — sin respuesta hoy`;
+  return `Hoy ${label} no contestó. No es un error de tu recibo.`;
 }
 
 export function buildInstituteSilencePresentation(
@@ -171,8 +179,19 @@ export type OfficialSourceOutcome = {
 };
 
 export type OfficialResultPresentation = InstituteSilencePresentation & {
-  kind: "silent" | "mixed";
+  kind: "silent" | "mixed" | "settled";
 };
+
+/** Línea corta bajo el veredicto. Sin fechas ni «Vivo». */
+export function pocketOfficeStatusLine(live: OfficialCheckSource[], missing: OfficialCheckSource[]): string {
+  const liveOrdered = OFFICIAL_CHECK_SOURCES.filter((source) => live.includes(source));
+  const missingOrdered = OFFICIAL_CHECK_SOURCES.filter((source) => missing.includes(source));
+  const liveBit = capitalizeSpanish(joinSpanishLabels(liveOrdered.map((source) => officialSourceWithArticle(source))));
+  const verb = liveOrdered.length === 1 ? "ya respondió" : "ya respondieron";
+  const missingNames = joinSpanishLabels(missingOrdered.map((source) => OFFICIAL_SOURCE_LABEL[source]));
+  const falta = missingOrdered.length === 1 ? "falta" : "faltan";
+  return `${liveBit} ${verb}; ${falta} ${missingNames}.`;
+}
 
 function officialSourceWithArticle(source: OfficialCheckSource): string {
   if (source === "sat") return "el SAT";
@@ -276,7 +295,7 @@ export function sourceReportedMaintenance(parts: Array<string | null | undefined
 
 export function silentOfficialSourceLine(label: string, maintenance: boolean): string {
   const base = instituteSilenceSourceLine(label);
-  return maintenance ? `${base} · en mantenimiento` : base;
+  return maintenance ? `${base} Está en mantenimiento.` : base;
 }
 
 export function readOfficialSourceOutcomes(
@@ -334,6 +353,54 @@ export function readOfficialSourceOutcomes(
   );
 }
 
+export const LABOR_REVIEW_READY = "Ya preguntamos a IMSS e Infonavit.";
+export const RECEIPT_RECEIVED_ACK = "Recibo recibido ✓";
+export const RECEIPT_VALIDATION_CORRECTION = "No pudimos validar el recibo. Intenta de nuevo.";
+
+const LABOR_SETTLED_STATUS = new Set<OfficialCheckStatus>(["vivo", "no_se_pudo"]);
+
+export function laborInstitutesSettled(
+  summary?: Parameters<typeof readOfficialSourceOutcomes>[0],
+): boolean {
+  const outcomes = readOfficialSourceOutcomes(summary);
+  const imss = outcomes.find((item) => item.source === "imss");
+  const infonavit = outcomes.find((item) => item.source === "infonavit");
+  return Boolean(
+    imss &&
+      infonavit &&
+      LABOR_SETTLED_STATUS.has(imss.status) &&
+      LABOR_SETTLED_STATUS.has(infonavit.status),
+  );
+}
+
+/** Hechos del SAT que ya se pueden mostrar. Vacío mientras el SAT no contesta. */
+export function liveSatFactLines(
+  summary?: Parameters<typeof readOfficialSourceOutcomes>[0],
+): string[] {
+  const sat = readOfficialSourceOutcomes(summary).find((item) => item.source === "sat" && item.status === "vivo");
+  return (sat?.hechos ?? []).slice(0, 2);
+}
+
+/**
+ * Estatus del recibo. Gris (null) hasta que haya un hecho.
+ * Lo laboral solo entra cuando IMSS e Infonavit ya terminaron, vivos o en silencio.
+ */
+export function buildReceiptEstatusLine(
+  summary?: Parameters<typeof readOfficialSourceOutcomes>[0],
+): string | null {
+  const outcomes = readOfficialSourceOutcomes(summary);
+  if (outcomes.length === 0) return null;
+  const satFacts = liveSatFactLines(summary);
+  const laborReady = laborInstitutesSettled(summary);
+  const allSilent = outcomes.every((item) => item.status === "no_se_pudo");
+  const parts: string[] = [];
+  if (satFacts.length > 0) parts.push(satFacts.join(" · "));
+  else if (allSilent && laborReady) parts.push("Sin respuesta hoy.");
+  if (laborReady) parts.push(LABOR_REVIEW_READY);
+  const line = parts.join(" ").replace(/\s+/g, " ").trim();
+  return line || null;
+}
+
 function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): string {
   const liveNames = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
@@ -345,34 +412,34 @@ function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSource
   return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. Prueba mañana, o pregúntame qué implica para tu pago.`;
 }
 
-function mixedOfficialPresentation(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): OfficialResultPresentation {
-  const liveArticles = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
+/** Línea de detalle. Nunca dice «Vivo». */
+export function answeredOfficialSourceLine(label: string, checkedAt?: string | null): string {
+  const date = formatOfficialCheckDate(checkedAt);
+  return date ? `${label} contestó · ${date}` : `${label} contestó`;
+}
+
+function mixedOfficialPresentation(
+  live: OfficialSourceOutcome[],
+  silent: OfficialSourceOutcome[],
+  options?: { stillWaiting?: boolean },
+): OfficialResultPresentation {
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
-  const liveVerb = live.length === 1 ? "sí contestó hoy" : "sí contestaron hoy";
-  const silentVerb = silent.length === 1 ? "contestó" : "contestaron";
-  const maintNote =
-    silent.length > 0 && silent.every((item) => item.maintenance)
-      ? " (están en mantenimiento)"
-      : silent.some((item) => item.maintenance)
-        ? " (algunas están en mantenimiento)"
-        : "";
   const sourceLines = [
     ...live.flatMap((item) => {
       const label = OFFICIAL_SOURCE_LABEL[item.source];
-      const date = formatOfficialCheckDate(item.checkedAt);
-      const head = date ? `${label}: Vivo · ${date}` : `${label}: Vivo`;
-      return [head, ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
+      return [answeredOfficialSourceLine(label, item.checkedAt), ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
     }),
-    ...silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance)),
+    ...silent.map((item) => unansweredOfficialSourceLine(item)),
   ];
-  const liveBit = capitalizeSpanish(liveArticles);
-  const liveShort = live.length === 1 ? "contestó" : "contestaron";
   return {
     kind: "mixed",
-    verdict: `${liveBit} ${liveShort}; ${silentNames} aún no.`,
-    whatHappened: `${liveBit} ${liveVerb}. ${silentNames} no ${silentVerb}${maintNote}.`,
-    meaning: `Tu recibo sí se leyó. Aún no sabemos si tu patrón está bien registrado en ${silentNames}.`,
-    nextStep: `Vuelve a consultar ${silentNames} mañana.`,
+    verdict: POCKET_PARTIAL_VERDICT,
+    whatHappened: pocketOfficeStatusLine(
+      live.map((item) => item.source),
+      silent.map((item) => item.source),
+    ),
+    meaning: `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
+    nextStep: options?.stillWaiting ? INSTITUTE_WAITING_DETAIL : "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
@@ -386,16 +453,143 @@ function mixedOfficialPresentation(live: OfficialSourceOutcome[], silent: Offici
  * Veredicto por fuente. El título de las tres oficinas solo cabe si ninguna contestó.
  * Si alguna está viva, se cita. El silencio de las otras no la arrastra.
  */
+function unansweredOfficialSourceLine(item: OfficialSourceOutcome): string {
+  const label = OFFICIAL_SOURCE_LABEL[item.source];
+  if (item.status === "pendiente") return `${label}: seguimos preguntando.`;
+  if (item.status === "sin_datos") return `Falta un dato del recibo para preguntar a ${label}.`;
+  return silentOfficialSourceLine(label, item.maintenance);
+}
+
+function appendAlternateRouteNote(text: string, note: string, enabled: boolean): string {
+  if (!enabled || text.includes(note)) return text;
+  return `${text} ${note}`.replace(/\s+/g, " ").trim();
+}
+
+function withAlternateRouteCopy(
+  presentation: OfficialResultPresentation,
+  enabled: boolean,
+): OfficialResultPresentation {
+  if (!enabled) return presentation;
+  return {
+    ...presentation,
+    meaning: appendAlternateRouteNote(presentation.meaning, OFFICIAL_ALTERNATE_ROUTE_NOTE, true),
+  };
+}
+
+function fillUnansweredWhileLive(outcomes: OfficialSourceOutcome[]): OfficialSourceOutcome[] {
+  if (!outcomes.some((item) => item.status === "vivo")) return outcomes;
+  const present = new Set(outcomes.map((item) => item.source));
+  const missing = OFFICIAL_CHECK_SOURCES.filter((source) => !present.has(source)).map((source) => ({
+    source,
+    status: "pendiente" as const,
+    maintenance: false,
+    hechos: [] as string[],
+    checkedAt: null,
+  }));
+  return missing.length > 0 ? [...outcomes, ...missing] : outcomes;
+}
+
+function withAlternateRouteEmptyCopy<T extends InstituteSilencePresentation>(
+  presentation: T,
+  enabled: boolean,
+): T {
+  if (!enabled) return presentation;
+  return {
+    ...presentation,
+    meaning: appendAlternateRouteNote(presentation.meaning, OFFICIAL_ALTERNATE_ROUTE_EMPTY_NOTE, true),
+  };
+}
+
+function alternateRouteContributedFacts(
+  summary: { alternateRoute?: boolean | null },
+  live: OfficialSourceOutcome[],
+): boolean {
+  return summary.alternateRoute === true && live.some((item) => item.hechos.length > 0);
+}
+
+function allThreeAnswered(outcomes: OfficialSourceOutcome[]): boolean {
+  return OFFICIAL_CHECK_SOURCES.every((source) => outcomes.some((item) => item.source === source && item.status === "vivo"));
+}
+
+function settledOfficialPresentation(
+  resultado: ReciboVsOficialResultado | null,
+  outcomes: OfficialSourceOutcome[],
+): OfficialResultPresentation {
+  const watch = resultado === "hay_diferencia";
+  const fine = resultado === "bien";
+  const sourceLines = outcomes.flatMap((item) => {
+    const label = OFFICIAL_SOURCE_LABEL[item.source];
+    return [answeredOfficialSourceLine(label, item.checkedAt), ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
+  });
+  if (watch) {
+    return {
+      kind: "settled",
+      verdict: POCKET_OJO_VERDICT,
+      whatHappened: "Hay una diferencia entre tu recibo y lo que contestaron las oficinas.",
+      meaning: "Conviene mirar el detalle antes de sacar conclusiones. No quiere decir que te estén engañando.",
+      nextStep: "Abre el detalle y anota lo que no cuadra.",
+      smallPrint: INSTITUTE_SILENCE_SMALL,
+      retryLabel: POCKET_CTA_MISMATCH,
+      askLabel: POCKET_ASK,
+      sourceLines,
+      chat: `${POCKET_OJO_VERDICT} ${POCKET_ASK}`,
+      opener: WORKER_RESULT_CHAT_OPENER,
+    };
+  }
+  if (fine) {
+    return {
+      kind: "settled",
+      verdict: POCKET_BIEN_VERDICT,
+      whatHappened: "IMSS, SAT e Infonavit contestaron.",
+      meaning: "Lo que comparamos cuadra con tu recibo.",
+      nextStep: "Puedes guardar este resultado.",
+      smallPrint: POCKET_BIEN_LIMIT,
+      retryLabel: POCKET_CTA_SAVE,
+      askLabel: POCKET_ASK,
+      sourceLines,
+      chat: `${POCKET_BIEN_VERDICT} ${POCKET_ASK}`,
+      opener: WORKER_RESULT_CHAT_OPENER,
+    };
+  }
+  return {
+    kind: "settled",
+    verdict: POCKET_COULDNT_VERDICT,
+    whatHappened: "Las oficinas contestaron, pero hoy no alcanzó para comprobar tu registro.",
+    meaning: "No prueba que te engañen. Solo que hoy no se pudo cerrar la comparación.",
+    nextStep: "Prueba de nuevo mañana.",
+    smallPrint: INSTITUTE_SILENCE_SMALL,
+    retryLabel: INSTITUTE_SILENCE_RETRY,
+    askLabel: POCKET_ASK,
+    sourceLines,
+    chat: `${POCKET_COULDNT_VERDICT} ${POCKET_ASK}`,
+    opener: WORKER_RESULT_CHAT_OPENER,
+  };
+}
+
 export function buildHonestOfficialPresentation(
   summary?: (Pick<OfficialCheckSummary, "overallStatus" | "checkedAt"> &
-    Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>) | null,
+    Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor" | "alternateRoute" | "reciboVsOficial">>) | null,
 ): OfficialResultPresentation | null {
   if (!summary) return null;
-  const outcomes = readOfficialSourceOutcomes(summary);
+  const outcomes = fillUnansweredWhileLive(readOfficialSourceOutcomes(summary));
   const live = outcomes.filter((item) => item.status === "vivo");
   const silent = outcomes.filter((item) => item.status === "no_se_pudo");
-  if (live.length > 0 && silent.length > 0) {
-    return mixedOfficialPresentation(live, silent);
+  const waiting = outcomes.filter((item) => item.status === "pendiente" || item.status === "sin_datos");
+  if (allThreeAnswered(outcomes)) {
+    return withAlternateRouteCopy(
+      settledOfficialPresentation(summary.reciboVsOficial?.resultado ?? null, outcomes),
+      alternateRouteContributedFacts(summary, outcomes.filter((item) => item.status === "vivo")),
+    );
+  }
+  if (live.length > 0 && (silent.length > 0 || waiting.length > 0)) {
+    const unanswered = OFFICIAL_CHECK_SOURCES.flatMap((source) => {
+      const match = [...silent, ...waiting].find((item) => item.source === source);
+      return match ? [match] : [];
+    });
+    const presentation = mixedOfficialPresentation(live, unanswered, {
+      stillWaiting: waiting.length > 0 && silent.length === 0,
+    });
+    return withAlternateRouteCopy(presentation, alternateRouteContributedFacts(summary, live));
   }
   if (live.length > 0 || outcomes.some((item) => item.status === "pendiente" || item.status === "sin_datos")) {
     return null;
@@ -407,7 +601,10 @@ export function buildHonestOfficialPresentation(
     silent.length > 0
       ? silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance))
       : base.sourceLines;
-  return { ...base, kind: "silent", sourceLines: lines };
+  return withAlternateRouteEmptyCopy(
+    { ...base, kind: "silent", sourceLines: lines },
+    summary.alternateRoute === true,
+  );
 }
 
 /** Qué pasó cuando la oficina no contestó. Sin culpar a la app y sin la palabra Falló. */
@@ -910,6 +1107,8 @@ export type OfficialCheckSummary = {
   reciboVsOficial?: ReciboVsOficial | null;
   /** El puente rechazó la consulta por el tope de un proveedor. No es silencio de IMSS, SAT o Infonavit. */
   bridgeBlock?: "provider_cap" | null;
+  /** Otra consulta oficial aportó hechos. Solo si el retorno lo dice. */
+  alternateRoute?: boolean | null;
   /** Presente solo cuando el retorno ya trae salario o patrón del registro. Nunca inventa el estado. */
   institutePay?: InstitutePayFacts | null;
 };
@@ -1721,7 +1920,10 @@ export function buildOfficialCheckHeadline(
     Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>,
 ) {
   const presentation = buildHonestOfficialPresentation(summary);
-  if (presentation?.kind === "mixed" || presentation?.kind === "silent") return presentation.verdict;
+  if (presentation?.kind === "mixed" || presentation?.kind === "silent" || presentation?.kind === "settled") {
+    return presentation.verdict;
+  }
+  if (summary.overallStatus === "vivo") return POCKET_PARTIAL_VERDICT;
   if (summary.overallStatus === "no_se_pudo") {
     if (presentation?.kind === "silent") return presentation.verdict;
     const fromChecks = listFailedOfficialSources(summary.checks);
@@ -1737,6 +1939,11 @@ export function buildOfficialCheckHeadline(
 export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando...";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
   "Estamos preguntando a IMSS, SAT e Infonavit. Si hoy no contestan, te lo diremos.";
+/** Solo si el retorno dice que otra consulta oficial aportó el dato. Nunca dice «backup». */
+export const OFFICIAL_ALTERNATE_ROUTE_NOTE = "Consultamos otra vía oficial.";
+/** Otra vía se intentó y no dejó un dato usable. Nunca dice «backup». */
+export const OFFICIAL_ALTERNATE_ROUTE_EMPTY_NOTE =
+  "Consultamos otra vía oficial y hoy no hubo datos útiles.";
 export const OFFICIAL_CHECK_READY_HEADLINE = "Consulta IMSS y SAT";
 export const OFFICIAL_CHECK_READY_DETAIL =
   "Con tu permiso preguntamos a IMSS y SAT. Si hoy no contestan, te lo diremos. No inventamos que tu patrón cumple.";
@@ -1782,6 +1989,117 @@ export function pickHonestOfficialCheck(params: {
  * Permiso primero. Con el checkbox marcado nunca se muestra «Falta tu permiso».
  * El CTA refleja Consultando / Vivo / esperando / sin respuesta según la respuesta, no un veredicto inventado.
  */
+const ALTERNATE_ROUTE_TRUE_KEYS = new Set([
+  "usedbackup",
+  "usedfallback",
+  "viabackup",
+  "frombackup",
+  "backupused",
+  "failover",
+  "providerfailover",
+  "usedsecondary",
+  "fallbackused",
+]);
+const ALTERNATE_ROUTE_ROLE_KEYS = new Set([
+  "providerrole",
+  "consultroute",
+  "route",
+  "via",
+  "sourcekind",
+  "providerkind",
+  "failoverrole",
+]);
+const ALTERNATE_ROUTE_ROLE_VALUES = new Set([
+  "backup",
+  "fallback",
+  "secondary",
+  "respaldo",
+  "alternate",
+  "failover",
+]);
+
+function compactRouteKey(value: string) {
+  return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+function secondaryAttemptPresent(raw: unknown): boolean {
+  if (raw === true || raw === "true" || raw === 1) return true;
+  if (typeof raw === "number") return raw > 0;
+  if (Array.isArray(raw)) return raw.length > 0;
+  if (raw && typeof raw === "object") return Object.keys(raw as Record<string, unknown>).length > 0;
+  return false;
+}
+
+/**
+ * Señal explícita de que otra consulta oficial aportó el dato.
+ * Sin esa señal, no se dice nada. No inventa un proveedor.
+ */
+export function readAlternateOfficialRoute(value: unknown): boolean {
+  const seen = new Set<unknown>();
+  const visit = (node: unknown, depth: number): boolean => {
+    if (!node || typeof node !== "object" || depth > 4 || seen.has(node)) return false;
+    seen.add(node);
+    if (Array.isArray(node)) return node.some((item) => visit(item, depth + 1));
+    const record = node as Record<string, unknown>;
+    for (const [key, raw] of Object.entries(record)) {
+      const name = compactRouteKey(key);
+      if (ALTERNATE_ROUTE_TRUE_KEYS.has(name) && (raw === true || raw === "true" || raw === 1)) return true;
+      if ((name === "backupjumps" || name === "backupjump") && secondaryAttemptPresent(raw)) return true;
+      if (ALTERNATE_ROUTE_ROLE_KEYS.has(name) && ALTERNATE_ROUTE_ROLE_VALUES.has(String(raw ?? "").trim().toLowerCase())) {
+        return true;
+      }
+    }
+    for (const childKey of ["result", "officialCheck", "sat", "imss", "infonavit", "metadata", "helios", "sources"]) {
+      if (childKey in record && visit(record[childKey], depth + 1)) return true;
+    }
+    return false;
+  };
+  return visit(value, 0);
+}
+
+export function shouldPollOfficialCheck(summary?: OfficialCheckSummary | null): boolean {
+  if (!summary || summary.bridgeBlock === "provider_cap") return false;
+  if (isPermissionBlockedStatus(summary.overallStatus) && !summary.checkedAt && !summary.chatAnchor) return false;
+  if (summary.overallStatus === "pendiente") return true;
+  return (summary.checks ?? []).some((item) => item.status === "pendiente" || item.honesty === "pending");
+}
+
+function liveSourceCount(summary: OfficialCheckSummary): number {
+  const fromChecks = (summary.checks ?? []).filter((item) => item.status === "vivo" || item.honesty === "live").length;
+  if (fromChecks > 0) return fromChecks;
+  if (summary.chatAnchor) {
+    return [summary.chatAnchor.imss, summary.chatAnchor.sat, summary.chatAnchor.infonavit].filter(
+      (item) => item.estado === "live",
+    ).length;
+  }
+  return summary.overallStatus === "vivo" ? 1 : 0;
+}
+
+/** Entre consultas ya hechas, muestra la que ya tiene más hechos vivos. */
+export function pickPromptOfficialCheck(params: {
+  consentGranted: boolean;
+  candidates: Array<OfficialCheckSummary | null | undefined>;
+}): OfficialCheckSummary | null {
+  const base = pickHonestOfficialCheck(params);
+  const present = params.candidates.filter((item): item is OfficialCheckSummary => Boolean(item));
+  const withoutCap = present.filter((item) => item.bridgeBlock !== "provider_cap");
+  const pool = withoutCap.length > 0 ? withoutCap : present;
+  const consulted = pool.filter(
+    (item) =>
+      !isPermissionBlockedStatus(item.overallStatus) &&
+      Boolean(item.checkedAt || item.chatAnchor || item.reciboVsOficial),
+  );
+  if (consulted.length === 0) return base;
+  return consulted.reduce((best, item) => {
+    const liveDelta = liveSourceCount(item) - liveSourceCount(best);
+    if (liveDelta > 0) return item;
+    if (liveDelta < 0) return best;
+    const bestAt = best.checkedAt ? Date.parse(best.checkedAt) : 0;
+    const itemAt = item.checkedAt ? Date.parse(item.checkedAt) : 0;
+    return itemAt > bestAt ? item : best;
+  });
+}
+
 export function resolveOfficialCheckDisplay(params: {
   consentGranted: boolean;
   isPending?: boolean;
@@ -1793,9 +2111,16 @@ export function resolveOfficialCheckDisplay(params: {
   facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null;
 }): OfficialCheckDisplay {
   if (params.isPending) {
+    const settled = resolveOfficialCheckDisplay({ ...params, isPending: false });
+    if (settled.silence || settled.status === "vivo") {
+      return {
+        ...settled,
+        buttonLabel: OFFICIAL_CHECK_LOADING_LABEL,
+      };
+    }
     return {
-      headline: OFFICIAL_CHECK_LOADING_LABEL,
-      detail: OFFICIAL_CHECK_LOADING_DETAIL,
+      headline: INSTITUTE_WAITING_HEADLINE,
+      detail: INSTITUTE_WAITING_DETAIL,
       buttonLabel: OFFICIAL_CHECK_LOADING_LABEL,
       status: "consultando",
       showPermissionCopy: false,
@@ -1843,10 +2168,10 @@ export function resolveOfficialCheckDisplay(params: {
         };
       }
       const presentation = buildHonestOfficialPresentation(honest);
-      if (presentation?.kind === "mixed") {
+      if (presentation?.kind === "mixed" || presentation?.kind === "settled") {
         return {
           headline: presentation.verdict,
-          detail: `${presentation.whatHappened} ${presentation.meaning} ${presentation.nextStep}`,
+          detail: presentation.whatHappened,
           buttonLabel: presentation.retryLabel,
           status: "vivo",
           showPermissionCopy: false,
@@ -1856,7 +2181,14 @@ export function resolveOfficialCheckDisplay(params: {
       if (presentation?.kind === "silent" || honest.overallStatus === "no_se_pudo") {
         const fromChecks = listFailedOfficialSources(honest.checks);
         const fromAnchor = listFailedOfficialSourcesFromAnchor(honest.chatAnchor);
-        const silence = presentation ?? buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
+        const silenceBase = presentation ?? buildInstituteSilencePresentation(fromChecks.length > 0 ? fromChecks : fromAnchor);
+        const silence = presentation?.kind === "silent"
+          ? silenceBase
+          : withAlternateRouteEmptyCopy(
+              silenceBase,
+              honest.alternateRoute === true &&
+                !readOfficialSourceOutcomes(honest).some((item) => item.status === "vivo" && item.hechos.length > 0),
+            );
         return {
           headline: silence.verdict,
           detail: `${silence.whatHappened} ${silence.meaning} ${silence.nextStep}`,
@@ -1880,11 +2212,13 @@ export function resolveOfficialCheckDisplay(params: {
       }
       return {
         headline: buildOfficialCheckHeadline(honest),
-        detail:
+        detail: appendAlternateRouteNote(
           honest.overallStatus === "sin_datos" && !canDispatch && params.missingIdentityDetail
             ? params.missingIdentityDetail
             : honest.overallDetail,
-        buttonLabel: honest.overallLabel,
+          alternateRouteContributedFacts(honest, readOfficialSourceOutcomes(honest).filter((item) => item.status === "vivo")),
+        ),
+        buttonLabel: honest.overallStatus === "vivo" ? OFFICIAL_CHECK_BUTTON : honest.overallLabel,
         status: honest.overallStatus,
         showPermissionCopy: false,
         silence: null,

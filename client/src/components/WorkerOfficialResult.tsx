@@ -1,10 +1,12 @@
-import type { InstituteSilencePresentation } from "@shared/officialCheckCopy";
+import { useRef } from "react";
+import { INSTITUTE_SILENCE_SMALL, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
 
 type WorkerOfficialResultProps = {
   presentation: InstituteSilencePresentation;
   onRetry: () => void;
   onAsk: () => void;
+  onDone?: () => void;
   retryPending?: boolean;
   paperRead?: string | null;
   comparisonLines?: string[];
@@ -18,10 +20,12 @@ export function WorkerOfficialResult({
   presentation,
   onRetry,
   onAsk,
+  onDone,
   retryPending = false,
   paperRead,
   comparisonLines = [],
 }: WorkerOfficialResultProps) {
+  const detailRef = useRef<HTMLDetailsElement>(null);
   const lines = [
     { label: "Qué pasó", text: presentation.whatHappened },
     { label: "Qué significa", text: presentation.meaning },
@@ -54,7 +58,10 @@ export function WorkerOfficialResult({
       <p data-testid="official-check-detail" className="sr-only">
         {lines.map((line) => `${line.label}. ${line.text}`).join(" ")}
       </p>
-      <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
+      {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
+        <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
+      ) : null}
+      <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {presentation.sourceLines.length ? (
           <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
@@ -79,7 +86,21 @@ export function WorkerOfficialResult({
         data-testid="official-check-cta"
         className="ap-btn-on-dark mt-5 h-12 w-full rounded-full bg-[#111111] text-base font-semibold text-white hover:bg-[#222222]"
         disabled={retryPending}
-        onClick={onRetry}
+        onClick={() => {
+          if (presentation.retryLabel === POCKET_CTA_MISMATCH) {
+            const node = detailRef.current;
+            if (node) {
+              node.open = true;
+              node.scrollIntoView({ block: "nearest" });
+            }
+            return;
+          }
+          if (presentation.retryLabel === POCKET_CTA_SAVE) {
+            onDone?.();
+            return;
+          }
+          onRetry();
+        }}
       >
         {presentation.retryLabel}
       </Button>

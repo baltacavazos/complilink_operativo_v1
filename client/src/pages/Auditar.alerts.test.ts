@@ -733,9 +733,9 @@ describe("buildUploadProgressState", () => {
       etaLabel: "Casi listo: normalmente menos de 10 segundos para integrarlo con seguridad.",
       stepKey: "save",
       humanMessages: [
-        "Guardando tu archivo...",
-        "Asegurando tu información...",
-        "Listo para tu revisión...",
+        "Guardando tu revisión...",
+        "Estamos preguntando a IMSS, SAT e Infonavit…",
+        "Si tarda, casi siempre es la oficina, no tu recibo.",
       ],
     });
   });
@@ -815,9 +815,9 @@ describe("getHumanUploadProgressMessages", () => {
       "Preparando tu análisis rápido...",
     ]);
     expect(getHumanUploadProgressMessages("save")).toEqual([
-      "Guardando tu archivo...",
-      "Asegurando tu información...",
-      "Listo para tu revisión...",
+      "Guardando tu revisión...",
+      "Estamos preguntando a IMSS, SAT e Infonavit…",
+      "Si tarda, casi siempre es la oficina, no tu recibo.",
     ]);
     expect(getHumanUploadProgressMessages("review")).toEqual([]);
   });

@@ -13,7 +13,18 @@ const source = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 describe("Auditar consult UI — permiso y CTA", () => {
   it("usa la máquina de permiso y no deja Falta tu permiso encima del checkbox", () => {
     expect(source).toContain("resolveOfficialCheckDisplay");
-    expect(source).toContain("pickHonestOfficialCheck");
+    expect(source).toContain("pickPromptOfficialCheck");
+    expect(source).toContain("shouldPollOfficialCheck");
+    expect(source).toContain('data-testid="save-waiting"');
+    expect(source).toContain('data-testid="save-notice"');
+    expect(source).toContain("Guardando…");
+    expect(source).toContain('sonnerToast.success("Listo"');
+    expect(source).toContain('data-testid="official-check-waiting"');
+    expect(source).toContain("setReceiptAck(\"received\")");
+    expect(source).toContain("setReceiptAck(\"failed\")");
+    expect(source).toContain("renderReceiptArrival");
+    expect(source).not.toMatch(/data-testid="save-waiting"[\s\S]{0,700}animate-pulse/);
+    expect(source).not.toMatch(/data-testid="official-check-waiting"[\s\S]{0,400}animate-pulse/);
     expect(source).toContain("officialCheckConsent");
     expect(source).toContain('data-testid="official-check-card"');
     expect(source).toContain("documents.length > 0 && !pendingDraft && !lastUpload");
@@ -66,12 +77,12 @@ describe("Auditar consult UI — permiso y CTA", () => {
     });
 
     expect(fallo.buttonLabel).toBe("Probar de nuevo mañana");
-    expect(fallo.headline).toBe("Hoy no pudimos confirmar con IMSS, SAT e Infonavit");
+    expect(fallo.headline).toBe("Hoy no se pudo comprobar. No prueba que te engañen.");
     expect(fallo.headline).not.toMatch(/Falló|Esto vimos/);
     expect(fallo.detail).toMatch(/Tu recibo sí se leyó/);
     expect(fallo.detail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(fallo.detail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
-    expect(fallo.silence?.askLabel).toBe("Preguntar qué implica para mi pago");
+    expect(fallo.silence?.askLabel).toBe("¿Qué implica esto para mi pago?");
     expect(JSON.stringify(fallo)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
 
     const faltan = resolveOfficialCheckDisplay({
