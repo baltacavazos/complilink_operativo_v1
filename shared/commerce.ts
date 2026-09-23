@@ -72,6 +72,20 @@ export const FREE_TIER_EXHAUSTED_COPY =
 export const FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE =
   "Subir otro documento en este expediente está disponible desde Audita Esencial.";
 
+export function isFreePlanDocumentLimitMessage(message: string) {
+  const normalized = message.replace(/\s+/g, " ").trim();
+  if (!normalized) {
+    return false;
+  }
+
+  return (
+    normalized.includes(FREE_TIER_EXHAUSTED_COPY) ||
+    normalized.includes(FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE) ||
+    /en el plan gratis ya usaste tu documento/i.test(normalized) ||
+    /subir otro documento en este expediente/i.test(normalized)
+  );
+}
+
 export function formatExceededDocumentLimitFeatureLabel(maxDocumentsPerCase: number) {
   if (maxDocumentsPerCase <= 1) {
     return "Subir otro documento en este expediente";
