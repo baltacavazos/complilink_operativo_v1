@@ -3,6 +3,7 @@ import {
   COMMERCE_PLANS,
   formatCommercePriceMx,
   formatFreePlanLandingPrinciple,
+  FREE_TIER_EXHAUSTED_COPY,
 } from "@shared/commerce";
 import { sanitizeClientVisibleCopy } from "./clientVisibleCopy";
 
@@ -76,9 +77,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         : "Sigue gratis y activa un plan solo si ya te hace sentido",
       title: "Planes claros para seguir gratis o desbloquear más profundidad",
       description: hasEnoughContext
-        ? visiblePricingCopy(
-            `Tu expediente ya alcanzó el tramo gratuito. Si necesitas más documentos, lectura de varios archivos o más continuidad, aquí puedes activarlo sin salir del expediente.`,
-          )
+        ? visiblePricingCopy(FREE_TIER_EXHAUSTED_COPY)
         : "Puedes seguir usando la parte gratuita. Cuando quieras más contexto, comparativas o productos listos para compartir, aquí mismo lo activas.",
       priceLabel: `${formatCommercePriceMx(essentialPlan.monthlyPriceMx)}/mes desde`,
       primaryCtaLabel: "Ver planes y activar",

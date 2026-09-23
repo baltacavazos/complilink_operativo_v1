@@ -198,7 +198,7 @@ import {
 } from "@shared/legal";
 import {
   buildUpgradeMessage,
-  formatExceededDocumentLimitFeatureLabel,
+  formatDocumentLimitBlockedMessage,
   type CommercePlanKey,
 } from "@shared/commerce";
 import {
@@ -959,10 +959,14 @@ async function assertWithinDocumentCap(params: {
   });
   const commerceStatus = await getUserCommerceStatus(params.user);
   if (currentDocuments.length >= commerceStatus.entitlements.maxDocumentsPerCase) {
-    throwUpgradeRequired({
-      featureLabel: formatExceededDocumentLimitFeatureLabel(commerceStatus.entitlements.maxDocumentsPerCase),
-      requiredPlan: "essential",
-      currentPlan: commerceStatus.activePlanKey,
+    const message =
+      sanitizeWorkerChatCopy(
+        formatDocumentLimitBlockedMessage(commerceStatus.entitlements.maxDocumentsPerCase),
+      ) ?? formatDocumentLimitBlockedMessage(commerceStatus.entitlements.maxDocumentsPerCase);
+
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message,
     });
   }
 }

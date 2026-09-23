@@ -66,9 +66,29 @@ export function formatActiveDocumentCapCopy(maxDocumentsPerCase: number) {
   return `${maxDocumentsPerCase} documentos con tu plan actual.`;
 }
 
+export const FREE_TIER_EXHAUSTED_COPY =
+  "En el plan gratis ya usaste tu documento. Si quieres subir otro, activa Audita Esencial.";
+
+export const FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE =
+  "Subir otro documento en este expediente está disponible desde Audita Esencial.";
+
 export function formatExceededDocumentLimitFeatureLabel(maxDocumentsPerCase: number) {
-  const documents = maxDocumentsPerCase === 1 ? "1 documento" : `${maxDocumentsPerCase} documentos`;
-  return `Subir más de ${documents} en este expediente`;
+  if (maxDocumentsPerCase <= 1) {
+    return "Subir otro documento en este expediente";
+  }
+
+  return `Subir más de ${maxDocumentsPerCase} documentos en este expediente`;
+}
+
+export function formatDocumentLimitBlockedMessage(maxDocumentsPerCase: number) {
+  if (maxDocumentsPerCase <= 1) {
+    return FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE;
+  }
+
+  return buildUpgradeMessage({
+    featureLabel: formatExceededDocumentLimitFeatureLabel(maxDocumentsPerCase),
+    requiredPlan: "essential",
+  });
 }
 
 export function formatFreePlanLandingPrinciple(maxDocumentsPerCase: number) {

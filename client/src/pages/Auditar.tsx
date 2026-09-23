@@ -228,6 +228,7 @@ import {
   formatActiveDocumentCapCopy,
   formatCommercePriceMx,
   FREE_MAX_DOCUMENTS_PER_CASE,
+  FREE_TIER_EXHAUSTED_COPY,
   type CommercePlanKey,
   type CommerceProductKey,
 } from "@shared/commerce";
@@ -833,10 +834,12 @@ function buildCommercePromptContext(params: {
   message: string;
   activePlanKey: CommercePlanKey;
 }): CommercePromptContext | null {
-  if (/Subir más de \d+ documentos/i.test(params.message)) {
+  if (/Subir otro documento en este expediente|Subir más de \d+ documentos/i.test(params.message)) {
     return {
-      title: "Sigue cargando pruebas en este expediente",
-      body: `Ya llenaste el tramo gratuito del expediente. Audita Esencial cuesta ${formatCommercePriceMx(79)} al mes y te deja seguir subiendo documentos sin empezar de cero.`,
+      title: "Para subir otro documento",
+      body: /Subir otro documento en este expediente/i.test(params.message)
+        ? FREE_TIER_EXHAUSTED_COPY
+        : "Ya llegaste al tope de documentos de tu plan. Si quieres subir otro, revisa el siguiente plan.",
       targetPlan: "essential",
       triggerPoint: "document_limit_blocked",
       productKey: "essential",

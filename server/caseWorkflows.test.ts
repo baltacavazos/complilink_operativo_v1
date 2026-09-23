@@ -1913,7 +1913,9 @@ describe("appRouter case workflows", () => {
         consentStatus: "pending",
         sourceChannel: "manual",
       }),
-    ).rejects.toThrow(/Subir más de 1 documento en este expediente está disponible desde Audita Esencial/i);
+    ).rejects.toThrow(
+      "Subir otro documento en este expediente está disponible desde Audita Esencial.",
+    );
 
     expect(db.addDocumentRecord).not.toHaveBeenCalled();
   });

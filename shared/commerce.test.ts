@@ -5,8 +5,11 @@ import {
   buildCommerceEntitlements,
   formatActiveDocumentCapCopy,
   formatCommerceDocumentLimitBullet,
+  formatDocumentLimitBlockedMessage,
   formatExceededDocumentLimitFeatureLabel,
   formatFreePlanLandingPrinciple,
+  FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE,
+  FREE_TIER_EXHAUSTED_COPY,
 } from "./commerce";
 
 describe("tope de documentos por plan", () => {
@@ -33,11 +36,16 @@ describe("tope de documentos por plan", () => {
     expect(formatCommerceDocumentLimitBullet(1)).toBe("1 documento por expediente.");
     expect(formatCommerceDocumentLimitBullet(15)).toBe("Hasta 15 documentos por expediente.");
     expect(formatActiveDocumentCapCopy(1)).toBe("1 documento con tu plan actual.");
-    expect(formatExceededDocumentLimitFeatureLabel(1)).toBe(
-      "Subir más de 1 documento en este expediente",
+    expect(FREE_TIER_EXHAUSTED_COPY).toBe(
+      "En el plan gratis ya usaste tu documento. Si quieres subir otro, activa Audita Esencial.",
+    );
+    expect(formatDocumentLimitBlockedMessage(1)).toBe(FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE);
+    expect(FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE).toBe(
+      "Subir otro documento en este expediente está disponible desde Audita Esencial.",
     );
     expect(formatExceededDocumentLimitFeatureLabel(15)).toBe(
       "Subir más de 15 documentos en este expediente",
     );
+    expect(formatDocumentLimitBlockedMessage(15)).toMatch(/Subir más de 15 documentos en este expediente está disponible desde Audita Esencial/);
   });
 });
