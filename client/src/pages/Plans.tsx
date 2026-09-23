@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
