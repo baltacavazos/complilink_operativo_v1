@@ -672,7 +672,7 @@ const prediagnosticRecommendations: Record<
     reason: "Suele dar la primera lectura más útil.",
     nextStep: "Este archivo basta para la lectura gratis. Más documentos se activan en un plan.",
     resultTitle: "Si quieres avanzar hoy, este suele ser el mejor archivo para arrancar.",
-    ctaLabel: "Empezar con ese archivo",
+    ctaLabel: "Revisar mi recibo gratis",
   },
   "privacidad": {
     badge: "Inicio con control",
