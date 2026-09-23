@@ -225,7 +225,10 @@ Pagos detectados
 import { toast as sonnerToast } from "sonner";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
+  formatActiveDocumentCapCopy,
   formatCommercePriceMx,
+  FREE_MAX_DOCUMENTS_PER_CASE,
+  FREE_TIER_EXHAUSTED_COPY,
   type CommercePlanKey,
   type CommerceProductKey,
 } from "@shared/commerce";
@@ -831,10 +834,12 @@ function buildCommercePromptContext(params: {
   message: string;
   activePlanKey: CommercePlanKey;
 }): CommercePromptContext | null {
-  if (/Subir más de \d+ documentos/i.test(params.message)) {
+  if (/Subir otro documento en este expediente|Subir más de \d+ documentos/i.test(params.message)) {
     return {
-      title: "Sigue cargando pruebas en este expediente",
-      body: `Ya llenaste el tramo gratuito del expediente. Audita Esencial cuesta ${formatCommercePriceMx(79)} al mes y te deja seguir subiendo documentos sin empezar de cero.`,
+      title: "Para subir otro documento",
+      body: /Subir otro documento en este expediente/i.test(params.message)
+        ? FREE_TIER_EXHAUSTED_COPY
+        : "Ya llegaste al tope de documentos de tu plan. Si quieres subir otro, revisa el siguiente plan.",
       targetPlan: "essential",
       triggerPoint: "document_limit_blocked",
       productKey: "essential",
@@ -16004,7 +16009,9 @@ Reforzar con otro documento
                 <div className="rounded-2xl bg-white/80 p-3">
                   <p className="font-semibold text-slate-950">Documentos por expediente</p>
                   <p className="mt-1">
-                    {commerceStatusQuery.data?.entitlements.maxDocumentsPerCase ?? 3} activos con tu plan actual.
+                    {formatActiveDocumentCapCopy(
+                      commerceStatusQuery.data?.entitlements.maxDocumentsPerCase ?? FREE_MAX_DOCUMENTS_PER_CASE,
+                    )}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
@@ -16013,8 +16020,8 @@ Reforzar con otro documento
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
                       ? "Memoria histórica de expediente"
                       : commerceStatusQuery.data?.entitlements.canUseHeliosMultiDocument
-                        ? "Multi-documento con continuidad"
-                        : "Básico sobre contexto inicial"}
+                        ? "Puede leer varios documentos de tu expediente"
+                        : "Sobre el documento de tu expediente"}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">

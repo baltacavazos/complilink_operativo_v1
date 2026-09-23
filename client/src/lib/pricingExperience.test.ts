@@ -6,13 +6,17 @@ describe("getAuditapatronPricingExperience", () => {
     const experience = getAuditapatronPricingExperience(0);
 
     expect(experience.landing.showPrice).toBe(false);
-    expect(experience.landing.eyebrow).toContain("Freemium");
+    expect(experience.landing.eyebrow).toContain("Gratis para revisar tu recibo");
     expect(experience.landing.title).toContain("Empieza gratis");
     expect(experience.landing.description).toContain("sin tarjeta");
+    expect(experience.landing.description).toContain("un recibo");
     expect(experience.landing.principles).toContain(
       "La primera lectura sigue siendo gratis."
     );
-    expect(experience.landing.principles.some(item => item.includes("3 documentos"))).toBe(true);
+    expect(experience.landing.principles).toContain(
+      "El plan gratis incluye un documento por expediente."
+    );
+    expect(experience.landing.principles.some(item => /3 documentos|varios recibos/i.test(item))).toBe(false);
   });
 
   it("expone dentro de la plataforma el ladder completo con precio desde Esencial", () => {
@@ -31,6 +35,22 @@ describe("getAuditapatronPricingExperience", () => {
     expect(
       experience.platform.plans.find(plan => plan.key === "essential")?.highlighted
     ).toBe(true);
+  });
+
+  it("trata un documento como el tope del plan gratis", () => {
+    const belowLimit = getAuditapatronPricingExperience(0);
+    const atLimit = getAuditapatronPricingExperience(1);
+    const freePlan = atLimit.platform.plans.find(plan => plan.key === "free");
+
+    expect(belowLimit.platform.description).not.toContain(
+      "En el plan gratis ya usaste tu documento.",
+    );
+    expect(atLimit.platform.description).toBe(
+      "En el plan gratis ya usaste tu documento. Si quieres subir otro, activa Audita Esencial.",
+    );
+    expect(freePlan?.description).not.toMatch(/3 documentos|varios recibos/i);
+    expect(freePlan?.featureBullets.join(" ")).toMatch(/1 documento por expediente/i);
+    expect(freePlan?.featureBullets.join(" ")).not.toMatch(/3 documentos|varios recibos/i);
   });
 
   it("incluye productos one-shot para informe premium y expediente para abogado", () => {

@@ -196,7 +196,11 @@ import {
   getLegalConsentLabel,
   type LegalConsentType,
 } from "@shared/legal";
-import { buildUpgradeMessage, type CommercePlanKey } from "@shared/commerce";
+import {
+  buildUpgradeMessage,
+  formatDocumentLimitBlockedMessage,
+  type CommercePlanKey,
+} from "@shared/commerce";
 import {
   formatAdvisorMemoryForPrompt,
   toPublicAdvisorMemory,
@@ -941,6 +945,30 @@ function throwUpgradeRequired(params: {
     code: "FORBIDDEN",
     message,
   });
+}
+
+async function assertWithinDocumentCap(params: {
+  user: { id: number; email?: string | null; name?: string | null; role?: string | null };
+  tenantId: string;
+  caseId: string;
+}) {
+  const currentDocuments = await listVisibleDocuments({
+    userId: params.user.id,
+    tenantId: params.tenantId,
+    caseId: params.caseId,
+  });
+  const commerceStatus = await getUserCommerceStatus(params.user);
+  if (currentDocuments.length >= commerceStatus.entitlements.maxDocumentsPerCase) {
+    const message =
+      sanitizeWorkerChatCopy(
+        formatDocumentLimitBlockedMessage(commerceStatus.entitlements.maxDocumentsPerCase),
+      ) ?? formatDocumentLimitBlockedMessage(commerceStatus.entitlements.maxDocumentsPerCase);
+
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message,
+    });
+  }
 }
 
 type AuditarMutationAction = "analyzeDocumentDraft" | "confirmDocumentDraft" | "uploadDocument";
@@ -4477,6 +4505,11 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
+        await assertWithinDocumentCap({
+          user: ctx.user,
+          tenantId: input.tenantId,
+          caseId: input.caseId,
+        });
         const documentId = buildDocumentId();
         const processedAt = new Date(payload.previewOpinion.generatedAt || Date.now());
         const classification = payload.classification;
@@ -4971,19 +5004,11 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
-        const currentDocuments = await listVisibleDocuments({
-          userId: ctx.user.id,
+        await assertWithinDocumentCap({
+          user: ctx.user,
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
-        const commerceStatus = await getUserCommerceStatus(ctx.user);
-        if (currentDocuments.length >= commerceStatus.entitlements.maxDocumentsPerCase) {
-          throwUpgradeRequired({
-            featureLabel: `Subir más de ${commerceStatus.entitlements.maxDocumentsPerCase} documentos en este expediente`,
-            requiredPlan: "essential",
-            currentPlan: commerceStatus.activePlanKey,
-          });
-        }
 
         const draft = await getAuditarDraftById({
           tenantId: input.tenantId,
@@ -5543,19 +5568,11 @@ export const appRouter = router({
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
-        const currentDocuments = await listVisibleDocuments({
-          userId: ctx.user.id,
+        await assertWithinDocumentCap({
+          user: ctx.user,
           tenantId: input.tenantId,
           caseId: input.caseId,
         });
-        const commerceStatus = await getUserCommerceStatus(ctx.user);
-        if (currentDocuments.length >= commerceStatus.entitlements.maxDocumentsPerCase) {
-          throwUpgradeRequired({
-            featureLabel: `Subir más de ${commerceStatus.entitlements.maxDocumentsPerCase} documentos en este expediente`,
-            requiredPlan: "essential",
-            currentPlan: commerceStatus.activePlanKey,
-          });
-        }
         const ceoBypass = await isCeoBypassUser(ctx.user.id);
 
         const { safeFileName, normalizedMimeType } = validateAuditarUploadMetadata({

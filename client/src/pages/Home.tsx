@@ -378,7 +378,7 @@ const findingsExamples = [
   {
     title: "Cambios repetidos en pagos o deducciones",
     description:
-      "Varios recibos seguidos ayudan a detectar patrones que un solo archivo no deja ver.",
+      "Un recibo ya da una primera lectura. Ver el mismo pago en otros meses pide más documentos y va en un plan de pago.",
   },
   {
     title: "Condiciones pactadas frente a la realidad",
@@ -389,9 +389,9 @@ const findingsExamples = [
 
 const priorityDocuments: PriorityDocument[] = [
   {
-    title: "Recibos de nómina de varios periodos",
-    description: "Son de los archivos más útiles para detectar cambios repetidos en pagos, deducciones y depósitos.",
-    value: "Ayudan a encontrar patrones mes con mes y a darle más contexto real a tu expediente.",
+    title: "Recibos de nómina de otros meses",
+    description: "En un plan de pago ayudan a ver cambios repetidos en pagos, deducciones y depósitos.",
+    value: "Sirven para ver patrones mes con mes cuando tu plan ya admite más de un documento.",
   },
   {
     title: "CFDI timbrados",
@@ -457,7 +457,7 @@ const faqs = [
     id: "mas-contexto",
     question: "¿Por qué a veces conviene subir otro documento después?",
     answer:
-      "Porque con un segundo papel, como el CFDI del mismo mes o un recibo anterior, ya puedes confirmar si la diferencia era real o solo una duda inicial. Pero primero ves una lectura útil con un solo archivo.",
+      "Porque un segundo papel puede confirmar si la diferencia era real. En el plan gratis cabe un documento; más papeles se activan en un plan de pago. Primero ves una lectura útil con un solo archivo.",
   },
 ];
 
@@ -546,9 +546,9 @@ const heroFindingSlides = [
     badge: "Caso ejemplo · cambios entre recibos",
     title: "Algunas deducciones cambian de un mes a otro sin que se note a simple vista.",
     description:
-      "Comparar dos o tres recibos seguidos ayuda a ver si el patrón cambió, desde cuándo pasó y en qué concepto conviene detenerse primero.",
+      "Comparar recibos de otros meses ayuda a ver si algo cambió, pero eso pide más de un documento y va en un plan de pago.",
     impact: "Pasas de una sensación difusa a una línea temporal que te orienta mejor para seguir revisando.",
-    suggestedDocument: "Dos o tres recibos de nómina consecutivos",
+    suggestedDocument: "Un recibo de nómina para empezar",
   },
   {
     id: "laguna-contractual",
@@ -661,7 +661,7 @@ const prediagnosticRecommendations: Record<
     document: "Tu recibo de nómina más reciente o un CFDI del mismo periodo",
     reason:
       "Suelen dar contexto rápido sobre pagos, deducciones, fechas y conceptos para que veas pronto si AuditaPatron te puede ayudar.",
-    nextStep: "Si después quieres más claridad, puedes cargar tu contrato o documentos del IMSS/Infonavit para sumar contexto.",
+    nextStep: "En gratis revisas un documento. Si después quieres sumar contrato o papeles del IMSS, eso va en un plan de pago.",
     resultTitle: "Empieza con la evidencia que más rápido revela pagos, deducciones y periodos.",
     ctaLabel: "Quiero revisar ese documento",
   },
@@ -669,7 +669,7 @@ const prediagnosticRecommendations: Record<
     badge: "Documento exacto sugerido",
     document: "El archivo que ya tienes a la mano; si dudas, un recibo de nómina reciente",
     reason: "Suele dar la primera lectura más útil.",
-    nextStep: "Si luego sumas más evidencia, ves más contexto.",
+    nextStep: "Este archivo basta para la lectura gratis. Más documentos se activan en un plan.",
     resultTitle: "Si quieres avanzar hoy, este suele ser el mejor archivo para arrancar.",
     ctaLabel: "Empezar con ese archivo",
   },
@@ -678,7 +678,7 @@ const prediagnosticRecommendations: Record<
     document: "Un recibo reciente o tu contrato actual",
     reason:
       "Te permite probar el flujo con un archivo cotidiano, revisar cómo se resguarda y sentir control antes de subir más documentos.",
-    nextStep: "Cuando te sientas con confianza, agrega otros archivos para fortalecer tu expediente sin perder trazabilidad.",
+    nextStep: "Prueba con un archivo y revisa cómo se resguarda. Más archivos van en un plan de pago.",
     resultTitle: "Puedes empezar con un archivo cotidiano y validar el resguardo antes de abrir más contexto.",
     ctaLabel: "Probar con un archivo simple",
   },
@@ -687,18 +687,17 @@ const prediagnosticRecommendations: Record<
     document: "Tu recibo de nómina más reciente",
     reason:
       "Es de los archivos más fáciles de reconocer y suele dar una explicación inicial clara sin lenguaje técnico.",
-    nextStep: "Después puedes sumar CFDI o contrato para obtener comparaciones más útiles.",
+    nextStep: "La primera revisión es con este recibo. Comparar con CFDI o contrato va en un plan de pago.",
     resultTitle: "Este suele ser el documento más fácil de reconocer y de entender en una primera revisión.",
     ctaLabel: "Quiero una revisión simple",
   },
   "mas-contexto": {
-    badge: "Para enriquecer tu expediente",
-    document: "Dos o tres recibos de nómina seguidos",
-    reason:
-      "Ayudan a detectar patrones y diferencias que un solo archivo puede dejar ocultos.",
-    nextStep: "Si además cargas CFDI, contrato o documentos del IMSS/Infonavit, tu expediente gana más contexto.",
-    resultTitle: "Si ya tienes varios recibos, este paquete te da una lectura con más contexto desde el inicio.",
-    ctaLabel: "Subir varios recibos",
+    badge: "Cuando ya quieres más contexto",
+    document: "Un recibo de nómina reciente",
+    reason: "En gratis revisas un recibo. Comparar más de uno va en un plan de pago.",
+    nextStep: "Empieza con ese recibo. Más documentos se activan cuando eliges un plan.",
+    resultTitle: "Empieza con un recibo. Comparar más de uno se activa en un plan de pago.",
+    ctaLabel: "Revisar un recibo",
   },
 };
 
@@ -2652,7 +2651,7 @@ function FindingsExamplesSection() {
             Algunos patrones se entienden mejor cuando tu expediente tiene más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Varios documentos juntos ayudan a ver diferencias y datos que un solo archivo puede dejar ocultas, y además fortalecen tu expediente digital.
+            Cuando tu plan admite más de un documento, juntos ayudan a ver diferencias que un solo archivo puede dejar ocultas.
           </p>
         </div>
 

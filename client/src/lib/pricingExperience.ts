@@ -2,6 +2,8 @@ import {
   COMMERCE_ONE_SHOTS,
   COMMERCE_PLANS,
   formatCommercePriceMx,
+  formatFreePlanLandingPrinciple,
+  FREE_TIER_EXHAUSTED_COPY,
 } from "@shared/commerce";
 import { sanitizeClientVisibleCopy } from "./clientVisibleCopy";
 
@@ -58,14 +60,14 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
   return {
     landing: {
       showPrice: false,
-      eyebrow: "Freemium laboral pensado para México",
+      eyebrow: "Gratis para revisar tu recibo",
       title: "Empieza gratis tu auditoría laboral y paga solo cuando ya te genere valor.",
       description:
-        "Entras sin tarjeta, revisas tu primer contexto y después decides si te conviene activar más profundidad o un entregable puntual.",
+        "Entras sin tarjeta, revisas un recibo y después decides si te conviene activar más documentos o un entregable puntual.",
       principles: [
         "La primera lectura sigue siendo gratis.",
-        `El expediente básico incluye hasta ${freePlan.limits.maxDocumentsPerCase} documentos.`,
-        "Los upgrades aparecen solo cuando el usuario ya entendió para qué le sirven.",
+        formatFreePlanLandingPrinciple(freePlan.limits.maxDocumentsPerCase),
+        "Más documentos aparecen solo cuando ya viste para qué te sirven.",
       ],
     },
     platform: {
@@ -75,9 +77,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         : "Sigue gratis y activa un plan solo si ya te hace sentido",
       title: "Planes claros para seguir gratis o desbloquear más profundidad",
       description: hasEnoughContext
-        ? visiblePricingCopy(
-            `Tu expediente ya alcanzó el tramo gratuito. Si necesitas más documentos, lectura de varios archivos o más continuidad, aquí puedes activarlo sin salir del expediente.`,
-          )
+        ? visiblePricingCopy(FREE_TIER_EXHAUSTED_COPY)
         : "Puedes seguir usando la parte gratuita. Cuando quieras más contexto, comparativas o productos listos para compartir, aquí mismo lo activas.",
       priceLabel: `${formatCommercePriceMx(essentialPlan.monthlyPriceMx)}/mes desde`,
       primaryCtaLabel: "Ver planes y activar",
