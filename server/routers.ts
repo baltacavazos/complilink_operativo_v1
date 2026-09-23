@@ -2207,28 +2207,28 @@ function buildSocialSecurityValidationSummary(params: {
 
   const statusLabel =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
-      ? "Cruce visible listo"
+      ? "Ya hay respuesta"
       : imssDocumentsCount > 0 || infonavitSignalsCount > 0
-        ? "Cruce parcial"
-        : "Cruce pendiente";
+        ? "Falta una respuesta"
+        : "Todavía no hay respuesta";
 
   const summary =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
-      ? "Ya hay señales visibles de IMSS e Infonavit en tus documentos. Esta revisión no consulta IMSS ni Infonavit en vivo; solo lee lo que ya aparece en el expediente."
+      ? "Ya hay datos de IMSS e Infonavit en tus papeles. Esto no es una consulta en vivo: solo lee lo que ya aparece en tu caso."
       : imssDocumentsCount > 0
-        ? "Ya hay señales visibles de IMSS en tus documentos, pero todavía conviene reforzar o confirmar el frente de Infonavit. Esto no es una consulta en vivo al IMSS."
+        ? "Ya hay datos del IMSS en tus papeles. Todavía falta Infonavit. Esto no es una consulta en vivo."
         : infonavitSignalsCount > 0
-          ? "Ya hay señales visibles de Infonavit en tus documentos, pero todavía conviene reforzar o confirmar el frente de IMSS. Esto no es una consulta en vivo."
-          : "Todavía faltan señales suficientes de IMSS e Infonavit en tus documentos para darte un cruce más completo. AuditaPatrón no consulta esos institutos en vivo.";
+          ? "Ya hay datos de Infonavit en tus papeles. Todavía falta el IMSS. Esto no es una consulta en vivo."
+          : "Todavía faltan datos de IMSS e Infonavit en tus papeles. Esto no es una consulta en vivo.";
 
   const recommendedNextStep =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
-      ? "Si subes un documento nuevo, puedes volver a revisar las señales visibles. Eso no sustituye una consulta oficial ante IMSS o Infonavit."
+      ? "Si subes un documento nuevo, puedes volver a mirar lo que dicen tus papeles. Eso no sustituye una consulta oficial ante IMSS o Infonavit."
       : imssDocumentsCount > 0
-        ? "Si cuentas con un estado de cuenta o constancia relacionada con Infonavit, súbela para cerrar mejor el cruce visible."
+        ? "Si tienes un estado de cuenta o una constancia de Infonavit, súbela para completar la respuesta."
         : infonavitSignalsCount > 0
-          ? "Si cuentas con alta, semanas cotizadas o salario registrado ante IMSS, súbelo para cerrar mejor el cruce visible."
-          : "Empieza por un soporte IMSS o un estado de cuenta o constancia relacionada con Infonavit para abrir este cruce.";
+          ? "Si tienes alta, semanas cotizadas o el salario que el IMSS tiene registrado, súbelo para completar la respuesta."
+          : "Empieza por un papel del IMSS o una constancia de Infonavit.";
 
   const recommendedDocumentKey =
     imssDocumentsCount > 0 && infonavitSignalsCount > 0
@@ -2246,16 +2246,16 @@ function buildSocialSecurityValidationSummary(params: {
         ? "Alta, semanas cotizadas o salario registrado ante IMSS"
         : recommendedDocumentKey === "imss_or_infonavit"
           ? "Un soporte de IMSS o una constancia de Infonavit"
-          : "Cruce base cubierto";
+          : "Ya hay respuesta";
 
   const recommendedDocumentReason =
     recommendedDocumentKey === null
-      ? "Tu cruce base ya está visible en los documentos; el siguiente mejor paso es volver a revisar las señales cuando subas evidencia nueva."
+      ? "IMSS e Infonavit ya aparecen en tus papeles. Si subes algo nuevo, se puede volver a leer."
       : recommendedDocumentKey === "infonavit"
         ? "Ya hay señal suficiente del frente IMSS y el mayor salto de claridad ahora viene de reforzar el lado de Infonavit."
         : recommendedDocumentKey === "imss"
           ? "Ya hay señal suficiente del frente Infonavit y el mayor salto de claridad ahora viene de reforzar el lado de IMSS."
-          : "Todavía no hay señales firmes de IMSS e Infonavit, así que cualquiera de esos soportes puede abrir el cruce inicial del expediente.";
+          : "Todavía no hay datos firmes de IMSS e Infonavit. Cualquiera de esos papeles ayuda a empezar.";
 
   const clarityChangeLabel =
     lastRecordedCoverage === null

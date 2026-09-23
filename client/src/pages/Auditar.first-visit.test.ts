@@ -35,7 +35,7 @@ describe("Auditar first visit", () => {
     expect(source).toContain("Hoy conviene poner atención especial en esto");
     expect(source).toContain("IMSS según este documento");
     expect(source).toContain("Impuestos y retenciones");
-    expect(source).toContain("Esto sale de tus papeles; no es una constancia oficial");
+    expect(source).toContain("Esto sale de tus papeles; no es una respuesta del IMSS");
     expect(source).toContain("isTechnicalAnalysisKey");
     expect(source).toContain("Dato visible en el documento");
     expect(source).toContain("toWorkerReviewItem");

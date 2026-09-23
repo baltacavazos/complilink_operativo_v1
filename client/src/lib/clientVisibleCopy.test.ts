@@ -204,16 +204,20 @@ describe("sanitizeClientVisibleCopy", () => {
     expect(isSmokeOrInternalAccountHandle("wave2")).toBe(true);
     expect(isSmokeOrInternalAccountHandle("ap.wave2@auditapatron.test")).toBe(true);
     expect(isSmokeOrInternalAccountHandle("Ana Pérez")).toBe(false);
-    expect(formatWorkerVisibleAccountName("ap.wave2")).toBe("Tu cuenta");
+    expect(formatWorkerVisibleAccountName("ap.wave2")).toBe("Ejemplo");
     expect(formatWorkerVisibleAccountName("Expediente laboral de ap.wave2")).toBe(
-      "Expediente laboral de tu cuenta",
+      "Expediente laboral de ejemplo",
+    );
+    expect(formatWorkerVisibleAccountName("tester")).toBe("Ejemplo");
+    expect(formatWorkerVisibleAccountName("Expediente laboral de tester")).toBe(
+      "Expediente laboral de ejemplo",
     );
     expect(formatWorkerVisibleAccountName("Ana Pérez")).toBe("Ana Pérez");
     expect(maskWorkerEmail("ap.wave2@auditapatron.test")).toBeNull();
     expect(maskWorkerEmail("ana.perez@correo.com")).toBe("a***@correo.com");
     expect(formatWorkerAccountChrome({ name: "ap.wave2", email: "ap.wave2@auditapatron.test" })).toEqual({
-      title: "Tu cuenta",
-      subtitle: "Sesión protegida",
+      title: "Ejemplo",
+      subtitle: "Estos papeles no son tu caso.",
     });
     expect(formatWorkerAccountChrome({ name: "Ana Pérez", email: "ana.perez@correo.com" })).toEqual({
       title: "Ana Pérez",

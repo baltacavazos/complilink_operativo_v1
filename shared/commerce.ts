@@ -70,7 +70,7 @@ export const FREE_TIER_EXHAUSTED_COPY =
   "En el plan gratis ya usaste tu documento. Si quieres subir otro, activa Audita Esencial.";
 
 export const FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE =
-  "Subir otro documento en este expediente está disponible desde Audita Esencial.";
+  "Subir otro documento en este caso está disponible desde Audita Esencial.";
 
 export function isFreePlanDocumentLimitMessage(message: string) {
   const normalized = message.replace(/\s+/g, " ").trim();
@@ -82,7 +82,7 @@ export function isFreePlanDocumentLimitMessage(message: string) {
     normalized.includes(FREE_TIER_EXHAUSTED_COPY) ||
     normalized.includes(FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE) ||
     /en el plan gratis ya usaste tu documento/i.test(normalized) ||
-    /subir otro documento en este expediente/i.test(normalized)
+    /subir otro documento en este (expediente|caso)/i.test(normalized)
   );
 }
 
@@ -115,7 +115,7 @@ export function formatFreePlanLandingPrinciple(maxDocumentsPerCase: number) {
 
 function formatFreePlanDescription(maxDocumentsPerCase: number) {
   if (maxDocumentsPerCase === 1) {
-    return "Incluye tu primera lectura de un documento y el asesor laboral básico sobre lo que se ve en ese papel.";
+    return "1 documento. Primera lectura y asesor básico.";
   }
 
   return `Incluye tu primera lectura, hasta ${maxDocumentsPerCase} documentos en tu expediente y el asesor laboral básico sobre ese contexto.`;
@@ -148,21 +148,17 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
       includedRevalidations: false,
       includedProactiveAlerts: false,
     },
-    featureBullets: [
-      "Primera lectura gratis y sin tarjeta.",
-      formatCommerceDocumentLimitBullet(FREE_MAX_DOCUMENTS_PER_CASE),
-      formatFreePlanAdvisorBullet(FREE_MAX_DOCUMENTS_PER_CASE),
-    ],
+    featureBullets: ["1 documento. Primera lectura y asesor básico."],
   },
   {
     key: "essential",
     name: "Audita Esencial",
-    headline: "Para ordenar mejor tu expediente y comparar más contexto.",
+    headline: "Para guardar más recibos en tu caso y compararlos.",
     monthlyPriceMx: 79,
     badge: "Más vendido",
     ctaLabel: "Elegir plan",
     description:
-      "Desbloquea más documentos por expediente, comparativas más claras y continuidad útil del asesor laboral para llevar mejor tu caso.",
+      "Más recibos en tu caso, para comparar lo que te pagaron y lo que ya vimos.",
     highlighted: true,
     limits: {
       maxDocumentsPerCase: ESSENTIAL_MAX_DOCUMENTS_PER_CASE,
@@ -171,20 +167,20 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
       includedProactiveAlerts: false,
     },
     featureBullets: [
-      formatCommerceDocumentLimitBullet(ESSENTIAL_MAX_DOCUMENTS_PER_CASE),
-      "Lectura de varios documentos y memoria corta dentro del expediente.",
-      "Comparativas visibles y continuidad conversacional extendida.",
+      "Hasta 15 recibos en tu caso.",
+      "Lectura de varios recibos y memoria corta dentro de tu caso.",
+      "Puedes comparar recibos y el asesor recuerda lo que ya vimos.",
     ],
   },
   {
     key: "pro",
     name: "Audita Pro",
-    headline: "Para operar expedientes con seguimiento más profundo.",
+    headline: "Para seguir tu caso y avisarte si algo cambia.",
     monthlyPriceMx: 199,
     badge: "Operación completa",
     ctaLabel: "Elegir plan",
     description:
-      "Suma memoria histórica, revalidaciones, alertas proactivas y la capa más completa del copiloto laboral.",
+      "Suma el historial de tu caso, vuelve a preguntar a IMSS e Infonavit y te avisa si algo cambia.",
     highlighted: false,
     limits: {
       maxDocumentsPerCase: PRO_MAX_DOCUMENTS_PER_CASE,
@@ -193,9 +189,9 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
       includedProactiveAlerts: true,
     },
     featureBullets: [
-      formatCommerceDocumentLimitBullet(PRO_MAX_DOCUMENTS_PER_CASE),
-      "Asesor laboral con memoria histórica del expediente.",
-      "Revalidaciones IMSS/Infonavit y alertas proactivas.",
+      "Hasta 50 recibos en tu caso.",
+      "Asesor laboral con el historial de tu caso.",
+      "Volvemos a preguntar a IMSS e Infonavit y te avisamos si algo cambia.",
     ],
   },
 ];

@@ -12,7 +12,7 @@ export const GUARANTEE_LINE =
   "Te garantizamos claridad del análisis. No prometemos que ganes un juicio.";
 
 export const BILLING_SOFT_NOTE = "Activaremos el cobro cuando esté listo.";
-export const PLAN_PRIMARY_CTA = "Elegir plan y empezar";
+export const PLAN_PRIMARY_CTA = "Ver el plan";
 export const PLAN_NAV_CTA = "Ver planes y activar";
 export const PLANS_PATH = "/planes";
 export const PRECIOS_PATH = "/precios";
@@ -41,7 +41,7 @@ export const HOME_HERO_CHECKLIST = [
 export const HOME_HERO_PRIMARY_CTA = "Revisar mi recibo gratis";
 
 export const HOME_HERO_CTA_MICROCOPY =
-  "Primera lectura gratis, un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú lo guardes.";
+  "Subes el recibo, ves el resultado y solo se guarda si tú lo confirmas.";
 
 export const HOME_HERO_HONESTY_LINE =
   "Explicamos lo que dicen tus documentos. No demuestra por sí sola un incumplimiento ni garantiza el cálculo completo.";
@@ -76,7 +76,7 @@ export function getVisiblePaidPlans() {
     headline: plan.headline,
     priceLabel: `${formatCommercePriceMx(plan.monthlyPriceMx)} MXN al mes`,
     monthlyPriceMx: plan.monthlyPriceMx,
-    ctaLabel: "Elegir plan",
+    ctaLabel: PLAN_PRIMARY_CTA,
     highlighted: plan.highlighted,
     includes: plan.featureBullets.map((bullet) =>
       /^Hasta \d+ documentos por expediente\.?$/i.test(bullet)
@@ -84,4 +84,24 @@ export function getVisiblePaidPlans() {
         : bullet,
     ),
   }));
+}
+
+export function getVisibleCatalogPlans() {
+  const free = COMMERCE_PLANS.find((plan) => plan.key === "free");
+  const paid = getVisiblePaidPlans();
+  if (!free) return paid;
+  return [
+    {
+      key: free.key,
+      name: "Audita Gratis",
+      badge: "$0",
+      headline: "Para empezar sin pagar.",
+      priceLabel: "$0",
+      monthlyPriceMx: 0,
+      ctaLabel: HOME_HERO_PRIMARY_CTA,
+      highlighted: false,
+      includes: ["1 documento. Primera lectura y asesor básico."],
+    },
+    ...paid,
+  ];
 }

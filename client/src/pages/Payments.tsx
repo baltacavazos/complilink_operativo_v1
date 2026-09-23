@@ -1,7 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
-import { getVisiblePaidPlans } from "@shared/conversionCopy";
+import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2, Loader2, ReceiptText } from "lucide-react";
 
 function formatCurrency(amountTotal: number, currency: string) {
@@ -58,7 +58,7 @@ function translateSubscriptionStatus(status: string) {
   }
 }
 
-const visiblePaidPlans = getVisiblePaidPlans();
+const visiblePaidPlans = getVisibleCatalogPlans();
 
 export default function Payments() {
   const auth = useAuth({ redirectOnUnauthenticated: true, redirectPath: "/pagos" });
@@ -117,7 +117,7 @@ export default function Payments() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base">
             La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.
           </p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo. Hoy no se cobra.</p>
         </section>
 
         <section
@@ -129,7 +129,7 @@ export default function Payments() {
             Elige cómo seguir, con precio en MXN al mes
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
-            Ves qué incluye cada plan. Activaremos el cobro cuando esté listo.
+            Ves qué incluye cada plan. Activaremos el cobro cuando esté listo. Hoy no se cobra.
           </p>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -164,7 +164,7 @@ export default function Payments() {
                   className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                   onClick={() => goToFirstWin(plan.key)}
                 >
-                  Elegir plan y empezar
+                  {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
                 </Button>
               </article>
             ))}

@@ -223,7 +223,7 @@ export function hasForbiddenClientBrand(value?: string | null): boolean {
 
 const SMOKE_ACCOUNT_HANDLE = /^(ap\.)?wave\d+$/i;
 const INTERNAL_ACCOUNT_HANDLE =
-  /^(ap|cl|helios|complilink|smoke|e2e|harness|test)([._-][a-z0-9._-]*)?$/i;
+  /^(ap|cl|helios|complilink|smoke|e2e|harness|test|tester|demo)([._-][a-z0-9._-]*)?$/i;
 const TECHNICAL_HANDLE = /^[a-z0-9]+[._-][a-z0-9._-]+$/i;
 
 export function isSmokeOrInternalAccountHandle(value?: string | null): boolean {
@@ -275,11 +275,12 @@ export function formatWorkerVisibleAccountName(value?: string | null): string | 
   }
 
   if (isSmokeOrInternalAccountHandle(text)) {
-    return "Tu cuenta";
+    return "Ejemplo";
   }
 
   const cleaned = text
-    .replace(/\b(?:ap\.)?wave\d+\b/gi, "tu cuenta")
+    .replace(/\b(?:ap\.)?wave\d+\b/gi, "ejemplo")
+    .replace(/\b(?:tester|demo)\b/gi, "ejemplo")
     .replace(/\s{2,}/g, " ")
     .trim();
 
@@ -299,8 +300,8 @@ export function formatWorkerAccountChrome(input: {
 
   if (!name || nameIsInternal || emailIsInternal || nameLooksTechnical) {
     return {
-      title: "Tu cuenta",
-      subtitle: maskedEmail || "Sesión protegida",
+      title: "Ejemplo",
+      subtitle: "Estos papeles no son tu caso.",
     };
   }
 

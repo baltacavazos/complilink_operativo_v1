@@ -14,7 +14,7 @@ describe("Auditapatron closeout experience", () => {
   const pricingSource = readFileSync(resolve(process.cwd(), "client/src/lib/pricingExperience.ts"), "utf8");
 
   it("ships a shorter landing focused on value proof, clarity and trust", () => {
-    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Empezar" }');
+    expect(homeSource).toContain('{ href: "#lectura-gratis", label: "Tu recibo" }');
     expect(homeSource).toContain('{ href: "#como-funciona", label: "Cómo funciona" }');
     expect(homeSource).toContain('{ href: "#privacidad", label: "Privacidad" }');
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");

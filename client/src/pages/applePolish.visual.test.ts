@@ -132,7 +132,7 @@ describe("Apple extraordinary #4 — experiencia visual", () => {
   it("deja un solo CTA primario «Sube tu documento» en /auditar sin archivo", () => {
     const auditar = readRepoFile("client", "src", "pages", "Auditar.tsx");
 
-    expect(auditar).toContain('{(selectedFile || pendingDraft) ? (');
+    expect(auditar).toContain('{(selectedFile || pendingDraft) && !freePlanDocumentLimitNotice ? (');
     expect(auditar).toContain("hidden gap-2.5 sm:grid");
     expect(auditar).toContain('const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento"');
     expect(auditar).toContain("UPLOAD_ACCEPTED_DOCUMENTS_HINT");

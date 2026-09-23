@@ -49,7 +49,7 @@ describe("getAuditapatronPricingExperience", () => {
       "En el plan gratis ya usaste tu documento. Si quieres subir otro, activa Audita Esencial.",
     );
     expect(freePlan?.description).not.toMatch(/3 documentos|varios recibos/i);
-    expect(freePlan?.featureBullets.join(" ")).toMatch(/1 documento por expediente/i);
+    expect(freePlan?.featureBullets.join(" ")).toMatch(/1 documento\. Primera lectura y asesor básico/i);
     expect(freePlan?.featureBullets.join(" ")).not.toMatch(/3 documentos|varios recibos/i);
   });
 

@@ -336,11 +336,41 @@ export function listChatAnchorHechos(
   });
 }
 
+export function buildWorkerPocketLead(
+  facts: OfficialBriefingFacts,
+  hechoLines: string[] = [],
+): { lead: string[]; receiptData: string[] } {
+  const lead: string[] = [];
+  if (facts.employerName) {
+    lead.push(`Tu patrón en el recibo: ${facts.employerName}`);
+  }
+  const amount = facts.netAmount || facts.perceptions;
+  if (amount && facts.period) {
+    lead.push(`Te pagaron: ${amount} · del ${facts.period}`);
+  } else if (amount) {
+    lead.push(`Te pagaron: ${amount}`);
+  }
+  const satConfirmedRfc = hechoLines.some((line) =>
+    /SAT confirmó el RFC|RFC coincide con el SAT/i.test(line),
+  );
+  if (satConfirmedRfc) {
+    lead.push("Tu RFC coincide con el SAT");
+  }
+  const receiptData = [
+    facts.workerRfc ? `RFC: ${facts.workerRfc}` : null,
+    facts.curp ? `CURP: ${facts.curp}` : null,
+    facts.nss ? `NSS: ${facts.nss}` : null,
+    facts.employerRfc ? `RFC del patrón: ${facts.employerRfc}` : null,
+  ].filter((item): item is string => Boolean(item));
+  return { lead: lead.slice(0, 3), receiptData };
+}
+
 export function listReceiptFactLines(facts: OfficialBriefingFacts): string[] {
   return [
     facts.period ? `periodo ${facts.period}` : null,
     facts.netAmount ? `neto ${facts.netAmount}` : null,
-    facts.perceptions ? `percepciones ${facts.perceptions}` : null,
+    facts.perceptions ? `Lo que te pagaron (bruto visible): ${facts.perceptions}` : null,
+    facts.deductions ? `Descuentos: ${facts.deductions}` : null,
     facts.salary ? `sueldo ${facts.salary}` : null,
     facts.sdi ? `salario diario integrado ${displayReceiptAmount(facts.sdi)}` : null,
     facts.employerName ? `patrón ${facts.employerName}` : null,

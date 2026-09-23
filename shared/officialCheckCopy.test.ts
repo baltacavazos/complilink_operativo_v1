@@ -136,7 +136,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       summary: summary("sin_permiso"),
     });
 
-    expect(display.headline).toBe(INSTITUTE_WAITING_HEADLINE);
+    expect(display.headline).toBe("Ya leímos el recibo. Consultando oficinas…");
     expect(display.buttonLabel).toBe(OFFICIAL_CHECK_LOADING_LABEL);
     expect(display.status).toBe("consultando");
     expect(display.headline).not.toMatch(/Falta tu permiso/i);
@@ -160,10 +160,37 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       summary: summary("no_se_pudo"),
     });
 
-    expect(vivo.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(vivo.headline).toBe("Hoy no pudimos consultar.");
+    expect(vivo.detail).toContain("No prueba que tu patrón cumpla ni que falle.");
+
+    const capped = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: summary("pendiente", {
+        bridgeBlock: "provider_cap",
+        checkedAt: "2026-09-21T20:39:00.000Z",
+        checks: [
+          {
+            source: "imss",
+            sourceLabel: "IMSS",
+            status: "pendiente",
+            label: "Pendiente",
+            detail: "Todavía no hay una respuesta oficial nueva.",
+            checkedAt: "2026-09-21T20:39:00.000Z",
+            used: { nss: true, curp: false, rfc: false },
+            honesty: "pending",
+            hechos: [],
+          },
+        ],
+      }),
+      nowMs: Date.parse("2026-09-21T20:39:00.000Z"),
+    });
+    expect(capped.headline).toBe("Hoy no pudimos consultar IMSS.");
+    expect(capped.detail).toContain("No prueba que tu patrón cumpla ni que falle.");
+    expect(capped.status).toBe("no_se_pudo");
+    expect(capped.headline).not.toMatch(/Pendiente|Bien|Vivo|cumple/i);
     expect(vivo.headline).not.toMatch(/\bVivo\b|certificado|RFC confirmado/);
-    expect(vivo.buttonLabel).toBe(OFFICIAL_CHECK_BUTTON);
-    expect(vivo.status).toBe("vivo");
+    expect(vivo.status).toBe("no_se_pudo");
+    expect(vivo.status).not.toBe("vivo");
     expect(pendiente.headline).toBe(INSTITUTE_WAITING_HEADLINE);
     expect(pendiente.buttonLabel).toBe(OFFICIAL_CHECK_BUTTON);
     expect(pendiente.detail).toBe(INSTITUTE_WAITING_DETAIL);
@@ -207,7 +234,8 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       expect(display.buttonLabel).not.toMatch(/\bcumple\b/i);
       expect(display.detail).not.toMatch(/Helios|CompliLink|HMAC/i);
     }
-    expect(vivo.detail).toMatch(/No significa que tu patrón cumple/);
+    expect(vivo.detail).toMatch(/No prueba que tu patrón cumpla ni que falle/);
+    expect(vivo.detail).not.toMatch(/\bcumple\b/i);
   });
 
   it("con permiso elige el acuse honesto y descarta un sin_permiso viejo", () => {
@@ -665,7 +693,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(display.silence?.opener).not.toContain("Tu recibo sí se leyó");
     expect(display.silence?.opener).not.toContain("Vuelve a consultar");
     expect(display.headline).not.toBe(INSTITUTE_SILENCE_VERDICT);
-    expect(display.silence?.whatHappened).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
+    expect(display.silence?.whatHappened).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
     expect(display.silence?.whatHappened).not.toMatch(/en mantenimiento|\bVivo\b/);
     expect(display.silence?.meaning).toMatch(/Tu recibo sí se leyó/);
     expect(display.silence?.meaning).not.toMatch(/SAT también|SAT no contest/);
@@ -737,7 +765,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
       "El SAT confirmó el RFC consultado.",
       "Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX, S.A. DE C.V.",
     ]);
-    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX/);
+    expect(realName.silence?.sourceLines.join("\n")).toMatch(/Nombre en el SAT \(RFC consultado\): EVOLUCION CREATIVA CAMREFLEX/);
 
     for (const hook of [
       ["Razón social en SAT: EXPEDIENTE UIPD9211257I0."],
@@ -803,7 +831,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
-    expect(display.silence?.whatHappened).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
+    expect(display.silence?.whatHappened).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Infonavit: seguimos preguntando/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
@@ -828,7 +856,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     expect(display.silence?.kind).toBe("mixed");
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.headline).not.toMatch(/Todavía no hay una respuesta oficial/);
-    expect(display.silence?.whatHappened).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
+    expect(display.silence?.whatHappened).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
   });
@@ -897,7 +925,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     });
     expect(withSignal.silence?.meaning).toContain("Consultamos otra vía oficial.");
     expect(withSignal.silence?.meaning).not.toContain("no hubo datos útiles");
-    expect(withSignal.detail).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
+    expect(withSignal.detail).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
     expect(withSignal.silence?.verdict).not.toContain("Consultamos otra vía oficial");
     expect(withSignal.silence?.whatHappened).not.toContain("Consultamos otra vía oficial");
     expect(withSignal.detail).not.toMatch(/\bbackup\b|failover|proveedor|Helios/i);

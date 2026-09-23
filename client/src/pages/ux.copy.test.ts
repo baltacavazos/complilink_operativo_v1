@@ -36,8 +36,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("Entrar con mi asistente");
     expect(source).not.toContain("Abrir mi expediente");
     expect(source).not.toContain("Tus derechos laborales,");
-    expect(source).toContain('const PRIMARY_CTA_LABEL = "Empezar auditoría gratis"');
-    expect(source).toContain("Empezar auditoría gratis");
+    expect(source).toContain('const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis"');
+    expect(source).not.toContain("Empezar auditoría gratis");
     expect(source).toContain("Ahí vi dónde podía estar perdiendo dinero.");
     expect(source).toContain("Ya supe qué reclamar primero.");
     expect(source).toContain("Caso anónimo 01");
@@ -113,7 +113,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Google Play');
     expect(source).toContain('Se activará cuando exista la publicación oficial en iPhone.');
     expect(source).toContain('Se activará cuando exista la publicación oficial en Android.');
-    expect(source).toContain('Empezar aquí gratis');
+    expect(source).not.toContain('Empezar aquí gratis');
     expect(source).toContain('Ver cómo funciona');
     expect(source).toContain('placement: "app_download_section_primary"');
     expect(source).toContain('id="privacidad"');
@@ -174,7 +174,7 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain('Qué significa jurídicamente');
     expect(source).toContain('Diferencia estimada');
     expect(source).toContain('Calculadora visual rápida');
-    expect(source).toContain('Así se ve el cruce de montos del periodo activo');
+    expect(source).toContain('Así se ven los dos montos del mismo periodo');
     expect(source).toContain('Semáforo laboral');
     expect(source).toContain('Mensajes listos para actuar');
     expect(source).toContain('Mensaje diplomático para RH');

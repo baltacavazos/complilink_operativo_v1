@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { getVisiblePaidPlans } from "@shared/conversionCopy";
+import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
-const visiblePaidPlans = getVisiblePaidPlans();
+const visiblePaidPlans = getVisibleCatalogPlans();
 
 export default function Plans() {
   return (
@@ -25,10 +25,10 @@ export default function Plans() {
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-700 sm:text-base">
             Sube tu documento y en minutos ves el resultado y qué hacer. La primera lectura es gratis. Si quieres más documentos o un entregable, aquí ves qué incluye cada plan.
           </p>
-          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
+          <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo. Hoy no se cobra.</p>
         </section>
 
-        <section data-testid="planes-plan-cards" className="grid gap-3 sm:grid-cols-2">
+        <section data-testid="planes-plan-cards" className="grid gap-3 sm:grid-cols-3">
           {visiblePaidPlans.map((plan) => (
             <article
               key={plan.key}
@@ -59,10 +59,13 @@ export default function Plans() {
               <Button
                 className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                 onClick={() => {
-                  window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
+                  window.location.href =
+                    plan.key === "free"
+                      ? "/auditar"
+                      : `/auditar?plan=${encodeURIComponent(plan.key)}`;
                 }}
               >
-                Elegir plan y empezar
+                {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
               </Button>
             </article>
           ))}

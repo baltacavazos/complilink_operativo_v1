@@ -254,7 +254,7 @@ describe("dato factual del recibo", () => {
     expect(signal.facts).toContain("Deducciones que se alcanzan a leer: no aparecen descuentos");
     expect(signal.imss).toContain("NSS 12345678901");
     expect(signal.imss).toContain("registro patronal Y1234567890");
-    expect(signal.imss).toContain("no es una constancia oficial");
+    expect(signal.imss).toContain("no es una respuesta del IMSS");
     expect(signal.retentions).toContain("ISR $0.00");
     expect(signal.retentions).toContain("IMSS $0.00");
     expect(signal.imss).not.toContain("Helios");

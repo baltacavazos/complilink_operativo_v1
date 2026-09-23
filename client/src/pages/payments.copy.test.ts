@@ -30,10 +30,11 @@ describe("flujo visible de pagos", () => {
 
     expect(paymentsSource).toContain("Tu plan y lo que ya pagaste");
     expect(paymentsSource).toContain("Activaremos el cobro cuando esté listo.");
-    expect(paymentsSource).toContain("Elegir plan y empezar");
+    expect(paymentsSource).toContain("PLAN_PRIMARY_CTA");
+    expect(paymentsSource).toContain("Hoy no se cobra.");
+    expect(paymentsSource).not.toContain("Elegir plan y empezar");
     expect(paymentsSource).not.toContain("Esto es una demostración. No se cobra nada.");
     expect(paymentsSource).toContain("Pagos y compras registradas");
-    expect(paymentsSource).toContain("Elegir plan");
     expect(paymentsSource).toContain("MXN al mes");
     expect(paymentsSource).toContain("La primera lectura es gratis. Solo pagas si quieres más documentos o un entregable extra.");
     expect(paymentsSource).not.toContain("Gestionar suscripción");

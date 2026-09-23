@@ -42,7 +42,7 @@ describe("tope de documentos por plan", () => {
     );
     expect(formatDocumentLimitBlockedMessage(1)).toBe(FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE);
     expect(FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE).toBe(
-      "Subir otro documento en este expediente está disponible desde Audita Esencial.",
+      "Subir otro documento en este caso está disponible desde Audita Esencial.",
     );
     expect(formatExceededDocumentLimitFeatureLabel(15)).toBe(
       "Subir más de 15 documentos en este expediente",

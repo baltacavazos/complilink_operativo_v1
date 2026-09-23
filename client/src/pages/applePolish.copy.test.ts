@@ -111,13 +111,15 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("focusRecommendedUpload()");
     expect(auditar).toContain('className="mt-4 rounded-full bg-teal-600 text-white hover:bg-teal-700"');
     expect(auditar).toContain('text-sm font-semibold tracking-tight text-[#161616]">Resultado inicial');
-    expect(auditar).toContain('label: "Bien"');
+    expect(auditar).toContain('label: "Sin alerta en el papel"');
+    expect(auditar).not.toContain('label: "Bien"');
     expect(auditar).toContain('label: "Atención"');
     expect(auditar).toContain('label: "Crítico"');
     expect(auditar).not.toContain('label: "Riesgo crítico"');
     expect(auditar).not.toContain("complilinkMonitoring");
     expect(auditar).toContain("Revisa esto primero");
-    expect(auditar).toContain("Todo en orden por ahora");
+    expect(auditar).toContain("No prueba que tu patrón cumpla ni que falle.");
+    expect(auditar).not.toContain("Todo en orden por ahora");
     expect(auditar).toContain("El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.");
     expect(auditar).toContain("Asesor laboral");
     expect(auditar).toContain("Preguntar al asesor");
