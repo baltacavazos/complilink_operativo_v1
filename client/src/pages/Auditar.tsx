@@ -4375,6 +4375,7 @@ export default function Auditar() {
     useState<ConfirmedUploadResultView | null>(null);
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
   const [receiptAck, setReceiptAck] = useState<ReceiptAck>(null);
+  const [saveNotice, setSaveNotice] = useState<"listo" | null>(null);
   const [officialCheckResult, setOfficialCheckResult] =
     useState<OfficialCheckSummary | null>(null);
   const officialPendingSinceRef = useRef<number | null>(null);
@@ -8131,6 +8132,12 @@ export default function Auditar() {
   }, [autoAdvanceFlash]);
 
   useEffect(() => {
+    if (saveNotice !== "listo") return;
+    const timeoutId = window.setTimeout(() => setSaveNotice(null), 2200);
+    return () => window.clearTimeout(timeoutId);
+  }, [saveNotice]);
+
+  useEffect(() => {
     if (!lastUpload) {
       setSaveStatusFlash(false);
       return;
@@ -8843,7 +8850,9 @@ export default function Auditar() {
 
     try {
       setReceiptAck("received");
+      setSaveNotice(null);
       setSubmitError(null);
+      sonnerToast.loading("Guardando…", { id: "guardar-revision" });
       if (viewportSegment === "mobile") {
         verdictAnalyticsStartedAtRef.current = Date.now();
         verdictAnalyticsTrackedIdRef.current = null;
@@ -8860,6 +8869,8 @@ export default function Auditar() {
       });
 
       setLastUpload(result as ConfirmedUploadResultView);
+      setSaveNotice("listo");
+      sonnerToast.success("Listo", { id: "guardar-revision" });
       trackFirstDossierReviewOutcome("confirmed");
       const selectionToConfirmedSeconds =
         documentSelectionStartedAtRef.current === null
@@ -8918,6 +8929,8 @@ export default function Auditar() {
       ]);
     } catch (error) {
       setReceiptAck("failed");
+      setSaveNotice(null);
+      sonnerToast.dismiss("guardar-revision");
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -9380,6 +9393,15 @@ export default function Auditar() {
 
   return (
     <main className="audita-auditar min-h-screen overflow-x-hidden bg-slate-50 px-4 py-6 pb-10 text-slate-950 sm:py-8">
+      {confirmDraftMutation.isPending || saveNotice === "listo" ? (
+        <div
+          data-testid="save-notice"
+          role="status"
+          className="fixed inset-x-3 top-3 z-[80] mx-auto max-w-md rounded-2xl border border-[#e4e4e4] bg-white px-4 py-3 text-center text-base font-semibold text-[#111111] shadow-[0_12px_40px_-24px_rgba(0,0,0,0.45)]"
+        >
+          {confirmDraftMutation.isPending ? "Guardando…" : "Listo"}
+        </div>
+      ) : null}
       <div className="container mx-auto max-w-6xl">
         {officialCheckDisplay.silence ? null : (
         <>
@@ -11395,7 +11417,7 @@ export default function Auditar() {
 
                   <div
                     aria-describedby="upload-guardrails-summary"
-                    className={`${pendingDraft ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                    className={`${pendingDraft && !confirmDraftMutation.isPending ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
                   >
                     <p
                       className="sr-only"

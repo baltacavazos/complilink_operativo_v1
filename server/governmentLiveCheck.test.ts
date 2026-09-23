@@ -1399,7 +1399,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.detail).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
-    expect(display.silence?.meaning).toMatch(/otra consulta oficial/);
+    expect(display.silence?.meaning).toMatch(/Consultamos otra vía oficial/);
     expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
     expect(display.silence?.meaning).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
 

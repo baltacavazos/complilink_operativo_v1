@@ -423,7 +423,7 @@ function mixedOfficialPresentation(
       const head = date ? `${label}: Vivo · ${date}` : `${label}: Vivo`;
       return [head, ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
     }),
-    ...silent.map((item) => silentOfficialSourceLine(OFFICIAL_SOURCE_LABEL[item.source], item.maintenance)),
+    ...silent.map((item) => unansweredOfficialSourceLine(item)),
   ];
   return {
     kind: "mixed",
@@ -447,6 +447,13 @@ function mixedOfficialPresentation(
  * Veredicto por fuente. El título de las tres oficinas solo cabe si ninguna contestó.
  * Si alguna está viva, se cita. El silencio de las otras no la arrastra.
  */
+function unansweredOfficialSourceLine(item: OfficialSourceOutcome): string {
+  const label = OFFICIAL_SOURCE_LABEL[item.source];
+  if (item.status === "pendiente") return `${label}: seguimos preguntando.`;
+  if (item.status === "sin_datos") return `Falta un dato del recibo para preguntar a ${label}.`;
+  return silentOfficialSourceLine(label, item.maintenance);
+}
+
 function appendAlternateRouteNote(text: string, enabled: boolean): string {
   if (!enabled || text.includes(OFFICIAL_ALTERNATE_ROUTE_NOTE)) return text;
   return `${text} ${OFFICIAL_ALTERNATE_ROUTE_NOTE}`.replace(/\s+/g, " ").trim();
@@ -461,6 +468,26 @@ function withAlternateRouteCopy(
     ...presentation,
     meaning: appendAlternateRouteNote(presentation.meaning, true),
   };
+}
+
+function fillUnansweredWhileLive(outcomes: OfficialSourceOutcome[]): OfficialSourceOutcome[] {
+  if (!outcomes.some((item) => item.status === "vivo")) return outcomes;
+  const present = new Set(outcomes.map((item) => item.source));
+  const missing = OFFICIAL_CHECK_SOURCES.filter((source) => !present.has(source)).map((source) => ({
+    source,
+    status: "pendiente" as const,
+    maintenance: false,
+    hechos: [] as string[],
+    checkedAt: null,
+  }));
+  return missing.length > 0 ? [...outcomes, ...missing] : outcomes;
+}
+
+function alternateRouteContributedFacts(
+  summary: { alternateRoute?: boolean | null },
+  live: OfficialSourceOutcome[],
+): boolean {
+  return summary.alternateRoute === true && live.some((item) => item.hechos.length > 0);
 }
 
 function allThreeAnswered(outcomes: OfficialSourceOutcome[]): boolean {
@@ -529,14 +556,14 @@ export function buildHonestOfficialPresentation(
     Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor" | "alternateRoute" | "reciboVsOficial">>) | null,
 ): OfficialResultPresentation | null {
   if (!summary) return null;
-  const outcomes = readOfficialSourceOutcomes(summary);
+  const outcomes = fillUnansweredWhileLive(readOfficialSourceOutcomes(summary));
   const live = outcomes.filter((item) => item.status === "vivo");
   const silent = outcomes.filter((item) => item.status === "no_se_pudo");
-  const waiting = outcomes.filter((item) => item.status === "pendiente");
+  const waiting = outcomes.filter((item) => item.status === "pendiente" || item.status === "sin_datos");
   if (allThreeAnswered(outcomes)) {
     return withAlternateRouteCopy(
       settledOfficialPresentation(summary.reciboVsOficial?.resultado ?? null, outcomes),
-      summary.alternateRoute === true,
+      alternateRouteContributedFacts(summary, outcomes.filter((item) => item.status === "vivo")),
     );
   }
   if (live.length > 0 && (silent.length > 0 || waiting.length > 0)) {
@@ -547,7 +574,7 @@ export function buildHonestOfficialPresentation(
     const presentation = mixedOfficialPresentation(live, unanswered, {
       stillWaiting: waiting.length > 0 && silent.length === 0,
     });
-    return withAlternateRouteCopy(presentation, summary.alternateRoute === true && live.length > 0);
+    return withAlternateRouteCopy(presentation, alternateRouteContributedFacts(summary, live));
   }
   if (live.length > 0 || outcomes.some((item) => item.status === "pendiente" || item.status === "sin_datos")) {
     return null;
@@ -1895,8 +1922,7 @@ export const OFFICIAL_CHECK_LOADING_LABEL = "Consultando...";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
   "Estamos preguntando a IMSS, SAT e Infonavit. Si hoy no contestan, te lo diremos.";
 /** Solo si el retorno dice que otra consulta oficial aportó el dato. Nunca dice «backup». */
-export const OFFICIAL_ALTERNATE_ROUTE_NOTE =
-  "Parte de lo que sí se ve llegó por otra consulta oficial, porque la primera no contestó a tiempo.";
+export const OFFICIAL_ALTERNATE_ROUTE_NOTE = "Consultamos otra vía oficial.";
 export const OFFICIAL_CHECK_READY_HEADLINE = "Consulta IMSS y SAT";
 export const OFFICIAL_CHECK_READY_DETAIL =
   "Con tu permiso preguntamos a IMSS y SAT. Si hoy no contestan, te lo diremos. No inventamos que tu patrón cumple.";
@@ -2056,7 +2082,7 @@ export function resolveOfficialCheckDisplay(params: {
 }): OfficialCheckDisplay {
   if (params.isPending) {
     const settled = resolveOfficialCheckDisplay({ ...params, isPending: false });
-    if (settled.status === "vivo") {
+    if (settled.silence || settled.status === "vivo") {
       return {
         ...settled,
         buttonLabel: OFFICIAL_CHECK_LOADING_LABEL,
@@ -2153,7 +2179,7 @@ export function resolveOfficialCheckDisplay(params: {
           honest.overallStatus === "sin_datos" && !canDispatch && params.missingIdentityDetail
             ? params.missingIdentityDetail
             : honest.overallDetail,
-          honest.alternateRoute === true && hasLiveOfficialResult(honest),
+          alternateRouteContributedFacts(honest, readOfficialSourceOutcomes(honest).filter((item) => item.status === "vivo")),
         ),
         buttonLabel: honest.overallStatus === "vivo" ? OFFICIAL_CHECK_BUTTON : honest.overallLabel,
         status: honest.overallStatus,
