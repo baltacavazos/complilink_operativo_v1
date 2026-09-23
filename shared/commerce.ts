@@ -48,8 +48,51 @@ export type CommerceEntitlements = {
   canGenerateLawyerPacket: boolean;
 };
 
+export const FREE_MAX_DOCUMENTS_PER_CASE = 1;
+
 export function formatCommerceDocumentLimitBullet(maxDocumentsPerCase: number) {
+  if (maxDocumentsPerCase === 1) {
+    return "1 documento por expediente.";
+  }
+
   return `Hasta ${maxDocumentsPerCase} documentos por expediente.`;
+}
+
+export function formatActiveDocumentCapCopy(maxDocumentsPerCase: number) {
+  if (maxDocumentsPerCase === 1) {
+    return "1 documento con tu plan actual.";
+  }
+
+  return `${maxDocumentsPerCase} documentos con tu plan actual.`;
+}
+
+export function formatExceededDocumentLimitFeatureLabel(maxDocumentsPerCase: number) {
+  const documents = maxDocumentsPerCase === 1 ? "1 documento" : `${maxDocumentsPerCase} documentos`;
+  return `Subir más de ${documents} en este expediente`;
+}
+
+export function formatFreePlanLandingPrinciple(maxDocumentsPerCase: number) {
+  if (maxDocumentsPerCase === 1) {
+    return "El plan gratis incluye un documento por expediente.";
+  }
+
+  return `El expediente básico incluye hasta ${maxDocumentsPerCase} documentos.`;
+}
+
+function formatFreePlanDescription(maxDocumentsPerCase: number) {
+  if (maxDocumentsPerCase === 1) {
+    return "Incluye tu primera lectura de un documento y el asesor laboral básico sobre lo que se ve en ese papel.";
+  }
+
+  return `Incluye tu primera lectura, hasta ${maxDocumentsPerCase} documentos en tu expediente y el asesor laboral básico sobre ese contexto.`;
+}
+
+function formatFreePlanAdvisorBullet(maxDocumentsPerCase: number) {
+  if (maxDocumentsPerCase === 1) {
+    return "Asesor laboral básico sobre ese documento.";
+  }
+
+  return "Asesor laboral básico sobre los documentos de tu expediente.";
 }
 
 const ESSENTIAL_MAX_DOCUMENTS_PER_CASE = 15;
@@ -61,21 +104,20 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     name: "Audita Gratis",
     headline: "Para validar tu primer resultado sin pagar.",
     monthlyPriceMx: 0,
-    badge: "Freemium",
+    badge: "Para empezar",
     ctaLabel: "Empezar",
-    description:
-      "Incluye tu primera lectura, expediente básico de hasta 3 documentos y asesor laboral básico sobre el contexto visible inicial.",
+    description: formatFreePlanDescription(FREE_MAX_DOCUMENTS_PER_CASE),
     highlighted: false,
     limits: {
-      maxDocumentsPerCase: 3,
+      maxDocumentsPerCase: FREE_MAX_DOCUMENTS_PER_CASE,
       heliosConversationMode: "single_document",
       includedRevalidations: false,
       includedProactiveAlerts: false,
     },
     featureBullets: [
       "Primera lectura gratis y sin tarjeta.",
-      "Expediente básico de hasta 3 documentos por caso.",
-      "Asesor laboral básico sobre un documento principal o contexto inicial.",
+      formatCommerceDocumentLimitBullet(FREE_MAX_DOCUMENTS_PER_CASE),
+      formatFreePlanAdvisorBullet(FREE_MAX_DOCUMENTS_PER_CASE),
     ],
   },
   {

@@ -127,6 +127,26 @@ describe("Claridad — take my money without live charge", () => {
     }
   });
 
+  it("deja el plan gratis en un documento y no promete tres ni varios recibos", () => {
+    const home = readPage("Home");
+    const auditar = readPage("Auditar");
+    const free = COMMERCE_PLANS.find((plan) => plan.key === "free");
+    const essential = COMMERCE_PLANS.find((plan) => plan.key === "essential");
+    const pro = COMMERCE_PLANS.find((plan) => plan.key === "pro");
+
+    expect(free?.limits.maxDocumentsPerCase).toBe(1);
+    expect(essential?.limits.maxDocumentsPerCase).toBe(15);
+    expect(pro?.limits.maxDocumentsPerCase).toBe(50);
+    expect(JSON.stringify(free)).not.toMatch(/3 documentos|varios recibos/i);
+    expect(free?.featureBullets.join(" ")).toMatch(/1 documento por expediente/i);
+
+    for (const source of [home, auditar]) {
+      expect(source).not.toMatch(/hasta 3 documentos/i);
+      expect(source).not.toContain("Subir varios recibos");
+      expect(source).not.toContain("Dos o tres recibos");
+    }
+  });
+
   it("unifica el tope de documentos de Esencial con el plan real", () => {
     const home = readPage("Home");
     const plansPage = readPage("Plans");

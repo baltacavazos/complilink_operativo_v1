@@ -225,7 +225,9 @@ Pagos detectados
 import { toast as sonnerToast } from "sonner";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
+  formatActiveDocumentCapCopy,
   formatCommercePriceMx,
+  FREE_MAX_DOCUMENTS_PER_CASE,
   type CommercePlanKey,
   type CommerceProductKey,
 } from "@shared/commerce";
@@ -16004,7 +16006,9 @@ Reforzar con otro documento
                 <div className="rounded-2xl bg-white/80 p-3">
                   <p className="font-semibold text-slate-950">Documentos por expediente</p>
                   <p className="mt-1">
-                    {commerceStatusQuery.data?.entitlements.maxDocumentsPerCase ?? 3} activos con tu plan actual.
+                    {formatActiveDocumentCapCopy(
+                      commerceStatusQuery.data?.entitlements.maxDocumentsPerCase ?? FREE_MAX_DOCUMENTS_PER_CASE,
+                    )}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">
@@ -16013,8 +16017,8 @@ Reforzar con otro documento
                     {commerceStatusQuery.data?.entitlements.canUseHeliosHistoricalMemory
                       ? "Memoria histórica de expediente"
                       : commerceStatusQuery.data?.entitlements.canUseHeliosMultiDocument
-                        ? "Multi-documento con continuidad"
-                        : "Básico sobre contexto inicial"}
+                        ? "Puede leer varios documentos de tu expediente"
+                        : "Sobre el documento de tu expediente"}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-white/80 p-3">

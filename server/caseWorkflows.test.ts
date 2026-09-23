@@ -1885,6 +1885,39 @@ describe("appRouter case workflows", () => {
     );
   });
 
+  it("en plan gratis rechaza guardar un segundo documento en el mismo expediente", async () => {
+    vi.mocked(db.listVisibleDocuments).mockResolvedValue([
+      {
+        documentId: "DOC-GRATIS-1",
+        originalName: "recibo_nomina.pdf",
+      },
+    ] as never);
+
+    const caller = appRouter.createCaller(
+      createProtectedContext({
+        id: 81,
+        openId: "worker-free-cap",
+        email: "worker-free-cap@complilink.mx",
+        role: "user",
+      }),
+    );
+
+    await expect(
+      caller.cases.uploadDocument({
+        tenantId: "balt-1",
+        caseId: "CASE-BALT-1-DEMO001",
+        fileName: "recibo_nomina_siguiente.pdf",
+        mimeType: "application/pdf",
+        base64Content: "data:application/pdf;base64,JVBERi0xLjQKJSVFT0YK",
+        visibility: "tenant_legal",
+        consentStatus: "pending",
+        sourceChannel: "manual",
+      }),
+    ).rejects.toThrow(/Subir más de 1 documento en este expediente está disponible desde Audita Esencial/i);
+
+    expect(db.addDocumentRecord).not.toHaveBeenCalled();
+  });
+
   it("rejects upload when a normal user submits a document that appears to belong to another person", async () => {
     vi.mocked(db.documentSeemsToBelongToAnotherPerson).mockReturnValueOnce(true);
     vi.mocked(db.listCanonicalContractsByType).mockResolvedValueOnce([
