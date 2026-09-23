@@ -10,6 +10,8 @@ type WorkerOfficialResultProps = {
   retryPending?: boolean;
   paperRead?: string | null;
   comparisonLines?: string[];
+  pocketLead?: string[];
+  receiptData?: string[];
 };
 
 /**
@@ -24,6 +26,8 @@ export function WorkerOfficialResult({
   retryPending = false,
   paperRead,
   comparisonLines = [],
+  pocketLead = [],
+  receiptData = [],
 }: WorkerOfficialResultProps) {
   const detailRef = useRef<HTMLDetailsElement>(null);
   const lines = [
@@ -63,12 +67,34 @@ export function WorkerOfficialResult({
       ) : null}
       <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
-        {presentation.sourceLines.length ? (
-          <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-            {presentation.sourceLines.map((line) => (
+        {pocketLead.length ? (
+          <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+            {pocketLead.map((line) => (
               <li key={line}>{line}</li>
             ))}
           </ul>
+        ) : null}
+        {presentation.sourceLines.length ? (
+          <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+            {presentation.sourceLines
+              .filter((line) => !/\b(RFC|CURP|NSS)\b/.test(line) || /coincide con el SAT/i.test(line))
+              .map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        ) : null}
+        {receiptData.length || presentation.sourceLines.some((line) => /\b(RFC|CURP|NSS)\b/.test(line) && !/coincide con el SAT/i.test(line)) ? (
+          <details className="mt-3">
+            <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Datos del recibo</summary>
+            <ul className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+              {(receiptData.length
+                ? receiptData
+                : presentation.sourceLines.filter((line) => /\b(RFC|CURP|NSS)\b/.test(line) && !/coincide con el SAT/i.test(line))
+              ).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </details>
         ) : null}
         {paperRead ? (
           <p className="mt-3 text-sm leading-6 text-[#161616]">{paperRead}</p>

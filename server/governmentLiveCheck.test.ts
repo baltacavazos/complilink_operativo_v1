@@ -137,7 +137,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(result.overallStatus).toBe("vivo");
     expect(result.overallLabel).toBe("Contestó");
     expect(result.overallDetail).toMatch(/no significa que tu patrón cumple/i);
-    expect(buildOfficialCheckHeadline(result)).toBe("Hoy no se pudo comprobar. No prueba que te engañen.");
+    expect(buildOfficialCheckHeadline(result)).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(buildOfficialCheckHeadline(result)).not.toMatch(/\bVivo\b|certificado|RFC confirmado/);
     expect(result.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(/RFC: VECJ880326XXX/);
     expect(JSON.stringify(result)).not.toMatch(/APIMarket|Helios|CompliLink|connector/i);
@@ -1209,7 +1209,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nowIso,
     });
     expect(named?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(
-      /Razón social en SAT: EVOLUCION CREATIVA CAMREFLEX/,
+      /Nombre del RFC consultado en el SAT: EVOLUCION CREATIVA CAMREFLEX/,
     );
 
     const emptyHook = officialCheckFromBridgeReturn({
@@ -1400,7 +1400,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
     });
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
-    expect(display.detail).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
+    expect(display.detail).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
     expect(display.silence?.meaning).toContain("Consultamos otra vía oficial.");
     expect(display.silence?.meaning).not.toContain("no hubo datos útiles");
     expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);

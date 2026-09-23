@@ -17,7 +17,7 @@ test.describe("flujo público base para trabajador", () => {
       })
     ).toBeVisible();
     await expect(
-      page.getByText("Primera lectura gratis, un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú lo guardes.")
+      page.getByText("Subes el recibo, ves el resultado y solo se guarda si tú lo confirmas.")
     ).toBeVisible();
     await page.getByRole("button", { name: "Revisar mi recibo gratis" }).first().click();
 

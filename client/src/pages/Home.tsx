@@ -40,7 +40,7 @@ Sin tarjeta para empezar
 Privado desde el inicio
 Borra tu archivo cuando quieras
 Revisión urgente de nómina
-const PRIMARY_CTA_LABEL = "Empezar auditoría gratis"
+const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis"
 Ahí vi dónde podía estar perdiendo dinero.
 Ya supe qué reclamar primero.
 Caso anónimo 01
@@ -99,10 +99,10 @@ id="privacidad"
 id="boveda"
 Guárdalo en tu bóveda y sigue con más contexto
 Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?
-Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar.
+Sube tu recibo, CFDI o papeles del IMSS o Infonavit. En minutos y en español normal te explicamos qué dicen sobre tu pago, tus descuentos y tu salario registrado — y qué conviene aclarar. Si das permiso, también podemos consultar IMSS y SAT.
 Qué revisas con AuditaPatrón
 Revisar mi recibo gratis
-Primera lectura gratis, un solo archivo. Sin cuenta al principio. No entra a tu expediente hasta que tú lo guardes.
+Subes el recibo, ves el resultado y solo se guarda si tú lo confirmas.
 Explicamos lo que dicen tus documentos. No demuestra por sí sola un incumplimiento ni garantiza el cálculo completo.
 Cuentas claras. Primero entiende. Luego decides si hablas con RH o pides aclaración.
 Sube tu recibo y te decimos qué revisar.
@@ -138,8 +138,9 @@ import {
   HOME_HERO_PRIMARY_CTA,
   HOME_HERO_SECTION_TITLE,
   HOME_HERO_SUBHEAD,
+  PLAN_PRIMARY_CTA,
   PLANS_PATH,
-  getVisiblePaidPlans,
+  getVisibleCatalogPlans,
 } from "@shared/conversionCopy";
 import {
   getStableUserIdentifier,
@@ -373,7 +374,7 @@ const findingsExamples = [
   {
     title: "Diferencias entre nómina y CFDI",
     description:
-      "Comparar ambos documentos puede mostrar pagos o conceptos reportados de forma distinta.",
+      "El CFDI es el comprobante fiscal de tu sueldo. Comparar ambos documentos puede mostrar pagos o conceptos reportados de forma distinta.",
   },
   {
     title: "Cambios repetidos en pagos o deducciones",
@@ -395,7 +396,7 @@ const priorityDocuments: PriorityDocument[] = [
   },
   {
     title: "CFDI timbrados",
-    description: "Permiten contrastar lo que fiscalmente aparece reportado contra lo que ves en tus recibos.",
+    description: "El CFDI es el comprobante fiscal de tu sueldo. Permiten contrastar lo que fiscalmente aparece reportado contra lo que ves en tus recibos.",
     value: "Aclaran diferencias que una sola pieza documental podría dejar ocultas.",
   },
   {
@@ -754,7 +755,7 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
-const PRIMARY_CTA_LABEL = "Empezar auditoría gratis";
+const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
 
 function goToAuditFlow(
   payloadOrEvent?:
@@ -829,22 +830,17 @@ function SiteHeader() {
           >
             Entrar
           </Button>
-          <Button
-            className="motion-hover-lift h-9 rounded-full bg-teal-500 px-3 text-[0.9rem] font-semibold text-slate-950 hover:bg-teal-400 xl:px-3.5"
-            onClick={() => goToAuditFlow({ placement: "header_primary" })}
-          >
-            {PRIMARY_CTA_LABEL}
-            <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
-          </Button>
         </div>
 
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <Button
-            className="motion-hover-lift h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem] rounded-full bg-teal-400 px-3 text-[0.76rem] font-semibold text-slate-950 shadow-[0_18px_34px_-20px_rgba(45,212,191,0.82)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-300 active:scale-[0.99] max-[359px]:max-w-[6.75rem] max-[359px]:px-2.5 max-[359px]:text-[0.7rem] sm:max-w-none sm:px-4.5 sm:text-[0.9rem]"
-            onClick={() => goToAuditFlow({ placement: "header_primary" })}
+            variant="outline"
+            className="motion-hover-lift h-11 min-h-11 rounded-full border-white/15 bg-white/10 px-3 text-[0.8rem] font-semibold text-white hover:bg-white/14"
+            onClick={() => {
+              window.location.href = "/acceso?returnTo=/auditar";
+            }}
           >
-            <span className="truncate sm:hidden">Empezar</span>
-            <span className="hidden sm:inline">{PRIMARY_CTA_LABEL}</span>
+            Entrar
           </Button>
           <button
             type="button"
@@ -908,15 +904,6 @@ function SiteHeader() {
                 }}
               >
                 Entrar
-              </Button>
-              <Button
-                className="motion-hover-lift h-12 rounded-full bg-teal-600 text-base font-semibold text-white shadow-[0_18px_34px_-20px_rgba(13,148,136,0.52)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-teal-700 active:scale-[0.99]"
-                onClick={() => {
-                  setOpen(false);
-                  goToAuditFlow({ placement: "mobile_menu_cta" });
-                }}
-              >
-                {PRIMARY_CTA_LABEL}
               </Button>
             </div>
           </div>
@@ -3039,7 +3026,7 @@ function AppDownloadSection() {
                 className="h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto"
                 onClick={() => goToAuditFlow({ placement: "app_download_section_primary" })}
               >
-                Empezar aquí gratis
+                {PRIMARY_CTA_LABEL}
                 <ArrowRight className="ml-2 h-4 w-4" strokeWidth={1.8} />
               </Button>
               <Button
@@ -3059,18 +3046,18 @@ function AppDownloadSection() {
 }
 
 function HomePlansStrip() {
-  const plans = getVisiblePaidPlans();
+  const plans = getVisibleCatalogPlans();
 
   return (
     <section id="planes" className="bg-white py-8 sm:py-10">
       <div className="container">
-        <div className="mx-auto max-w-3xl rounded-[1.8rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
+        <div className="mx-auto max-w-5xl rounded-[1.8rem] border border-slate-200 bg-slate-50 p-4 sm:p-5">
           <p className="text-xs font-semibold tracking-tight text-teal-700">Planes</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950">
             Elige un plan, con precio en MXN al mes
           </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo.</p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <p className="mt-2 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo. Hoy no se cobra.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
             {plans.map((plan) => (
               <article
                 key={plan.key}
@@ -3091,10 +3078,13 @@ function HomePlansStrip() {
                 <Button
                   className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
                   onClick={() => {
-                    window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
+                    window.location.href =
+                      plan.key === "free"
+                        ? "/auditar"
+                        : `/auditar?plan=${encodeURIComponent(plan.key)}`;
                   }}
                 >
-                  Elegir plan y empezar
+                  {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
                 </Button>
               </article>
             ))}

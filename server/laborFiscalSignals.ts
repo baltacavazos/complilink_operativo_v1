@@ -318,17 +318,17 @@ export function explainLaborFiscalFacts(facts: LaborFiscalStructuredFacts): Labo
 
   if (facts.perceptions) {
     explanations.push({
-      label: "Percepciones visibles",
-      summary: `Las percepciones que se alcanzan a leer suman ${facts.perceptions}.`,
+      label: "Lo que te pagaron (bruto visible)",
+      summary: `Lo que te pagaron (bruto visible) suma ${facts.perceptions}.`,
     });
   }
 
   if (facts.deductions) {
     explanations.push({
-      label: "Deducciones visibles",
+      label: "Descuentos",
       summary: /^\$?0(?:\.0+)?$/i.test(facts.deductions)
-        ? "El total de deducciones que se alcanza a leer es $0.00. Eso no confirma que no existan descuentos en otro documento del mismo periodo."
-        : `Las deducciones que se alcanzan a leer suman ${facts.deductions}. Revisa que cada descuento esté explicado en el mismo recibo.`,
+        ? "Los descuentos que se alcanzan a leer suman $0.00. Eso no confirma que no existan descuentos en otro documento del mismo periodo."
+        : `Los descuentos que se alcanzan a leer suman ${facts.deductions}. Revisa que cada descuento esté explicado en el mismo recibo.`,
     });
   }
 

@@ -6,7 +6,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   COMMERCE_PLANS,
-  formatCommerceDocumentLimitBullet,
 } from "../../../shared/commerce";
 import {
   BILLING_SOFT_NOTE,
@@ -21,7 +20,6 @@ import {
   HOME_HERO_SECTION_TITLE,
   HOME_HERO_SUBHEAD,
   PLAN_NAV_CTA,
-  PLAN_PRIMARY_CTA,
   SOCIAL_PROOF_LINE,
   getVisiblePaidPlans,
 } from "../../../shared/conversionCopy";
@@ -55,13 +53,13 @@ describe("Claridad — take my money without live charge", () => {
     expect(plans.some((plan) => plan.monthlyPriceMx === 79)).toBe(true);
     expect(plans.some((plan) => plan.monthlyPriceMx === 199)).toBe(true);
     expect(payments).toContain("pagos-plan-cards");
-    expect(payments).toContain(PLAN_PRIMARY_CTA);
+    expect(payments).toContain("PLAN_PRIMARY_CTA");
     expect(payments).toContain("MXN al mes");
     expect(plansPage).toContain("planes-plan-cards");
-    expect(plansPage).toContain(PLAN_PRIMARY_CTA);
+    expect(plansPage).toContain("PLAN_PRIMARY_CTA");
     expect(plansPage).toContain("MXN al mes");
     expect(home).toContain(PLAN_NAV_CTA);
-    expect(home).toContain(PLAN_PRIMARY_CTA);
+    expect(home).toContain("PLAN_PRIMARY_CTA");
     expect(home).toContain("MXN al mes");
   });
 
@@ -138,7 +136,7 @@ describe("Claridad — take my money without live charge", () => {
     expect(essential?.limits.maxDocumentsPerCase).toBe(15);
     expect(pro?.limits.maxDocumentsPerCase).toBe(50);
     expect(JSON.stringify(free)).not.toMatch(/3 documentos|varios recibos/i);
-    expect(free?.featureBullets.join(" ")).toMatch(/1 documento por expediente/i);
+    expect(free?.featureBullets.join(" ")).toMatch(/1 documento\. Primera lectura y asesor básico/i);
 
     for (const source of [home, auditar]) {
       expect(source).not.toMatch(/hasta 3 documentos/i);
@@ -154,15 +152,14 @@ describe("Claridad — take my money without live charge", () => {
     const essential = COMMERCE_PLANS.find((plan) => plan.key === "essential");
     const visibleEssential = getVisiblePaidPlans().find((plan) => plan.key === "essential");
     const essentialLimit = essential?.limits.maxDocumentsPerCase;
-    const essentialLimitCopy = formatCommerceDocumentLimitBullet(essentialLimit ?? 0);
 
     expect(essentialLimit).toBe(15);
-    expect(essential?.featureBullets).toContain(essentialLimitCopy);
-    expect(visibleEssential?.includes).toContain(essentialLimitCopy);
+    expect(essential?.featureBullets).toContain("Hasta 15 recibos en tu caso.");
+    expect(visibleEssential?.includes).toContain("Hasta 15 recibos en tu caso.");
     expect(visibleEssential?.includes.some((item) => /hasta 10 documentos/i.test(item))).toBe(false);
 
     for (const source of [home, plansPage, payments]) {
-      expect(source).toContain("getVisiblePaidPlans");
+      expect(source).toContain("getVisibleCatalogPlans");
       expect(source).not.toMatch(/hasta 10 documentos/i);
       expect(source).not.toContain("Hasta 10 documentos");
     }
@@ -179,7 +176,9 @@ describe("Claridad — take my money without live charge", () => {
     expect(HOME_HERO_SECTION_TITLE).toBe("Qué revisas con AuditaPatrón");
     expect(HOME_HERO_CHECKLIST).toHaveLength(6);
     expect(HOME_HERO_PRIMARY_CTA).toBe("Revisar mi recibo gratis");
-    expect(HOME_HERO_CTA_MICROCOPY).toContain("Sin cuenta al principio");
+    expect(HOME_HERO_CTA_MICROCOPY).toBe(
+      "Subes el recibo, ves el resultado y solo se guarda si tú lo confirmas.",
+    );
     expect(HOME_HERO_HONESTY_LINE).toContain("No demuestra por sí sola un incumplimiento");
     expect(HOME_HERO_CLOSING_LINE).toBe(
       "Cuentas claras. Primero entiende. Luego decides si hablas con RH o pides aclaración.",

@@ -74,6 +74,7 @@ import {
   alignVisibleChatWithBriefing,
   buildOfficialCaseBriefing,
   buildOfficialChatStarterQuestions,
+  buildWorkerPocketLead,
   identityFlagsFromFacts,
 } from "@shared/officialCaseBriefing";
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
@@ -346,6 +347,9 @@ const UPLOAD_PROGRESS_STEPS: Array<{
 ];
 
 const UPLOAD_PRIMARY_EMPTY_LABEL = "Sube tu documento";
+const EMPTY_UPLOAD_TITLE = "Sube tu recibo";
+const EMPTY_UPLOAD_HELP = "Foto, PDF o XML. Ves el resultado y decides si lo guardas.";
+const EMPTY_UPLOAD_TRUST = "Solo tú ves este recibo. No lo compartimos con tu empresa.";
 const UPLOAD_ACCEPTED_DOCUMENTS_HINT = "Recibo, CFDI o PDF del IMSS";
 
 const PERSISTENT_UPLOAD_GUARDRAILS = {
@@ -837,10 +841,10 @@ function buildCommercePromptContext(params: {
   message: string;
   activePlanKey: CommercePlanKey;
 }): CommercePromptContext | null {
-  if (/Subir otro documento en este expediente|Subir más de \d+ documentos/i.test(params.message)) {
+  if (/Subir otro documento en este (expediente|caso)|Subir más de \d+ documentos/i.test(params.message)) {
     return {
       title: "Para subir otro documento",
-      body: /Subir otro documento en este expediente/i.test(params.message)
+      body: /Subir otro documento en este (expediente|caso)/i.test(params.message)
         ? FREE_TIER_EXHAUSTED_COPY
         : "Ya llegaste al tope de documentos de tu plan. Si quieres subir otro, revisa el siguiente plan.",
       targetPlan: "essential",
@@ -1489,7 +1493,7 @@ const dossierTargets: DossierTarget[] = [
     type: "cfdi",
     label: "Comprobante fiscal (CFDI)",
     description:
-      "Sirven para contrastar lo timbrado fiscalmente contra lo que recibiste.",
+      "El CFDI es el comprobante fiscal de tu sueldo. Sirve para contrastar lo timbrado contra lo que recibiste.",
     benefit: "Aclaran diferencias entre nómina y comprobantes fiscales.",
     suggestedCount: 2,
   },
@@ -1533,7 +1537,7 @@ const priorityUploadGuides: PriorityUploadGuide[] = [
     type: "cfdi",
     title: "CFDI timbrados",
     summary:
-      "Sirven para contrastar lo que fiscalmente quedó reportado contra lo que aparece en otros documentos del caso.",
+      "El CFDI es el comprobante fiscal de tu sueldo. Sirve para contrastar lo que quedó reportado contra lo que aparece en otros documentos del caso.",
     value:
       "Ayudan a aclarar diferencias que muchas veces pasan desapercibidas cuando solo existe una versión del pago o del periodo revisado.",
   },
@@ -2116,7 +2120,7 @@ function getScanAssistTone(scanAssist?: ScanAssistAssessmentView | null) {
   return {
     containerClasses: "border-sky-100 bg-sky-50",
     badgeClasses: "bg-white text-sky-800",
-    badgeLabel: "Revisión guiada",
+      badgeLabel: "Revisa la foto",
   };
 }
 
@@ -4594,7 +4598,7 @@ export default function Auditar() {
         key: "cfdi",
         title: "CFDI del mismo periodo",
         reason:
-          "Te ayuda a comparar lo timbrado con lo que realmente te pagaron y confirmar si ambos coinciden.",
+          "El CFDI es el comprobante fiscal de tu sueldo. Te ayuda a comparar lo timbrado con lo que realmente te pagaron.",
       },
       newClarityNotification: {
         title: "Ya hay una lectura inicial útil",
@@ -5977,7 +5981,7 @@ export default function Auditar() {
   const socialSecurityCoveragePercent =
     effectiveSocialSecurityValidation?.coverageScore ?? dossierStatus.percent;
   const socialSecurityStatusLabel =
-    effectiveSocialSecurityValidation?.statusLabel ?? "Cruce pendiente";
+    effectiveSocialSecurityValidation?.statusLabel ?? "Todavía no hay consulta";
   const socialSecuritySummary =
     effectiveSocialSecurityValidation?.summary ??
     "Todavía faltan datos suficientes de IMSS e Infonavit para darte un cruce más completo dentro del expediente.";
@@ -6419,6 +6423,10 @@ export default function Auditar() {
       : officialCaseBriefing.missingIdentityDetail,
   });
   const officialCheckHeadline = officialCheckDisplay.headline;
+  const workerPocketDetail = buildWorkerPocketLead(
+    officialCaseBriefing.facts,
+    officialCaseBriefing.hechoLines,
+  );
   const officialWaitLeads =
     !officialCheckDisplay.silence &&
     (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
@@ -7086,7 +7094,7 @@ export default function Auditar() {
       completed: Boolean(currentCaseScopeKey),
       detail: currentCaseScopeKey
         ? "Ya seleccionaste un expediente y la continuidad entre dispositivos quedó activa."
-        : "Falta elegir un expediente para continuar con el flujo principal.",
+        : "Falta elegir un caso para continuar.",
     },
     {
       id: "legal",
@@ -7289,21 +7297,21 @@ export default function Auditar() {
   }> = [
     {
       key: "resumen",
-      label: "Resumen",
+      label: "Ahora",
       title: "Sube, revisa y toma la siguiente decisión.",
       description: "Ideal para empezar o volver rápido a lo importante.",
     },
     {
       key: "expediente",
-      label: "Expediente",
+      label: "Tu caso",
       title: "Progreso, faltantes y continuidad del caso.",
-      description: "Úsalo cuando quieras entender cómo va tu respaldo completo.",
+      description: "Úsalo cuando quieras ver cómo va tu respaldo.",
     },
     {
       key: "herramientas",
-      label: "Herramientas",
-      title: "Comparaciones y lectura más fina entre documentos.",
-      description: "Aquí dejamos lo avanzado para que no compita con el flujo principal.",
+      label: "Comparar",
+      title: "Comparaciones entre documentos.",
+      description: "Úsalo cuando quieras ver diferencias entre recibos.",
     },
   ];
   const activeWorkspaceSectionCard =
@@ -9123,6 +9131,8 @@ export default function Auditar() {
           />
           {renderReceiptArrival()}
           <WorkerOfficialResult
+            pocketLead={workerPocketDetail.lead}
+            receiptData={workerPocketDetail.receiptData}
             presentation={officialCheckDisplay.silence}
             retryPending={guestOfficialCheckMutation.isPending}
             onRetry={() => {
@@ -9301,9 +9311,6 @@ export default function Auditar() {
                 <ArrowLeft className="h-4 w-4" strokeWidth={1.8} />
                 Volver
               </a>
-              <span className="rounded-full bg-white/10 px-3 py-2 text-xs font-semibold text-white">
-                Revisión guiada
-              </span>
             </div>
           </div>
 
@@ -9344,6 +9351,7 @@ export default function Auditar() {
                   {guestAnalyzeMutation.isPending ? "Leyendo tu documento…" : UPLOAD_PRIMARY_EMPTY_LABEL}
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
+                <p className="text-sm font-medium leading-5 text-slate-800">{EMPTY_UPLOAD_TRUST}</p>
                 <p className="text-sm leading-5 text-slate-700">
                   Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.
                 </p>
@@ -9351,7 +9359,7 @@ export default function Auditar() {
                   Te garantizamos claridad del análisis. No prometemos que ganes un juicio.
                 </p>
                 <p className="text-sm font-medium leading-5 text-slate-700">
-                  {UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Gratis, sin cuenta.
+                  {UPLOAD_ACCEPTED_DOCUMENTS_HINT}. El CFDI es el comprobante fiscal de tu sueldo. Gratis, sin cuenta.
                 </p>
                   <button
                     type="button"
@@ -9469,11 +9477,17 @@ export default function Auditar() {
 
             {shouldCompactPostUploadExperience ? null : (
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white sm:text-4xl">
-                {isNativeAppExperience ? "Tu documento" : "Tu recibo o comprobante"}
+                {isFirstDocumentFlow
+                  ? EMPTY_UPLOAD_TITLE
+                  : isNativeAppExperience
+                    ? "Tu documento"
+                    : "Tu recibo o comprobante"}
               </h1>
             )}
             <p className={`max-w-xl text-sm leading-6 text-slate-300 ${shouldCompactPostUploadExperience ? "hidden" : "mt-2"}`}>
-              {shouldCompactPostUploadExperience ? null : isNativeAppExperience ? (
+              {shouldCompactPostUploadExperience ? null : isFirstDocumentFlow ? (
+                EMPTY_UPLOAD_HELP
+              ) : isNativeAppExperience ? (
                 <>
                   <span className="sm:hidden">
                     Sube foto o archivo. Revisas el resultado y decides si guardas.
@@ -9493,7 +9507,7 @@ export default function Auditar() {
                 </>
               )}
             </p>
-            {!shouldCompactPostUploadExperience ? (
+            {!shouldCompactPostUploadExperience && !isFirstDocumentFlow ? (
               <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
                 <ShieldCheck
                   className="h-3.5 w-3.5 text-teal-300"
@@ -9527,7 +9541,7 @@ export default function Auditar() {
           </section>
         ) : null}
 
-        {privacySignal.ready ? null : (
+        {privacySignal.ready || isFirstDocumentFlow ? null : (
         <section className="sticky top-3 z-30 mt-4 hidden sm:block">
           <div
             data-ap-privacy-bar
@@ -9836,32 +9850,9 @@ export default function Auditar() {
           baseLabel="/auditar"
         />
 
-        {showWorkspaceSectionSelector && !auth.canToggleUserView && !officialCheckDisplay.silence ? (
+        {showWorkspaceSectionSelector && !isFirstDocumentFlow && !auth.canToggleUserView && !officialCheckDisplay.silence ? (
           <section className={`${shouldCompactPostUploadExperience ? "mt-4" : "mt-6"} rounded-[1.7rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5`}>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-sm font-semibold tracking-tight text-slate-500">
-                  Ordena la pantalla por capas
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:hidden">
-                  {activeWorkspaceSectionCard.label}
-                </h2>
-                <h2 className="mt-2 hidden text-2xl font-semibold tracking-[-0.03em] text-slate-950 sm:block">
-                  Primero ve lo esencial. Luego entra al expediente o a herramientas más finas.
-                </h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:hidden">
-                  {activeWorkspaceSectionCard.description}
-                </p>
-                <p className="mt-2 hidden max-w-3xl text-sm leading-6 text-slate-600 sm:block sm:text-base">
-                  Dejamos tres vistas simples para que no tengas todo abierto al mismo tiempo: resumen para actuar rápido, expediente para continuidad y herramientas para comparaciones más avanzadas.
-                </p>
-              </div>
-              <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800">
-                Vista activa: {activeWorkspaceSectionCard.label.toLowerCase()}
-              </span>
-            </div>
-
-            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-2 sm:grid-cols-3">
               {workspaceSectionCards.map(item => {
                 const isActive = workspaceSection === item.key;
                 return (
@@ -9892,6 +9883,8 @@ export default function Auditar() {
                 {renderReceiptArrival(false)}
                 <WorkerOfficialResult
                   presentation={officialCheckDisplay.silence}
+                  pocketLead={workerPocketDetail.lead}
+                  receiptData={workerPocketDetail.receiptData}
                   retryPending={revalidateSocialSecurityMutation.isPending}
                   onRetry={() => {
                     void handleRevalidateSocialSecurity();
@@ -9916,12 +9909,32 @@ export default function Auditar() {
                 {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length ? (
                   <details className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
                     <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
-                    {officialCaseBriefing.hechoLines.length ? (
-                      <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
-                        {officialCaseBriefing.hechoLines.slice(0, 9).map(line => (
+                    {workerPocketDetail.lead.length ? (
+                      <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                        {workerPocketDetail.lead.map(line => (
                           <li key={line}>{line}</li>
                         ))}
                       </ul>
+                    ) : null}
+                    {officialCaseBriefing.hechoLines.some(line => !/\b(RFC|CURP|NSS)\b/.test(line) || /coincide con el SAT/i.test(line)) ? (
+                      <ul data-testid="official-check-hechos" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                        {officialCaseBriefing.hechoLines
+                          .filter(line => !/\b(RFC|CURP|NSS)\b/.test(line) || /coincide con el SAT/i.test(line))
+                          .slice(0, 9)
+                          .map(line => (
+                          <li key={line}>{line}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {workerPocketDetail.receiptData.length ? (
+                      <details className="mt-3">
+                        <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Datos del recibo</summary>
+                        <ul className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
+                          {workerPocketDetail.receiptData.map(line => (
+                            <li key={line}>{line}</li>
+                          ))}
+                        </ul>
+                      </details>
                     ) : null}
                     {officialCaseBriefing.comparisonLines.length ? (
                       <ul data-testid="official-check-comparison" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
@@ -9970,6 +9983,8 @@ export default function Auditar() {
                 {renderReceiptArrival()}
                 <WorkerOfficialResult
                   presentation={officialCheckDisplay.silence}
+                  pocketLead={workerPocketDetail.lead}
+                  receiptData={workerPocketDetail.receiptData}
                   retryPending={revalidateSocialSecurityMutation.isPending}
                   onRetry={() => {
                     void handleRevalidateSocialSecurity();
@@ -10278,7 +10293,7 @@ export default function Auditar() {
             </div>
 
             <div
-              className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"}
+              className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection || isFirstDocumentFlow ? "hidden" : "hidden motion-hover-lift rounded-[1.65rem] border border-slate-200 bg-white p-5 shadow-sm sm:block sm:p-6"}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
@@ -10298,13 +10313,13 @@ export default function Auditar() {
                   <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
                     {shouldCompactPostUploadExperience
                       ? `Ya cargaste ${documents.length} documento${documents.length === 1 ? "" : "s"}. Tu avance ya quedó listo para retomarlo y, si quieres seguir hoy, conviene priorizar ${uploadPrimaryActionLabel.toLowerCase()}.`
-                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles y un indicador vivo que se ajusta con lo que se ve en el papel. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar el expediente" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${warmVisibleNamingCopy(heliosExpediente?.summary) ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu expediente."}`}
+                      : `Ya tienes ${documents.length} documento${documents.length === 1 ? "" : "s"} cargado${documents.length === 1 ? "" : "s"}, ${dossierStatus.completed} de ${dossierStatus.total} tipos útiles, según lo que se ve en el papel. La siguiente mejor acción es simple: ${selectedFile ? "confirma el archivo que acabas de elegir y súbelo para actualizar tu caso" : `${uploadPrimaryActionLabel.toLowerCase()} para mejorar la lectura del caso ahora mismo`}. ${socialSecuritySummary} ${warmVisibleNamingCopy(heliosExpediente?.summary) ?? "Cada archivo que subes se integra a una lectura progresiva del caso y queda resguardado dentro de tu caso."}`}
                   </p>
                 </div>
 
                 <div className="motion-hover-lift w-full rounded-[1.5rem] border border-teal-100 bg-teal-50 p-4 sm:max-w-sm">
                   <p className="text-sm font-semibold text-teal-900">
-                    Cruce IMSS e Infonavit hoy
+                    Consulta IMSS e Infonavit hoy
                   </p>
                   <p className="mt-2 text-base font-semibold text-slate-950">
                     {socialSecurityStatusLabel}
@@ -10762,9 +10777,9 @@ export default function Auditar() {
                     </div>
                   </div>
 
-                  <div className="rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2">
+                  <div className={`rounded-[1.15rem] border border-white/80 bg-white/85 p-3.5 md:col-span-2 ${isFirstDocumentFlow ? "hidden" : ""}`}>
                     <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                      Cruce IMSS e Infonavit
+                      Consulta IMSS e Infonavit
                     </p>
                     <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                       {socialSecurityStatusLabel}
@@ -11117,7 +11132,7 @@ export default function Auditar() {
                   ref={uploadSectionRef}
                   className="mt-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3.5 sm:p-4"
                 >
-                  <div className="flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5">
+                  <div className={`flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5 ${isFirstDocumentFlow ? "hidden" : ""}`}>
                     <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
                       <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
                     </div>
@@ -11181,7 +11196,7 @@ export default function Auditar() {
                 ) : null}
 
                 <div
-                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${pendingDraft || shouldCompactMobileUploadEntry ? "hidden sm:grid" : ""}`}
+                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${isFirstDocumentFlow || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
                 >
                   <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3.5">
                     <div className="flex items-start gap-2.5">
@@ -11340,8 +11355,7 @@ export default function Auditar() {
                 <div
                   className={`mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-white p-4 ${pendingDraft ? "hidden sm:block" : ""}`}
                 >
-
-                  <div className="mt-4 space-y-2.5 sm:hidden">
+                  <div className="space-y-2.5 sm:hidden">
                     {shouldCompactMobileUploadEntry ? (
                       <div className="grid gap-2.5">
                         <Button
@@ -11355,6 +11369,11 @@ export default function Auditar() {
                               ? "Cambiar documento"
                               : uploadPrimaryActionLabel}
                         </Button>
+                        {isFirstDocumentFlow && !selectedFile ? (
+                          <p className="mx-auto max-w-[22rem] text-center text-sm font-medium leading-5 text-slate-800">
+                            {EMPTY_UPLOAD_TRUST}
+                          </p>
+                        ) : null}
                         <button
                           type="button"
                           className="mx-auto text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline"
@@ -11365,6 +11384,7 @@ export default function Auditar() {
                         </button>
                       </div>
                     ) : (
+                      <>
                       <Button
                         className={`${COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200`}
                         disabled={isAutoAnalyzingSelectedFile}
@@ -11372,16 +11392,22 @@ export default function Auditar() {
                       >
                         {isAutoAnalyzingSelectedFile
                           ? "Analizando documento..."
-                          : selectedFile
+                            : selectedFile
                             ? "Cambiar documento"
                             : uploadPrimaryActionLabel}
                       </Button>
+                      {isFirstDocumentFlow && !selectedFile ? (
+                        <p className="mx-auto max-w-[22rem] text-center text-sm font-medium leading-5 text-slate-800">
+                          {EMPTY_UPLOAD_TRUST}
+                        </p>
+                      ) : null}
+                      </>
                     )}
                     <div className="space-y-2.5">
                       <p className="mx-auto max-w-[22rem] text-center text-[13px] leading-5 text-slate-700">
                         {isAutoAnalyzingSelectedFile
                           ? "Tu documento se está analizando."
-                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. Sube tu documento y en minutos ves el resultado y qué hacer.`}
+                          : `${UPLOAD_ACCEPTED_DOCUMENTS_HINT}. ${isFirstDocumentFlow ? "El CFDI es el comprobante fiscal de tu sueldo. " : ""}Sube tu documento y en minutos ves el resultado y qué hacer.`}
                       </p>
                       {isAutoAnalyzingSelectedFile ? (
                         <div className="rounded-[0.95rem] border border-teal-200 bg-teal-50/80 px-3.5 py-2.5 text-teal-950 shadow-sm">
@@ -11425,10 +11451,13 @@ export default function Auditar() {
                     >
                       {isAutoAnalyzingSelectedFile
                         ? "Analizando documento..."
-                        : selectedFile
+                          : selectedFile
                           ? "Cambiar documento"
                           : uploadPrimaryActionLabel}
                     </Button>
+                    {isFirstDocumentFlow && !selectedFile ? (
+                      <p className="text-sm font-medium leading-5 text-slate-800">{EMPTY_UPLOAD_TRUST}</p>
+                    ) : null}
                     <button
                       type="button"
                       className="justify-self-start text-sm font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline"
@@ -12304,6 +12333,7 @@ export default function Auditar() {
                       </div>
                     ) : null}
 
+                    {freePlanDocumentLimitNotice ? null : (
                     <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                       <Button
                         className={`h-12 rounded-full px-7 text-white transition-all duration-300 ${
@@ -12344,6 +12374,7 @@ export default function Auditar() {
                         {reanalyzeDraftAction.label}
                       </Button>
                     </div>
+                    )}
                   </div>
                 </>
               ) : null}
@@ -12525,7 +12556,7 @@ export default function Auditar() {
                 </div>
               ) : null}
 
-              {(selectedFile || pendingDraft) ? (
+              {(selectedFile || pendingDraft) && !freePlanDocumentLimitNotice ? (
               <div className="mt-5 hidden flex-col gap-3 sm:flex lg:flex-row lg:items-start">
                 <div className="flex min-w-0 flex-1 flex-col gap-2">
                   <Button
@@ -14932,7 +14963,7 @@ Reforzar con otro documento
           ) : null}
         </section>
 
-          <aside className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection ? "hidden" : "hidden space-y-6 xl:block"}>
+          <aside className={shouldCompactPostUploadExperience || !isDossierWorkspaceSection || isFirstDocumentFlow ? "hidden" : "hidden space-y-6 xl:block"}>
             <div className="rounded-[1.75rem] border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-semibold tracking-tight text-slate-500">
                 Expediente laboral seleccionado
@@ -16071,11 +16102,12 @@ Reforzar con otro documento
                 <div className="rounded-2xl bg-white/80 p-3">
                   <p className="font-semibold text-slate-950">Operación comercial</p>
                   <p className="mt-1">
-                    {commerceStatusQuery.data?.environment?.checkoutReady
+                    {commerceStatusQuery.data?.environment?.liveBillingEnabled &&
+                    commerceStatusQuery.data?.environment?.checkoutReady
                       ? auth.canToggleUserView && commerceStatusQuery.data?.environment?.isSandbox
                         ? "Checkout listo en sandbox para validación."
                         : "Checkout y cobro listos para operar."
-                      : "Activaremos el cobro cuando esté listo."}
+                      : "Activaremos el cobro cuando esté listo. Hoy no se cobra."}
                   </p>
                 </div>
               </div>
@@ -16228,8 +16260,11 @@ Reforzar con otro documento
                               );
                               return;
                             }
-                            if (commerceStatusQuery.data?.environment?.checkoutReady === false) {
-                              sonnerToast("Activaremos el cobro cuando esté listo.");
+                            if (
+                              commerceStatusQuery.data?.environment?.liveBillingEnabled !== true ||
+                              commerceStatusQuery.data?.environment?.checkoutReady === false
+                            ) {
+                              sonnerToast("Activaremos el cobro cuando esté listo. Hoy no se cobra.");
                               return;
                             }
                             void handleCommerceCheckout(plan.key);
@@ -16239,7 +16274,7 @@ Reforzar con otro documento
                             ? "Ya estás en este plan"
                             : plan.key === "free"
                               ? "Empezar"
-                              : "Elegir plan y empezar"}
+                              : "Ver el plan"}
                         </Button>
                       </div>
                     </article>
@@ -16287,11 +16322,17 @@ Reforzar con otro documento
                         className="mt-4 rounded-2xl bg-teal-600 text-white hover:bg-teal-700"
                         disabled={
                           createCommerceCheckoutMutation.isPending ||
+                          commerceStatusQuery.data?.environment?.liveBillingEnabled !== true ||
                           commerceStatusQuery.data?.environment?.checkoutReady === false
                         }
                         onClick={() => handleCommerceCheckout(product.key)}
                       >
-                        {alreadyPurchased ? "Comprar otra vez" : "Elegir plan y empezar"}
+                        {commerceStatusQuery.data?.environment?.liveBillingEnabled === true &&
+                        commerceStatusQuery.data?.environment?.checkoutReady
+                          ? alreadyPurchased
+                            ? "Comprar otra vez"
+                            : "Ver el entregable"
+                          : "El cobro aún no está activo"}
                       </Button>
                     </article>
                   );
@@ -16399,7 +16440,7 @@ Reforzar con otro documento
         </DrawerContent>
       </Drawer>
 
-      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || officialCheckDisplay.silence || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
+      <div className={`fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-3 shadow-[0_-18px_50px_-30px_rgba(15,23,42,0.45)] backdrop-blur sm:hidden ${shouldCompactPostUploadExperience || officialCheckDisplay.silence || freePlanDocumentLimitNotice || (isFirstDocumentFlow && !selectedFile && !pendingDraft) ? "hidden" : ""}`}>
         <div className="mx-auto max-w-6xl">
           {privacySignal.ready ? null : (
           <div

@@ -37,6 +37,12 @@ export const OFFICIAL_SOURCE_LABEL: Record<OfficialCheckSource, string> = {
 
 export const POCKET_PARTIAL_VERDICT =
   "Aún no te podemos decir si tu patrón te tiene bien registrado.";
+export const POCKET_PARTIAL_TWO_OFFICES =
+  "Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.";
+export const POCKET_PARTIAL_SAT_DETAIL =
+  "El SAT ya contestó; IMSS e Infonavit aún no.";
+export const EMPTY_OFFICIAL_CONSULT_VERDICT = "Hoy no pudimos consultar.";
+export const EMPTY_OFFICIAL_CONSULT_LIMIT = "No prueba cumplimiento.";
 export const POCKET_BIEN_VERDICT =
   "Por lo que vimos hoy, lo que comparamos cuadra con tu recibo.";
 export const POCKET_BIEN_LIMIT =
@@ -186,11 +192,40 @@ export type OfficialResultPresentation = InstituteSilencePresentation & {
 export function pocketOfficeStatusLine(live: OfficialCheckSource[], missing: OfficialCheckSource[]): string {
   const liveOrdered = OFFICIAL_CHECK_SOURCES.filter((source) => live.includes(source));
   const missingOrdered = OFFICIAL_CHECK_SOURCES.filter((source) => missing.includes(source));
+  if (
+    liveOrdered.length === 1 &&
+    liveOrdered[0] === "sat" &&
+    missingOrdered.length === 2 &&
+    missingOrdered.includes("imss") &&
+    missingOrdered.includes("infonavit")
+  ) {
+    return POCKET_PARTIAL_TWO_OFFICES;
+  }
   const liveBit = capitalizeSpanish(joinSpanishLabels(liveOrdered.map((source) => officialSourceWithArticle(source))));
   const verb = liveOrdered.length === 1 ? "ya respondió" : "ya respondieron";
   const missingNames = joinSpanishLabels(missingOrdered.map((source) => OFFICIAL_SOURCE_LABEL[source]));
   const falta = missingOrdered.length === 1 ? "falta" : "faltan";
   return `${liveBit} ${verb}; ${falta} ${missingNames}.`;
+}
+
+export function emptyOfficialConsultPresentation(): OfficialResultPresentation {
+  return {
+    kind: "silent",
+    verdict: EMPTY_OFFICIAL_CONSULT_VERDICT,
+    whatHappened: EMPTY_OFFICIAL_CONSULT_LIMIT,
+    meaning: "Sin un dato de la consulta, no podemos decir que tu patrón esté bien registrado.",
+    nextStep: "Prueba de nuevo mañana.",
+    smallPrint: EMPTY_OFFICIAL_CONSULT_LIMIT,
+    retryLabel: INSTITUTE_SILENCE_RETRY,
+    askLabel: INSTITUTE_SILENCE_ASK,
+    sourceLines: [],
+    chat: `${EMPTY_OFFICIAL_CONSULT_VERDICT} ${EMPTY_OFFICIAL_CONSULT_LIMIT}`,
+    opener: WORKER_RESULT_CHAT_OPENER,
+  };
+}
+
+function hasCiteableOfficialFacts(outcomes: OfficialSourceOutcome[]): boolean {
+  return outcomes.some((item) => item.hechos.length > 0);
 }
 
 function officialSourceWithArticle(source: OfficialCheckSource): string {
@@ -214,7 +249,7 @@ function isPendingOfficialPlaceholder(source: OfficialCheckSource, text?: string
 }
 
 const SAT_LEGAL_NAME_LINE_RE =
-  /^(?:sat:\s*)?(?:raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?|legal\s*name|nombre\s+fiscal)\s*[:：-]\s*(.*)$/i;
+  /^(?:sat:\s*)?(?:raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?|nombre\s+del\s+rfc\s+consultado(?:\s+en\s+el\s+sat)?|nombre\s+en\s+el\s+sat|legal\s*name|nombre\s+fiscal)\s*[:：-]\s*(.*)$/i;
 const SAT_VAULT_NAME_RE =
   /^(?:expediente|exp\.?|b[oó]veda|vault|placeholder|nombre\s+del\s+expediente)\b/i;
 const SAT_EMPTY_NAME_RE =
@@ -260,6 +295,10 @@ export function citeableOfficialHechos(source: OfficialCheckSource, hechos: stri
 /** Quita siglas de proveedor. El trabajador ve el dato, no el nombre del sistema. */
 export function humanizeOfficialHecho(text: string): string {
   return text
+    .replace(
+      /raz[oó]n\s+social(?:\s+en\s+(?:el\s+)?sat)?\s*[:：-]\s*/gi,
+      "Nombre del RFC consultado en el SAT: ",
+    )
     .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
     .replace(/\brpci\b/gi, "registro del IMSS")
     .replace(/\bapimarket\b/gi, "")
@@ -306,8 +345,7 @@ export function readOfficialSourceOutcomes(
   const bySource = new Map<OfficialCheckSource, OfficialSourceOutcome>();
   for (const check of summary.checks ?? []) {
     const hechos = usefulOfficialHechos(check.hechos ?? []);
-    const status =
-      check.source === "sat" && check.status === "vivo" && hechos.length === 0 ? "no_se_pudo" : check.status;
+    const status = check.status === "vivo" && hechos.length === 0 ? "no_se_pudo" : check.status;
     bySource.set(check.source, {
       source: check.source,
       status,
@@ -321,12 +359,12 @@ export function readOfficialSourceOutcomes(
     for (const source of [anchor.imss, anchor.sat, anchor.infonavit]) {
       const current = bySource.get(source.fuente);
       const combinedHechos = [...source.hechos, ...(current?.hechos ?? [])];
-      const satUsable = source.fuente !== "sat" || hasUsableSatResponse(combinedHechos);
-      const anchorLive = source.estado === "live" && satUsable;
-      const keepCurrentLive = current?.status === "vivo" && satUsable;
+      const factsUsable = usefulOfficialHechos(combinedHechos).length > 0;
+      const anchorLive = source.estado === "live" && factsUsable;
+      const keepCurrentLive = current?.status === "vivo" && factsUsable;
       const anchorFailed = source.estado === "failed" && listOfficialMissingFieldKeys(source.missingFields).length === 0;
       const emptySatHook =
-        source.fuente === "sat" && !satUsable && (source.estado === "live" || current?.status === "vivo");
+        !factsUsable && (source.estado === "live" || current?.status === "vivo");
       const status: OfficialCheckStatus = anchorLive
         ? "vivo"
         : keepCurrentLive
@@ -424,7 +462,15 @@ function mixedOfficialPresentation(
   options?: { stillWaiting?: boolean },
 ): OfficialResultPresentation {
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
+  const partialSatNote =
+    live.length === 1 &&
+    live[0]?.source === "sat" &&
+    silent.some((item) => item.source === "imss") &&
+    silent.some((item) => item.source === "infonavit")
+      ? POCKET_PARTIAL_SAT_DETAIL
+      : null;
   const sourceLines = [
+    ...(partialSatNote ? [partialSatNote] : []),
     ...live.flatMap((item) => {
       const label = OFFICIAL_SOURCE_LABEL[item.source];
       return [answeredOfficialSourceLine(label, item.checkedAt), ...item.hechos.map((hecho) => `${label}: ${hecho}`)];
@@ -515,6 +561,9 @@ function settledOfficialPresentation(
   resultado: ReciboVsOficialResultado | null,
   outcomes: OfficialSourceOutcome[],
 ): OfficialResultPresentation {
+  if (!hasCiteableOfficialFacts(outcomes)) {
+    return emptyOfficialConsultPresentation();
+  }
   const watch = resultado === "hay_diferencia";
   const fine = resultado === "bien";
   const sourceLines = outcomes.flatMap((item) => {
@@ -2199,6 +2248,23 @@ export function resolveOfficialCheckDisplay(params: {
         };
       }
       if (honest.overallStatus === "pendiente") {
+        const outcomes = readOfficialSourceOutcomes(honest);
+        const eternalEmptyWait =
+          !hasCiteableOfficialFacts(outcomes) &&
+          isStaleOfficialPending(honest.checkedAt, params.nowMs, {
+            pendingSinceMs: params.pendingSinceMs,
+          });
+        if (eternalEmptyWait) {
+          const silence = emptyOfficialConsultPresentation();
+          return {
+            headline: silence.verdict,
+            detail: `${silence.verdict} ${silence.whatHappened}`,
+            buttonLabel: silence.retryLabel,
+            status: "no_se_pudo",
+            showPermissionCopy: false,
+            silence,
+          };
+        }
         return {
           headline: INSTITUTE_WAITING_HEADLINE,
           detail: looksLikeInstituteMaintenance(honest.overallDetail)
@@ -2208,6 +2274,20 @@ export function resolveOfficialCheckDisplay(params: {
           status: "pendiente",
           showPermissionCopy: false,
           silence: null,
+        };
+      }
+      if (
+        honest.overallStatus === "vivo" &&
+        !hasCiteableOfficialFacts(readOfficialSourceOutcomes(honest))
+      ) {
+        const silence = emptyOfficialConsultPresentation();
+        return {
+          headline: silence.verdict,
+          detail: `${silence.verdict} ${silence.whatHappened}`,
+          buttonLabel: silence.retryLabel,
+          status: "no_se_pudo",
+          showPermissionCopy: false,
+          silence,
         };
       }
       return {

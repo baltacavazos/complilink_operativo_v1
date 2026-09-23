@@ -1914,7 +1914,7 @@ describe("appRouter case workflows", () => {
         sourceChannel: "manual",
       }),
     ).rejects.toThrow(
-      "Subir otro documento en este expediente está disponible desde Audita Esencial.",
+      "Subir otro documento en este caso está disponible desde Audita Esencial.",
     );
 
     expect(db.addDocumentRecord).not.toHaveBeenCalled();

@@ -223,7 +223,7 @@ export function hasForbiddenClientBrand(value?: string | null): boolean {
 
 const SMOKE_ACCOUNT_HANDLE = /^(ap\.)?wave\d+$/i;
 const INTERNAL_ACCOUNT_HANDLE =
-  /^(ap|cl|helios|complilink|smoke|e2e|harness|test)([._-][a-z0-9._-]*)?$/i;
+  /^(ap|cl|helios|complilink|smoke|e2e|harness|test|tester|demo)([._-][a-z0-9._-]*)?$/i;
 const TECHNICAL_HANDLE = /^[a-z0-9]+[._-][a-z0-9._-]+$/i;
 
 export function isSmokeOrInternalAccountHandle(value?: string | null): boolean {
@@ -280,6 +280,7 @@ export function formatWorkerVisibleAccountName(value?: string | null): string | 
 
   const cleaned = text
     .replace(/\b(?:ap\.)?wave\d+\b/gi, "tu cuenta")
+    .replace(/\b(?:tester|demo)\b/gi, "tu cuenta")
     .replace(/\s{2,}/g, " ")
     .trim();
 

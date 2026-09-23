@@ -128,7 +128,7 @@ describe("contraste y claridad del resultado", () => {
     });
 
     expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
-    expect(display.silence?.whatHappened).toBe("El SAT ya respondió; faltan IMSS e Infonavit.");
+    expect(display.silence?.whatHappened).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
     expect(display.buttonLabel).toBe("Probar de nuevo mañana");
     expect(display.silence?.askLabel).toBe("¿Qué implica esto para mi pago?");
     expect(display.silence?.sourceLines.join(" ")).toMatch(/UIPD9211257I0/);
