@@ -133,6 +133,18 @@ describe("AuditaPatrón Apple polish · separación de marca", () => {
     expect(auditar).toContain("No pudimos recibir el aviso.");
   });
 
+  it("vacío AUTH: título Sube tu recibo, glosa de CFDI y banner de ejemplo", () => {
+    const auditar = readClientSource("pages/Auditar.tsx");
+    expect(auditar).toContain('const EMPTY_UPLOAD_TITLE = "Sube tu recibo"');
+    expect(auditar).toContain("presentEmptyWorkerUpload ? EMPTY_UPLOAD_TITLE : \"Revisa lo importante\"");
+    expect(auditar).toContain("presentEmptyWorkerUpload ? EMPTY_UPLOAD_TITLE : \"Empieza tu auditoría\"");
+    expect(auditar).toContain("El CFDI es el comprobante fiscal de tu sueldo.");
+    expect(auditar).toContain('data-testid="example-case-banner"');
+    expect(auditar).toContain("Ejemplo. Estos papeles no son tu caso.");
+    expect(auditar).toContain('role="status"');
+    expect(auditar).not.toContain("Sube tu recibo o comprobante");
+  });
+
   it("deja /auditar sin Helios, CompliLink ni Webhook en copy que se renderiza", () => {
     const auditar = readClientSource("pages/Auditar.tsx");
     const renderPaths = auditarClientFacingRenderPaths(auditar);
