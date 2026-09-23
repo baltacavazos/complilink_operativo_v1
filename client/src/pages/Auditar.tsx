@@ -55,6 +55,8 @@ import {
   INSTITUTE_SILENCE_ASK,
   INSTITUTE_SILENCE_CHAT,
   INSTITUTE_SILENCE_RETRY,
+  INSTITUTE_WAITING_DETAIL,
+  INSTITUTE_WAITING_HEADLINE,
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
@@ -396,8 +398,8 @@ export function getHumanUploadProgressMessages(
     case "save":
       return [
         "Guardando tu revisión...",
-        "En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí.",
-        "Si tardan, es de esas oficinas.",
+        INSTITUTE_WAITING_HEADLINE,
+        INSTITUTE_WAITING_DETAIL,
       ];
     default:
       return [];
@@ -9092,6 +9094,9 @@ export default function Auditar() {
             onAsk={() => openHeliosCopilot()}
             paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
             comparisonLines={officialCaseBriefing.comparisonLines}
+            onDone={() => {
+              window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
+            }}
           />
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
@@ -9470,7 +9475,7 @@ export default function Auditar() {
             {renderReceiptArrival()}
             {receiptAck !== "failed" ? (
               <p className="mt-3 text-sm leading-6 text-[#161616]">
-                En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí. Si tardan, es de esas oficinas.
+                {INSTITUTE_WAITING_HEADLINE} {INSTITUTE_WAITING_DETAIL}
               </p>
             ) : null}
           </section>
@@ -9847,6 +9852,9 @@ export default function Auditar() {
                   }}
                   onAsk={() => openHeliosCopilot()}
                   comparisonLines={officialCaseBriefing.comparisonLines}
+                  onDone={() => {
+                    verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
                 />
               </>
             ) : null}
@@ -9906,7 +9914,7 @@ export default function Auditar() {
                     className="mt-2 h-auto bg-transparent px-0 text-sm font-semibold text-[#161616] underline shadow-none hover:bg-transparent"
                     onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                   >
-                    {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
+                    {INSTITUTE_SILENCE_ASK}
                   </Button>
                 ) : null}
               </div>
@@ -9923,6 +9931,9 @@ export default function Auditar() {
                   onAsk={() => openHeliosCopilot()}
                   paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
                   comparisonLines={officialCaseBriefing.comparisonLines}
+                  onDone={() => {
+                    verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
                 />
               </>
             ) : null}
@@ -9955,14 +9966,9 @@ export default function Auditar() {
                             : lastUploadVerdict.label}
                         </h2>
                         {shouldCompactPostUploadExperience && officialWaitLeads ? (
-                          <div className="mt-3">
-                            <p className="text-base leading-6 text-[#161616]">{officialCheckDisplay.detail}</p>
-                            {officialCheckDisplay.status === "consultando" ? (
-                              <p data-testid="official-check-waiting" className="mt-3 text-sm leading-6 text-[#161616]">
-                                En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí. Si tardan, es de esas oficinas.
-                              </p>
-                            ) : null}
-                          </div>
+                          <p data-testid="official-check-waiting" className="mt-3 text-base leading-6 text-[#161616]">
+                            {officialCheckDisplay.detail}
+                          </p>
                         ) : null}
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">
@@ -10059,7 +10065,7 @@ export default function Auditar() {
                                   className="mt-2 h-auto bg-transparent px-0 text-sm font-semibold text-[#161616] underline shadow-none hover:bg-transparent"
                                   onClick={() => openHeliosCopilot(officialCheckDisplay.silence ? "¿Qué implica esto para mi pago?" : undefined)}
                                 >
-                                  {officialCheckDisplay.silence ? INSTITUTE_SILENCE_ASK : WORKER_CHAT_ASK_CTA}
+                                  {INSTITUTE_SILENCE_ASK}
                                 </Button>
                               ) : null}
                             </div>

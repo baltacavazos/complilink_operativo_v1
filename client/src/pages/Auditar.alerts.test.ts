@@ -734,8 +734,8 @@ describe("buildUploadProgressState", () => {
       stepKey: "save",
       humanMessages: [
         "Guardando tu revisión...",
-        "En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí.",
-        "Si tardan, es de esas oficinas.",
+        "Estamos preguntando a IMSS, SAT e Infonavit…",
+        "Si tarda, casi siempre es la oficina, no tu recibo.",
       ],
     });
   });
@@ -816,8 +816,8 @@ describe("getHumanUploadProgressMessages", () => {
     ]);
     expect(getHumanUploadProgressMessages("save")).toEqual([
       "Guardando tu revisión...",
-      "En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí.",
-      "Si tardan, es de esas oficinas.",
+      "Estamos preguntando a IMSS, SAT e Infonavit…",
+      "Si tarda, casi siempre es la oficina, no tu recibo.",
     ]);
     expect(getHumanUploadProgressMessages("review")).toEqual([]);
   });

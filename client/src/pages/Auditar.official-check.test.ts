@@ -74,12 +74,12 @@ describe("Auditar consult UI — permiso y CTA", () => {
     });
 
     expect(fallo.buttonLabel).toBe("Probar de nuevo mañana");
-    expect(fallo.headline).toBe("Hoy no pudimos confirmar con IMSS, SAT e Infonavit");
+    expect(fallo.headline).toBe("Hoy no se pudo comprobar. No prueba que te engañen.");
     expect(fallo.headline).not.toMatch(/Falló|Esto vimos/);
     expect(fallo.detail).toMatch(/Tu recibo sí se leyó/);
     expect(fallo.detail).not.toMatch(/no de AuditaPatrón|Falló/);
     expect(fallo.detail).not.toMatch(/respuesta usable|fallo de AuditaPatrón/i);
-    expect(fallo.silence?.askLabel).toBe("Preguntar qué implica para mi pago");
+    expect(fallo.silence?.askLabel).toBe("¿Qué implica esto para mi pago?");
     expect(JSON.stringify(fallo)).not.toMatch(/Helios|CompliLink|HMAC|\bcumple\b/i);
 
     const faltan = resolveOfficialCheckDisplay({

@@ -242,9 +242,9 @@ describe("workerChatUx grounding", () => {
 
     expect(grounding.laborFacts.workerRfc).toBe("UIPD9211257I0");
     expect(grounding.officialBriefing.facts.workerRfc).toBe("UIPD9211257I0");
-    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("IMSS — sin respuesta hoy"))).toBe(true);
-    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("SAT — sin respuesta hoy"))).toBe(true);
-    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Infonavit — sin respuesta hoy"))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy IMSS no contestó. No es un error de tu recibo."))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy SAT no contestó. No es un error de tu recibo."))).toBe(true);
+    expect(grounding.officialBriefing.statusLines.some((line) => line.startsWith("Hoy Infonavit no contestó. No es un error de tu recibo."))).toBe(true);
     expect(blob).not.toMatch(/Falta un RFC/i);
     expect(blob).not.toMatch(/RFC real/i);
     expect(blob).not.toMatch(/IMSS: Pendiente/);
@@ -349,18 +349,18 @@ describe("workerChatUx grounding", () => {
     });
     const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué dice mi consulta?" });
     const lied = sanitizeWorkerChatAnswer(
-      "Hoy no pudimos confirmar con IMSS, SAT e Infonavit. Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron.",
+      "Hoy no se pudo comprobar. No prueba que te engañen.. Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron.",
       grounding,
       { prompt: "¿Qué dice mi consulta?" },
     );
     const instructions = buildWorkerChatLlmInstructions(grounding, { prompt: "¿Qué dice mi consulta?" });
 
-    expect(grounding.officialBriefing.headline).toBe("El SAT contestó; IMSS e Infonavit aún no.");
+    expect(grounding.officialBriefing.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(answer).toMatch(/UIPD9211257I0/);
     expect(answer).toMatch(/IMSS e Infonavit aún no contestan/);
-    expect(answer).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(answer).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(lied).toMatch(/UIPD9211257I0/);
-    expect(lied).not.toMatch(/Hoy no pudimos confirmar con IMSS, SAT e Infonavit/);
+    expect(lied).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(instructions).toMatch(/SAT: Vivo|UIPD9211257I0/);
     expect(instructions).not.toMatch(/Hoy pedimos datos a IMSS, SAT e Infonavit y no contestaron/);
     expect(answer).not.toMatch(/\bFalló\b|no de AuditaPatrón/);
