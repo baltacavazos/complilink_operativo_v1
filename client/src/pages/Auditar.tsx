@@ -12,6 +12,11 @@ import {
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { WorkerOfficialResult } from "@/components/WorkerOfficialResult";
+import {
+  ReceiptArrival,
+  buildReceiptFactSlots,
+  type ReceiptAck,
+} from "@/components/ReceiptFactSkeleton";
 import MobileAppShell from "@/components/MobileAppShell";
 import {
   canUseNativeDocumentInput,
@@ -53,6 +58,9 @@ import {
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
   isPermissionBlockedStatus,
+  buildReceiptEstatusLine,
+  laborInstitutesSettled,
+  liveSatFactLines,
   pickPromptOfficialCheck,
   resolveBriefingWorkerRfc,
   resolveOfficialCheckDisplay,
@@ -4364,6 +4372,7 @@ export default function Auditar() {
   const [lastUpload, setLastUpload] =
     useState<ConfirmedUploadResultView | null>(null);
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
+  const [receiptAck, setReceiptAck] = useState<ReceiptAck>(null);
   const [officialCheckResult, setOfficialCheckResult] =
     useState<OfficialCheckSummary | null>(null);
   const officialPendingSinceRef = useRef<number | null>(null);
@@ -5639,6 +5648,11 @@ export default function Auditar() {
     documentType: guestReview?.preview.classification.documentType,
     confirmedData: guestReview?.preview.preliminaryAnalysis.confirmedData,
     estimatedData: guestReview?.preview.preliminaryAnalysis.estimatedData,
+  });
+  const pendingDraftFactSignal = buildPayrollFactSignal({
+    documentType: pendingDraft?.classification.documentType,
+    confirmedData: pendingDraft?.preliminaryAnalysis?.confirmedData,
+    estimatedData: pendingDraft?.preliminaryAnalysis?.estimatedData,
   });
   const officialEmployerRfc =
     lastUploadFactSignal.employerRfc ??
@@ -7201,6 +7215,39 @@ export default function Auditar() {
     documents.length === 0 && !pendingDraft && !lastUpload;
   const shouldCompactPostUploadExperience =
     Boolean(lastUpload) && !pendingDraft && !selectedFile;
+  const receiptPayroll = lastUpload
+    ? lastUploadFactSignal
+    : pendingDraft
+      ? pendingDraftFactSignal
+      : guestFactSignal;
+  const receiptOfficialCheck = officialCaseBriefing.officialCheck ?? officialCheckSummary;
+  const receiptFactSlots = buildReceiptFactSlots({
+    employer: receiptPayroll.employer,
+    employerRfc: receiptPayroll.employerRfc,
+    payment: receiptPayroll.payment,
+    period: receiptPayroll.period,
+    estatus: buildReceiptEstatusLine(receiptOfficialCheck),
+  });
+  const satLiveFacts = liveSatFactLines(receiptOfficialCheck);
+  const laborReviewReady = laborInstitutesSettled(receiptOfficialCheck);
+  const receiptInFlight =
+    guestAnalyzeMutation.isPending ||
+    analyzeDraftMutation.isPending ||
+    confirmDraftMutation.isPending;
+  const receiptAckVisible: ReceiptAck = receiptAck ?? (receiptInFlight ? "received" : null);
+  const showReceiptBanner =
+    analyzeDraftMutation.isPending ||
+    confirmDraftMutation.isPending ||
+    (receiptAck === "failed" && !pendingDraft && !shouldCompactPostUploadExperience);
+  const renderReceiptArrival = (showSkeleton = true) => (
+    <ReceiptArrival
+      ack={showSkeleton ? receiptAckVisible : null}
+      slots={receiptFactSlots}
+      satFacts={satLiveFacts}
+      laborReady={laborReviewReady}
+      showSkeleton={showSkeleton}
+    />
+  );
   const condensedDossierTargets = shouldCompactPostUploadExperience
     ? dossierTargets.slice(0, 1)
     : dossierTargets;
@@ -8299,6 +8346,7 @@ export default function Auditar() {
     setPendingDraft(null);
     setTextHint("");
     setSubmitError(null);
+    setReceiptAck(null);
     setPickerKey(value => value + 1);
     setUploadSourceOpen(false);
   };
@@ -8326,6 +8374,7 @@ export default function Auditar() {
       setPendingDraft(null);
       setLastUpload(null);
       setSubmitError(validationMessage);
+      setReceiptAck("failed");
       setPickerKey(value => value + 1);
       setUploadSourceOpen(false);
       return;
@@ -8366,6 +8415,7 @@ export default function Auditar() {
       );
     }
     setSubmitError(null);
+    setReceiptAck(null);
     setUploadSourceOpen(false);
   };
 
@@ -8379,11 +8429,13 @@ export default function Auditar() {
 
     const validationMessage = validateDocumentUploadFile(file);
     if (validationMessage) {
+      setReceiptAck("failed");
       setGuestReviewError(validationMessage);
       event.target.value = "";
       return;
     }
 
+    setReceiptAck("received");
     setGuestReviewError(null);
     setGuestReviewClaimStarted(false);
     setOfficialCheckResult(null);
@@ -8406,6 +8458,7 @@ export default function Auditar() {
         heliosOpinion: result.heliosOpinion,
       } as StoredGuestReview);
     } catch (error) {
+      setReceiptAck("failed");
       setGuestReviewError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -8569,6 +8622,7 @@ export default function Auditar() {
     setSelectedCaptureMode(null);
     setAutoAnalyzeRequested(false);
     setSubmitError(null);
+    setReceiptAck(null);
     setPickerKey(value => value + 1);
 
     openPreferredPicker();
@@ -8586,6 +8640,7 @@ export default function Auditar() {
     setAutoAnalyzeRequested(false);
 
     if (!selectedTenantId || !selectedCaseId || !selectedFile) {
+      setReceiptAck("failed");
       setSubmitError(
         "Selecciona un expediente y un archivo antes de continuar."
       );
@@ -8595,6 +8650,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       const accepted = await handleAcceptLegalPackage();
       if (!accepted) {
+        setReceiptAck("failed");
         setSubmitError(
           "Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar."
         );
@@ -8603,6 +8659,7 @@ export default function Auditar() {
     }
 
     try {
+      setReceiptAck("received");
       setSubmitError(null);
       const base64Content = await fileToBase64(selectedFile);
       const result = await analyzeDraftMutation.mutateAsync({
@@ -8644,6 +8701,7 @@ export default function Auditar() {
       setTextHint("");
       setPickerKey(value => value + 1);
     } catch (error) {
+      setReceiptAck("failed");
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -8763,6 +8821,7 @@ export default function Auditar() {
 
   const handleConfirmDraft = async () => {
     if (!selectedTenantId || !selectedCaseId || !pendingDraft) {
+      setReceiptAck("failed");
       setSubmitError(
         "Primero analiza un documento para revisarlo antes de guardarlo."
       );
@@ -8772,6 +8831,7 @@ export default function Auditar() {
     if (legalGateRequired) {
       const accepted = await handleAcceptLegalPackage();
       if (!accepted) {
+        setReceiptAck("failed");
         setSubmitError(
           "Acepta primero el Aviso de Privacidad y los Términos vigentes para continuar."
         );
@@ -8780,6 +8840,7 @@ export default function Auditar() {
     }
 
     try {
+      setReceiptAck("received");
       setSubmitError(null);
       if (viewportSegment === "mobile") {
         verdictAnalyticsStartedAtRef.current = Date.now();
@@ -8854,6 +8915,7 @@ export default function Auditar() {
         }),
       ]);
     } catch (error) {
+      setReceiptAck("failed");
       setSubmitError(
         toFriendlyAuditarRuntimeMessage(
           error,
@@ -9020,6 +9082,7 @@ export default function Auditar() {
             onChange={handleGuestFileChange}
             className="hidden"
           />
+          {renderReceiptArrival()}
           <WorkerOfficialResult
             presentation={officialCheckDisplay.silence}
             retryPending={guestOfficialCheckMutation.isPending}
@@ -9061,6 +9124,7 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
+            <div className="mt-5">{renderReceiptArrival()}</div>
             <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
             {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
               <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
@@ -9260,6 +9324,14 @@ export default function Auditar() {
                   Entrar si ya empezaste
                 </button>
               </div>
+              {guestAnalyzeMutation.isPending || receiptAck ? (
+                <section
+                  data-testid="save-waiting"
+                  className="ap-light-surface mt-5 w-full rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4 text-left text-[#161616]"
+                >
+                  {renderReceiptArrival()}
+                </section>
+              ) : null}
             </div>
 
             <div className="mx-auto w-full max-w-full overflow-hidden rounded-[1.6rem] border border-slate-200 bg-slate-50 p-4 sm:max-w-xl sm:p-5">
@@ -9390,20 +9462,17 @@ export default function Auditar() {
         </>
         )}
 
-        {confirmDraftMutation.isPending ? (
+        {showReceiptBanner ? (
           <section
             data-testid="save-waiting"
             className="ap-light-surface mt-4 rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4 text-left text-[#161616]"
           >
-            <p className="text-lg font-semibold tracking-[-0.03em] text-[#111111]">Guardando tu revisión</p>
-            <p className="mt-2 text-sm leading-6 text-[#161616]">
-              En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí. Si tardan, es de esas oficinas.
-            </p>
-            <div className="mt-3 space-y-2" aria-hidden="true">
-              <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#e6e6e6]" />
-              <div className="h-3 w-3/5 animate-pulse rounded-full bg-[#e6e6e6]" />
-              <div className="h-3 w-2/5 animate-pulse rounded-full bg-[#e6e6e6]" />
-            </div>
+            {renderReceiptArrival()}
+            {receiptAck !== "failed" ? (
+              <p className="mt-3 text-sm leading-6 text-[#161616]">
+                En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí. Si tardan, es de esas oficinas.
+              </p>
+            ) : null}
           </section>
         ) : null}
 
@@ -9768,15 +9837,18 @@ export default function Auditar() {
         <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
           <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
             {documents.length > 0 && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
-              <WorkerOfficialResult
-                presentation={officialCheckDisplay.silence}
-                retryPending={revalidateSocialSecurityMutation.isPending}
-                onRetry={() => {
-                  void handleRevalidateSocialSecurity();
-                }}
-                onAsk={() => openHeliosCopilot()}
-                comparisonLines={officialCaseBriefing.comparisonLines}
-              />
+              <>
+                {renderReceiptArrival(false)}
+                <WorkerOfficialResult
+                  presentation={officialCheckDisplay.silence}
+                  retryPending={revalidateSocialSecurityMutation.isPending}
+                  onRetry={() => {
+                    void handleRevalidateSocialSecurity();
+                  }}
+                  onAsk={() => openHeliosCopilot()}
+                  comparisonLines={officialCaseBriefing.comparisonLines}
+                />
+              </>
             ) : null}
             {documents.length > 0 && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
               <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
@@ -9786,6 +9858,7 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                   {officialCheckDisplay.detail}
                 </p>
+                {renderReceiptArrival(false)}
                 {officialCaseBriefing.comparisonLines.length || officialCaseBriefing.hechoLines.length ? (
                   <details className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3">
                     <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
@@ -9839,16 +9912,19 @@ export default function Auditar() {
               </div>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && officialCheckDisplay.silence ? (
-              <WorkerOfficialResult
-                presentation={officialCheckDisplay.silence}
-                retryPending={revalidateSocialSecurityMutation.isPending}
-                onRetry={() => {
-                  void handleRevalidateSocialSecurity();
-                }}
-                onAsk={() => openHeliosCopilot()}
-                paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
-                comparisonLines={officialCaseBriefing.comparisonLines}
-              />
+              <>
+                {renderReceiptArrival()}
+                <WorkerOfficialResult
+                  presentation={officialCheckDisplay.silence}
+                  retryPending={revalidateSocialSecurityMutation.isPending}
+                  onRetry={() => {
+                    void handleRevalidateSocialSecurity();
+                  }}
+                  onAsk={() => openHeliosCopilot()}
+                  paperRead={`${lastUploadResultHeadline}. ${lastUploadResultLead}`}
+                  comparisonLines={officialCaseBriefing.comparisonLines}
+                />
+              </>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && !officialCheckDisplay.silence ? (
               <div className="ap-light-surface w-full max-w-none self-center rounded-[1.9rem] border border-emerald-200/90 bg-white px-4 py-4 shadow-[0_10px_24px_-22px_rgba(16,185,129,0.16)] sm:rounded-[2.1rem] sm:px-8 sm:py-7">
@@ -9882,11 +9958,9 @@ export default function Auditar() {
                           <div className="mt-3">
                             <p className="text-base leading-6 text-[#161616]">{officialCheckDisplay.detail}</p>
                             {officialCheckDisplay.status === "consultando" ? (
-                              <div data-testid="official-check-waiting" className="mt-3 space-y-2" aria-hidden="true">
-                                <div className="h-3 w-4/5 animate-pulse rounded-full bg-[#e6e6e6]" />
-                                <div className="h-3 w-3/5 animate-pulse rounded-full bg-[#e6e6e6]" />
-                                <div className="h-3 w-2/5 animate-pulse rounded-full bg-[#e6e6e6]" />
-                              </div>
+                              <p data-testid="official-check-waiting" className="mt-3 text-sm leading-6 text-[#161616]">
+                                En cuanto IMSS, SAT o Infonavit contesten, lo verás aquí. Si tardan, es de esas oficinas.
+                              </p>
                             ) : null}
                           </div>
                         ) : null}
@@ -9901,6 +9975,8 @@ export default function Auditar() {
                           </p>
                         ) : null}
                         {shouldCompactPostUploadExperience ? (
+                          <>
+                          {renderReceiptArrival()}
                           <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3 text-left">
                             <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#111111]">
                               Ver detalle
@@ -9988,6 +10064,7 @@ export default function Auditar() {
                               ) : null}
                             </div>
                           </details>
+                          </>
                         ) : null}
                       </div>
                     </div>
@@ -11492,6 +11569,11 @@ export default function Auditar() {
 
               {pendingDraft ? (
                 <>
+                  {confirmDraftMutation.isPending ? null : (
+                    <div className="ap-light-surface mt-4 rounded-[1.4rem] border border-[#e4e4e4] bg-white px-4 py-4">
+                      {renderReceiptArrival()}
+                    </div>
+                  )}
                   <div className="mt-6 space-y-3 sm:hidden">
                     <div className="overflow-hidden rounded-[1.5rem] bg-slate-950 p-5 text-white shadow-[0_28px_70px_-42px_rgba(2,6,23,0.8)]">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-teal-200">

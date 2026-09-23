@@ -17,6 +17,11 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("shouldPollOfficialCheck");
     expect(source).toContain('data-testid="save-waiting"');
     expect(source).toContain('data-testid="official-check-waiting"');
+    expect(source).toContain("setReceiptAck(\"received\")");
+    expect(source).toContain("setReceiptAck(\"failed\")");
+    expect(source).toContain("renderReceiptArrival");
+    expect(source).not.toMatch(/data-testid="save-waiting"[\s\S]{0,700}animate-pulse/);
+    expect(source).not.toMatch(/data-testid="official-check-waiting"[\s\S]{0,400}animate-pulse/);
     expect(source).toContain("officialCheckConsent");
     expect(source).toContain('data-testid="official-check-card"');
     expect(source).toContain("documents.length > 0 && !pendingDraft && !lastUpload");

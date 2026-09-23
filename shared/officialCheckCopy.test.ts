@@ -24,6 +24,12 @@ import {
   reconcileOfficialCheckWithIdentity,
   honestyToOfficialStatus,
   OFFICIAL_ALTERNATE_ROUTE_NOTE,
+  LABOR_REVIEW_READY,
+  RECEIPT_RECEIVED_ACK,
+  RECEIPT_VALIDATION_CORRECTION,
+  buildReceiptEstatusLine,
+  laborInstitutesSettled,
+  liveSatFactLines,
   pickHonestOfficialCheck,
   pickPromptOfficialCheck,
   readAlternateOfficialRoute,
@@ -891,5 +897,76 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       ),
     ).toBe(true);
     expect(shouldPollOfficialCheck(summary("no_se_pudo", { checkedAt: "2026-09-21T12:00:00.000Z", bridgeBlock: "provider_cap" }))).toBe(false);
+  });
+});
+
+describe("esqueleto del recibo y lo laboral en segundo plano", () => {
+  const satFirst = summary("pendiente", {
+    checkedAt: "2026-09-21T12:00:00.000Z",
+    identity: { nss: true, curp: true, rfc: true },
+    checks: [
+      instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0", "Régimen 612."]),
+      instituteCheck("imss", "pendiente"),
+      instituteCheck("infonavit", "pendiente"),
+    ],
+  });
+
+  it("muestra los hechos del SAT sin decir que lo laboral ya se revisó", () => {
+    expect(liveSatFactLines(satFirst)).toEqual(["RFC: UIPD9211257I0", "Régimen 612."]);
+    expect(laborInstitutesSettled(satFirst)).toBe(false);
+    expect(buildReceiptEstatusLine(satFirst)).toBe("RFC: UIPD9211257I0 · Régimen 612.");
+    expect(buildReceiptEstatusLine(satFirst)).not.toContain(LABOR_REVIEW_READY);
+    expect(buildReceiptEstatusLine(satFirst)).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("deja el estatus vacío mientras nadie contesta", () => {
+    const waiting = summary("pendiente", {
+      checks: [
+        instituteCheck("sat", "pendiente"),
+        instituteCheck("imss", "pendiente"),
+        instituteCheck("infonavit", "pendiente"),
+      ],
+    });
+    expect(buildReceiptEstatusLine(waiting)).toBeNull();
+    expect(laborInstitutesSettled(waiting)).toBe(false);
+    expect(liveSatFactLines(waiting)).toEqual([]);
+  });
+
+  it("dice que ya revisó lo laboral solo cuando IMSS e Infonavit terminaron", () => {
+    const settled = summary("vivo", {
+      checks: [
+        instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+        instituteCheck("imss", "no_se_pudo"),
+        instituteCheck("infonavit", "vivo", ["NSS localizado."]),
+      ],
+    });
+    expect(laborInstitutesSettled(settled)).toBe(true);
+    expect(buildReceiptEstatusLine(settled)).toBe(`RFC: UIPD9211257I0 ${LABOR_REVIEW_READY}`);
+
+    const stillOpen = summary("vivo", {
+      checks: [
+        instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+        instituteCheck("imss", "no_se_pudo"),
+        instituteCheck("infonavit", "sin_datos"),
+      ],
+    });
+    expect(laborInstitutesSettled(stillOpen)).toBe(false);
+    expect(buildReceiptEstatusLine(stillOpen)).not.toContain(LABOR_REVIEW_READY);
+  });
+
+  it("cuando todos callan, el estatus es silencio y lo laboral ya revisado", () => {
+    const silent = summary("no_se_pudo", {
+      checks: [
+        instituteCheck("sat", "no_se_pudo"),
+        instituteCheck("imss", "no_se_pudo"),
+        instituteCheck("infonavit", "no_se_pudo"),
+      ],
+    });
+    expect(laborInstitutesSettled(silent)).toBe(true);
+    expect(liveSatFactLines(silent)).toEqual([]);
+    expect(buildReceiptEstatusLine(silent)).toBe(`Sin respuesta hoy. ${LABOR_REVIEW_READY}`);
+    expect(RECEIPT_RECEIVED_ACK).toBe("Recibo recibido ✓");
+    expect(RECEIPT_VALIDATION_CORRECTION).toBe("No pudimos validar el recibo. Intenta de nuevo.");
+    expect(`${RECEIPT_RECEIVED_ACK} ${LABOR_REVIEW_READY}`).not.toMatch(/\bcumple\b|Helios|CompliLink/i);
   });
 });

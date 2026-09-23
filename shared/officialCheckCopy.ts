@@ -334,6 +334,54 @@ export function readOfficialSourceOutcomes(
   );
 }
 
+export const LABOR_REVIEW_READY = "Ya revisamos lo laboral.";
+export const RECEIPT_RECEIVED_ACK = "Recibo recibido ✓";
+export const RECEIPT_VALIDATION_CORRECTION = "No pudimos validar el recibo. Intenta de nuevo.";
+
+const LABOR_SETTLED_STATUS = new Set<OfficialCheckStatus>(["vivo", "no_se_pudo"]);
+
+export function laborInstitutesSettled(
+  summary?: Parameters<typeof readOfficialSourceOutcomes>[0],
+): boolean {
+  const outcomes = readOfficialSourceOutcomes(summary);
+  const imss = outcomes.find((item) => item.source === "imss");
+  const infonavit = outcomes.find((item) => item.source === "infonavit");
+  return Boolean(
+    imss &&
+      infonavit &&
+      LABOR_SETTLED_STATUS.has(imss.status) &&
+      LABOR_SETTLED_STATUS.has(infonavit.status),
+  );
+}
+
+/** Hechos del SAT que ya se pueden mostrar. Vacío mientras el SAT no contesta. */
+export function liveSatFactLines(
+  summary?: Parameters<typeof readOfficialSourceOutcomes>[0],
+): string[] {
+  const sat = readOfficialSourceOutcomes(summary).find((item) => item.source === "sat" && item.status === "vivo");
+  return (sat?.hechos ?? []).slice(0, 2);
+}
+
+/**
+ * Estatus del recibo. Gris (null) hasta que haya un hecho.
+ * Lo laboral solo entra cuando IMSS e Infonavit ya terminaron, vivos o en silencio.
+ */
+export function buildReceiptEstatusLine(
+  summary?: Parameters<typeof readOfficialSourceOutcomes>[0],
+): string | null {
+  const outcomes = readOfficialSourceOutcomes(summary);
+  if (outcomes.length === 0) return null;
+  const satFacts = liveSatFactLines(summary);
+  const laborReady = laborInstitutesSettled(summary);
+  const allSilent = outcomes.every((item) => item.status === "no_se_pudo");
+  const parts: string[] = [];
+  if (satFacts.length > 0) parts.push(satFacts.join(" · "));
+  else if (allSilent && laborReady) parts.push("Sin respuesta hoy.");
+  if (laborReady) parts.push(LABOR_REVIEW_READY);
+  const line = parts.join(" ").replace(/\s+/g, " ").trim();
+  return line || null;
+}
+
 function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): string {
   const liveNames = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
