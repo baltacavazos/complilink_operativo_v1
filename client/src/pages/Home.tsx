@@ -9,6 +9,7 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { humanizeDossierProgressLabel, humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
+import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { trpc } from "@/lib/trpc";
 import {
@@ -52,7 +53,7 @@ No compartimos lo que subes con tu empresa.
 Borrado visible
 Ver ejemplo de resultado
 Guarda y sigue después
-Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.
+Primero revisa un documento. Si te sirve, luego lo guardas en tu caso.
 Entender la bóveda laboral
 Guía rápida para empezar
 Si no sabes con qué empezar
@@ -115,7 +116,7 @@ Empieza con una foto. No necesitas reunir todo.
 Sube un archivo y mira una señal real antes de decidir.
 Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.
 3 señales claras
-Toca una señal y mira qué quedaría visible para ti antes de abrir expediente.
+Toca una señal y mira qué quedaría visible para ti antes de abrir tu caso.
 Documento recibido, señal preliminar y siguiente paso sugerido.
 Mira la señal
 Guárdalo si sirve
@@ -289,7 +290,7 @@ function sanitizeHomeVisibleCopy(value?: string | null) {
     return humanized;
   }
 
-  return sanitizeClientVisibleCopy(
+  const sanitized = sanitizeClientVisibleCopy(
     humanized
       .replace(/Los datos en 'confirmedData'[^.]*\./gi, "")
       .replace(/confirmedData/gi, "datos visibles")
@@ -297,6 +298,8 @@ function sanitizeHomeVisibleCopy(value?: string | null) {
       .replace(/\s{2,}/g, " ")
       .trim(),
   );
+
+  return sanitized ? toPlainWorkerLandingCopy(sanitized) : sanitized;
 }
 
 function writeStoredHomeGuestPreview(preview: StoredHomeGuestPreview | null) {
@@ -408,7 +411,7 @@ const priorityDocuments: PriorityDocument[] = [
   {
     title: "Documentos que puedes cargar: alta, baja, semanas cotizadas del IMSS o constancia de Infonavit",
     description: "Estos archivos pueden sumar contexto sobre fechas de seguridad social y vivienda laboral.",
-    value: "Suman evidencia útil cuando quieres revisar con más claridad si tu alta y tus registros laborales están en orden dentro del expediente.",
+    value: "Suman evidencia útil cuando quieres revisar con más claridad si tu alta y tus registros laborales están en orden dentro de tu caso.",
   },
 ];
 
@@ -532,7 +535,7 @@ const heroFindingSlides = [
     badge: "Caso ejemplo · nómina contra CFDI",
     title: "Tu nómina y tu CFDI podrían no coincidir en el mismo periodo.",
     description:
-      "Un primer cruce entre ambos suele destapar diferencias de conceptos, montos o fechas sin pedirte todo el expediente desde el inicio.",
+      "Un primer cruce entre ambos suele destapar diferencias de conceptos, montos o fechas sin pedirte tu caso completo desde el inicio.",
     impact: "Te devuelve una discrepancia visible para que tu primera revisión tenga un punto concreto de claridad.",
     suggestedDocument: "Recibo de nómina + CFDI del mismo mes",
   },
@@ -698,7 +701,7 @@ const prediagnosticRecommendations: Record<
 
 const SCROLL_TARGET_FALLBACKS: Record<string, string[]> = {
   "como-funciona": ["como-funciona", "ruta-movil-como-funciona"],
-  expediente: ["expediente", "ruta-movil-expediente"],
+  caso: ["caso", "ruta-movil-caso"],
   copiloto: ["copiloto"],
   preguntas: ["preguntas"],
 };
@@ -864,7 +867,7 @@ function SiteHeader() {
                 </span>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
-                Entra para continuar tu expediente. Aquí dejamos una sola ruta principal para que empezar sea más claro.
+                Entra para continuar tu caso. Aquí dejamos una sola ruta principal para que empezar sea más claro.
               </p>
             </div>
 
@@ -1576,8 +1579,8 @@ function HeliosFirstEntrySection() {
     void persistGuestPreview("resume").catch((error: unknown) => {
       setGuestError(
         sanitizeHomeVisibleCopy(
-          error instanceof Error ? error.message : "No pudimos guardar la vista previa dentro de tu expediente.",
-        ) ?? "No pudimos guardar la vista previa dentro de tu expediente.",
+          error instanceof Error ? error.message : "No pudimos guardar la vista previa dentro de tu caso.",
+        ) ?? "No pudimos guardar la vista previa dentro de tu caso.",
       );
     });
   }, [auth.isAuthenticated, guestPreview, resumeAttempted, tenantId]);
@@ -1676,7 +1679,7 @@ function HeliosFirstEntrySection() {
                   Lectura orientativa desde el primer archivo
                 </p>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Empieza con una foto o PDF. Primero ves si te sirve; después decides si lo guardas en tu expediente.
+                  Empieza con una foto o PDF. Primero ves si te sirve; después decides si lo guardas en tu caso.
                 </p>
               </div>
               <button
@@ -1741,11 +1744,11 @@ function HeliosFirstEntrySection() {
                     {auth.isAuthenticated ? (
                       <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={() => void persistGuestPreview("manual")} disabled={isSavingPreview}>
                         {isSavingPreview ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                        Guardar ahora en mi expediente
+                        Guardar ahora en mi caso
                       </Button>
                     ) : (
                       <Button className="h-11 rounded-full bg-slate-950 text-white hover:bg-slate-900" onClick={handleLoginToSave}>
-                        Guardar en mi expediente por correo
+                        Guardar en mi caso por correo
                       </Button>
                     )}
                     <p className="text-xs leading-5 text-slate-500">
@@ -1833,12 +1836,12 @@ function QuickTrustSection() {
   const controlMoments = [
     {
       label: "Antes de guardar",
-      detail: "Ves una lectura preliminar sin integrar nada a tu expediente.",
+      detail: "Ves una lectura preliminar sin integrar nada a tu caso.",
       title: "Borrador preliminar activo",
       badge: "Sin guardado",
       visibleForYou: "Documento recibido, lectura preliminar y siguiente paso sugerido.",
       hiddenFromCompany: "Tus archivos y esta lectura no se comparten con tu empresa.",
-      trace: "Todavía no se integra nada a tu expediente.",
+      trace: "Todavía no se integra nada a tu caso.",
       next: "Tú decides si borrar, salir o resguardar.",
     },
     {
@@ -1857,7 +1860,7 @@ function QuickTrustSection() {
       title: "Archivo listo para seguimiento",
       badge: "Resguardado",
       visibleForYou: "Confirmación de resguardo, estado del archivo y acceso posterior.",
-      hiddenFromCompany: "Tu documento sigue privado y solo accesible dentro de tu expediente.",
+      hiddenFromCompany: "Tu documento sigue privado y solo accesible dentro de tu caso.",
       trace: "El sistema deja constancia visible de que quedó listo para seguimiento.",
       next: "Puedes exportar, seguir reuniendo evidencia o volver luego.",
     },
@@ -1885,7 +1888,7 @@ function QuickTrustSection() {
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Tú confirmas si se guarda</p>
-                  <p className="mt-1.5 leading-6">Tu expediente solo cambia cuando tú confirmas.</p>
+                  <p className="mt-1.5 leading-6">Tu caso solo cambia cuando tú confirmas.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Rastro legal versionado</p>
@@ -1906,7 +1909,7 @@ function QuickTrustSection() {
                 </div>
                 <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Si guardas, lo verás</p>
-                  <p className="mt-1.5 leading-6">El sistema te confirma que el archivo ya entró a tu expediente privado.</p>
+                  <p className="mt-1.5 leading-6">El sistema te confirma que el archivo ya entró a tu caso.</p>
                 </div>
                 <div className="rounded-[1rem] border border-white/80 bg-white/95 px-3 py-3">
                   <p className="font-semibold text-slate-950">Si borras o sales, también</p>
@@ -1920,7 +1923,7 @@ function QuickTrustSection() {
                     3 indicios claros
                   </span>
                 </div>
-                <p className="mt-3 text-xs leading-5 text-slate-600 sm:text-sm">Toca un indicio y mira qué quedaría visible para ti antes de abrir expediente.</p>
+                <p className="mt-3 text-xs leading-5 text-slate-600 sm:text-sm">Toca un indicio y mira qué quedaría visible para ti antes de abrir tu caso.</p>
                 <div className="mt-3 grid gap-2">
                   {controlMoments.map((item, index) => {
                     const isActive = index === activeControlMoment;
@@ -2000,7 +2003,7 @@ function QuickTrustSection() {
               {
                 eyebrow: "Lectura primero",
                 title: "Tú decides qué guardar",
-                body: "Primero ves la lectura. Después decides si entra a tu expediente.",
+                body: "Primero ves la lectura. Después decides si entra a tu caso.",
               },
               {
                 eyebrow: "Privacidad real",
@@ -2027,7 +2030,7 @@ function QuickTrustSection() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-[11px] font-semibold tracking-tight text-slate-500">Respuestas rápidas</p>
               <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
-                Antes de abrir expediente
+                Antes de abrir tu caso
               </span>
             </div>
             <div className="mt-3 flex flex-col gap-2 text-sm leading-5 text-slate-700 sm:flex-row sm:flex-wrap sm:gap-2.5">
@@ -2058,7 +2061,7 @@ function ConfidenceMagicSection() {
               Guarda y sigue después
             </p>
             <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-              Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.
+              Primero revisa un documento. Si te sirve, luego lo guardas en tu caso.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
               No necesitas reunir todo desde el inicio. Puedes empezar con un recibo, un CFDI o un contrato, ver una lectura útil y después decidir qué más guardar.
@@ -2138,7 +2141,7 @@ function CopilotPreviewSection() {
             Preguntas cortas sobre tu caso, cuando ya subiste un recibo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asesor laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro del expediente.
+            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asesor laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro de tu caso.
           </p>
           <p className="mt-4 inline-flex max-w-xl rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm font-medium text-teal-900 shadow-sm">
             Aquí te acompañamos paso a paso para cuidar tus derechos laborales.
@@ -2146,7 +2149,7 @@ function CopilotPreviewSection() {
 
           <div className="mt-6 space-y-3">
             {[
-              "Responde con base en los documentos y resultados que AuditaPatron ya integró en tu expediente.",
+              "Responde con base en los documentos y resultados que AuditaPatron ya integró en tu caso.",
               "Usa lenguaje simple para decirte qué ya se entiende y qué sigue siendo preliminar.",
               "Te ayuda a priorizar el siguiente documento o movimiento más útil sin sustituir asesoría legal formal.",
             ].map((item) => (
@@ -2158,7 +2161,7 @@ function CopilotPreviewSection() {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
-            El asesor laboral es una guía contextual basada en tu expediente visible. No sustituye a un abogado ni constituye una opinión legal vinculante.
+            El asesor laboral es una guía contextual basada en tu caso. No sustituye a un abogado ni constituye una opinión legal vinculante.
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -2183,7 +2186,7 @@ function CopilotPreviewSection() {
                 Vista previa del asesor laboral
               </p>
               <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                El asesor laboral te explica tu expediente con palabras simples
+                El asesor laboral te explica tu caso con palabras simples
               </p>
             </div>
             <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-700 shadow-sm">
@@ -2195,7 +2198,7 @@ function CopilotPreviewSection() {
             <div className="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
               <p className="text-xs font-semibold tracking-tight text-slate-500">Tú preguntas</p>
               <p className="mt-2 text-sm leading-6 text-slate-700">
-                “¿Qué riesgo principal ves en mi expediente y qué documento me conviene subir después?”
+                “¿Qué riesgo principal ves en mi caso y qué documento me conviene subir después?”
               </p>
             </div>
             <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50 p-4">
@@ -2207,7 +2210,7 @@ function CopilotPreviewSection() {
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold tracking-tight text-teal-800">Lo que sí se sabe</p>
-                  <p className="mt-1">El expediente ya muestra piezas para contrastar pagos.</p>
+                  <p className="mt-1">Tu caso ya muestra piezas para contrastar pagos.</p>
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold tracking-tight text-teal-800">Lo que falta</p>
@@ -2221,7 +2224,7 @@ function CopilotPreviewSection() {
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                "Basado en tu expediente",
+                "Basado en tu caso",
                 "Lenguaje simple",
                 "Preguntar al asesor",
               ].map((item) => (
@@ -2293,17 +2296,17 @@ function HowItWorksSection() {
 
 function DossierSection() {
   return (
-    <section id="expediente" className="bg-[#eef6f5] py-14 sm:bg-[#f8fbfb] sm:py-16">
+    <section id="caso" className="bg-[#eef6f5] py-14 sm:bg-[#f8fbfb] sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
         <div className="mx-auto max-w-2xl text-center lg:mx-0 lg:text-left">
           <p className="text-sm font-semibold tracking-tight text-teal-700">
-            Tu expediente en crecimiento
+            Tu caso en crecimiento
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Cada documento útil se convierte en orden, claridad y respaldo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No se trata de subir por subir. Se trata de reunir piezas para tener más claridad, mejor orden y un expediente digital listo cuando lo necesites.
+            No se trata de subir por subir. Se trata de reunir piezas para tener más claridad, mejor orden y tu caso listo cuando lo necesites.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -2335,7 +2338,7 @@ function DossierSection() {
                 Qué ya aporta contexto
               </p>
               <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                Tu expediente en crecimiento
+                Tu caso en crecimiento
               </h3>
             </div>
             <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-700 shadow-sm">
@@ -2382,7 +2385,7 @@ function PriorityDocumentsSection() {
             Si quieres darle más valor a tu bóveda laboral, empieza por los archivos con más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            No todos los documentos aportan lo mismo. Estos suelen ser de los primeros que más ayudan a ordenar tu caso y a darle al expediente una lectura más completa.
+            No todos los documentos aportan lo mismo. Estos suelen ser de los primeros que más ayudan a ordenar tu caso y a darle una lectura más completa.
           </p>
         </div>
 
@@ -2397,7 +2400,7 @@ function PriorityDocumentsSection() {
                   <FileSearch className="h-5 w-5" strokeWidth={1.8} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold tracking-tight text-teal-700">Alta utilidad para tu expediente</p>
+                  <p className="text-sm font-semibold tracking-tight text-teal-700">Alta utilidad para tu caso</p>
                   <h3 className="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-950">{item.title}</h3>
                 </div>
               </div>
@@ -2411,7 +2414,7 @@ function PriorityDocumentsSection() {
         </div>
 
         <div className="mt-5 rounded-[1.5rem] border border-teal-100 bg-teal-50/80 p-5 text-sm leading-7 text-teal-950 sm:p-6">
-          En cuanto abras tu <span className="font-semibold">expediente</span>, estas sugerencias dejan de ser generales y se conectan con los documentos y datos que AuditaPatron todavía necesita para decirte qué te conviene subir primero.
+          En cuanto abras tu <span className="font-semibold">caso</span>, estas sugerencias dejan de ser generales y se conectan con los documentos y datos que AuditaPatron todavía necesita para decirte qué te conviene subir primero.
         </div>
       </div>
     </section>
@@ -2434,7 +2437,7 @@ function MobileOnboardingSection() {
               Un onboarding breve para que sepas qué pasa desde el primer archivo.
             </h2>
             <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-              La idea es simple: subes, entiendes y conservas. Sin pasos técnicos, sin menús enredados y con tu expediente siempre disponible cuando lo necesites de nuevo.
+              La idea es simple: subes, entiendes y conservas. Sin pasos técnicos, sin menús enredados y con tu caso siempre disponible cuando lo necesites de nuevo.
             </p>
           </div>
 
@@ -2522,7 +2525,7 @@ function GuidedTourSection() {
             Primero entiendes, después decides.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-300 sm:text-lg sm:leading-8">
-            Este recorrido te muestra de forma rápida qué pasa cuando subes un documento y por qué tu expediente puede ayudarte más con el tiempo.
+            Este recorrido te muestra de forma rápida qué pasa cuando subes un documento y por qué tu caso puede ayudarte más con el tiempo.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -2599,7 +2602,7 @@ function FindingsExamplesSection() {
             Ejemplos de hallazgos
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
-            Algunos patrones se entienden mejor cuando tu expediente tiene más contexto.
+            Algunos patrones se entienden mejor cuando tu caso tiene más contexto.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
             Cuando tu plan admite más de un documento, juntos ayudan a ver diferencias que un solo archivo puede dejar ocultas.
@@ -2640,14 +2643,14 @@ function PrivacySection() {
             Tus documentos se resguardan para darte claridad y tranquilidad desde el inicio.
           </h2>
           <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cada archivo suma orden, contexto y una explicación más clara de tu situación. La idea es simple: que puedas volver a tu expediente cuando lo necesites y sentir tus documentos de tu lado.
+            Cada archivo suma orden, contexto y una explicación más clara de tu situación. La idea es simple: que puedas volver a tu caso cuando lo necesites y sentir tus documentos de tu lado.
           </p>
 
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
             {[
               "Subes tus documentos en minutos, desde tu celular o computadora.",
               "La información se acomoda para que entiendas qué tienes y qué conviene revisar.",
-              "Tu expediente sigue disponible para ti 24/7 cuando necesites volver a verlo.",
+              "Tu caso sigue disponible para ti 24/7 cuando necesites volver a verlo.",
               "Las explicaciones buscan darte calma y claridad, no más confusión.",
             ].map((item) => (
               <div key={item} className="flex gap-3 rounded-[1.3rem] border border-teal-100 bg-white p-4">
@@ -2717,7 +2720,7 @@ function PrivacySection() {
                   ))}
                 </div>
                 <p className="mt-3 text-xs leading-6 text-teal-900">
-                  Versión legal vigente: {LEGAL_VERSION}. La aceptación completa se solicita de forma natural cuando entras a tu expediente.
+                  Versión legal vigente: {LEGAL_VERSION}. La aceptación completa se solicita de forma natural cuando entras a tu caso.
                 </p>
               </div>
             </div>
@@ -2746,11 +2749,11 @@ function MobilePriorityPathSection() {
       secondaryHref: "#preguntas",
     },
     {
-      id: "ruta-movil-expediente",
-      eyebrow: "Qué gana tu expediente",
+      id: "ruta-movil-caso",
+      eyebrow: "Qué gana tu caso",
       title: "Cada documento suma contexto y respaldo real",
       description:
-        "En móvil resumimos el valor del expediente para que no compita con tu decisión principal. Primero entiendes el beneficio; después, si quieres, exploras el detalle completo en una pantalla más amplia.",
+        "En móvil resumimos el valor de tu caso para que no compita con tu decisión principal. Primero entiendes el beneficio; después, si quieres, exploras el detalle completo en una pantalla más amplia.",
       bullets: [
         "Tus recibos, CFDI y soportes dejan de quedar sueltos.",
         "La comparación entre piezas gana claridad con cada archivo.",
@@ -2766,7 +2769,7 @@ function MobilePriorityPathSection() {
       description:
         "No compartimos lo que subes con tu empresa. La información legal y de privacidad sigue estando a la mano, pero en móvil aparece de forma progresiva para no saturarte antes de iniciar tu revisión.",
       bullets: [
-        "Puedes volver a tu expediente cuando lo necesites.",
+        "Puedes volver a tu caso cuando lo necesites.",
         "Las explicaciones priorizan tranquilidad y control.",
         "Tus derechos y documentos legales siguen accesibles desde la navegación principal.",
       ],
@@ -3153,7 +3156,7 @@ function SiteFooter() {
 	            decoding="async"
 	          />
 	          <p className="max-w-md text-sm leading-5 text-slate-500">
-	            Claridad, orden y respaldo en un expediente digital simple y privado.
+	            Claridad, orden y respaldo para tu caso, simple y privado.
           </p>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2">

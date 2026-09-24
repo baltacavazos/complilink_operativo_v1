@@ -187,7 +187,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
               <div className="mt-4 max-w-3xl rounded-[1.25rem] border border-white/10 bg-white/5 p-4 text-sm leading-6 text-slate-200 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.55)]">
                 <p className="font-semibold text-white">Resumen humano antes del texto completo</p>
                 <p className="mt-2">
-                  Aquí puedes revisar con calma qué datos usamos, cómo protegemos tu expediente y cuáles son las reglas básicas del servicio antes de entrar al documento completo.
+                  Aquí puedes revisar con calma qué datos usamos, cómo protegemos tu caso y cuáles son las reglas básicas del servicio antes de entrar al documento completo.
                 </p>
               </div>
               {slug === "privacidad" ? (
@@ -212,7 +212,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                     </div>
                     <div className="rounded-[1rem] border border-teal-200 bg-white/90 px-3 py-3 shadow-sm">
                       <p className="font-semibold text-slate-950">Qué no ve tu empresa</p>
-                      <p className="mt-1 font-normal leading-5 text-slate-700">Tus archivos, tu revisión y tu expediente privado no se comparten con tu patrón desde esta superficie.</p>
+                      <p className="mt-1 font-normal leading-5 text-slate-700">Tus archivos, tu revisión y tu caso no se comparten con tu patrón desde esta superficie.</p>
                     </div>
                     <div className="rounded-[1rem] border border-teal-200 bg-white/90 px-3 py-3 shadow-sm">
                       <p className="font-semibold text-slate-950">Dónde ejerces control</p>
@@ -231,7 +231,7 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                     Tus documentos originales se usan para darte el servicio. Los datos anonimizados o agregados pueden ayudarnos a mejorar el producto sin identificarte razonablemente.
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
-                    Los términos distinguen entre documentos originales, datos anonimizados y obras derivadas para que puedas leer con más claridad qué se usa para operar tu expediente y qué solo alimenta analítica o mejora de producto.
+                    Los términos distinguen entre documentos originales, datos anonimizados y obras derivadas para que puedas leer con más claridad qué se usa para operar tu caso y qué solo alimenta analítica o mejora de producto.
                   </p>
                 </div>
               ) : null}

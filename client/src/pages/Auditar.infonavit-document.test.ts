@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const auditar = readFileSync(new URL("./Auditar.tsx", import.meta.url), "utf8");
 const upload = readFileSync(new URL("../components/InfonavitDocumentUpload.tsx", import.meta.url), "utf8");
+const result = readFileSync(new URL("../components/WorkerOfficialResult.tsx", import.meta.url), "utf8");
 
 describe("Auditar interim PDF Infonavit", () => {
   it("monta el CTA solo con el predicado de oficina sin hecho usable", () => {
@@ -25,5 +26,17 @@ describe("Auditar interim PDF Infonavit", () => {
     expect(auditar).toContain("OFFICIAL_FACT_ARRIVED_NOTICE");
     expect(auditar).toContain("<OfficialWaitLayer");
     expect(auditar).toContain('id: "official-fact-arrived"');
+  });
+
+  it("si queda una fuente pendiente, la tarjeta usa la capa de espera y no el CTA de mañana", () => {
+    expect(auditar).toContain("<WorkerOfficialResult");
+    expect(result).toContain("presentation.stillWaiting");
+    expect(result).toContain("<OfficialWaitLayer");
+    expect(result).toContain("OFFICIAL_WAIT_STILL_TRYING");
+    expect(result).toContain("INSTITUTE_SILENCE_RETRY");
+    const waitAt = result.indexOf("showWaitLayer");
+    const ctaAt = result.indexOf('data-testid="official-check-cta"');
+    expect(waitAt).toBeGreaterThan(0);
+    expect(ctaAt).toBeGreaterThan(waitAt);
   });
 });

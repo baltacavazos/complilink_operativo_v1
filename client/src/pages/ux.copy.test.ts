@@ -49,7 +49,8 @@ describe("copy visible de la experiencia", () => {
     expect(source).toContain("Borrado visible");
     expect(source).toContain("Ver ejemplo de resultado");
     expect(source).toContain("Guarda y sigue después");
-    expect(source).toContain("Primero revisa un documento. Si te sirve, luego lo guardas en tu expediente.");
+    expect(source).toContain("Primero revisa un documento. Si te sirve, luego lo guardas en tu caso.");
+    expect(source).not.toMatch(/expediente/i);
     expect(source).toContain("Entender la bóveda laboral");
     expect(source).toContain("Guía rápida para empezar");
     expect(source).toContain("Si no sabes con qué empezar");

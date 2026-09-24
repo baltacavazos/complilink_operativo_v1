@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { sanitizeClientVisibleCopy } from "../client/src/lib/clientVisibleCopy";
+import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { getHeliosDocumentState, getHeliosExpedienteStage } from "./caseContracts";
 import { buildHeliosOpinion } from "./heliosIntegrationService";
 import { buildPublicHeliosHomeExamples } from "./heliosPublicExperience";
@@ -25,11 +26,13 @@ function collectHomeVisibleStringLiterals(source: string) {
 function collectHomeRenderedCopy() {
   const homeSource = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
   const examples = buildPublicHeliosHomeExamples().map((example) => ({
-    badge: sanitizeClientVisibleCopy(example.badge) ?? example.badge,
-    title: sanitizeClientVisibleCopy(example.title) ?? example.title,
-    summary: sanitizeClientVisibleCopy(example.summary) ?? example.summary,
-    nextStep: sanitizeClientVisibleCopy(example.nextStep) ?? example.nextStep,
-    primaryConcern: sanitizeClientVisibleCopy(example.primaryConcern) ?? example.primaryConcern,
+    badge: toPlainWorkerLandingCopy(sanitizeClientVisibleCopy(example.badge) ?? example.badge),
+    title: toPlainWorkerLandingCopy(sanitizeClientVisibleCopy(example.title) ?? example.title),
+    summary: toPlainWorkerLandingCopy(sanitizeClientVisibleCopy(example.summary) ?? example.summary),
+    nextStep: toPlainWorkerLandingCopy(sanitizeClientVisibleCopy(example.nextStep) ?? example.nextStep),
+    primaryConcern: toPlainWorkerLandingCopy(
+      sanitizeClientVisibleCopy(example.primaryConcern) ?? example.primaryConcern,
+    ),
   }));
   const latestCaseSummaries = [
     getHeliosExpedienteStage({ caseStatus: "draft", documentsCount: 0, documentsWithOpinion: 0 }),
@@ -40,7 +43,9 @@ function collectHomeRenderedCopy() {
       documentsWithOpinion: 1,
     }),
     getHeliosExpedienteStage({ caseStatus: "resolved", documentsCount: 2, documentsWithOpinion: 1 }),
-  ].map((stage) => sanitizeClientVisibleCopy(stage.summary) ?? stage.summary);
+  ].map((stage) =>
+    toPlainWorkerLandingCopy(sanitizeClientVisibleCopy(stage.summary) ?? stage.summary),
+  );
 
   const featuredExample = examples[0];
 
@@ -70,6 +75,7 @@ describe("Home · copy visible sin Helios", () => {
     expect(rendered).not.toContain(FORBIDDEN_LIVE_PHRASE);
     expect(rendered).not.toMatch(/\bHelios\b/);
     expect(rendered).not.toMatch(/\bhelios\b/i);
+    expect(rendered).not.toMatch(/expediente/i);
   });
 
   it("el payload de ejemplos y la etapa del expediente ya salen limpios antes del sanitizador", () => {
@@ -98,6 +104,7 @@ describe("Home · copy visible sin Helios", () => {
       );
       expect(surface).not.toContain(FORBIDDEN_LIVE_PHRASE);
       expect(surface).not.toMatch(/\bHelios\b/);
+      expect(surface).not.toMatch(/expediente/i);
     }
 
     expect(recommendation.summary).not.toContain(FORBIDDEN_LIVE_PHRASE);
