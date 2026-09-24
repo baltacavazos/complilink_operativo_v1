@@ -369,7 +369,7 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
     "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX. Máximo 12 MB por archivo.",
   privacyRules:
-    "Tu documento no entra al expediente hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa.",
+    "Tu documento no entra al caso hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
@@ -8014,7 +8014,7 @@ export default function Auditar() {
     const documentEntries: DossierHistoryEntry[] = documents.map(document => ({
       id: `document-${document.documentId}`,
       title: `Subiste ${getSimpleDocumentTypeLabel(document.documentType).toLowerCase()}`,
-      description: `${document.originalName} ya quedó ordenado dentro de tu expediente digital.`,
+      description: `${document.originalName} ya quedó ordenado dentro de tu caso.`,
       tag: "Documento agregado",
       category: "document",
       timestamp: document.createdAt,
@@ -8031,10 +8031,10 @@ export default function Auditar() {
               : "Tu documento sigue avanzando",
         description:
           item.status === "received"
-            ? `${item.documentName} ya devolvió una respuesta útil para tu expediente.`
+            ? `${item.documentName} ya devolvió una respuesta útil para tu caso.`
             : item.status === "attention"
               ? `${item.documentName} requiere una revisión con más calma para no perder contexto importante.`
-              : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu expediente.`,
+              : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu caso.`,
         tag:
           item.status === "received"
             ? "Respuesta recibida"
@@ -8051,10 +8051,10 @@ export default function Auditar() {
         ? [
             {
               id: "visible-summary",
-              title: "Tu resumen del expediente se actualizó",
+              title: "Tu resumen del caso se actualizó",
               description:
                 warmVisibleNamingCopy(visibleHeliosOpinion.summary) ??
-                "Ya tienes una lectura más clara y útil dentro de tu expediente digital.",
+                "Ya tienes una lectura más clara y útil dentro de tu caso.",
               tag: "Resumen actualizado",
               category: "summary",
               timestamp: visibleHeliosOpinion.generatedAt,
