@@ -374,7 +374,7 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
 
 const COMPACT_UPLOAD_GUARDRAILS = {
   fileRules: "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX · máximo 12 MB.",
-  privacyRules: "No se guarda en tu expediente hasta que tú lo confirmes. No lo compartimos con tu empresa.",
+  privacyRules: "No se guarda en tu caso hasta que tú lo confirmes. No lo compartimos con tu empresa.",
 };
 
 const UPLOAD_HELP_DISCLOSURE_SUMMARY =
@@ -5943,10 +5943,10 @@ export default function Auditar() {
     : "Primero consulta IMSS y SAT.";
   const heliosCopilotHistoryContext = useMemo(() => {
     if (remoteAdvisorMemory?.greeting || heliosCopilotMessages.length > 0) {
-      return "Retomo lo que ya platicamos de este expediente, aunque abras el chat en otro momento. Sigo con esta persona, este patrón y estos papeles.";
+      return "Retomo lo que ya platicamos de este caso, aunque abras el chat en otro momento. Sigo con esta persona, este patrón y estos papeles.";
     }
 
-    return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu expediente.";
+    return "Aquí verás la continuidad reciente entre lo que ya hablaste con tu asesor laboral y los movimientos visibles de tu caso.";
   }, [remoteAdvisorMemory?.greeting, heliosCopilotMessages.length]);
 
   const alignedCopilotMessages = useMemo(
