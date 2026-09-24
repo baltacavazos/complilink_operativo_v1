@@ -1684,7 +1684,8 @@ function HeliosFirstEntrySection() {
   }, [auth.isAuthenticated, guestPreview, resumeAttempted, tenantId]);
 
   async function handleFileSelection(event: { currentTarget: HTMLInputElement }) {
-    const file = event.currentTarget.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) {
       return;
     }
@@ -1721,7 +1722,7 @@ function HeliosFirstEntrySection() {
         ) ?? "No pudimos leer ese archivo en este momento.",
       );
     } finally {
-      event.currentTarget.value = "";
+      input.value = "";
     }
   }
 

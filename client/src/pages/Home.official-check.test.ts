@@ -50,5 +50,10 @@ describe("Home guest · consulta IMSS y SAT", () => {
 
     expect(waitLayer).toContain("OFFICIAL_WAIT_STILL_TRYING");
     expect(waitLayer).toContain("{OFFICIAL_WAIT_STILL_TRYING}");
+
+    const upload = home.slice(home.indexOf("async function handleFileSelection"), home.indexOf("function handleGuestUploadClick"));
+    expect(upload).toContain("const input = event.currentTarget");
+    expect(upload).toContain("input.value = \"\"");
+    expect(upload).not.toContain("event.currentTarget.value");
   });
 });
