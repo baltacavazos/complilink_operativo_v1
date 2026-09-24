@@ -11,7 +11,14 @@ import { Button } from "@/components/ui/button";
 import { humanizeDossierProgressLabel, humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
+import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { trpc } from "@/lib/trpc";
+import {
+  OFFICIAL_CHECK_CONSENT,
+  pickPromptOfficialCheck,
+  resolveOfficialCheckDisplay,
+  type OfficialCheckSummary,
+} from "@shared/officialCheckCopy";
 import {
   ArrowRight,
   CheckCircle2,
@@ -1428,6 +1435,106 @@ function HeroSection() {
   );
 }
 
+function HomeGuestOfficialCheck({
+  guestPreviewToken,
+  guestPreviewId,
+}: {
+  guestPreviewToken: string;
+  guestPreviewId: string;
+}) {
+  const guestOfficialCheckMutation = trpc.cases.guestOfficialCheck.useMutation();
+  const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
+  const [officialCheckResult, setOfficialCheckResult] = useState<OfficialCheckSummary | null>(null);
+  const [officialCheckError, setOfficialCheckError] = useState<string | null>(null);
+  const officialCheckSummary = pickPromptOfficialCheck({
+    consentGranted: officialCheckConsent,
+    candidates: [officialCheckResult],
+  });
+  const officialCheckDisplay = resolveOfficialCheckDisplay({
+    consentGranted: officialCheckConsent,
+    isPending: guestOfficialCheckMutation.isPending,
+    summary: officialCheckSummary,
+  });
+  const officialWaitLeads =
+    !officialCheckDisplay.silence &&
+    (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
+
+  async function handleGuestOfficialCheck() {
+    if (!officialCheckConsent && !officialCheckDisplay.silence) {
+      setOfficialCheckError("Marca el permiso para consultar IMSS y SAT.");
+      return;
+    }
+
+    try {
+      setOfficialCheckError(null);
+      const result = await guestOfficialCheckMutation.mutateAsync({
+        guestPreviewToken,
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+      });
+      if (result.officialCheck) {
+        setOfficialCheckResult(result.officialCheck);
+        if (
+          result.officialCheck.consentGranted ||
+          result.officialCheck.overallStatus !== "sin_permiso"
+        ) {
+          setOfficialCheckConsent(true);
+        }
+      }
+    } catch (error) {
+      setOfficialCheckError(
+        sanitizeHomeVisibleCopy(
+          error instanceof Error ? error.message : "No fue posible consultar IMSS y SAT en este momento.",
+        ) ?? "No fue posible consultar IMSS y SAT en este momento.",
+      );
+    }
+  }
+
+  return (
+    <div
+      data-testid="official-check-card"
+      data-guest-preview-id={guestPreviewId}
+      className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left lg:col-span-2"
+    >
+      <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-[#161616]">
+        {officialCheckDisplay.headline}
+      </p>
+      <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
+        {officialCheckDisplay.detail}
+      </p>
+      {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
+      {officialCheckDisplay.silence ? null : (
+        <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-[#161616]">
+          <input
+            type="checkbox"
+            data-testid="official-check-consent"
+            className="mt-1"
+            checked={officialCheckConsent}
+            onChange={(event) => setOfficialCheckConsent(event.target.checked)}
+          />
+          <span>{OFFICIAL_CHECK_CONSENT}</span>
+        </label>
+      )}
+      <Button
+        type="button"
+        data-testid="official-check-cta"
+        className="ap-btn-on-dark mt-3 h-11 rounded-full bg-[#111111] px-4 text-white hover:bg-[#222222]"
+        disabled={
+          guestOfficialCheckMutation.isPending ||
+          (!officialCheckConsent && !officialCheckDisplay.silence)
+        }
+        onClick={() => {
+          void handleGuestOfficialCheck();
+        }}
+      >
+        {officialCheckDisplay.buttonLabel}
+      </Button>
+      {officialCheckError ? (
+        <p className="mt-3 text-sm leading-6 text-amber-950">{officialCheckError}</p>
+      ) : null}
+    </div>
+  );
+}
+
 function HeliosFirstEntrySection() {
   const auth = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -1747,6 +1854,13 @@ function HeliosFirstEntrySection() {
                     </p>
                   </div>
                 </div>
+                {!auth.isAuthenticated ? (
+                  <HomeGuestOfficialCheck
+                    key={guestPreview.guestPreviewId}
+                    guestPreviewToken={guestPreview.guestPreviewToken}
+                    guestPreviewId={guestPreview.guestPreviewId}
+                  />
+                ) : null}
               </div>
             ) : (
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
