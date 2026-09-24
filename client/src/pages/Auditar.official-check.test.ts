@@ -54,6 +54,10 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("nowMs: officialNowMs");
     expect(source).toContain("pendingSinceMs");
     expect(source).toContain("officialPendingSinceRef");
+    expect(source).toContain("latestOfficialInboxEvent");
+    expect(source).toContain('data-testid="official-result-inbox"');
+    expect(source).toContain("OFFICIAL_RESULT_NOTIFICATION_COPY.title");
+    expect(source).toContain("Bandeja");
     expect(source).toContain("visibleOfficialChecks");
     expect(source).toContain("visibleOfficialChecks.map");
     expect(source).not.toMatch(/officialCheckSummary\??\.checks\.map/);

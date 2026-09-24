@@ -4,11 +4,12 @@ import express from "express";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { buildAuditaPatronEngineSignature } from "./auditaPatronIntegrationService";
 
-const { dbMocks } = vi.hoisted(() => ({
+const { dbMocks, emailMocks } = vi.hoisted(() => ({
   dbMocks: {
     addCaseEvent: vi.fn(),
     addOperationalAlert: vi.fn(),
     createAuditLog: vi.fn(),
+    getUserById: vi.fn(),
     getDocumentById: vi.fn(),
     resolveCompliLinkDocument: vi.fn(),
     findLaborCaseByTraceOrId: vi.fn(),
@@ -18,13 +19,19 @@ const { dbMocks } = vi.hoisted(() => ({
     updateCompliLinkWebhookEvent: vi.fn(),
     updateDocumentPostProcessing: vi.fn(),
   },
+  emailMocks: {
+    sendEmailWithResend: vi.fn(),
+  },
 }));
 
 vi.mock("./db", () => dbMocks);
+vi.mock("./authService", () => emailMocks);
 vi.mock("./_core/env", () => ({
   ENV: {
     auditapatronEngineHmacSecret: "return-webhook-secret-123456",
     auditapatronEngineWebhookUrl: "https://complilink.mx/api/auditapatron/webhook",
+    resendApiKey: "resend-test-key",
+    resendFromEmail: "avisos@auditapatron.com",
   },
 }));
 
@@ -155,6 +162,7 @@ describe("auditaPatronReturnWebhook", () => {
       caseId: "CASE-BRIDGE-001",
       traceId: "trace.bridge.case-001",
       documentId: "DOC-BRIDGE-001",
+      uploadedByUserId: 77,
       originalName: "contrato-individual.pdf",
       mimeType: "application/pdf",
       documentType: "contrato_laboral",
@@ -163,6 +171,10 @@ describe("auditaPatronReturnWebhook", () => {
       consentStatus: "accepted",
     };
     dbMocks.getDocumentById.mockResolvedValue(resolvedDocument);
+    dbMocks.getUserById.mockResolvedValue({
+      id: 77,
+      email: "persona@empresa.com",
+    });
     dbMocks.resolveCompliLinkDocument.mockResolvedValue(resolvedDocument);
     dbMocks.findLaborCaseByTraceOrId.mockResolvedValue(null);
     dbMocks.findLatestCaseDocument.mockResolvedValue(null);
@@ -473,6 +485,7 @@ describe("auditaPatronReturnWebhook", () => {
     expect(dbMocks.createAuditLog).toHaveBeenCalledTimes(1);
     expect(dbMocks.updateCompliLinkWebhookEvent).toHaveBeenCalledTimes(1);
     expect(dbMocks.addOperationalAlert).not.toHaveBeenCalled();
+    expect(emailMocks.sendEmailWithResend).not.toHaveBeenCalled();
 
     const firstInsert = dbMocks.registerCompliLinkWebhookEvent.mock.calls[0]?.[0];
     const secondInsert = dbMocks.registerCompliLinkWebhookEvent.mock.calls[1]?.[0];
@@ -761,12 +774,77 @@ describe("auditaPatronReturnWebhook", () => {
     );
   });
 
+  it("guarda el aviso en la bandeja y envía un solo correo para un hecho usable", async () => {
+    dbMocks.registerCompliLinkWebhookEvent
+      .mockResolvedValueOnce({
+        created: true,
+        event: { id: 978, status: "processing" },
+      })
+      .mockResolvedValueOnce({
+        created: false,
+        event: { id: 978, status: "processed" },
+      });
+
+    const body = JSON.stringify(buildOfficialCheckReturnContract());
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+    const request = () =>
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer return-webhook-secret-123456",
+        },
+        body,
+      });
+
+    const firstResponse = await request();
+    const duplicateResponse = await request();
+
+    expect(firstResponse.status).toBe(200);
+    expect(duplicateResponse.status).toBe(200);
+    expect(emailMocks.sendEmailWithResend).toHaveBeenCalledTimes(1);
+    expect(emailMocks.sendEmailWithResend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: ["persona@empresa.com"],
+        subject: "Ya hay un resultado de tu consulta oficial",
+      }),
+    );
+
+    const email = emailMocks.sendEmailWithResend.mock.calls[0]?.[0];
+    const visibleEmailCopy = `${email?.subject ?? ""} ${email?.html ?? ""} ${email?.text ?? ""}`;
+    expect(visibleEmailCopy).not.toMatch(
+      /Resend|SendGrid|Helios|CompliLink|APIMarket|connector|provider|proveedor/i,
+    );
+    expect(visibleEmailCopy).not.toMatch(
+      /tu patrón (sí )?cumple|confirmamos que cumple/i,
+    );
+    expect(visibleEmailCopy).toContain(
+      "Este resultado no prueba por sí solo que tu patrón cumpla.",
+    );
+
+    expect(dbMocks.addCaseEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "Ya hay un resultado de tu consulta oficial",
+        description: expect.stringContaining(
+          "Este resultado no prueba por sí solo que tu patrón cumpla.",
+        ),
+      }),
+    );
+    const eventMetadata = JSON.parse(
+      String(dbMocks.addCaseEvent.mock.calls[0]?.[0]?.metadata),
+    );
+    expect(eventMetadata.notification_kind).toBe("official_fact_ready");
+  });
+
   it("guarda el SAT vivo en el expediente cuando el retorno no trae documentId pero sí el trace", async () => {
     dbMocks.resolveCompliLinkDocument.mockResolvedValue(null);
     dbMocks.findLaborCaseByTraceOrId.mockResolvedValue({
       tenantId: "tenant-bridge",
       caseId: "CASE-BRIDGE-001",
       traceId: "trace.bridge.case-001",
+      assignedUserId: 77,
     });
 
     const server = await startWebhookServer();
@@ -794,6 +872,13 @@ describe("auditaPatronReturnWebhook", () => {
       "infonavit:no_se_pudo",
     ]);
     expect(eventMetadata.revalidation_scope).toBe("social_security");
+    expect(eventMetadata.notification_kind).toBe("official_fact_ready");
+    expect(emailMocks.sendEmailWithResend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: ["persona@empresa.com"],
+        subject: "Ya hay un resultado de tu consulta oficial",
+      }),
+    );
   });
 
   it("responde 200 al retorno de official_check aunque todavía no haya expediente local", async () => {
