@@ -35,6 +35,8 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("setOfficialCheckResult(result.officialCheck)");
     expect(source).toContain("setOfficialCheckConsent(true)");
     expect(source).toContain("guestOfficialCheck.useMutation()");
+    expect(source).toContain("useGuestOfficialFact");
+    expect(source).toContain("GuestOfficialFactNotice");
     expect(source).toContain("handleGuestOfficialCheck");
     expect(source).toContain('data-testid="official-check-chat-cta"');
     expect(source).toContain('data-testid="official-check-hechos"');

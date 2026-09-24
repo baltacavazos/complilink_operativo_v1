@@ -24,6 +24,8 @@ describe("Auditar interim PDF Infonavit", () => {
 
   it("muestra el copy de espera y el aviso cuando llega un hecho", () => {
     expect(auditar).toContain("OFFICIAL_FACT_ARRIVED_NOTICE");
+    expect(auditar).toContain("GuestOfficialFactNotice");
+    expect(auditar).toContain("useGuestOfficialFact");
     expect(auditar).toContain("<OfficialWaitLayer");
     expect(auditar).toContain('id: "official-fact-arrived"');
   });

@@ -13,6 +13,8 @@ import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { InfonavitDocumentUpload } from "@/components/InfonavitDocumentUpload";
 import { WhatsappNotifyPreference } from "@/components/WhatsappNotifyPreference";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
+import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
+import { mergeGuestOfficialCheck, useGuestOfficialFact } from "@/lib/useGuestOfficialFact";
 import { isWorkerIdentifierLine, WorkerOfficialResult, WorkerRegistrationFold } from "@/components/WorkerOfficialResult";
 import {
   ReceiptArrival,
@@ -1488,6 +1490,8 @@ type StoredGuestReview = {
     resultCard?: { headline?: string | null; lead?: string | null; nextStepSummary?: string | null };
     legalHighlights?: { primaryConcern?: string | null };
   };
+  officialCheck?: OfficialCheckSummary | null;
+  officialFactArrivedAt?: string | null;
 };
 
 const AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY = "auditapatron_guest_review_v1";
@@ -4443,7 +4447,7 @@ export default function Auditar() {
   const [receiptAck, setReceiptAck] = useState<ReceiptAck>(null);
   const [saveNotice, setSaveNotice] = useState<"listo" | null>(null);
   const [officialCheckResult, setOfficialCheckResult] =
-    useState<OfficialCheckSummary | null>(null);
+    useState<OfficialCheckSummary | null>(() => readStoredGuestReview()?.officialCheck ?? null);
   const officialPendingSinceRef = useRef<number | null>(null);
   const [officialNowMs, setOfficialNowMs] = useState(() => Date.now());
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
@@ -5087,6 +5091,33 @@ export default function Auditar() {
     ? `${caseDetailInput.tenantId}:${caseDetailInput.caseId}`
     : null;
   // Initialize queries before hook dependency arrays that read them (TDZ on remount).
+  const guestOfficialFactQuery = useGuestOfficialFact({
+    guestPreviewToken: guestReview?.guestPreviewToken,
+    enabled: !auth.isAuthenticated && Boolean(guestReview?.guestPreviewToken),
+    localCheck: officialCheckResult,
+  });
+  useEffect(() => {
+    if (auth.isAuthenticated) return;
+    const incoming = guestOfficialFactQuery.data?.officialCheck;
+    if (!incoming) return;
+    const arrivedAt = guestOfficialFactQuery.data?.arrivedAt ?? null;
+    setOfficialCheckResult((current) => mergeGuestOfficialCheck(current, incoming) ?? current);
+    setGuestReview((current) => {
+      if (!current) return current;
+      const next = mergeGuestOfficialCheck(current.officialCheck, incoming);
+      if (
+        next === current.officialCheck &&
+        (current.officialFactArrivedAt ?? null) === arrivedAt
+      ) {
+        return current;
+      }
+      return {
+        ...current,
+        officialCheck: next,
+        officialFactArrivedAt: arrivedAt,
+      };
+    });
+  }, [auth.isAuthenticated, guestOfficialFactQuery.data]);
   const caseDetailQuery = trpc.cases.detail.useQuery(
     caseDetailInput as { tenantId: string; caseId: string },
     {
@@ -8601,6 +8632,15 @@ export default function Auditar() {
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
+        setGuestReview((current) =>
+          current
+            ? {
+                ...current,
+                officialCheck: result.officialCheck,
+                officialFactArrivedAt: null,
+              }
+            : current,
+        );
         if (
           result.officialCheck.consentGranted ||
           result.officialCheck.overallStatus !== "sin_permiso"
@@ -9214,6 +9254,11 @@ export default function Auditar() {
             className="hidden"
           />
           {renderReceiptArrival()}
+          <GuestOfficialFactNotice
+            summary={officialCaseBriefing.officialCheck ?? officialCheckSummary}
+            arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
+            waiting={officialWaitLeads}
+          />
           <WorkerOfficialResult
             pocketLead={workerPocketDetail.lead}
             receiptData={workerPocketDetail.receiptData}
@@ -9262,6 +9307,11 @@ export default function Auditar() {
               </div>
             </div>
             <div className="mt-5">{renderReceiptArrival()}</div>
+            <GuestOfficialFactNotice
+              summary={officialCaseBriefing.officialCheck ?? officialCheckSummary}
+              arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
+              waiting={officialWaitLeads}
+            />
             <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
             {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
               <>

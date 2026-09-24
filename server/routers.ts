@@ -155,6 +155,7 @@ import {
   mergeCardFailedOfficialCheck,
   reconcileOfficialCheckWithIdentity,
   resolveBriefingWorkerRfc,
+  OFFICIAL_FACT_ARRIVED_NOTICE,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -189,6 +190,13 @@ import {
   createGuestPreviewToken,
   readGuestPreviewToken,
 } from "./heliosPublicExperience";
+import {
+  readGuestOfficialFact,
+  rememberGuestOfficialSession,
+  resetGuestOfficialFactStoreForTests,
+} from "./guestOfficialFactStore";
+import { GUEST_OFFICIAL_FACT_WAIT_MS } from "@shared/guestOfficialFact";
+import { hasUsableOfficialFact } from "@shared/officialResultNotification";
 import { buildHeliosCalculatorSnapshot } from "./heliosCalculatorService";
 import {
   ADVISOR_CONTEXT_NOTE,
@@ -870,6 +878,22 @@ function assertInfonavitDocumentRateLimit(ip: string | null) {
   auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
 }
 
+const GUEST_OFFICIAL_FACT_READ_LIMIT = 40;
+
+function assertGuestOfficialFactReadLimit(params: { guestPreviewId: string; ip: string | null }) {
+  const now = Date.now();
+  pruneAuditarRateWindow(now);
+
+  const key = ["guestOfficialFact", params.guestPreviewId, params.ip ?? "ip:unknown"].join(":");
+  const recentTimestamps = auditarRateWindowByKey.get(key) ?? [];
+
+  if (recentTimestamps.length >= GUEST_OFFICIAL_FACT_READ_LIMIT) {
+    throw new Error("Detectamos demasiadas consultas seguidas. Espera un minuto y vuelve a intentarlo.");
+  }
+
+  auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
+}
+
 function assertGuestOfficialCheckRateLimit(params: { guestPreviewId: string; ip: string | null }) {
   const now = Date.now();
   pruneAuditarRateWindow(now);
@@ -934,6 +958,7 @@ function acquireAuditarTransientDedup(params: {
 export function resetAuditarRuntimeGuardsForTests() {
   auditarRateWindowByKey.clear();
   auditarTransientDedupByKey.clear();
+  resetGuestOfficialFactStoreForTests();
 }
 
 async function getUserCommerceStatus(user: { id: number; email?: string | null; name?: string | null; role?: string | null }) {
@@ -4537,6 +4562,11 @@ export const appRouter = router({
           guestPreviewId: payload.guestPreviewId,
           ip: getClientIp(ctx.req),
         });
+        rememberGuestOfficialSession({
+          guestPreviewId: payload.guestPreviewId,
+          traceId: payload.traceId,
+          officialCheck: null,
+        });
         const guestFacts = guestReceiptFacts(payload);
         const officialCheck = await runOfficialGovernmentCheck({
           identity: collectWorkerOfficialIdentity(guestFacts),
@@ -4545,11 +4575,48 @@ export const appRouter = router({
           idempotencyKey: `guest-official:${payload.guestPreviewId}`,
           correlationId: payload.traceId,
           traceId: payload.traceId,
+          caseId: payload.guestPreviewId,
+        });
+        rememberGuestOfficialSession({
+          guestPreviewId: payload.guestPreviewId,
+          traceId: payload.traceId,
+          officialCheck,
         });
         return {
           officialCheck,
           officialCheckHeadline: buildOfficialCheckHeadline(officialCheck),
           officialCheckConsent: OFFICIAL_CHECK_CONSENT,
+        };
+      }),
+    guestOfficialFact: publicProcedure
+      .input(
+        z.object({
+          guestPreviewToken: z.string().min(40),
+        }),
+      )
+      .query(({ ctx, input }) => {
+        const payload = readGuestPreviewToken(input.guestPreviewToken);
+        assertGuestOfficialFactReadLimit({
+          guestPreviewId: payload.guestPreviewId,
+          ip: getClientIp(ctx.req),
+        });
+        const stored = readGuestOfficialFact({
+          guestPreviewId: payload.guestPreviewId,
+          traceId: payload.traceId,
+        });
+        const officialCheck = stored?.officialCheck ?? null;
+        const awaiting =
+          Boolean(stored) &&
+          !hasUsableOfficialFact(officialCheck) &&
+          Date.now() - (stored?.createdAtMs ?? 0) < GUEST_OFFICIAL_FACT_WAIT_MS &&
+          (officialCheck == null ||
+            officialCheck.overallStatus === "pendiente" ||
+            officialCheck.overallStatus === "no_se_pudo");
+        return {
+          officialCheck,
+          arrivedAt: stored?.arrivedAt ?? null,
+          notice: hasUsableOfficialFact(officialCheck) ? OFFICIAL_FACT_ARRIVED_NOTICE : null,
+          awaiting,
         };
       }),
     readInfonavitMiCuentaPdf: publicProcedure

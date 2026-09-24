@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { OFFICIAL_FACT_ARRIVED_NOTICE } from "@shared/officialCheckCopy";
+import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
+import { readGuestPreviewToken } from "./heliosPublicExperience";
+import { persistGuestOfficialFact, rememberGuestOfficialSession } from "./guestOfficialFactStore";
+
 const storageMocks = vi.hoisted(() => ({
   storagePut: vi.fn(async () => ({
     key: "guest-home/GST-test/recibo-camreflex.pdf",
@@ -163,5 +168,78 @@ describe("cases.guestOfficialCheck", () => {
         consentGranted: true,
       }),
     ).rejects.toThrow(/demasiadas consultas/i);
+  });
+
+  it("sigue en espera si el invitado ya consultó y el hecho todavía no llega", async () => {
+    const preview = await analyzeGuestReceipt();
+    const token = readGuestPreviewToken(preview.guestPreviewToken);
+    rememberGuestOfficialSession({
+      guestPreviewId: token.guestPreviewId,
+      traceId: token.traceId,
+      officialCheck: null,
+    });
+
+    const pending = await createPublicCaller().cases.guestOfficialFact({
+      guestPreviewToken: preview.guestPreviewToken,
+    });
+    expect(pending.awaiting).toBe(true);
+    expect(pending.notice).toBeNull();
+    expect(pending.officialCheck).toBeNull();
+  });
+
+  it("entrega el hecho IMSS tardío al mismo token de invitado, sin cuenta y sin correo", async () => {
+    const preview = await analyzeGuestReceipt();
+    const caller = createPublicCaller();
+    await caller.cases.guestOfficialCheck({
+      guestPreviewToken: preview.guestPreviewToken,
+      consentGranted: true,
+    });
+
+    const waiting = await caller.cases.guestOfficialFact({
+      guestPreviewToken: preview.guestPreviewToken,
+    });
+    expect(waiting.notice).toBeNull();
+    expect(waiting.awaiting).toBe(false);
+    expect(waiting.officialCheck?.overallStatus).toBe("no_configurado");
+
+    const token = readGuestPreviewToken(preview.guestPreviewToken);
+    const arrivedAt = "2026-09-24T18:01:10.000Z";
+    const officialCheck: OfficialCheckSummary = {
+      configured: true,
+      consentGranted: true,
+      overallStatus: "vivo",
+      overallLabel: "Hay respuesta",
+      overallDetail: "Llegó un dato del IMSS.",
+      checkedAt: arrivedAt,
+      identity: { nss: true, curp: false, rfc: false },
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "vivo",
+          label: "IMSS",
+          detail: "Dato del IMSS.",
+          checkedAt: arrivedAt,
+          used: { nss: true, curp: false, rfc: false },
+          honesty: "live",
+          hechos: ["Hay un movimiento de alta en el IMSS."],
+        },
+      ],
+    };
+    persistGuestOfficialFact({
+      lookupIds: [token.traceId, token.guestPreviewId],
+      officialCheck,
+      arrivedAt,
+    });
+
+    const arrived = await caller.cases.guestOfficialFact({
+      guestPreviewToken: preview.guestPreviewToken,
+    });
+    expect(arrived.notice).toBe(OFFICIAL_FACT_ARRIVED_NOTICE);
+    expect(arrived.arrivedAt).toBe(arrivedAt);
+    expect(arrived.officialCheck?.checks.find((item) => item.source === "imss")?.hechos).toEqual([
+      "Hay un movimiento de alta en el IMSS.",
+    ]);
+    expect(JSON.stringify(arrived)).not.toMatch(/syntage|cumple|@/i);
   });
 });

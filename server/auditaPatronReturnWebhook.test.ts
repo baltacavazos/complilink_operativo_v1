@@ -47,6 +47,11 @@ import {
   registerCompliLinkReturnWebhook,
   shouldReplayCompliLinkWebhookEvent,
 } from "./auditaPatronReturnWebhook";
+import {
+  readGuestOfficialFact,
+  rememberGuestOfficialSession,
+  resetGuestOfficialFactStoreForTests,
+} from "./guestOfficialFactStore";
 
 const serversToClose: Array<ReturnType<typeof createServer>> = [];
 const realFetch = globalThis.fetch;
@@ -191,6 +196,7 @@ describe("auditaPatronReturnWebhook", () => {
     ENV.whatsappCloudAccessToken = "";
     ENV.whatsappCloudPhoneNumberId = "";
     ENV.whatsappTemplateName = "";
+    resetGuestOfficialFactStoreForTests();
     dbMocks.resolveCompliLinkDocument.mockResolvedValue(resolvedDocument);
     dbMocks.findLaborCaseByTraceOrId.mockResolvedValue(null);
     dbMocks.findLatestCaseDocument.mockResolvedValue(null);
@@ -988,6 +994,78 @@ describe("auditaPatronReturnWebhook", () => {
     });
     expect(dbMocks.addCaseEvent).not.toHaveBeenCalled();
     expect(dbMocks.registerCompliLinkWebhookEvent).not.toHaveBeenCalled();
+    expect(readGuestOfficialFact({ guestPreviewId: "GST-ausente", traceId: "trace.bridge.case-001" })).toBeNull();
+  });
+
+  it("guarda el hecho IMSS del invitado cuando llega followup official_fact_arrived y no manda correo", async () => {
+    emailMocks.sendEmailWithResend.mockClear();
+    dbMocks.resolveCompliLinkDocument.mockResolvedValue(null);
+    rememberGuestOfficialSession({
+      guestPreviewId: "GST-webhook",
+      traceId: "trace.bridge.case-001",
+      officialCheck: null,
+    });
+
+    const contract = buildOfficialCheckReturnContract();
+    const imss = officialObligation("imss", "vivo", "Hay un movimiento de alta en el IMSS.");
+    const previousCheck = contract.currentResponseEvent.result.officialCheck;
+    const officialCheck = {
+      ...previousCheck,
+      imss,
+      chatAnchor: {
+        ...previousCheck.chatAnchor,
+        imss: {
+          fuente: "imss",
+          estado: "live",
+          resultado: "vivo",
+          fecha: "2026-09-21T18:00:00.000Z",
+          hechos: imss.hechos,
+          motivoFallo: null,
+        },
+      },
+    };
+    const body = JSON.stringify({
+      ...contract,
+      followup: { kind: "official_fact_arrived" },
+      currentResponseEvent: {
+        ...contract.currentResponseEvent,
+        result: {
+          ...contract.currentResponseEvent.result,
+          officialCheck,
+          chatAnchor: officialCheck.chatAnchor,
+        },
+      },
+    });
+
+    const server = await startWebhookServer();
+    const address = server.address() as AddressInfo;
+    const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+    const request = () =>
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer return-webhook-secret-123456",
+        },
+        body,
+      });
+
+    const first = await request();
+    const duplicate = await request();
+    expect(first.status).toBe(200);
+    expect(duplicate.status).toBe(200);
+    expect(emailMocks.sendEmailWithResend).not.toHaveBeenCalled();
+    expect(dbMocks.addCaseEvent).not.toHaveBeenCalled();
+
+    const stored = readGuestOfficialFact({
+      guestPreviewId: "GST-webhook",
+      traceId: "trace.bridge.case-001",
+    });
+    expect(stored?.officialCheck?.checks.find((item) => item.source === "imss")?.hechos).toContain(
+      "Hay un movimiento de alta en el IMSS.",
+    );
+    expect(stored?.officialCheck?.overallDetail).toMatch(/No significa que tu patrón cumple/);
+    expect(JSON.stringify(stored)).not.toMatch(/syntage|tu patrón sí cumple|confirmamos que cumple/i);
   });
 
   it("reprocesa de forma segura un evento failed_processing o processing estancado", async () => {
