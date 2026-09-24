@@ -12,6 +12,7 @@ import {
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
 import { InfonavitDocumentUpload } from "@/components/InfonavitDocumentUpload";
+import { WhatsappNotifyPreference } from "@/components/WhatsappNotifyPreference";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { isWorkerIdentifierLine, WorkerOfficialResult, WorkerRegistrationFold } from "@/components/WorkerOfficialResult";
 import {
@@ -9561,6 +9562,7 @@ export default function Auditar() {
             </div>
           </section>
         ) : null}
+        {auth.isAuthenticated ? <WhatsappNotifyPreference /> : null}
         {officialCheckDisplay.silence ? null : (
         <>
         <MobileAppShell

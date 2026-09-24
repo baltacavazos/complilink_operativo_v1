@@ -53,6 +53,7 @@ import {
   updateTenantMembershipStatus,
   upsertCanonicalContract,
   upsertCanonicalContracts,
+  setWhatsappNotifyPreference,
   addDocumentRecord,
   getAuditarDraftById,
   updateDocumentPostProcessing,
@@ -83,6 +84,11 @@ import {
 import { extractPdfPlainText } from "./pdfTextExtraction";
 import { readInfonavitMiCuentaPdfBinary } from "./infonavitMiCuentaPdf";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import {
+  isWhatsappChannelLive,
+  resolveWhatsappPreferenceUpdate,
+} from "@shared/whatsappNotify";
+import { readWhatsappCloudConfig } from "./whatsappNotifier";
 import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
 import {
   computeNextBridgeScheduleRunAt,
@@ -2608,6 +2614,50 @@ export const appRouter = router({
           }
           throw error;
         }
+      }),
+    whatsappPreference: protectedProcedure.query(({ ctx }) => {
+      const cloud = readWhatsappCloudConfig(ENV);
+      return {
+        channelLive: isWhatsappChannelLive({
+          enabled: cloud.enabled,
+          hasCredentials: cloud.hasCredentials,
+        }),
+        optIn: Boolean(ctx.user.whatsappNotifyOptIn),
+        phoneE164: ctx.user.whatsappPhoneE164 ?? null,
+      };
+    }),
+    updateWhatsappPreference: protectedProcedure
+      .input(
+        z.object({
+          optIn: z.boolean(),
+          phone: z.string().trim().max(32).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const cloud = readWhatsappCloudConfig(ENV);
+        const decision = resolveWhatsappPreferenceUpdate({
+          channelLive: isWhatsappChannelLive({
+            enabled: cloud.enabled,
+            hasCredentials: cloud.hasCredentials,
+          }),
+          currentPhoneE164: ctx.user.whatsappPhoneE164 ?? null,
+          optIn: input.optIn,
+          phone: input.phone,
+        });
+        if (!decision.ok) {
+          throw new Error(decision.message);
+        }
+
+        await setWhatsappNotifyPreference({
+          userId: ctx.user.id,
+          optIn: decision.optIn,
+          phoneE164: decision.phoneE164,
+        });
+
+        return {
+          optIn: decision.optIn,
+          phoneE164: decision.phoneE164,
+        };
       }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);

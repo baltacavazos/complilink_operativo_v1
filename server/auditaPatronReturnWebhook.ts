@@ -26,7 +26,10 @@ import {
 import { inspectAuditaPatronBridgeInventory } from "./auditaPatronBridgeInventory";
 import { officialCheckFromBridgeReturn } from "./governmentLiveCheck";
 import { buildRemoteHeliosOpinionContract } from "./heliosIntegrationService";
-import { sendOfficialResultReadyEmail } from "./officialResultNotification";
+import {
+  sendOfficialResultReadyEmail,
+  sendOfficialResultWhatsapp,
+} from "./officialResultNotification";
 import {
   OFFICIAL_RESULT_NOTIFICATION_COPY,
   OFFICIAL_RESULT_NOTIFICATION_KIND,
@@ -567,6 +570,7 @@ async function notifyOfficialFactRecipient(params: {
   userId?: number | null;
   caseId?: string | null;
   traceId?: string | null;
+  dedupeKey?: string | null;
 }) {
   if (!hasUsableOfficialFact(params.officialCheck)) return;
 
@@ -583,6 +587,11 @@ async function notifyOfficialFactRecipient(params: {
     await sendOfficialResultReadyEmail({
       userId,
       officialCheck: params.officialCheck,
+    });
+    await sendOfficialResultWhatsapp({
+      userId,
+      officialCheck: params.officialCheck,
+      dedupeKey: params.dedupeKey ?? params.traceId ?? params.caseId,
     });
   } catch (error) {
     console.error(
@@ -985,6 +994,7 @@ export async function ingestCompliLinkReturnPayload(params: {
           userId: caseRow.assignedUserId,
           caseId: caseRow.caseId,
           traceId: caseRow.traceId,
+          dedupeKey: eventId ?? correlationId ?? caseRow.traceId,
         });
         return {
           ok: true as const,
@@ -1242,6 +1252,7 @@ export async function ingestCompliLinkReturnPayload(params: {
       userId: document.uploadedByUserId,
       caseId: document.caseId,
       traceId: document.traceId,
+      dedupeKey: eventId ?? correlationId ?? document.traceId,
     });
 
     return {

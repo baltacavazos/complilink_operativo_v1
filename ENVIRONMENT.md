@@ -89,6 +89,21 @@ Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con datos �
 | `RESEND_API_KEY` | Live OTP; **ausente** en Railway ⇒ modo contraseña |
 | `RESEND_FROM_EMAIL` | Remitente |
 
+## WhatsApp (apagado hasta la línea nueva)
+
+Tercer aviso del mismo momento que la bandeja y el correo (#79). **No envía** si el interruptor está apagado o faltan credenciales. La preferencia en Auditar queda visible y deshabilitada: «Pronto podrás activar avisos por WhatsApp.»
+
+| Variable | Notas |
+| --- | --- |
+| `WHATSAPP_NOTIFY_ENABLED` | Kill switch. Vacío / `false` / `0` = apagado (default de prod). `true` o `1` = encendido. |
+| `WHATSAPP_CLOUD_ACCESS_TOKEN` | Token de la línea de WhatsApp Business. Nunca en Git. |
+| `WHATSAPP_CLOUD_PHONE_NUMBER_ID` | Id del número en Cloud API. |
+| `WHATSAPP_TEMPLATE_NAME` | Plantilla `es_MX` ya aprobada, con 4 variables de cuerpo: título, texto, disclaimer, enlace. |
+| `WHATSAPP_TEMPLATE_LANGUAGE` | Opcional. Default `es_MX`. |
+| `WHATSAPP_CLOUD_GRAPH_VERSION` | Opcional. Default `v22.0`. |
+
+El día de la línea: poner las tres credenciales, la plantilla, y `WHATSAPP_NOTIFY_ENABLED=true`. Reiniciar el servicio. No hace falta otro cambio de producto.
+
 ## Respaldo
 
 | Variable | Notas |
