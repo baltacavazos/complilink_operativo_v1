@@ -39,6 +39,7 @@ import {
   tenantMemberships,
   tenants,
   users,
+  whatsappNotificationDeliveries,
 } from "../drizzle/schema";
 import {
   normalizeAdvisorMemoryRecord,
@@ -292,6 +293,62 @@ export async function getUserById(userId: number) {
 
   const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return result.length > 0 ? result[0] : undefined;
+}
+
+export async function setWhatsappNotifyPreference(input: {
+  userId: number;
+  optIn: boolean;
+  phoneE164: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db
+    .update(users)
+    .set({
+      whatsappNotifyOptIn: input.optIn,
+      whatsappPhoneE164: input.phoneE164,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, input.userId));
+}
+
+export async function claimWhatsappNotificationDelivery(input: {
+  userId: number;
+  dedupeKey: string;
+  phoneE164: string;
+}): Promise<"claimed" | "duplicate" | "unavailable"> {
+  const db = await getDb();
+  if (!db) return "unavailable";
+
+  try {
+    await db.insert(whatsappNotificationDeliveries).values({
+      userId: input.userId,
+      dedupeKey: input.dedupeKey,
+      phoneE164: input.phoneE164,
+    });
+    return "claimed";
+  } catch (error) {
+    if (isDuplicateKeyError(error)) return "duplicate";
+    throw error;
+  }
+}
+
+export async function releaseWhatsappNotificationDelivery(input: {
+  userId: number;
+  dedupeKey: string;
+}) {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .delete(whatsappNotificationDeliveries)
+    .where(
+      and(
+        eq(whatsappNotificationDeliveries.userId, input.userId),
+        eq(whatsappNotificationDeliveries.dedupeKey, input.dedupeKey),
+      ),
+    );
 }
 
 export async function getUserByStripeCustomerId(stripeCustomerId: string) {

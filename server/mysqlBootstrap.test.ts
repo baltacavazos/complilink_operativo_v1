@@ -23,6 +23,9 @@ describe("ensureMysqlTables labor_cases", () => {
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `labor_cases`");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `case_access`");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `case_advisor_memories`");
+    expect(sql).toContain("`whatsappNotifyOptIn`");
+    expect(sql).toContain("`whatsappPhoneE164`");
+    expect(sql).toContain("CREATE TABLE IF NOT EXISTS `whatsapp_notification_deliveries`");
     expect(sql).toContain("`case_advisor_memories_scope_uq`");
     expect(sql).toContain("CREATE TABLE IF NOT EXISTS `tenant_memberships`");
     expect(sql).toContain("`caseId`");
@@ -45,6 +48,28 @@ describe("ensureMysqlTables labor_cases", () => {
     expect(executed.some((statement) => statement.includes("CREATE TABLE IF NOT EXISTS `case_access`"))).toBe(
       true,
     );
+  });
+
+  it("ignora la columna de WhatsApp si el arranque anterior ya la agregó", async () => {
+    const executed: string[] = [];
+    const result = await ensureMysqlTables({
+      execute: async (statement) => {
+        executed.push(statement);
+        if (statement.includes("ADD COLUMN `whatsappNotifyOptIn`")) {
+          const error = new Error("Duplicate column name 'whatsappNotifyOptIn'");
+          (error as Error & { code?: string }).code = "ER_DUP_FIELDNAME";
+          throw error;
+        }
+      },
+    });
+
+    expect(result.ensured).toBe(true);
+    expect(
+      executed.some(
+        (statement) => statement.startsWith("ALTER TABLE") && statement.includes("whatsappPhoneE164"),
+      ),
+    ).toBe(true);
+    expect(executed.some((statement) => statement.includes("whatsapp_notification_deliveries"))).toBe(true);
   });
 
   it("se llama al arrancar el servidor y antes de insertar expedientes", () => {

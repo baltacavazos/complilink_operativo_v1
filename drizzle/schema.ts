@@ -2,6 +2,7 @@ import {
   bigint,
   foreignKey,
   index,
+  boolean,
   int,
   mysqlEnum,
   mysqlTable,
@@ -16,6 +17,8 @@ export const users = mysqlTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  whatsappNotifyOptIn: boolean("whatsappNotifyOptIn").default(false).notNull(),
+  whatsappPhoneE164: varchar("whatsappPhoneE164", { length: 20 }),
   stripeCustomerId: varchar("stripeCustomerId", { length: 64 }).unique(),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
@@ -504,6 +507,22 @@ export const caseAdvisorMemories = mysqlTable(
   ],
 );
 
+export const whatsappNotificationDeliveries = mysqlTable(
+  "whatsapp_notification_deliveries",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id),
+    dedupeKey: varchar("dedupeKey", { length: 191 }).notNull(),
+    phoneE164: varchar("phoneE164", { length: 20 }).notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("whatsapp_notification_deliveries_user_key_uq").on(table.userId, table.dedupeKey),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 export type Tenant = typeof tenants.$inferSelect;
@@ -540,3 +559,5 @@ export type CanonicalContract = typeof canonicalContracts.$inferSelect;
 export type InsertCanonicalContract = typeof canonicalContracts.$inferInsert;
 export type CaseAdvisorMemory = typeof caseAdvisorMemories.$inferSelect;
 export type InsertCaseAdvisorMemory = typeof caseAdvisorMemories.$inferInsert;
+export type WhatsappNotificationDelivery = typeof whatsappNotificationDeliveries.$inferSelect;
+export type InsertWhatsappNotificationDelivery = typeof whatsappNotificationDeliveries.$inferInsert;

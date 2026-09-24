@@ -6,6 +6,16 @@ import { MYSQL_BOOTSTRAP_STATEMENTS } from "./mysqlBootstrapStatements";
 let pool: mysql.Pool | null = null;
 let tablesReady = false;
 
+function isAlreadyAppliedColumn(error: unknown): boolean {
+  const code =
+    typeof error === "object" && error && "code" in error
+      ? String((error as { code?: string }).code ?? "")
+      : "";
+  if (code === "ER_DUP_FIELDNAME" || code === "ER_DUP_KEYNAME") return true;
+  const message = error instanceof Error ? error.message : String(error);
+  return /Duplicate column name|Duplicate key name/i.test(message);
+}
+
 function getBootstrapPool() {
   if (!ENV.databaseUrl.trim()) {
     throw new Error("Falta DATABASE_URL para preparar las tablas.");
@@ -49,7 +59,14 @@ export async function ensureMysqlTables(options?: {
   }
 
   for (const statement of MYSQL_BOOTSTRAP_STATEMENTS) {
-    await execute(statement);
+    try {
+      await execute(statement);
+    } catch (error) {
+      if (statement.trimStart().startsWith("ALTER TABLE") && isAlreadyAppliedColumn(error)) {
+        continue;
+      }
+      throw error;
+    }
   }
 
   if (!options?.execute) {

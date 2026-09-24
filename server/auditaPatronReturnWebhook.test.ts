@@ -18,6 +18,8 @@ const { dbMocks, emailMocks } = vi.hoisted(() => ({
     upsertCanonicalContract: vi.fn(),
     updateCompliLinkWebhookEvent: vi.fn(),
     updateDocumentPostProcessing: vi.fn(),
+    claimWhatsappNotificationDelivery: vi.fn(),
+    releaseWhatsappNotificationDelivery: vi.fn(),
   },
   emailMocks: {
     sendEmailWithResend: vi.fn(),
@@ -32,9 +34,15 @@ vi.mock("./_core/env", () => ({
     auditapatronEngineWebhookUrl: "https://complilink.mx/api/auditapatron/webhook",
     resendApiKey: "resend-test-key",
     resendFromEmail: "avisos@auditapatron.com",
+    whatsappNotifyEnabled: "",
+    whatsappCloudAccessToken: "",
+    whatsappCloudPhoneNumberId: "",
+    whatsappTemplateName: "",
+    whatsappTemplateLanguage: "es_MX",
   },
 }));
 
+import { ENV } from "./_core/env";
 import {
   registerCompliLinkReturnWebhook,
   shouldReplayCompliLinkWebhookEvent,
@@ -174,7 +182,15 @@ describe("auditaPatronReturnWebhook", () => {
     dbMocks.getUserById.mockResolvedValue({
       id: 77,
       email: "persona@empresa.com",
+      whatsappNotifyOptIn: false,
+      whatsappPhoneE164: null,
     });
+    dbMocks.claimWhatsappNotificationDelivery.mockResolvedValue("claimed");
+    dbMocks.releaseWhatsappNotificationDelivery.mockResolvedValue(undefined);
+    ENV.whatsappNotifyEnabled = "";
+    ENV.whatsappCloudAccessToken = "";
+    ENV.whatsappCloudPhoneNumberId = "";
+    ENV.whatsappTemplateName = "";
     dbMocks.resolveCompliLinkDocument.mockResolvedValue(resolvedDocument);
     dbMocks.findLaborCaseByTraceOrId.mockResolvedValue(null);
     dbMocks.findLatestCaseDocument.mockResolvedValue(null);
@@ -836,6 +852,74 @@ describe("auditaPatronReturnWebhook", () => {
       String(dbMocks.addCaseEvent.mock.calls[0]?.[0]?.metadata),
     );
     expect(eventMetadata.notification_kind).toBe("official_fact_ready");
+    expect(dbMocks.claimWhatsappNotificationDelivery).not.toHaveBeenCalled();
+  });
+
+  it("con opt-in y el canal encendido manda un solo WhatsApp si el webhook llega dos veces", async () => {
+    ENV.whatsappNotifyEnabled = "true";
+    ENV.whatsappCloudAccessToken = "test-token";
+    ENV.whatsappCloudPhoneNumberId = "1099";
+    ENV.whatsappTemplateName = "aviso_resultado_oficial";
+    dbMocks.getUserById.mockResolvedValue({
+      id: 77,
+      email: "persona@empresa.com",
+      whatsappNotifyOptIn: true,
+      whatsappPhoneE164: "+525512345678",
+    });
+    dbMocks.registerCompliLinkWebhookEvent
+      .mockResolvedValueOnce({
+        created: true,
+        event: { id: 979, status: "processing" },
+      })
+      .mockResolvedValueOnce({
+        created: false,
+        event: { id: 979, status: "processed" },
+      });
+
+    const graphBodies: string[] = [];
+    globalThis.fetch = async (input, init) => {
+      const url = String(input);
+      if (url.includes("graph.facebook.com")) {
+        graphBodies.push(String(init?.body ?? ""));
+        return new Response("{}", { status: 200 });
+      }
+      return realFetch(input, init);
+    };
+
+    try {
+      const body = JSON.stringify(buildOfficialCheckReturnContract());
+      const server = await startWebhookServer();
+      const address = server.address() as AddressInfo;
+      const url = `http://127.0.0.1:${address.port}/api/auditapatron/complilink-webhook`;
+      const request = () =>
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer return-webhook-secret-123456",
+          },
+          body,
+        });
+
+      const firstResponse = await request();
+      const duplicateResponse = await request();
+
+      expect(firstResponse.status).toBe(200);
+      expect(duplicateResponse.status).toBe(200);
+      expect(emailMocks.sendEmailWithResend).toHaveBeenCalledTimes(1);
+      expect(graphBodies).toHaveLength(1);
+      expect(dbMocks.claimWhatsappNotificationDelivery).toHaveBeenCalledTimes(1);
+      const visible = graphBodies[0] ?? "";
+      expect(visible).toContain("Ya hay un resultado de tu consulta oficial");
+      expect(visible).toContain("tu caso");
+      expect(visible).toContain("Este resultado no prueba por sí solo que tu patrón cumpla.");
+      expect(visible).not.toMatch(
+        /Resend|SendGrid|Helios|CompliLink|APIMarket|Syntage|proveedor/i,
+      );
+      expect(visible).not.toMatch(/tu patrón (sí )?cumple|confirmamos que cumple/i);
+    } finally {
+      globalThis.fetch = realFetch;
+    }
   });
 
   it("guarda el SAT vivo en el expediente cuando el retorno no trae documentId pero sí el trace", async () => {

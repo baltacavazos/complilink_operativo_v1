@@ -62,6 +62,13 @@ export const ENV = {
   auditapatronEngineHmacSecret: process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  /** Kill switch. Empty / false / off until the new WhatsApp Business line exists. */
+  whatsappNotifyEnabled: process.env.WHATSAPP_NOTIFY_ENABLED ?? "",
+  whatsappCloudAccessToken: process.env.WHATSAPP_CLOUD_ACCESS_TOKEN ?? "",
+  whatsappCloudPhoneNumberId: process.env.WHATSAPP_CLOUD_PHONE_NUMBER_ID ?? "",
+  whatsappTemplateName: process.env.WHATSAPP_TEMPLATE_NAME ?? "",
+  whatsappTemplateLanguage: process.env.WHATSAPP_TEMPLATE_LANGUAGE ?? "es_MX",
+  whatsappCloudGraphVersion: process.env.WHATSAPP_CLOUD_GRAPH_VERSION ?? "",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
   stripePublishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY ?? "",
