@@ -566,15 +566,15 @@ export function HeliosCopilotSheet({
               variant="calm"
               className="h-full border-0 bg-transparent shadow-none"
               height="100%"
-              placeholder={copy.placeholder}
+              placeholder={copy.placeholder.replace(/\bexpedientes\b/gi, "casos").replace(/\bexpediente\b/gi, "caso").replace(/\btu tu caso\b/gi, "tu caso")}
               emptyStateMessage={copy.emptyStateMessage}
               suggestedPrompts={[]}
             />
           </div>
 
-          <div className="ap-chat-footer shrink-0 border-t border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur-md transition-colors duration-300 sm:px-6 sm:py-4">
-            <p className="text-[0.78rem] leading-6 tracking-[-0.01em] text-slate-600">
-              {visibleDisclaimer ?? WORKER_CHAT_DISCLAIMER}
+          <div className="ap-chat-footer shrink-0 border-t border-slate-200/80 bg-white/90 px-4 pb-5 pt-3 backdrop-blur-md transition-colors duration-300 sm:px-6 sm:pb-6 sm:pt-4">
+            <p className="ap-chat-disclaimer text-[0.84rem] font-semibold leading-6 tracking-[-0.01em] text-slate-950">
+              {(visibleDisclaimer ?? WORKER_CHAT_DISCLAIMER).replace(/\bexpedientes\b/gi, "casos").replace(/\bexpediente\b/gi, "caso").replace(/\btu tu caso\b/gi, "tu caso")}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button

@@ -7,7 +7,7 @@ export const OFFICIAL_RESULT_NOTIFICATION_KIND = "official_fact_ready" as const;
 
 export const OFFICIAL_RESULT_NOTIFICATION_COPY = {
   title: "Ya hay un resultado de tu consulta oficial",
-  body: "Ya llegó un dato oficial para tu expediente. Entra a AuditaPatrón para verlo con calma.",
+  body: "Ya llegó un dato oficial para tu caso. Entra a AuditaPatrón para verlo con calma.",
   disclaimer: "Este resultado no prueba por sí solo que tu patrón cumpla.",
   actionLabel: "Ver mi resultado",
 } as const;

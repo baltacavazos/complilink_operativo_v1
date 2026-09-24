@@ -56,11 +56,12 @@ function RouteLoadingFallback() {
     <main className="audita-access min-h-screen bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.12),_transparent_30%),linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] text-slate-950">
       <div className="mx-auto flex min-h-screen w-full max-w-5xl items-center justify-center px-6 py-16">
         <div className="ap-access-surface w-full max-w-sm px-6 py-7 text-center">
-          <div className="ap-access-mark flex justify-center">
+          <div className="ap-access-mark ap-brand-pulse flex justify-center">
             <AuditaPatronLogoIcon imageClassName="h-12 w-12 object-contain" />
           </div>
           <AuditaPatronLogoWordmark className="mt-4 justify-center" imageClassName="max-w-[210px]" subtitleClassName="text-[11px] uppercase tracking-[0.16em] text-slate-500" />
-          <p className="mt-5 text-sm font-medium leading-6 text-slate-600">
+          <div className="mx-auto mt-5 h-2 w-36 rounded-full ap-read-skeleton" aria-hidden="true" />
+          <p className="mt-4 text-sm font-medium leading-6 text-slate-600">
             Está cargando, puede tardar unos segundos.
           </p>
         </div>

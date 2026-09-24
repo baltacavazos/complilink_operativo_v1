@@ -55,14 +55,14 @@ export function InfonavitDocumentUpload() {
       data-testid="infonavit-document-offer"
       data-fact-origin="document"
       data-fact-source="user_upload"
-      className="mt-4 rounded-[1.35rem] border border-[#e4e4e4] bg-white px-4 py-4 text-left"
+      className="ap-infonavit-offer mt-8 flex flex-col items-stretch gap-3 rounded-[1.35rem] px-4 py-4 text-left"
     >
-      <p className="text-[0.98rem] leading-6 text-[#161616]">{INFONAVIT_DOCUMENT_CTA}</p>
+      <p className="text-[0.98rem] leading-6">{INFONAVIT_DOCUMENT_CTA}</p>
       <a
         href={INFONAVIT_MICUENTA_URL}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2 inline-block text-sm font-semibold text-[#111111] underline decoration-[#161616]/40 underline-offset-4"
+        className="block w-full text-sm font-semibold underline underline-offset-4 [overflow-wrap:anywhere]"
       >
         micuenta.infonavit.org.mx
       </a>
@@ -80,12 +80,20 @@ export function InfonavitDocumentUpload() {
       <Button
         type="button"
         data-testid="infonavit-document-upload"
-        className="ap-btn-on-dark mt-4 h-11 rounded-full bg-[#111111] px-4 text-white hover:bg-[#222222]"
+        variant="outline"
+        className="ap-cta-secondary mt-1 h-11 w-fit rounded-full px-4"
         disabled={mutation.isPending}
         onClick={() => inputRef.current?.click()}
       >
         {mutation.isPending ? INFONAVIT_DOCUMENT_READING_LABEL : INFONAVIT_DOCUMENT_UPLOAD_LABEL}
       </Button>
+      {mutation.isPending ? (
+        <div data-testid="infonavit-read-skeleton" className="ap-read-skeleton space-y-2" aria-hidden="true">
+          <span className="block h-3 w-4/5 rounded-full" />
+          <span className="block h-3 w-3/5 rounded-full" />
+          <span className="block h-3 w-2/3 rounded-full" />
+        </div>
+      ) : null}
       {reading?.readable ? (
         <div className="mt-4" data-testid="infonavit-document-facts" data-fact-origin={reading.origin}>
           <ul className="space-y-1 text-sm leading-6 text-[#161616]">

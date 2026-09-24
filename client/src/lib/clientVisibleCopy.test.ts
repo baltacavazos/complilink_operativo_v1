@@ -213,6 +213,7 @@ describe("sanitizeClientVisibleCopy", () => {
       "Expediente laboral de ejemplo",
     );
     expect(formatWorkerVisibleAccountName("Ana Pérez")).toBe("Ana Pérez");
+    expect(formatWorkerVisibleAccountName("smiles/panel7ba")).toBe("Mi revisión");
     expect(maskWorkerEmail("ap.wave2@auditapatron.test")).toBeNull();
     expect(maskWorkerEmail("ana.perez@correo.com")).toBe("a***@correo.com");
     expect(formatWorkerAccountChrome({ name: "ap.wave2", email: "ap.wave2@auditapatron.test" })).toEqual({

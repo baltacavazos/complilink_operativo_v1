@@ -278,6 +278,10 @@ export function formatWorkerVisibleAccountName(value?: string | null): string | 
     return "Ejemplo";
   }
 
+  if (/[/\\]/.test(text) || (TECHNICAL_HANDLE.test(text) && /\d/.test(text))) {
+    return "Mi revisión";
+  }
+
   const cleaned = text
     .replace(/\b(?:ap\.)?wave\d+\b/gi, "ejemplo")
     .replace(/\b(?:tester|demo)\b/gi, "ejemplo")

@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import {
-  AuditaPatronLogo,
   AuditaPatronLogoIcon,
   AuditaPatronLogoWordmark,
 } from "@/components/AuditaPatronLogo";
@@ -1258,7 +1257,7 @@ type AuditarCaptureMode = "camera" | "file";
 const COMPACT_MOBILE_UPLOAD_PRIMARY_ACTION_CLASS =
   "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700";
 const COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS =
-  "bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950";
+  "border border-teal-700 bg-transparent text-teal-800 shadow-none hover:bg-teal-50";
 
 type ScanAssistAssessmentView = {
   readiness: "ready" | "retry" | "manual_review";
@@ -4341,6 +4340,43 @@ export function buildHeliosPriorityAlerts(params: {
   }
 
   return alerts.slice(0, 3);
+}
+
+function QueSigueCard() {
+  const [open, setOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem("ap-que-sigue-visto") !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("ap-que-sigue-visto", "1");
+    } catch {
+      /* el acordeón sigue usable si el navegador bloquea storage */
+    }
+  }, []);
+
+  return (
+    <article data-ap-next-step className="ap-next-step-card rounded-[1.25rem] border border-slate-200 p-4 shadow-sm">
+      <details
+        className="ap-guide-fold"
+        open={open}
+        onToggle={(event) => setOpen(event.currentTarget.open)}
+      >
+        <summary className="cursor-pointer text-sm font-semibold text-slate-950">Qué sigue ahora</summary>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Se revisa en privado y no se integra sin tu confirmación.
+        </p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el documento más útil para seguir.
+        </p>
+      </details>
+    </article>
+  );
 }
 
 export default function Auditar() {
@@ -9363,7 +9399,7 @@ export default function Auditar() {
 
   if (!auth.isAuthenticated && !auditarHarnessBypass) {
     return (
-      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
+      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-5 text-slate-950 sm:py-10">
         <div className="container mx-auto max-w-6xl">
           <MobileAppShell
             current="auditar"
@@ -9377,7 +9413,7 @@ export default function Auditar() {
             onChange={handleGuestFileChange}
             className="hidden"
           />
-          <div className="rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-4 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)]">
+          <div className="mb-3 hidden rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-3 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)] sm:block">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <a
                 href="/"
@@ -9390,12 +9426,11 @@ export default function Auditar() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8">
+          <div className="grid gap-3 overflow-visible rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:gap-6 sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8">
             <div className="mx-auto flex max-w-full flex-col items-center text-center lg:mx-0 lg:max-w-2xl lg:items-start lg:text-left">
-              <AuditaPatronLogo
-                showTagline={false}
+              <AuditaPatronLogoWordmark
                 className="inline-flex max-w-full justify-center lg:justify-start"
-                imageClassName="h-auto w-full max-w-[min(62vw,13rem)] object-contain sm:max-w-[300px] md:max-w-[388px] lg:max-w-[430px]"
+                imageClassName="h-auto w-full max-w-[min(62vw,13rem)] object-contain sm:max-w-[280px]"
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
@@ -10004,8 +10039,8 @@ export default function Auditar() {
           </section>
         ) : null}
 
-        <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
-          <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
+        <div className={`${shouldCompactPostUploadExperience ? "mt-2" : "mt-8"} grid gap-8 ${shouldCompactPostUploadExperience || !isDossierWorkspaceSection || isFirstDocumentFlow ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
+          <section className={shouldCompactPostUploadExperience ? "flex w-full flex-col items-stretch space-y-4" : "space-y-5"}>
             {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
               <>
                 {renderReceiptArrival(false)}
@@ -10415,20 +10450,7 @@ export default function Auditar() {
                   data-ap-status-cluster
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
-                  <article
-                    data-ap-next-step
-                    className="ap-next-step-card rounded-[1.25rem] border border-slate-200 p-4 shadow-sm"
-                  >
-                    <p className="text-sm font-semibold text-slate-950">
-                      Qué sigue ahora
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Se revisa en privado y no se integra sin tu confirmación.
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                      Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el documento más útil para seguir.
-                    </p>
-                  </article>
+                  <QueSigueCard />
                 </div>
               </div>
             </div>
@@ -11275,19 +11297,6 @@ export default function Auditar() {
                   ref={uploadSectionRef}
                   className="mt-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3.5 sm:p-4"
                 >
-                  <div className={`flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5 ${presentEmptyWorkerUpload ? "hidden" : ""}`}>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
-                      <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
-                    </div>
-                    <div>
-                      <p className="font-semibold leading-5 text-slate-950">
-                        Foto o archivo para empezar
-                      </p>
-                      <p className="text-sm leading-5 text-slate-600">
-                        Foto o archivo. Lo revisamos al momento y después decides si se guarda.
-                      </p>
-                    </div>
-                  </div>
 
                 <div className="mt-4 hidden">
                   <article className="rounded-[1rem] border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
@@ -11338,9 +11347,22 @@ export default function Auditar() {
                   </div>
                 ) : null}
 
-                <div
-                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${presentEmptyWorkerUpload || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
-                >
+                <details className="ap-guide-fold mt-3 rounded-[1.1rem] border border-slate-200/80 bg-white/70 px-3.5 py-2">
+                  <summary className="cursor-pointer text-sm font-medium text-slate-600">Cómo preparar el archivo</summary>
+                  <div className="mt-3 flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
+                      <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <p className="font-semibold leading-5 text-slate-950">
+                        Foto o archivo para empezar
+                      </p>
+                      <p className="text-sm leading-5 text-slate-600">
+                        Foto o archivo. Lo revisamos al momento y después decides si se guarda.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
                   <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3.5">
                     <div className="flex items-start gap-2.5">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700">
@@ -11416,11 +11438,8 @@ export default function Auditar() {
                       </button>
                     </div>
                   </div>
-                </div>
-
-                {activeCaptureMode === "camera" &&
-                !shouldCompactMobileUploadEntry &&
-                !pendingDraft ? (
+                  </div>
+                  {activeCaptureMode === "camera" && !pendingDraft ? (
                   <div className="mt-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
                     <div className="rounded-[1.1rem] border border-teal-100 bg-white p-3.5">
                       <p className="text-sm font-semibold text-slate-950">
@@ -11444,7 +11463,8 @@ export default function Auditar() {
                       </div>
                     </div>
                   </div>
-                ) : null}
+                  ) : null}
+                </details>
 
                 <input
                   ref={cameraInputRef}
@@ -11529,7 +11549,7 @@ export default function Auditar() {
                     ) : (
                       <>
                       <Button
-                        className={`${COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200`}
+                        className={`${COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold transition-all duration-200`}
                         disabled={isAutoAnalyzingSelectedFile}
                         onClick={openPreferredPicker}
                       >
@@ -11613,7 +11633,7 @@ export default function Auditar() {
 
                   <div
                     aria-describedby="upload-guardrails-summary"
-                    className={`${pendingDraft && !confirmDraftMutation.isPending ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                    className={`${pendingDraft && !confirmDraftMutation.isPending ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 transition-all duration-500 ease-out ${!selectedFile && !pendingDraft ? "ap-upload-quiet shadow-none" : "shadow-sm"} ${uploadProgressState.toneClasses}`}
                   >
                     <p
                       className="sr-only"

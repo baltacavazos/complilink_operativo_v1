@@ -343,7 +343,7 @@ describe("copy visible de la experiencia", () => {
     expect(helpers).toContain("Asesor laboral");
     expect(helpers).toContain("resultado de TU consulta");
     expect(helpers).toContain("Empieza por aquí");
-    expect(helpers).toContain("Solo este expediente");
+    expect(helpers).toContain("Solo este caso");
     expect(helpers).toContain("Lo que sí se sabe");
     expect(helpers).toContain("Siguiente paso");
     expect(helpers).toMatch(/no es asesoría legal/i);

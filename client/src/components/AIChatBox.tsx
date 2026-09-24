@@ -428,7 +428,7 @@ export function AIChatBox({
         onSubmit={handleSubmit}
         className={cn(
           "flex items-end",
-          isCalm ? "gap-0 p-1 pt-2" : "gap-2 p-4 border-t bg-background/50",
+          isCalm ? "gap-0 px-1 pb-3 pt-2" : "gap-2 p-4 border-t bg-background/50",
         )}
       >
         <div

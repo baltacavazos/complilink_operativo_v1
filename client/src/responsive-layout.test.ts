@@ -21,20 +21,20 @@ describe("responsive layout regression guards", () => {
     expect(homeSource).toContain('max-[359px]:max-w-[37vw]');
     expect(homeSource).toContain('max-w-[min(34vw,7.8rem)]');
     expect(homeSource).toContain('max-[359px]:max-w-[min(31vw,6.85rem)]');
-    expect(homeSource).toContain('h-11 min-h-11 min-w-[6.75rem] max-w-[7.25rem]');
+    expect(homeSource).not.toContain('h-11 min-h-11 rounded-full border-white/15 bg-white/10 px-3 text-[0.8rem] font-semibold text-white');
     expect(homeSource).toContain('Sube foto o PDF');
   });
 
   it("keeps Home optimized for sub-360px hero density and CTA spacing", () => {
     const homeSource = readProjectFile("client", "src", "pages", "Home.tsx");
 
-    expect(homeSource).toContain('max-[359px]:text-[1.95rem]');
-    expect(homeSource).toContain('max-[359px]:leading-[1.14]');
+    expect(homeSource).toContain('max-[359px]:text-[1.5rem]');
+    expect(homeSource).toContain('max-[359px]:leading-[1.22]');
     expect(homeSource).not.toContain('max-[359px]:leading-[0.98]');
     expect(homeSource).toContain('max-[359px]:hidden');
     expect(homeSource).toContain('ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center');
     expect(homeSource).toContain('h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto');
-    expect(homeSource).toContain('motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto');
+    expect(homeSource).toContain('text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4');
   });
 
   it("keeps a single in-flow mobile back control instead of a floating exit", () => {
