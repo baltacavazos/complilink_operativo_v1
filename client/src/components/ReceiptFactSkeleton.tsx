@@ -52,7 +52,7 @@ export function ReceiptFactSkeleton({ slots }: { slots: ReceiptFactSlots }) {
               ) : (
                 <span
                   data-placeholder="true"
-                  className="block h-3 w-4/5 rounded-full bg-[#d9d9d9]"
+                  className="ap-read-skeleton block h-3 w-4/5 rounded-full bg-[#d9d9d9]"
                   aria-hidden="true"
                 />
               )}

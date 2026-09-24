@@ -112,7 +112,7 @@ export type HeliosOpinionContract = {
 };
 
 const DEFAULT_DISCLAIMER =
-  "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión del expediente y no sustituye asesoría profesional personalizada.";
+  "Esta es una opinión jurídica asistida por sistema. Sirve para orientar la revisión de tu caso y no sustituye asesoría profesional personalizada.";
 
 const LOCAL_REVIEW_DISCLAIMER =
   "Esta es una revisión local de lo que ya se lee en tus papeles. Sirve para orientar y no sustituye asesoría profesional. No consulta IMSS, SAT ni Infonavit en vivo.";

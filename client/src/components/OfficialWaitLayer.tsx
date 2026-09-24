@@ -1,13 +1,18 @@
 import { OFFICIAL_WAIT_STILL_TRYING } from "@shared/officialCheckCopy";
 
 export function OfficialWaitLayer({ status }: { status: string }) {
-  const state = status === "consultando" ? "Consultando" : "Pendiente";
+  const consulting = status === "consultando";
+  const chip = consulting ? "Pendiente" : "Sin dato hoy";
   return (
-    <p data-testid="official-wait-layer" className="mt-3 text-base leading-6 text-[#161616]">
-      <span data-testid="official-wait-state" className="font-semibold">
-        {state}.{" "}
+    <div data-testid="official-wait-layer" className="mt-3 space-y-2">
+      <span
+        data-testid="official-wait-state"
+        data-state={consulting ? "pendiente" : "sin-dato"}
+        className="ap-state-pill"
+      >
+        {chip}
       </span>
-      {OFFICIAL_WAIT_STILL_TRYING}
-    </p>
+      <p className="text-base leading-6 text-[#161616]">{OFFICIAL_WAIT_STILL_TRYING}</p>
+    </div>
   );
 }

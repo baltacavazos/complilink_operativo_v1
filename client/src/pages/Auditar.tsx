@@ -1258,7 +1258,7 @@ type AuditarCaptureMode = "camera" | "file";
 const COMPACT_MOBILE_UPLOAD_PRIMARY_ACTION_CLASS =
   "bg-teal-600 shadow-[0_18px_34px_-22px_rgba(13,148,136,0.58)] hover:bg-teal-700";
 const COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS =
-  "bg-slate-900 shadow-[0_18px_34px_-24px_rgba(15,23,42,0.42)] hover:bg-slate-950";
+  "border border-teal-700 bg-transparent text-teal-800 shadow-none hover:bg-teal-50";
 
 type ScanAssistAssessmentView = {
   readiness: "ready" | "retry" | "manual_review";
@@ -4341,6 +4341,43 @@ export function buildHeliosPriorityAlerts(params: {
   }
 
   return alerts.slice(0, 3);
+}
+
+function QueSigueCard() {
+  const [open, setOpen] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      return window.localStorage.getItem("ap-que-sigue-visto") !== "1";
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem("ap-que-sigue-visto", "1");
+    } catch {
+      /* el acordeón sigue usable si el navegador bloquea storage */
+    }
+  }, []);
+
+  return (
+    <article data-ap-next-step className="ap-next-step-card rounded-[1.25rem] border border-slate-200 p-4 shadow-sm">
+      <details
+        className="ap-guide-fold"
+        open={open}
+        onToggle={(event) => setOpen(event.currentTarget.open)}
+      >
+        <summary className="cursor-pointer text-sm font-semibold text-slate-950">Qué sigue ahora</summary>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          Se revisa en privado y no se integra sin tu confirmación.
+        </p>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el documento más útil para seguir.
+        </p>
+      </details>
+    </article>
+  );
 }
 
 export default function Auditar() {
@@ -10004,8 +10041,8 @@ export default function Auditar() {
           </section>
         ) : null}
 
-        <div className={`${shouldCompactPostUploadExperience ? "mt-0" : "mt-6"} grid gap-5 ${shouldCompactPostUploadExperience ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
-          <section className={shouldCompactPostUploadExperience ? "flex min-h-[32vh] w-full flex-col items-center justify-center space-y-1.5 rounded-[2rem] bg-slate-50 px-1 py-1.5" : "space-y-6"}>
+        <div className={`${shouldCompactPostUploadExperience ? "mt-2" : "mt-8"} grid gap-8 ${shouldCompactPostUploadExperience || !isDossierWorkspaceSection || isFirstDocumentFlow ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
+          <section className={shouldCompactPostUploadExperience ? "flex w-full flex-col items-stretch space-y-8" : "space-y-8"}>
             {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
               <>
                 {renderReceiptArrival(false)}
@@ -10415,20 +10452,7 @@ export default function Auditar() {
                   data-ap-status-cluster
                   className={`hidden gap-3 sm:grid ${shouldCompactPostUploadExperience || auth.canToggleUserView ? "sm:hidden" : ""}`}
                 >
-                  <article
-                    data-ap-next-step
-                    className="ap-next-step-card rounded-[1.25rem] border border-slate-200 p-4 shadow-sm"
-                  >
-                    <p className="text-sm font-semibold text-slate-950">
-                      Qué sigue ahora
-                    </p>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">
-                      Se revisa en privado y no se integra sin tu confirmación.
-                    </p>
-                    <p className="mt-3 text-sm leading-6 text-slate-600">
-                      Si ya tienes el recibo, súbelo ahora. Si dudas, la sugerencia activa te marca el documento más útil para seguir.
-                    </p>
-                  </article>
+                  <QueSigueCard />
                 </div>
               </div>
             </div>
@@ -11338,9 +11362,11 @@ export default function Auditar() {
                   </div>
                 ) : null}
 
-                <div
-                  className={`mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr] ${presentEmptyWorkerUpload || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
+                <details
+                  className={`ap-guide-fold mt-3 rounded-[1.1rem] border border-slate-200 bg-white px-3.5 py-3 ${presentEmptyWorkerUpload || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
                 >
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-800">Cómo lo revisamos</summary>
+                  <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
                   <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3.5">
                     <div className="flex items-start gap-2.5">
                       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700">
@@ -11416,11 +11442,16 @@ export default function Auditar() {
                       </button>
                     </div>
                   </div>
-                </div>
+                  </div>
+                </details>
 
                 {activeCaptureMode === "camera" &&
                 !shouldCompactMobileUploadEntry &&
                 !pendingDraft ? (
+                  <details className="ap-guide-fold mt-3 rounded-[1.1rem] border border-teal-100 bg-white px-3.5 py-3">
+                    <summary className="cursor-pointer text-sm font-semibold text-slate-800">
+                      Guía para la foto
+                    </summary>
                   <div className="mt-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
                     <div className="rounded-[1.1rem] border border-teal-100 bg-white p-3.5">
                       <p className="text-sm font-semibold text-slate-950">
@@ -11444,6 +11475,7 @@ export default function Auditar() {
                       </div>
                     </div>
                   </div>
+                  </details>
                 ) : null}
 
                 <input
@@ -11529,7 +11561,7 @@ export default function Auditar() {
                     ) : (
                       <>
                       <Button
-                        className={`${COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold text-white transition-all duration-200`}
+                        className={`${COMPACT_MOBILE_UPLOAD_SECONDARY_ACTION_CLASS} mx-auto h-[3.35rem] w-full max-w-[22rem] rounded-[1.35rem] px-5 text-[1.02rem] font-semibold transition-all duration-200`}
                         disabled={isAutoAnalyzingSelectedFile}
                         onClick={openPreferredPicker}
                       >

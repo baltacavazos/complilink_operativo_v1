@@ -43,6 +43,7 @@ export function WhatsappNotifyPreference() {
   return (
     <section
       data-testid="whatsapp-notify-preference"
+      data-channel-live={channelLive ? "true" : "false"}
       className="mb-4 rounded-[1.5rem] border border-slate-200 bg-white px-4 py-4 text-left shadow-sm sm:px-5"
     >
       <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Avisos</p>
@@ -50,16 +51,24 @@ export function WhatsappNotifyPreference() {
         <label htmlFor="whatsapp-notify-opt-in" className="text-base font-semibold text-slate-950">
           {WHATSAPP_NOTIFY_UI_COPY.title}
         </label>
-        <Switch
-          id="whatsapp-notify-opt-in"
-          data-testid="whatsapp-notify-opt-in"
-          checked={channelLive ? optIn : false}
-          disabled={!channelLive || update.isPending}
-          onCheckedChange={(next) => {
-            setOptIn(next);
-            setNotice(null);
-          }}
-        />
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          {channelLive ? null : (
+            <span data-testid="whatsapp-notify-unavailable" className="text-[11px] font-semibold text-slate-500">
+              No disponible
+            </span>
+          )}
+          <Switch
+            id="whatsapp-notify-opt-in"
+            data-testid="whatsapp-notify-opt-in"
+            checked={channelLive ? optIn : false}
+            disabled={!channelLive || update.isPending}
+            aria-disabled={!channelLive}
+            onCheckedChange={(next) => {
+              setOptIn(next);
+              setNotice(null);
+            }}
+          />
+        </div>
       </div>
       {channelLive ? (
         <>

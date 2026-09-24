@@ -68,11 +68,16 @@ export function WorkerOfficialResult({
     <section
       data-testid="official-check-card"
       data-worker-result="true"
-      className="ap-light-surface ap-surface-mint w-full rounded-[1.6rem] border px-4 py-5 text-left sm:px-6 sm:py-6"
+      className="ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.6rem] border px-4 py-4 text-left sm:px-5 sm:py-5"
     >
+      {showWaitLayer ? null : (
+        <span data-testid="result-status-chip" data-state="listo" className="ap-state-pill">
+          Listo
+        </span>
+      )}
       <h2
         data-testid="five-second-verdict-seen"
-        className="text-[1.7rem] font-semibold leading-[1.12] tracking-[-0.04em] text-[#111111] sm:text-[2.05rem]"
+        className="mt-3 text-[1.45rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.7rem]"
       >
         {presentation.verdict}
       </h2>

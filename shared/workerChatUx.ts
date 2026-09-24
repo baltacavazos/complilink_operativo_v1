@@ -57,12 +57,12 @@ export function hasInternalControlMarkers(value?: string | null): boolean {
 }
 
 export const WORKER_CHAT_SHEET_COPY = {
-  eyebrow: "Tu expediente, en palabras simples",
+  eyebrow: "Tu caso, en palabras simples",
   title: WORKER_CHAT_TITLE,
   description:
     "Soy tu asesor laboral de este caso. Te hablo con el resultado de TU consulta y con tu recibo. Si aún no hay resultado, te lo digo.",
   documentBadge: "Resultado de TU consulta",
-  capabilityBadge: "Solo este expediente",
+  capabilityBadge: "Solo este caso",
   officialSourcesHeading: WORKER_CHAT_SOURCES_HEADING,
   quickHighlights: [
     WORKER_CHAT_CLEAR_HEADING,
@@ -78,7 +78,7 @@ export const WORKER_CHAT_SHEET_COPY = {
   toneExplainedLabel: "Un poco más",
   toneBriefHint: "Va al punto, en pocas líneas.",
   toneExplainedHint: "Explica un poco más, todavía en palabras simples.",
-  placeholder: "Pregúntame de ESTE expediente. Ejemplo: ¿en mi recibo me descontaron IMSS?",
+  placeholder: "Pregúntame de ESTE caso. Ejemplo: ¿en mi recibo me descontaron IMSS?",
   emptyStateMessage:
     "Pregúntame del resultado de TU consulta y de tu recibo. Si aún no hay resultado, pulsa Consultar IMSS y SAT.",
   closeLabel: "Cerrar",

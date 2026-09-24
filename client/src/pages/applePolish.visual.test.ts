@@ -44,7 +44,7 @@ describe("Apple tip #3 — pulido visual", () => {
       "h-12 w-full rounded-full bg-teal-600 px-6 text-white hover:bg-teal-700 sm:w-auto",
     );
     expect(home).toContain(
-      "motion-hover-lift h-11 w-full rounded-full border-slate-200 bg-transparent px-5 text-sm font-medium text-slate-600 hover:bg-white sm:w-auto",
+      'className="text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4"',
     );
     expect(home).not.toContain(
       "motion-hover-lift h-12 w-full rounded-full border-slate-200 bg-white px-7 text-base text-slate-700 hover:bg-slate-50 sm:w-auto",

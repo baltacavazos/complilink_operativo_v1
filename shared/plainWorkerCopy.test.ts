@@ -19,6 +19,7 @@ describe("toPlainWorkerLandingCopy", () => {
     expect(toPlainWorkerLandingCopy("Tu recibo ya está en tu consulta.")).toBe(
       "Tu recibo ya está en tu consulta.",
     );
+    expect(toPlainWorkerLandingCopy("historial de tu tu caso")).toBe("historial de tu caso");
   });
 
   it("no deja la palabra expediente", () => {

@@ -24,5 +24,8 @@ export function toPlainWorkerLandingCopy(value: string): string {
     value,
   );
 
-  return next.replace(/[ \t]{2,}/g, " ").replace(/ +([.,;:!?])/g, "$1");
+  return next
+    .replace(/\btu\s+tu\s+caso\b/gi, "tu caso")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +([.,;:!?])/g, "$1");
 }

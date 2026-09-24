@@ -835,15 +835,6 @@ function SiteHeader() {
         </div>
 
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
-          <Button
-            variant="outline"
-            className="motion-hover-lift h-11 min-h-11 rounded-full border-white/15 bg-white/10 px-3 text-[0.8rem] font-semibold text-white hover:bg-white/14"
-            onClick={() => {
-              window.location.href = "/acceso?returnTo=/auditar";
-            }}
-          >
-            Entrar
-          </Button>
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
@@ -1236,10 +1227,10 @@ function HeroSection() {
               <p className="min-w-0 text-pretty text-[0.95rem] font-semibold tracking-tight text-slate-950">
                 {activeHeroVariant.sectionTitle}
               </p>
-              <ul className="mt-2.5 space-y-2">
+              <ul className="mt-1.5 space-y-1 sm:mt-2.5 sm:space-y-1.5">
                 {activeHeroVariant.checklist.map((item) => (
-                  <li key={item} className="flex min-w-0 items-start gap-2 text-sm leading-5 text-slate-700">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
+                  <li key={item} className="flex min-w-0 items-start gap-2 text-[0.84rem] font-normal leading-5 text-slate-600 sm:text-sm">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-teal-600/80" strokeWidth={1.8} />
                     <span className="min-w-0 text-pretty">{item}</span>
                   </li>
                 ))}
@@ -1256,7 +1247,7 @@ function HeroSection() {
             ) : null}
 
             <p
-              className="motion-enter-soft mt-3 min-w-0 max-w-xl rounded-[1rem] border border-slate-200 bg-white/90 px-3.5 py-2.5 text-pretty text-sm font-medium leading-5 text-slate-700 shadow-sm"
+              className="ap-legal-note motion-enter-soft mt-2 min-w-0 max-w-xl rounded-[1rem] border border-slate-200/80 bg-white/70 px-3.5 py-2 text-pretty text-sm font-normal leading-5 text-slate-600 sm:mt-3 sm:bg-white/90 sm:font-medium sm:text-slate-700"
               style={{ ["--motion-delay" as string]: "230ms" }}
             >
               Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti. Leemos tu recibo; si das permiso, también podemos consultar IMSS y SAT. Si no hay respuesta, te lo decimos.
@@ -1321,7 +1312,7 @@ function HeroSection() {
                 <p className="min-w-0 text-pretty text-sm font-medium leading-5 text-slate-800">{activeHeroVariant.closingLine}</p>
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
-                <div className="flex flex-wrap gap-2 max-[359px]:hidden">
+                <div className="hidden flex-wrap gap-2 sm:flex">
                   {[
                     "Gratis para empezar",
                     "Tu empresa no lo ve",
@@ -3131,9 +3122,9 @@ function FinalCtaSection() {
 
 function MobileStickyCta() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/96 px-4 py-3 shadow-[0_-18px_40px_-28px_rgba(15,23,42,0.35)] backdrop-blur sm:hidden">
+    <div className="ap-mobile-sticky fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/80 bg-white/96 px-4 py-2.5 shadow-[0_-18px_40px_-28px_rgba(15,23,42,0.35)] backdrop-blur sm:hidden">
       <Button
-        className="h-12 w-full rounded-full bg-slate-950 text-base font-semibold text-white hover:bg-slate-900"
+        className="h-11 w-full rounded-full bg-teal-700 text-base font-semibold text-white hover:bg-teal-800"
         onClick={() => goToAuditFlow({ placement: "mobile_sticky_cta", source: "home_mobile_sticky" })}
       >
         {HOME_HERO_PRIMARY_CTA}

@@ -298,10 +298,10 @@ describe("chat UX helpers", () => {
 
   it("el panel usa Asesor laboral, las cuatro secciones y el sanitizador no reintroduce Helios", () => {
     expect(WORKER_CHAT_SHEET_COPY.title).toBe(WORKER_CHAT_TITLE);
-    expect(WORKER_CHAT_SHEET_COPY.eyebrow).toBe("Tu expediente, en palabras simples");
+    expect(WORKER_CHAT_SHEET_COPY.eyebrow).toBe("Tu caso, en palabras simples");
     expect(WORKER_CHAT_ASK_CTA).toBe("Preguntar al asesor");
     expect(WORKER_CHAT_SHEET_COPY.promptsHeading).toBe("Empieza por aquí");
-    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Solo este expediente");
+    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Solo este caso");
     expect(WORKER_CHAT_SHEET_COPY.quickHighlights).toEqual([
       "Respuesta clara",
       "Lo que sí se sabe",
@@ -318,7 +318,7 @@ describe("chat UX helpers", () => {
     expect(WORKER_CHAT_DISCLAIMER).toMatch(/resultado de TU consulta/i);
     expect(WORKER_CHAT_DISCLAIMER).not.toMatch(/no consultamos en vivo/i);
     expect(WORKER_CHAT_DISCLAIMER).toMatch(/no inventamos que tu patr[oó]n cumple/i);
-    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Solo este expediente");
+    expect(WORKER_CHAT_SHEET_COPY.capabilityBadge).toBe("Solo este caso");
     expect(WORKER_CHAT_SHEET_COPY.documentBadge).toBe("Resultado de TU consulta");
   });
 

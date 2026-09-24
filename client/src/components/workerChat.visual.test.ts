@@ -42,7 +42,7 @@ describe("worker chat visual polish", () => {
     expect(sheet).toContain("line-clamp-3");
     expect(sheet).toContain("officialTitles");
     expect(helpers).toContain('title: WORKER_CHAT_TITLE');
-    expect(helpers).toContain("Tu expediente, en palabras simples");
+    expect(helpers).toContain("Tu caso, en palabras simples");
     expect(helpers).toContain('WORKER_CHAT_TITLE = "Asesor laboral"');
     expect(chat).toContain('variant?: "default" | "calm"');
     expect(chat).toContain("ap-chat-bubble-user");
