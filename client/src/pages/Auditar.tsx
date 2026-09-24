@@ -11,6 +11,8 @@ import {
   type HeliosCopilotResponseTone,
 } from "@/components/HeliosCopilotSheet";
 import CeoPanelDrawer from "@/components/CeoPanelDrawer";
+import { InfonavitDocumentUpload } from "@/components/InfonavitDocumentUpload";
+import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { isWorkerIdentifierLine, WorkerOfficialResult, WorkerRegistrationFold } from "@/components/WorkerOfficialResult";
 import {
   ReceiptArrival,
@@ -59,6 +61,7 @@ import {
   INSTITUTE_SILENCE_RETRY,
   INSTITUTE_WAITING_DETAIL,
   INSTITUTE_WAITING_HEADLINE,
+  OFFICIAL_FACT_ARRIVED_NOTICE,
   OFFICIAL_CONSULTING_HEADLINE,
   OFFICIAL_CHECK_CONSENT,
   canDispatchOfficialConsult,
@@ -68,10 +71,12 @@ import {
   liveSatFactLines,
   pickPromptOfficialCheck,
   resolveBriefingWorkerRfc,
+  readOfficialSourceOutcomes,
   resolveOfficialCheckDisplay,
   shouldPollOfficialCheck,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
+import { shouldOfferInfonavitDocumentUpload } from "@shared/infonavitMiCuentaDocument";
 import {
   WORKER_CHAT_NO_CONSULTA_EMPTY,
   alignVisibleChatWithBriefing,
@@ -6438,6 +6443,10 @@ export default function Auditar() {
       : officialCaseBriefing.missingIdentityDetail,
   });
   const officialCheckHeadline = officialCheckDisplay.headline;
+  const offerInfonavitDocument = shouldOfferInfonavitDocumentUpload(
+    officialCaseBriefing.officialCheck ?? officialCheckSummary,
+  );
+  const infonavitDocumentSlot = offerInfonavitDocument ? <InfonavitDocumentUpload /> : null;
   const workerPocketDetail = buildWorkerPocketLead(
     officialCaseBriefing.facts,
     officialCaseBriefing.hechoLines,
@@ -6445,6 +6454,20 @@ export default function Auditar() {
   const officialWaitLeads =
     !officialCheckDisplay.silence &&
     (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
+  const officialWaitSeenRef = useRef(false);
+  useEffect(() => {
+    if (officialWaitLeads) {
+      officialWaitSeenRef.current = true;
+      return;
+    }
+    if (!officialWaitSeenRef.current) return;
+    const arrived = readOfficialSourceOutcomes(
+      officialCaseBriefing.officialCheck ?? officialCheckSummary,
+    ).some((item) => item.status === "vivo" && item.hechos.length > 0);
+    if (!arrived) return;
+    officialWaitSeenRef.current = false;
+    sonnerToast(OFFICIAL_FACT_ARRIVED_NOTICE, { id: "official-fact-arrived" });
+  }, [officialWaitLeads, officialCaseBriefing.officialCheck, officialCheckSummary]);
   const lastUploadResultHeadline = toHumanResultTitle(
     (lastUpload ? lastUploadFactSignal.headline : null) ??
       plainWorkerCopy(lastHeliosOpinion?.resultCard?.headline) ??
@@ -9159,6 +9182,7 @@ export default function Auditar() {
               window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
             }}
           />
+          {infonavitDocumentSlot}
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
               <AlertTitle>No pudimos completar esto</AlertTitle>
@@ -9193,7 +9217,10 @@ export default function Auditar() {
             <div className="mt-5">{renderReceiptArrival()}</div>
             <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
             {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
-              <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
+              <>
+                <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
+                <OfficialWaitLayer status={officialCheckDisplay.status} />
+              </>
             ) : (
               <>
                 <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
@@ -9304,6 +9331,7 @@ export default function Auditar() {
                 {officialCheckDisplay.buttonLabel}
               </Button>
             </div>
+            {infonavitDocumentSlot}
             {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos completar esto</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
             <p className="mt-5 text-sm leading-6 text-slate-700">Guardar esta revisión es opcional. Puedes consultar IMSS y SAT ahora y crear una cuenta después si quieres conservar el resultado.</p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -9941,6 +9969,7 @@ export default function Auditar() {
                     verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 />
+                {infonavitDocumentSlot}
               </>
             ) : null}
             {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
@@ -9951,6 +9980,7 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                   {officialCheckDisplay.detail}
                 </p>
+                {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
                 {renderReceiptArrival(false)}
                 {workerPocketDetail.lead.length ? (
                   <ul data-testid="official-check-pocket" className="mt-3 space-y-1 text-sm leading-6 text-[#161616]">
@@ -10018,6 +10048,7 @@ export default function Auditar() {
                     {INSTITUTE_SILENCE_ASK}
                   </Button>
                 ) : null}
+                {infonavitDocumentSlot}
               </div>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && officialCheckDisplay.silence ? (
@@ -10038,6 +10069,7 @@ export default function Auditar() {
                     verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 />
+                {infonavitDocumentSlot}
               </>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && !officialCheckDisplay.silence ? (
@@ -10069,9 +10101,12 @@ export default function Auditar() {
                             : lastUploadVerdict.label}
                         </h2>
                         {shouldCompactPostUploadExperience && officialWaitLeads ? (
-                          <p data-testid="official-check-waiting" className="mt-3 text-base leading-6 text-[#161616]">
-                            {officialCheckDisplay.detail}
-                          </p>
+                          <>
+                            <p data-testid="official-check-waiting" className="mt-3 text-base leading-6 text-[#161616]">
+                              {officialCheckDisplay.detail}
+                            </p>
+                            <OfficialWaitLayer status={officialCheckDisplay.status} />
+                          </>
                         ) : null}
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">
@@ -10180,6 +10215,7 @@ export default function Auditar() {
                                   {INSTITUTE_SILENCE_ASK}
                                 </Button>
                               ) : null}
+                              {infonavitDocumentSlot}
                             </div>
                           </details>
                           </>
