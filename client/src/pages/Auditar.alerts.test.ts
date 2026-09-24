@@ -670,7 +670,7 @@ describe("getUploadCompactGuardrails", () => {
   it("mantiene visibles versiones compactas de límites y privacidad para móvil", () => {
     expect(getUploadCompactGuardrails()).toEqual({
       fileRules: "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX · máximo 12 MB.",
-      privacyRules: "No se guarda en tu expediente hasta que tú lo confirmes. No lo compartimos con tu empresa.",
+      privacyRules: "No se guarda en tu caso hasta que tú lo confirmes. No lo compartimos con tu empresa.",
     });
   });
 });
