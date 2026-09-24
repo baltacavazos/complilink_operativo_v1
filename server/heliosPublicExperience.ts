@@ -7,6 +7,7 @@ import {
   getHeliosDocumentState,
 } from "./caseContracts";
 import { buildHeliosOpinion, type HeliosOpinion } from "./heliosIntegrationService";
+import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import {
   applyLaborFiscalNarrativeToOpinion,
   resolveLaborFiscalNarrative,
@@ -195,7 +196,9 @@ export function buildPublicHeliosHomeExamples(): PublicHeliosHomeExample[] {
     });
 
     const stripInternalName = (value: string) =>
-      value.replace(/\bHelios\b/g, "el asesor laboral").replace(/\bhelios\b/gi, "el asesor laboral");
+      toPlainWorkerLandingCopy(
+        value.replace(/\bHelios\b/g, "el asesor laboral").replace(/\bhelios\b/gi, "el asesor laboral"),
+      );
 
     return {
       id: scenario.id,
