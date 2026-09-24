@@ -51,23 +51,32 @@ export function WhatsappNotifyPreference() {
         <label htmlFor="whatsapp-notify-opt-in" className="text-base font-semibold text-slate-950">
           {WHATSAPP_NOTIFY_UI_COPY.title}
         </label>
-        <div className="flex shrink-0 flex-col items-end gap-1">
-          {channelLive ? null : (
-            <span data-testid="whatsapp-notify-unavailable" className="text-[11px] font-semibold text-slate-500">
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          {channelLive ? (
+            <Switch
+              id="whatsapp-notify-opt-in"
+              data-testid="whatsapp-notify-opt-in"
+              checked={optIn}
+              disabled={update.isPending}
+              onCheckedChange={(next) => {
+                setOptIn(next);
+                setNotice(null);
+              }}
+            />
+          ) : (
+            <span
+              data-testid="whatsapp-notify-unavailable"
+              aria-disabled="true"
+              className="ap-wa-unavailable-control"
+            >
               No disponible
             </span>
           )}
-          <Switch
-            id="whatsapp-notify-opt-in"
-            data-testid="whatsapp-notify-opt-in"
-            checked={channelLive ? optIn : false}
-            disabled={!channelLive || update.isPending}
-            aria-disabled={!channelLive}
-            onCheckedChange={(next) => {
-              setOptIn(next);
-              setNotice(null);
-            }}
-          />
+          {channelLive ? null : (
+            <p data-testid="whatsapp-notify-coming-soon" className="max-w-[14rem] text-right text-xs font-medium leading-4 text-slate-600">
+              {WHATSAPP_NOTIFY_UI_COPY.comingSoon}
+            </p>
+          )}
         </div>
       </div>
       {channelLive ? (
@@ -103,11 +112,7 @@ export function WhatsappNotifyPreference() {
             {update.isPending ? "Guardando…" : WHATSAPP_NOTIFY_UI_COPY.save}
           </Button>
         </>
-      ) : (
-        <p data-testid="whatsapp-notify-coming-soon" className="mt-2 text-sm leading-6 text-slate-600">
-          {WHATSAPP_NOTIFY_UI_COPY.comingSoon}
-        </p>
-      )}
+      ) : null}
       {notice ? (
         <p role="status" className="mt-3 text-sm leading-6 text-slate-800">
           {notice}

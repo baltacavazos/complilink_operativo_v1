@@ -10042,7 +10042,7 @@ export default function Auditar() {
         ) : null}
 
         <div className={`${shouldCompactPostUploadExperience ? "mt-2" : "mt-8"} grid gap-8 ${shouldCompactPostUploadExperience || !isDossierWorkspaceSection || isFirstDocumentFlow ? "" : "xl:grid-cols-[1.2fr_0.8fr]"}`}>
-          <section className={shouldCompactPostUploadExperience ? "flex w-full flex-col items-stretch space-y-8" : "space-y-8"}>
+          <section className={shouldCompactPostUploadExperience ? "flex w-full flex-col items-stretch space-y-4" : "space-y-5"}>
             {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && officialCheckDisplay.silence ? (
               <>
                 {renderReceiptArrival(false)}
@@ -11299,19 +11299,6 @@ export default function Auditar() {
                   ref={uploadSectionRef}
                   className="mt-4 rounded-[1.25rem] border border-slate-200 bg-slate-50 p-3.5 sm:p-4"
                 >
-                  <div className={`flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5 ${presentEmptyWorkerUpload ? "hidden" : ""}`}>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
-                      <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
-                    </div>
-                    <div>
-                      <p className="font-semibold leading-5 text-slate-950">
-                        Foto o archivo para empezar
-                      </p>
-                      <p className="text-sm leading-5 text-slate-600">
-                        Foto o archivo. Lo revisamos al momento y después decides si se guarda.
-                      </p>
-                    </div>
-                  </div>
 
                 <div className="mt-4 hidden">
                   <article className="rounded-[1rem] border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-950">
@@ -11362,10 +11349,21 @@ export default function Auditar() {
                   </div>
                 ) : null}
 
-                <details
-                  className={`ap-guide-fold mt-3 rounded-[1.1rem] border border-slate-200 bg-white px-3.5 py-3 ${presentEmptyWorkerUpload || pendingDraft || shouldCompactMobileUploadEntry ? "hidden" : ""}`}
-                >
-                  <summary className="cursor-pointer text-sm font-semibold text-slate-800">Cómo lo revisamos</summary>
+                <details className="ap-guide-fold mt-3 rounded-[1.1rem] border border-slate-200/80 bg-white/70 px-3.5 py-2">
+                  <summary className="cursor-pointer text-sm font-medium text-slate-600">Cómo preparar el archivo</summary>
+                  <div className="mt-3 flex items-center gap-2.5 rounded-[1rem] border border-slate-200 bg-white px-3 py-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-600 text-white">
+                      <FileUp className="h-4.5 w-4.5" strokeWidth={1.8} />
+                    </div>
+                    <div>
+                      <p className="font-semibold leading-5 text-slate-950">
+                        Foto o archivo para empezar
+                      </p>
+                      <p className="text-sm leading-5 text-slate-600">
+                        Foto o archivo. Lo revisamos al momento y después decides si se guarda.
+                      </p>
+                    </div>
+                  </div>
                   <div className="mt-3 grid gap-3 lg:grid-cols-[1.1fr_0.9fr]">
                   <div className="rounded-[1.1rem] border border-sky-100 bg-sky-50 p-3.5">
                     <div className="flex items-start gap-2.5">
@@ -11443,15 +11441,7 @@ export default function Auditar() {
                     </div>
                   </div>
                   </div>
-                </details>
-
-                {activeCaptureMode === "camera" &&
-                !shouldCompactMobileUploadEntry &&
-                !pendingDraft ? (
-                  <details className="ap-guide-fold mt-3 rounded-[1.1rem] border border-teal-100 bg-white px-3.5 py-3">
-                    <summary className="cursor-pointer text-sm font-semibold text-slate-800">
-                      Guía para la foto
-                    </summary>
+                  {activeCaptureMode === "camera" && !pendingDraft ? (
                   <div className="mt-3 grid gap-3 lg:grid-cols-[0.95fr_1.05fr]">
                     <div className="rounded-[1.1rem] border border-teal-100 bg-white p-3.5">
                       <p className="text-sm font-semibold text-slate-950">
@@ -11475,8 +11465,8 @@ export default function Auditar() {
                       </div>
                     </div>
                   </div>
-                  </details>
-                ) : null}
+                  ) : null}
+                </details>
 
                 <input
                   ref={cameraInputRef}
@@ -11645,7 +11635,7 @@ export default function Auditar() {
 
                   <div
                     aria-describedby="upload-guardrails-summary"
-                    className={`${pendingDraft && !confirmDraftMutation.isPending ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 shadow-sm transition-all duration-500 ease-out ${uploadProgressState.toneClasses}`}
+                    className={`${pendingDraft && !confirmDraftMutation.isPending ? "mt-3 hidden sm:block" : "mt-3"} rounded-[0.95rem] border px-3 py-2.5 transition-all duration-500 ease-out ${!selectedFile && !pendingDraft ? "ap-upload-quiet shadow-none" : "shadow-sm"} ${uploadProgressState.toneClasses}`}
                   >
                     <p
                       className="sr-only"

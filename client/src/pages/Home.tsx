@@ -1192,10 +1192,10 @@ function HeroSection() {
     <section
       ref={heroSectionRef}
       id="top"
-      className="ap-hero relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-3 pt-3 sm:pb-8 sm:pt-8 lg:pt-10"
+      className="ap-hero relative overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.16),_transparent_40%),radial-gradient(circle_at_top_right,_rgba(125,211,252,0.14),_transparent_30%),linear-gradient(180deg,_#f9fcfb_0%,_#eef6f5_100%)] pb-2 pt-2 sm:pb-4 sm:pt-4 lg:pt-4"
     >
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
-      <div className="container relative z-10 mx-auto grid max-w-6xl items-start gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 xl:gap-12">
+      <div className="container relative z-10 mx-auto grid max-w-6xl items-start gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 xl:gap-8">
         <div className="ap-hero-copy mx-auto flex min-w-0 max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
           <div
             className="ap-status-chip motion-enter-soft inline-flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
@@ -1291,7 +1291,7 @@ function HeroSection() {
             </div>
 
           <div
-            className="motion-enter-soft order-2 mt-5 flex w-full max-w-sm flex-col gap-3 max-[359px]:gap-3 sm:order-none sm:mt-5 sm:max-w-xl"
+            className="ap-hero-cta motion-enter-soft order-2 mt-4 flex w-full max-w-sm flex-col gap-3 max-[359px]:gap-3 sm:order-none sm:mt-4 sm:max-w-xl"
             style={{ ["--motion-delay" as string]: "300ms" }}
           >
             <div className="ap-hero-cta-row flex w-full flex-col items-stretch gap-3 sm:flex-row sm:items-center">
@@ -1337,16 +1337,16 @@ function HeroSection() {
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
           <div
             id="ejemplo-reporte"
-            className="motion-enter-soft relative overflow-hidden rounded-[2rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 max-[359px]:p-4 sm:p-6"
+            className="motion-enter-soft relative overflow-hidden rounded-[1.6rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-3.5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 max-[359px]:p-3 sm:p-4"
             style={{ ["--motion-delay" as string]: "220ms" }}
           >
-            <div className="rounded-[1.4rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] max-[359px]:px-3.5 max-[359px]:py-3.5 sm:px-5 sm:py-5">
+            <div className="rounded-[1.2rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:px-4 sm:py-3.5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold tracking-tight text-slate-500">
                     Así se ve tu resultado
                   </p>
-                  <p className="mt-2 max-w-[16ch] text-[1.82rem] font-bold leading-[0.95] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[14ch] max-[359px]:text-[1.62rem] sm:text-[2.2rem]">
+                  <p className="mt-1 max-w-[16ch] text-[1.45rem] font-bold leading-[1.02] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[14ch] max-[359px]:text-[1.32rem] sm:text-[1.7rem]">
                     {activeReportDemoCopy.title}
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">

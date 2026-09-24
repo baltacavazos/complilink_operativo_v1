@@ -1489,8 +1489,77 @@ html.dark .audita-auditar .ap-result-detail a.ap-btn-on-dark {
   background: transparent !important;
 }
 
-.ap-chat-disclaimer {
-  color: #0f172a !important;
+.ap-chat-disclaimer,
+.ap-worker-chat .ap-chat-disclaimer {
+  color: #0b1220 !important;
+  font-weight: 600 !important;
+}
+
+.ap-worker-chat .ap-chat-composer {
+  margin-bottom: 0.45rem;
+}
+
+.ap-chat-footer {
+  padding-bottom: 1.25rem !important;
+}
+
+html:not(.dark) .audita-auditar .ap-wa-unavailable-control {
+  color: #334155 !important;
+  border-color: #64748b !important;
+}
+
+.audita-auditar .ap-wa-unavailable-control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.7rem;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  border: 1.5px dashed #94a3b8 !important;
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  box-shadow: none !important;
+  pointer-events: none;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.audita-auditar .ap-upload-quiet {
+  margin-top: 0.55rem !important;
+  padding: 0.4rem 0.7rem !important;
+  background: transparent !important;
+  border-style: dashed !important;
+  box-shadow: none !important;
+}
+
+@media (min-width: 1024px) {
+  .audita-home .ap-hero {
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.9rem !important;
+  }
+
+  .audita-home .ap-hero-headline {
+    margin-top: 0.45rem !important;
+    font-size: 2.15rem !important;
+    line-height: 1.08 !important;
+  }
+
+  .audita-home .ap-hero-support {
+    margin-top: 0.4rem !important;
+  }
+
+  .audita-home .ap-hero-copy > .ap-hero-cta {
+    order: 1;
+    margin-top: 0.75rem;
+  }
+
+  .audita-home .ap-hero-copy > :not(.ap-status-chip):not(.ap-hero-headline):not(.ap-hero-support):not(.ap-hero-cta) {
+    order: 2;
+  }
 }
 
 .audita-home button[class*="bg-teal-"],

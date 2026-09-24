@@ -116,7 +116,7 @@ describe("compact mobile upload entry", () => {
   });
 
   it("equilibra el primer viewport con CTA consistente y una lectura más corta del resultado", () => {
-    expect(auditarSource).toContain('"flex w-full flex-col items-stretch space-y-8"');
+    expect(auditarSource).toContain('"flex w-full flex-col items-stretch space-y-4"');
     expect(auditarSource).not.toContain("min-h-[32vh]");
     expect(auditarSource).toContain("lastUploadFiveSecond.seenLine");
     expect(auditarSource).toContain("lastUploadFiveSecond.nextStepLine");

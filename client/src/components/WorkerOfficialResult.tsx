@@ -68,7 +68,7 @@ export function WorkerOfficialResult({
     <section
       data-testid="official-check-card"
       data-worker-result="true"
-      className="ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.6rem] border px-4 py-4 text-left sm:px-5 sm:py-5"
+      className="ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.35rem] border px-3.5 py-3 text-left sm:px-4 sm:py-3.5"
     >
       {showWaitLayer ? null : (
         <span data-testid="result-status-chip" data-state="listo" className="ap-state-pill">
@@ -77,7 +77,7 @@ export function WorkerOfficialResult({
       )}
       <h2
         data-testid="five-second-verdict-seen"
-        className="mt-3 text-[1.45rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.7rem]"
+        className="mt-2 text-[1.22rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.38rem]"
       >
         {presentation.verdict}
       </h2>
@@ -85,15 +85,15 @@ export function WorkerOfficialResult({
         {presentation.verdict}
       </p>
       {pocketLead.length ? (
-        <ul data-testid="official-check-pocket" className="mt-4 space-y-1 text-[0.98rem] leading-6 text-[#161616]">
+        <ul data-testid="official-check-pocket" className="mt-2 space-y-0.5 text-sm leading-5 text-[#161616]">
           {pocketLead.slice(0, 3).map((line) => (
             <li key={line}>{line}</li>
           ))}
         </ul>
       ) : null}
-      <div data-testid="official-check-silence" className="mt-4 space-y-3">
+      <div data-testid="official-check-silence" className="mt-2 space-y-1">
         {lines.map((line) => (
-          <p key={line.label} className="text-[0.98rem] leading-6 text-[#161616]">
+          <p key={line.label} className="text-sm leading-5 text-[#161616]">
             <span className="font-semibold text-[#111111]">{line.label}. </span>
             {line.text}
           </p>
@@ -105,7 +105,7 @@ export function WorkerOfficialResult({
       {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
         <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
       ) : null}
-      <details className="ap-result-detail mt-4 rounded-[1rem] border border-[#e4e4e4] px-3 py-3" ref={detailRef}>
+      <details className="ap-result-detail mt-2 rounded-[1rem] border border-[#e4e4e4] px-3 py-2" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {visibleSources.length ? (
           <ul data-testid="official-check-sources" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
@@ -132,7 +132,7 @@ export function WorkerOfficialResult({
         <Button
           type="button"
           data-testid="official-check-cta"
-          className="ap-btn-on-dark mt-5 h-12 w-full rounded-full bg-[#111111] text-base font-semibold text-white hover:bg-[#222222]"
+          className="ap-btn-on-dark mt-3 h-11 w-full rounded-full bg-[#111111] text-base font-semibold text-white hover:bg-[#222222]"
           disabled={retryPending}
           onClick={() => {
             if (presentation.retryLabel === POCKET_CTA_MISMATCH) {
@@ -156,7 +156,7 @@ export function WorkerOfficialResult({
       <button
         type="button"
         data-testid="official-check-chat-cta"
-        className="mt-3 block w-full bg-transparent text-center text-sm font-semibold text-[#161616] underline decoration-[#161616]/40 underline-offset-4"
+        className="mt-2 block w-full bg-transparent text-center text-sm font-semibold text-[#161616] underline decoration-[#161616]/40 underline-offset-4"
         onClick={onAsk}
       >
         {presentation.askLabel}
