@@ -30,6 +30,11 @@ describe("Home guest · consulta IMSS y SAT", () => {
     expect(card).toContain("{OFFICIAL_CHECK_CONSENT}");
     expect(card).toContain("{officialCheckDisplay.buttonLabel}");
     expect(card).toContain("guestOfficialCheck.useMutation()");
+    expect(card).toContain("useGuestOfficialFact");
+    expect(card).toContain("<GuestOfficialFactNotice");
+    expect(card).toContain("writeHomeGuestOfficial");
+    expect(home).toContain("auditapatron_home_guest_official_v1");
+    expect(home).toContain("sessionStorage");
     expect(card).toContain("resolveOfficialCheckDisplay");
     expect(card).toContain("pickPromptOfficialCheck");
     expect(card).toContain("<OfficialWaitLayer");

@@ -12,7 +12,9 @@ import { humanizeDossierProgressLabel, humanizeWorkerVisibleScalar, sanitizeClie
 import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
+import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
 import { trpc } from "@/lib/trpc";
+import { mergeGuestOfficialCheck, useGuestOfficialFact } from "@/lib/useGuestOfficialFact";
 import {
   OFFICIAL_CHECK_CONSENT,
   pickPromptOfficialCheck,
@@ -266,6 +268,7 @@ type StoredHomeGuestPreview = {
 };
 
 const HOME_GUEST_PREVIEW_STORAGE_KEY = "auditapatron_home_guest_preview_v1";
+const HOME_GUEST_OFFICIAL_STORAGE_PREFIX = "auditapatron_home_guest_official_v1";
 const HOME_GUEST_PREVIEW_RETURN_TO = "/?resume=guest-preview";
 
 async function fileToBase64(file: File) {
@@ -1435,6 +1438,37 @@ function HeroSection() {
   );
 }
 
+function readHomeGuestOfficial(guestPreviewId: string): {
+  officialCheck: OfficialCheckSummary | null;
+  arrivedAt: string | null;
+} | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(`${HOME_GUEST_OFFICIAL_STORAGE_PREFIX}:${guestPreviewId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { officialCheck?: OfficialCheckSummary | null; arrivedAt?: string | null };
+    return {
+      officialCheck: parsed.officialCheck ?? null,
+      arrivedAt: parsed.arrivedAt ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeHomeGuestOfficial(
+  guestPreviewId: string,
+  value: { officialCheck: OfficialCheckSummary | null; arrivedAt: string | null } | null,
+) {
+  if (typeof window === "undefined") return;
+  const key = `${HOME_GUEST_OFFICIAL_STORAGE_PREFIX}:${guestPreviewId}`;
+  if (!value?.officialCheck) {
+    window.sessionStorage.removeItem(key);
+    return;
+  }
+  window.sessionStorage.setItem(key, JSON.stringify(value));
+}
+
 function HomeGuestOfficialCheck({
   guestPreviewToken,
   guestPreviewId,
@@ -1444,8 +1478,31 @@ function HomeGuestOfficialCheck({
 }) {
   const guestOfficialCheckMutation = trpc.cases.guestOfficialCheck.useMutation();
   const [officialCheckConsent, setOfficialCheckConsent] = useState(false);
-  const [officialCheckResult, setOfficialCheckResult] = useState<OfficialCheckSummary | null>(null);
+  const [officialCheckResult, setOfficialCheckResult] = useState<OfficialCheckSummary | null>(
+    () => readHomeGuestOfficial(guestPreviewId)?.officialCheck ?? null,
+  );
+  const [officialFactArrivedAt, setOfficialFactArrivedAt] = useState<string | null>(
+    () => readHomeGuestOfficial(guestPreviewId)?.arrivedAt ?? null,
+  );
   const [officialCheckError, setOfficialCheckError] = useState<string | null>(null);
+  const guestOfficialFactQuery = useGuestOfficialFact({
+    guestPreviewToken,
+    enabled: true,
+    localCheck: officialCheckResult,
+  });
+  useEffect(() => {
+    const incoming = guestOfficialFactQuery.data?.officialCheck;
+    if (!incoming) return;
+    const arrivedAt = guestOfficialFactQuery.data?.arrivedAt ?? null;
+    setOfficialCheckResult((current) => mergeGuestOfficialCheck(current, incoming) ?? current);
+    setOfficialFactArrivedAt((current) => (current === arrivedAt ? current : arrivedAt));
+  }, [guestOfficialFactQuery.data]);
+  useEffect(() => {
+    writeHomeGuestOfficial(guestPreviewId, {
+      officialCheck: officialCheckResult,
+      arrivedAt: officialFactArrivedAt,
+    });
+  }, [guestPreviewId, officialCheckResult, officialFactArrivedAt]);
   const officialCheckSummary = pickPromptOfficialCheck({
     consentGranted: officialCheckConsent,
     candidates: [officialCheckResult],
@@ -1473,6 +1530,7 @@ function HomeGuestOfficialCheck({
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
+        setOfficialFactArrivedAt(null);
         if (
           result.officialCheck.consentGranted ||
           result.officialCheck.overallStatus !== "sin_permiso"
@@ -1495,6 +1553,11 @@ function HomeGuestOfficialCheck({
       data-guest-preview-id={guestPreviewId}
       className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left lg:col-span-2"
     >
+      <GuestOfficialFactNotice
+        summary={officialCheckSummary}
+        arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? officialFactArrivedAt}
+        waiting={officialWaitLeads}
+      />
       <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-[#161616]">
         {officialCheckDisplay.headline}
       </p>

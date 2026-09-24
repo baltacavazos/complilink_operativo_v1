@@ -35,7 +35,9 @@ import {
   OFFICIAL_RESULT_NOTIFICATION_KIND,
   hasUsableOfficialFact,
 } from "@shared/officialResultNotification";
+import { isOfficialFactArrivedKind } from "@shared/guestOfficialFact";
 import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
+import { persistGuestOfficialFact } from "./guestOfficialFactStore";
 
 const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
 
@@ -171,21 +173,45 @@ const OFFICIAL_CHECK_ALIAS_EVENTS = new Set([
   "official.check.requested",
   "official.check.completed",
   "official.check.returned",
+  "official_fact_arrived",
 ]);
 
 function clipStoredRawPayload(rawBody: string) {
   return rawBody.length <= RAW_PAYLOAD_STORE_LIMIT ? rawBody : rawBody.slice(0, RAW_PAYLOAD_STORE_LIMIT);
 }
 
+function readFollowupRecord(root: Record<string, unknown>) {
+  return (
+    toRecord(root.followup) ??
+    toRecord(toRecord(root.metadata)?.followup) ??
+    toRecord(toRecord(root.result)?.followup) ??
+    toRecord(toRecord(root.currentResponseEvent)?.followup) ??
+    null
+  );
+}
+
+export function readOfficialFactFollowupKind(body: unknown): string | null {
+  const root = toRecord(body);
+  if (!root) return null;
+  const followup = readFollowupRecord(root);
+  return (
+    toStringFromUnknown(followup?.kind) ??
+    toStringFromUnknown(root.notification_kind) ??
+    toStringFromUnknown(toRecord(root.metadata)?.notification_kind)
+  );
+}
+
 function readReturnContractPieces(root: Record<string, unknown>) {
   const current = toRecord(root.currentResponseEvent);
   const currentResult = toRecord(current?.result);
   const result = toRecord(root.result) ?? toRecord(root.analysisResults) ?? currentResult;
+  const followup = readFollowupRecord(root);
   const officialCheck =
     toRecord(result?.officialCheck) ??
     toRecord(root.officialCheck) ??
-    toRecord(currentResult?.officialCheck);
-  return { current, result, officialCheck };
+    toRecord(currentResult?.officialCheck) ??
+    toRecord(followup?.officialCheck);
+  return { current, result, officialCheck, followup };
 }
 
 function hasOfficialCheckContract(officialCheck: Record<string, unknown> | null) {
@@ -196,10 +222,11 @@ export function adaptCompliLinkReturnBody(body: unknown): Record<string, unknown
   const root = toRecord(body);
   if (!root) return {};
 
-  const { current, result, officialCheck } = readReturnContractPieces(root);
+  const { current, result, officialCheck, followup } = readReturnContractPieces(root);
   const hasOfficialCheck = hasOfficialCheckContract(officialCheck);
+  const factArrived = isOfficialFactArrivedKind(readOfficialFactFollowupKind(root));
   const hasReturnContract = Boolean(current) || root.contractVersion === "auditapatron_return_contract_v1";
-  if (!hasReturnContract && !hasOfficialCheck) return root;
+  if (!hasReturnContract && !hasOfficialCheck && !factArrived) return root;
 
   const topEvent = toNonEmptyString(root.event) ?? toNonEmptyString(root.eventName);
   const nestedEvent = toNonEmptyString(current?.eventName) ?? toNonEmptyString(current?.event);
@@ -210,7 +237,7 @@ export function adaptCompliLinkReturnBody(body: unknown): Record<string, unknown
     topEvent;
 
   if (
-    hasOfficialCheck &&
+    (hasOfficialCheck || factArrived) &&
     event !== AUDITAPATRON_OUTBOUND_EVENT &&
     (!event || !isSupportedCompliLinkReturnEvent(event) || OFFICIAL_CHECK_ALIAS_EVENTS.has(event))
   ) {
@@ -271,6 +298,7 @@ export function adaptCompliLinkReturnBody(body: unknown): Record<string, unknown
     result: result ?? null,
     officialCheck: officialCheck ?? null,
     currentResponseEvent: current ?? null,
+    ...(followup ? { followup } : {}),
     metadata: {
       ...(metadataRecord ?? {}),
       ...(correlationId ? { correlationId } : {}),
@@ -868,10 +896,11 @@ export async function ingestCompliLinkReturnPayload(params: {
   const payload = adapted as Partial<CompliLinkReturnEnvelope> & Record<string, unknown>;
   const { rawBody, signatureHeader, timestampHeader } = params;
   const hasOfficialCheck = hasOfficialCheckContract(toRecord(payload.officialCheck));
+  const factArrived = isOfficialFactArrivedKind(readOfficialFactFollowupKind(payload));
   const eventName = typeof payload.event === "string" ? payload.event : "";
   const explicitDocumentId = toStringFromUnknown(payload.documentId);
 
-  if (!eventName || (!explicitDocumentId && !hasOfficialCheck)) {
+  if (!eventName || (!explicitDocumentId && !hasOfficialCheck && !factArrived)) {
     return {
       ok: false as const,
       statusCode: 400,
@@ -879,7 +908,7 @@ export async function ingestCompliLinkReturnPayload(params: {
         received: false,
         issues: [
           ...(!eventName ? buildWebhookIssues("missing_field", "The event field is required.", "event") : []),
-          ...(!explicitDocumentId && !hasOfficialCheck
+          ...(!explicitDocumentId && !hasOfficialCheck && !factArrived
             ? buildWebhookIssues("missing_field", "The documentId field is required.", "documentId")
             : []),
         ],
@@ -926,7 +955,7 @@ export async function ingestCompliLinkReturnPayload(params: {
 
   const receivedAt = new Date();
 
-  if (!resolvedDocument && hasOfficialCheck) {
+  if (!resolvedDocument && (hasOfficialCheck || factArrived)) {
     const caseRow = await findLaborCaseByTraceOrId([
       correlationId,
       traceId,
@@ -1009,10 +1038,25 @@ export async function ingestCompliLinkReturnPayload(params: {
         };
       }
 
+      const guestFact = persistGuestOfficialFact({
+        lookupIds: [
+          correlationId,
+          traceId,
+          toStringFromUnknown(payload.sourceCaseId),
+          toStringFromUnknown(payload.idempotencyKey),
+          toStringFromUnknown(toRecord(payload.metadata)?.caseId),
+          toStringFromUnknown(toRecord(payload.metadata)?.guestPreviewId),
+          toStringFromUnknown(toRecord(payload.metadata)?.traceId),
+        ],
+        officialCheck: liveCheck,
+        arrivedAt: receivedAt.toISOString(),
+      });
       console.info("[AuditaPatron inbound] retorno official_check aceptado sin expediente local", {
         correlationId,
         traceId,
         eventId,
+        followupKind: readOfficialFactFollowupKind(payload),
+        guestFactStored: Boolean(guestFact),
         sat: liveCheck?.checks.find((item) => item.source === "sat")?.status ?? null,
         imss: liveCheck?.checks.find((item) => item.source === "imss")?.status ?? null,
         infonavit: liveCheck?.checks.find((item) => item.source === "infonavit")?.status ?? null,
