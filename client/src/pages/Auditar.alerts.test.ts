@@ -693,6 +693,14 @@ describe("dossier history copy", () => {
     expect(auditarSource).toContain(
       "No se guarda en tu caso hasta que tú lo confirmes. No lo compartimos con tu empresa.",
     );
+    expect(auditarSource).toContain("qué ya forma parte de tu caso.");
+    expect(auditarSource).toContain(
+      "mientras sigue guardado y disponible dentro de tu caso.",
+    );
+    expect(auditarSource).toContain("Alta utilidad para tu caso");
+    expect(auditarSource).toContain("Marco legal visible para tu caso");
+    expect(auditarSource).not.toMatch(/expediente digital/i);
+    expect(auditarSource).not.toContain("para tu expediente");
   });
 });
 
