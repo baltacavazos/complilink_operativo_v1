@@ -15,7 +15,7 @@ import {
   buildCommerceEntitlements,
   COMMERCE_ONE_SHOTS,
   COMMERCE_PLANS,
-  formatCommercePriceMx,
+  formatCommerceIvaSticker,
   getCommerceOneShotDefinition,
   getCommercePlanDefinition,
   isCommerceOneShotKey,
@@ -581,7 +581,7 @@ export async function createCommerceCheckoutSession(params: {
 
     return {
       url: session.url,
-      productLabel: `${plan.name} · ${formatCommercePriceMx(plan.monthlyPriceMx)}/mes`,
+      productLabel: `${plan.name} · ${formatCommerceIvaSticker(plan.monthlyPriceMx)}`,
     };
   }
 
@@ -603,7 +603,7 @@ export async function createCommerceCheckoutSession(params: {
 
   return {
     url: session.url,
-    productLabel: `${oneShot.name} · ${formatCommercePriceMx(oneShot.priceMx)}`,
+    productLabel: `${oneShot.name} · ${formatCommerceIvaSticker(oneShot.priceMx)}`,
   };
 }
 
@@ -917,11 +917,11 @@ export function buildCommercialSnapshot() {
   return {
     plans: COMMERCE_PLANS.map((plan) => ({
       ...plan,
-      formattedPrice: plan.monthlyPriceMx === 0 ? "Gratis" : `${formatCommercePriceMx(plan.monthlyPriceMx)}/mes`,
+      formattedPrice: plan.monthlyPriceMx === 0 ? "Gratis" : formatCommerceIvaSticker(plan.monthlyPriceMx),
     })),
     oneShots: COMMERCE_ONE_SHOTS.map((item) => ({
       ...item,
-      formattedPrice: formatCommercePriceMx(item.priceMx),
+      formattedPrice: formatCommerceIvaSticker(item.priceMx),
     })),
   };
 }

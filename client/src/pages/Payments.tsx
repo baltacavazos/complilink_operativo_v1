@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
+import { COMMERCE_PRICE_FOOTER } from "@shared/commerce";
 import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2, Loader2, ReceiptText } from "lucide-react";
 
@@ -173,6 +174,7 @@ export default function Payments() {
           <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
             <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
             <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
+            <p className="text-slate-600">{COMMERCE_PRICE_FOOTER}</p>
           </div>
         </section>
 

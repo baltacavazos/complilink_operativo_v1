@@ -1,7 +1,7 @@
 import {
   COMMERCE_ONE_SHOTS,
   COMMERCE_PLANS,
-  formatCommercePriceMx,
+  formatCommerceIvaSticker,
   formatFreePlanLandingPrinciple,
   FREE_TIER_EXHAUSTED_COPY,
 } from "@shared/commerce";
@@ -79,7 +79,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
       description: hasEnoughContext
         ? visiblePricingCopy(FREE_TIER_EXHAUSTED_COPY)
         : "Puedes seguir usando la parte gratuita. Cuando quieras más contexto, comparativas o productos listos para compartir, aquí mismo lo activas.",
-      priceLabel: `${formatCommercePriceMx(essentialPlan.monthlyPriceMx)}/mes desde`,
+      priceLabel: formatCommerceIvaSticker(essentialPlan.monthlyPriceMx),
       primaryCtaLabel: "Ver planes y activar",
       secondaryCtaLabel: "Seguir gratis por ahora",
       reassurance:
@@ -92,7 +92,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         priceLabel:
           plan.monthlyPriceMx <= 0
             ? "Gratis"
-            : `${formatCommercePriceMx(plan.monthlyPriceMx)}/mes`,
+            : formatCommerceIvaSticker(plan.monthlyPriceMx),
         ctaLabel: plan.ctaLabel,
         description: visiblePricingCopy(plan.description),
         highlighted: plan.highlighted,
@@ -102,7 +102,7 @@ export function getAuditapatronPricingExperience(documentCount: number): Auditap
         key: item.key,
         name: item.name,
         badge: item.badge,
-        priceLabel: formatCommercePriceMx(item.priceMx),
+        priceLabel: formatCommerceIvaSticker(item.priceMx),
         ctaLabel: item.ctaLabel,
         description: visiblePricingCopy(item.description),
         deliveryLabel: item.deliveryLabel,

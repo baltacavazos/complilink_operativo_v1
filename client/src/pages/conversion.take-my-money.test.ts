@@ -5,7 +5,9 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
+  COMMERCE_ONE_SHOTS,
   COMMERCE_PLANS,
+  COMMERCE_PRICE_FOOTER,
 } from "../../../shared/commerce";
 import {
   BILLING_SOFT_NOTE,
@@ -49,18 +51,30 @@ describe("Claridad — take my money without live charge", () => {
     expect(app).toContain('<Route path={"/precios"} component={Plans} />');
     expect(plans).toHaveLength(2);
     expect(plans.map((plan) => plan.key)).toEqual(["essential", "pro"]);
-    expect(plans.every((plan) => /MXN al mes/.test(plan.priceLabel))).toBe(true);
-    expect(plans.some((plan) => plan.monthlyPriceMx === 79)).toBe(true);
-    expect(plans.some((plan) => plan.monthlyPriceMx === 199)).toBe(true);
+    expect(plans.every((plan) => /· IVA incluido/.test(plan.priceLabel))).toBe(true);
+    expect(plans.every((plan) => !/sin IVA/i.test(plan.priceLabel))).toBe(true);
+    expect(plans.find((plan) => plan.key === "essential")?.monthlyPriceMx).toBe(92);
+    expect(plans.find((plan) => plan.key === "essential")?.priceLabel).toBe("$92 · IVA incluido");
+    expect(plans.find((plan) => plan.key === "pro")?.monthlyPriceMx).toBe(231);
+    expect(plans.find((plan) => plan.key === "pro")?.priceLabel).toBe("$231 · IVA incluido");
+    expect(COMMERCE_ONE_SHOTS.find((item) => item.key === "informe_premium")?.priceMx).toBe(347);
+    expect(COMMERCE_ONE_SHOTS.find((item) => item.key === "expediente_abogado")?.priceMx).toBe(579);
     expect(payments).toContain("pagos-plan-cards");
     expect(payments).toContain("PLAN_PRIMARY_CTA");
     expect(payments).toContain("MXN al mes");
+    expect(payments).toContain("{COMMERCE_PRICE_FOOTER}");
+    expect(payments).not.toContain("sin IVA");
     expect(plansPage).toContain("planes-plan-cards");
     expect(plansPage).toContain("PLAN_PRIMARY_CTA");
     expect(plansPage).toContain("MXN al mes");
+    expect(plansPage).toContain("{COMMERCE_PRICE_FOOTER}");
+    expect(plansPage).not.toContain("sin IVA");
     expect(home).toContain(PLAN_NAV_CTA);
     expect(home).toContain("PLAN_PRIMARY_CTA");
     expect(home).toContain("MXN al mes");
+    expect(home).toContain("{COMMERCE_PRICE_FOOTER}");
+    expect(home).not.toContain("sin IVA");
+    expect(COMMERCE_PRICE_FOOTER).toBe("Precios en MXN. IVA incluido.");
   });
 
   it("quita el grito de demostración frente al comprador y deja nota calma", () => {

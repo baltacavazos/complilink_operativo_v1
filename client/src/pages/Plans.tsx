@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
+import { COMMERCE_PRICE_FOOTER } from "@shared/commerce";
 import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
@@ -125,6 +126,7 @@ export default function Plans() {
         <section className="rounded-[1.5rem] border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-700">
           <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
           <p className="mt-2">Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
+          <p className="mt-3 text-slate-600">{COMMERCE_PRICE_FOOTER}</p>
         </section>
       </div>
     </main>

@@ -1,7 +1,7 @@
 import {
   COMMERCE_PLANS,
   formatCommerceDocumentLimitBullet,
-  formatCommercePriceMx,
+  formatCommerceIvaSticker,
 } from "./commerce";
 
 /** Anecdota concreta y anónima. Sin logos, nombres, razones sociales ni cifras inventadas. */
@@ -74,7 +74,7 @@ export function getVisiblePaidPlans() {
     name: plan.name,
     badge: plan.badge,
     headline: plan.headline,
-    priceLabel: `${formatCommercePriceMx(plan.monthlyPriceMx)} MXN al mes`,
+    priceLabel: formatCommerceIvaSticker(plan.monthlyPriceMx),
     monthlyPriceMx: plan.monthlyPriceMx,
     ctaLabel: PLAN_PRIMARY_CTA,
     highlighted: plan.highlighted,
