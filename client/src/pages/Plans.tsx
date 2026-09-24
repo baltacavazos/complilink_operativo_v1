@@ -35,11 +35,11 @@ export default function Plans() {
           <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo. Hoy no se cobra.</p>
         </section>
 
-          <section data-testid="planes-plan-cards" className="grid items-start gap-3 sm:grid-cols-3">
+          <section data-testid="planes-plan-cards" className="grid items-stretch gap-3 sm:grid-cols-3 sm:gap-4">
           {visiblePaidPlans.map((plan) => (
             <article
               key={plan.key}
-              className={`motion-hover-lift rounded-[1.5rem] border p-5 ${
+              className={`motion-hover-lift flex h-full min-w-0 flex-col rounded-[1.5rem] border p-5 ${
                 plan.highlighted
                   ? "border-teal-300 bg-teal-50/80"
                   : "border-slate-200 bg-white"
@@ -63,7 +63,7 @@ export default function Plans() {
               <p className="mt-1 text-sm leading-6 text-slate-700">{visiblePlanCopy(plan.headline)}</p>
               <Button
                 variant={plan.highlighted ? "default" : "outline"}
-                className={`mt-4 h-11 w-full rounded-full ${
+                className={`mt-4 h-11 w-full min-w-0 whitespace-normal rounded-full px-4 ${
                   plan.highlighted
                     ? "bg-teal-700 text-white hover:bg-teal-800"
                     : "border-teal-700 bg-transparent text-teal-800 hover:bg-teal-50"
@@ -77,7 +77,7 @@ export default function Plans() {
               >
                 {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
               </Button>
-              <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+              <ul className="mt-3 flex-1 space-y-2 text-sm leading-6 text-slate-700">
                 {plan.includes.map((feature) => (
                   <li key={feature} className="flex gap-2">
                     <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />
@@ -101,7 +101,7 @@ export default function Plans() {
             {visibleOneShots.map((product) => (
               <article
                 key={product.key}
-                className="motion-hover-lift rounded-[1.5rem] border border-slate-200 bg-white p-5"
+                className="motion-hover-lift flex h-full min-w-0 flex-col rounded-[1.5rem] border border-slate-200 bg-white p-5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-base font-semibold text-slate-950">{product.name}</p>
@@ -116,11 +116,11 @@ export default function Plans() {
                 <Button
                   asChild
                   variant="outline"
-                  className="mt-4 h-11 w-full rounded-full border-teal-700 bg-transparent text-teal-800 hover:bg-teal-50"
+                  className="mt-4 h-11 w-full min-w-0 whitespace-normal rounded-full border-teal-700 bg-transparent px-4 text-teal-800 hover:bg-teal-50"
                 >
                   <a href="/auditar">{product.ctaLabel}</a>
                 </Button>
-                <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-700">
+                <ul className="mt-3 flex-1 space-y-2 text-sm leading-6 text-slate-700">
                   {product.featureBullets.map((feature) => (
                     <li key={feature} className="flex gap-2">
                       <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-teal-700" strokeWidth={1.8} />

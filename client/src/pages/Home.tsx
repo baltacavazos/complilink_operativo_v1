@@ -825,7 +825,7 @@ function SiteHeader() {
         <div className="hidden shrink-0 items-center gap-1.5 lg:flex xl:gap-2">
           <Button
             variant="outline"
-            className="motion-hover-lift h-9 rounded-full border-white/10 bg-white/5 px-3 text-[0.9rem] text-white hover:bg-white/10 xl:px-3.5"
+            className="motion-hover-lift h-9 rounded-full border border-white bg-white px-3.5 text-[0.9rem] font-semibold text-slate-950 shadow-sm hover:bg-slate-100 dark:border-white dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100 xl:px-4"
             onClick={() => {
               window.location.href = "/acceso?returnTo=/auditar";
             }}
@@ -1337,7 +1337,7 @@ function HeroSection() {
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
           <div
             id="ejemplo-reporte"
-            className="motion-enter-soft relative overflow-hidden rounded-[1.6rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-3.5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 max-[359px]:p-3 sm:p-4"
+            className="motion-enter-soft relative overflow-visible rounded-[1.6rem] border border-slate-300/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(243,250,249,0.98)_100%)] p-3.5 shadow-[0_34px_86px_-54px_rgba(15,23,42,0.34)] transition duration-300 ease-out hover:-translate-y-1 max-[359px]:p-3 sm:p-4"
             style={{ ["--motion-delay" as string]: "220ms" }}
           >
             <div className="rounded-[1.2rem] border border-teal-100/80 bg-[linear-gradient(180deg,_#f8fffe_0%,_#edf7f5_100%)] px-3.5 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] sm:px-4 sm:py-3.5">
@@ -1346,7 +1346,7 @@ function HeroSection() {
                   <p className="text-[11px] font-semibold tracking-tight text-slate-500">
                     Así se ve tu resultado
                   </p>
-                  <p className="mt-1 max-w-[16ch] text-[1.45rem] font-bold leading-[1.02] tracking-[-0.05em] text-slate-950 max-[359px]:max-w-[14ch] max-[359px]:text-[1.32rem] sm:text-[1.7rem]">
+                  <p className="mt-1 max-w-full text-pretty text-[1.45rem] font-bold leading-[1.12] tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.32rem] sm:text-[1.7rem]">
                     {activeReportDemoCopy.title}
                   </p>
                   <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
@@ -1404,7 +1404,7 @@ function HeroSection() {
                   <p className="mt-1 text-sm leading-6">{activeReportDemoCopy.secondaryValue}</p>
                 </div>
 
-                <div className="mt-3 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm leading-5 text-slate-700">
+                <div className="mt-3 min-w-0 rounded-[1rem] border border-slate-200 bg-slate-50 px-3.5 py-2 text-sm leading-5 text-slate-700 [overflow-wrap:anywhere]">
                   <span className="font-semibold text-slate-900">Lo primero que verás:</span> un resultado claro, una explicación breve y el siguiente paso útil.
                 </div>
               </div>

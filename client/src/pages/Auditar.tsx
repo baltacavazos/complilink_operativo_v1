@@ -1,7 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import {
-  AuditaPatronLogo,
   AuditaPatronLogoIcon,
   AuditaPatronLogoWordmark,
 } from "@/components/AuditaPatronLogo";
@@ -9400,7 +9399,7 @@ export default function Auditar() {
 
   if (!auth.isAuthenticated && !auditarHarnessBypass) {
     return (
-      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
+      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-4 py-5 text-slate-950 sm:py-10">
         <div className="container mx-auto max-w-6xl">
           <MobileAppShell
             current="auditar"
@@ -9414,7 +9413,7 @@ export default function Auditar() {
             onChange={handleGuestFileChange}
             className="hidden"
           />
-          <div className="rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-4 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)]">
+          <div className="mb-3 hidden rounded-[1.5rem] border border-slate-900 bg-slate-950 px-4 py-3 text-white shadow-[0_20px_50px_-34px_rgba(2,6,23,0.7)] sm:block">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <a
                 href="/"
@@ -9427,12 +9426,11 @@ export default function Auditar() {
             </div>
           </div>
 
-          <div className="mt-5 grid gap-6 overflow-hidden rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8">
+          <div className="grid gap-3 overflow-visible rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:gap-6 sm:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8">
             <div className="mx-auto flex max-w-full flex-col items-center text-center lg:mx-0 lg:max-w-2xl lg:items-start lg:text-left">
-              <AuditaPatronLogo
-                showTagline={false}
+              <AuditaPatronLogoWordmark
                 className="inline-flex max-w-full justify-center lg:justify-start"
-                imageClassName="h-auto w-full max-w-[min(62vw,13rem)] object-contain sm:max-w-[300px] md:max-w-[388px] lg:max-w-[430px]"
+                imageClassName="h-auto w-full max-w-[min(62vw,13rem)] object-contain sm:max-w-[280px]"
               />
               <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />

@@ -1616,7 +1616,24 @@ html:not(.dark) .audita-auditar .ap-wa-unavailable-control {
   }
 }
 
+@keyframes ap-brand-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+}
+
+.ap-brand-pulse {
+  animation: ap-brand-pulse 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .ap-brand-pulse,
   .ap-result-enter,
   .ap-result-detail[open] > :not(summary),
   .ap-read-skeleton,
