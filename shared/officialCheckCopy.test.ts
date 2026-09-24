@@ -27,9 +27,11 @@ import {
   LABOR_REVIEW_READY,
   RECEIPT_RECEIVED_ACK,
   RECEIPT_VALIDATION_CORRECTION,
+  buildHonestOfficialPresentation,
   buildReceiptEstatusLine,
   laborInstitutesSettled,
   liveSatFactLines,
+  OFFICIAL_WAIT_STILL_TRYING,
   pickHonestOfficialCheck,
   pickPromptOfficialCheck,
   readAlternateOfficialRoute,
@@ -879,6 +881,68 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     expect(display.status).toBe("pendiente");
     expect(display.headline).toBe(INSTITUTE_WAITING_HEADLINE);
     expect(display.silence).toBeFalsy();
+  });
+
+  it("sigue en espera si una fuente está pendiente aunque otra ya esté en silencio", () => {
+    const mixed = summary("pendiente", {
+      checkedAt: "2026-09-21T12:00:00.000Z",
+      identity: { nss: true, curp: true, rfc: true },
+      checks: [
+        instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+        instituteCheck("imss", "pendiente"),
+        instituteCheck("infonavit", "no_se_pudo"),
+      ],
+    });
+    const presentation = buildHonestOfficialPresentation(mixed);
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: now,
+      pendingSinceMs: now,
+      summary: mixed,
+    });
+
+    expect(presentation?.stillWaiting).toBe(true);
+    expect(presentation?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
+    expect(presentation?.nextStep).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(presentation?.chat).toContain(OFFICIAL_WAIT_STILL_TRYING);
+    expect(`${presentation?.nextStep} ${presentation?.chat} ${presentation?.retryLabel}`).not.toMatch(/mañana/i);
+    expect(display.silence?.stillWaiting).toBe(true);
+    expect(display.silence?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
+    expect(display.buttonLabel).not.toBe("Probar de nuevo mañana");
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar Infonavit/);
+  });
+
+  it("dice mañana solo cuando ninguna fuente sigue pendiente", () => {
+    const mixedTerminal = buildHonestOfficialPresentation(
+      summary("vivo", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        identity: { nss: true, curp: true, rfc: true },
+        checks: [
+          instituteCheck("sat", "vivo", ["RFC: UIPD9211257I0"]),
+          instituteCheck("imss", "no_se_pudo"),
+          instituteCheck("infonavit", "no_se_pudo"),
+        ],
+      }),
+    );
+    expect(mixedTerminal?.stillWaiting).toBe(false);
+    expect(mixedTerminal?.nextStep).toBe("Prueba de nuevo mañana.");
+    expect(mixedTerminal?.retryLabel).toBe("Probar de nuevo mañana");
+
+    const allTerminal = buildHonestOfficialPresentation(
+      summary("no_se_pudo", {
+        checkedAt: "2026-09-21T12:00:00.000Z",
+        checks: [
+          instituteCheck("sat", "no_se_pudo"),
+          instituteCheck("imss", "no_se_pudo"),
+          instituteCheck("infonavit", "no_se_pudo"),
+        ],
+      }),
+    );
+    expect(allTerminal?.stillWaiting).not.toBe(true);
+    expect(allTerminal?.nextStep).toMatch(/mañana/);
+    expect(allTerminal?.retryLabel).toBe("Probar de nuevo mañana");
   });
 
   it("no tapa los hechos ya vivos mientras sigue la consulta", () => {

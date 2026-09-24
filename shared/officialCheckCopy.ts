@@ -76,6 +76,8 @@ export const INSTITUTE_WAITING_HEADLINE =
   "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.";
 export const INSTITUTE_WAITING_DETAIL =
   "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.";
+export const OFFICIAL_WAIT_STILL_TRYING =
+  "Seguimos intentando. Te avisamos cuando haya resultado.";
 export const OFFICIAL_FAILURE_SHIELD_TAIL = "No prueba que tu patrón cumpla.";
 
 /** Frase terminal cuando una oficina no contestó. No es prueba de que el patrón cumpla. */
@@ -132,6 +134,8 @@ export type InstituteSilencePresentation = {
   chat: string;
   /** Apertura del chat: 3–4 frases de este caso, sin ficha técnica. */
   opener: string;
+  /** Hay al menos una fuente pendiente o consultando. El silencio de las otras no cierra la espera. */
+  stillWaiting?: boolean;
 };
 
 export function instituteSilenceVerdict(_sources?: OfficialCheckSource[] | null): string {
@@ -438,7 +442,18 @@ export function buildReceiptEstatusLine(
   return line || null;
 }
 
-function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSourceOutcome[]): string {
+/** Pendiente o consultando: la vía sigue en curso aunque otra oficina ya haya callado. */
+const OFFICIAL_IN_FLIGHT_STATUSES = new Set<string>(["pendiente", "consultando"]);
+
+function outcomeStillWaiting(status: string): boolean {
+  return OFFICIAL_IN_FLIGHT_STATUSES.has(status);
+}
+
+function mixedOfficialChat(
+  live: OfficialSourceOutcome[],
+  silent: OfficialSourceOutcome[],
+  options?: { stillWaiting?: boolean },
+): string {
   const liveNames = joinSpanishLabels(live.map((item) => officialSourceWithArticle(item.source)));
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
   const verb = live.length === 1 ? "contestó" : "contestaron";
@@ -446,7 +461,10 @@ function mixedOfficialChat(live: OfficialSourceOutcome[], silent: OfficialSource
   const factBit = facts.length > 0 ? ` ${facts.join(" ")}` : "";
   const still = silent.length === 1 ? "aún no contesta" : "aún no contestan";
   const maint = silent.length > 0 && silent.every((item) => item.maintenance) ? " (en mantenimiento)" : "";
-  return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. Prueba mañana, o pregúntame qué implica para tu pago.`;
+  const close = options?.stillWaiting
+    ? OFFICIAL_WAIT_STILL_TRYING
+    : "Prueba mañana, o pregúntame qué implica para tu pago.";
+  return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. ${close}`;
 }
 
 /** Línea de detalle. Nunca dice «Vivo». */
@@ -484,13 +502,14 @@ function mixedOfficialPresentation(
       silent.map((item) => item.source),
     ),
     meaning: `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
-    nextStep: options?.stillWaiting ? INSTITUTE_WAITING_DETAIL : "Prueba de nuevo mañana.",
+    nextStep: options?.stillWaiting ? OFFICIAL_WAIT_STILL_TRYING : "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
-    retryLabel: INSTITUTE_SILENCE_RETRY,
+    retryLabel: options?.stillWaiting ? OFFICIAL_CHECK_BUTTON : INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
     sourceLines,
-    chat: mixedOfficialChat(live, silent),
+    chat: mixedOfficialChat(live, silent, { stillWaiting: options?.stillWaiting }),
     opener: WORKER_RESULT_CHAT_OPENER,
+    stillWaiting: Boolean(options?.stillWaiting),
   };
 }
 
@@ -644,7 +663,7 @@ export function buildHonestOfficialPresentation(
       return match ? [match] : [];
     });
     const presentation = mixedOfficialPresentation(live, unanswered, {
-      stillWaiting: waiting.length > 0 && silent.length === 0,
+      stillWaiting: outcomes.some((item) => outcomeStillWaiting(item.status)),
     });
     return withAlternateRouteCopy(presentation, alternateRouteContributedFacts(summary, live));
   }
@@ -1996,8 +2015,6 @@ export function buildOfficialCheckHeadline(
 export const OFFICIAL_CONSULTING_HEADLINE =
   "Ya leímos tu recibo. Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.";
 export const OFFICIAL_CHECK_LOADING_LABEL = "Seguimos con tu caso…";
-export const OFFICIAL_WAIT_STILL_TRYING =
-  "Seguimos intentando. Te avisamos cuando haya resultado.";
 export const OFFICIAL_FACT_ARRIVED_NOTICE = "Ya hay un resultado de tu consulta.";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
   "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado. Si hoy no llegan, te lo diremos.";
