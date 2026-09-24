@@ -23,7 +23,20 @@ describe("getAuditapatronPricingExperience", () => {
     const experience = getAuditapatronPricingExperience(3);
 
     expect(experience.platform.showPrice).toBe(true);
-    expect(experience.platform.priceLabel).toContain("79");
+    expect(experience.platform.priceLabel).toBe("$92 · IVA incluido");
+    expect(experience.platform.priceLabel).not.toMatch(/sin IVA/i);
+    expect(experience.platform.plans.find(plan => plan.key === "essential")?.priceLabel).toBe(
+      "$92 · IVA incluido",
+    );
+    expect(experience.platform.plans.find(plan => plan.key === "pro")?.priceLabel).toBe(
+      "$231 · IVA incluido",
+    );
+    expect(experience.platform.oneShots.find(product => product.key === "informe_premium")?.priceLabel).toBe(
+      "$347 · IVA incluido",
+    );
+    expect(experience.platform.oneShots.find(product => product.key === "expediente_abogado")?.priceLabel).toBe(
+      "$579 · IVA incluido",
+    );
     expect(experience.platform.primaryCtaLabel).toContain("Ver planes");
     expect(experience.platform.reassurance).toContain("La primera lectura es gratis");
     expect(experience.platform.plans).toHaveLength(3);

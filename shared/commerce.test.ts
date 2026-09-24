@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   COMMERCE_ONE_SHOTS,
   COMMERCE_PLANS,
+  COMMERCE_PRICE_FOOTER,
   FREE_MAX_DOCUMENTS_PER_CASE,
   buildCommerceEntitlements,
   formatActiveDocumentCapCopy,
   formatCommerceDocumentLimitBullet,
+  formatCommerceIvaSticker,
   formatDocumentLimitBlockedMessage,
   formatExceededDocumentLimitFeatureLabel,
   formatFreePlanLandingPrinciple,
@@ -13,6 +15,37 @@ import {
   FREE_TIER_EXHAUSTED_COPY,
   isFreePlanDocumentLimitMessage,
 } from "./commerce";
+
+describe("stickers Lectura A con IVA incluido", () => {
+  it("publica el precio con IVA dentro del número y no la base anterior", () => {
+    const essential = COMMERCE_PLANS.find((plan) => plan.key === "essential");
+    const pro = COMMERCE_PLANS.find((plan) => plan.key === "pro");
+    const informe = COMMERCE_ONE_SHOTS.find((item) => item.key === "informe_premium");
+    const lawyer = COMMERCE_ONE_SHOTS.find((item) => item.key === "expediente_abogado");
+    const free = COMMERCE_PLANS.find((plan) => plan.key === "free");
+
+    expect(free?.monthlyPriceMx).toBe(0);
+    expect(formatCommerceIvaSticker(0)).toBe("$0");
+    expect(essential?.monthlyPriceMx).toBe(92);
+    expect(formatCommerceIvaSticker(essential?.monthlyPriceMx ?? 0)).toBe("$92 · IVA incluido");
+    expect(pro?.monthlyPriceMx).toBe(231);
+    expect(formatCommerceIvaSticker(pro?.monthlyPriceMx ?? 0)).toBe("$231 · IVA incluido");
+    expect(informe?.priceMx).toBe(347);
+    expect(formatCommerceIvaSticker(informe?.priceMx ?? 0)).toBe("$347 · IVA incluido");
+    expect(lawyer?.priceMx).toBe(579);
+    expect(formatCommerceIvaSticker(lawyer?.priceMx ?? 0)).toBe("$579 · IVA incluido");
+    expect(COMMERCE_PRICE_FOOTER).toBe("Precios en MXN. IVA incluido.");
+    expect(
+      [
+        formatCommerceIvaSticker(92),
+        formatCommerceIvaSticker(231),
+        formatCommerceIvaSticker(347),
+        formatCommerceIvaSticker(579),
+        COMMERCE_PRICE_FOOTER,
+      ].join(" "),
+    ).not.toMatch(/sin IVA|\b79\b|\b199\b|\b299\b|\b499\b/);
+  });
+});
 
 describe("tope de documentos por plan", () => {
   it("deja el plan gratis en un documento y conserva Esencial 15 y Pro 50", () => {

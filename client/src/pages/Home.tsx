@@ -128,6 +128,7 @@ Infonavit / aportaciones, cuando aparezcan
 Datos faltantes o inconsistencias que conviene aclarar
 */
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
+import { COMMERCE_PRICE_FOOTER } from "@shared/commerce";
 import {
   FIRST_WIN_STEPS,
   HOME_HERO_CHECKLIST,
@@ -3060,6 +3061,7 @@ function HomePlansStrip() {
           <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
             <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
             <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
+            <p className="text-slate-600">{COMMERCE_PRICE_FOOTER}</p>
           </div>
         </div>
       </div>

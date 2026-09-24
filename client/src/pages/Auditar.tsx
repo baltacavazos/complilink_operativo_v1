@@ -235,11 +235,14 @@ import { toast as sonnerToast } from "sonner";
 import { freePlanUploadNoticeFromError } from "@/lib/freePlanUploadNotice";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import {
+  COMMERCE_PRICE_FOOTER,
   formatActiveDocumentCapCopy,
-  formatCommercePriceMx,
+  formatCommerceIvaSticker,
   FREE_DOCUMENT_LIMIT_BLOCK_MESSAGE,
   FREE_MAX_DOCUMENTS_PER_CASE,
   FREE_TIER_EXHAUSTED_COPY,
+  getCommerceOneShotDefinition,
+  getCommercePlanDefinition,
   isFreePlanDocumentLimitMessage,
   type CommercePlanKey,
   type CommerceProductKey,
@@ -831,14 +834,14 @@ function getCommerceTriggerLabel(triggerPoint: CommerceTriggerPoint) {
 
 function buildManualCommercePromptContext(activePlanKey: CommercePlanKey): CommercePromptContext {
   const targetPlan = activePlanKey === "free" ? "essential" : "pro";
-  const price = targetPlan === "essential" ? 79 : 199;
+  const priceLabel = formatCommerceIvaSticker(getCommercePlanDefinition(targetPlan).monthlyPriceMx);
 
   return {
     title: "Elige solo cuando te ayude de verdad",
     body:
       targetPlan === "essential"
-        ? `Si ya vas a seguir armando tu caso, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`
-        : `Si ya necesitas memoria histórica, revisión de lo que se ve en el papel y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes es el siguiente paso natural.`,
+        ? `Si ya vas a seguir armando tu caso, ${getCommercePlanLabel(targetPlan)} por ${priceLabel} al mes es el siguiente paso natural.`
+        : `Si ya necesitas memoria histórica, revisión de lo que se ve en el papel y seguimiento más profundo, ${getCommercePlanLabel(targetPlan)} por ${priceLabel} al mes es el siguiente paso natural.`,
     targetPlan,
     triggerPoint: "manual_drawer_open",
     productKey: targetPlan,
@@ -863,7 +866,7 @@ function buildCommercePromptContext(params: {
 
   if (/con lectura de varios documentos|varios documentos del expediente/i.test(params.message)) {
     const targetPlan = params.activePlanKey === "essential" ? "pro" : "essential";
-    const price = targetPlan === "pro" ? 199 : 79;
+    const priceLabel = formatCommerceIvaSticker(getCommercePlanDefinition(targetPlan).monthlyPriceMx);
 
     return {
       title:
@@ -872,8 +875,8 @@ function buildCommercePromptContext(params: {
           : "Conecta más documentos en la misma conversación",
       body:
         targetPlan === "pro"
-          ? `Para una lectura más profunda con memoria histórica y seguimiento ampliado, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`
-          : `Para que tu asesor conecte varios documentos dentro de este mismo caso, activa ${getCommercePlanLabel(targetPlan)} por ${formatCommercePriceMx(price)} al mes.`,
+          ? `Para una lectura más profunda con memoria histórica y seguimiento ampliado, activa ${getCommercePlanLabel(targetPlan)} por ${priceLabel} al mes.`
+          : `Para que tu asesor conecte varios documentos dentro de este mismo caso, activa ${getCommercePlanLabel(targetPlan)} por ${priceLabel} al mes.`,
       targetPlan,
       triggerPoint: "helios_multi_document_blocked",
       productKey: targetPlan,
@@ -883,7 +886,7 @@ function buildCommercePromptContext(params: {
   if (/Revalidaciones IMSS e Infonavit/i.test(params.message)) {
     return {
       title: "Activa revisión avanzada de lo que se ve en el papel",
-      body: `La revisión de lo que se ve de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommercePriceMx(199)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu caso.`,
+      body: `La revisión de lo que se ve de IMSS e Infonavit en tus documentos está disponible desde Audita Pro por ${formatCommerceIvaSticker(getCommercePlanDefinition("pro").monthlyPriceMx)} al mes. No consulta esos institutos en vivo; solo lee lo que ya aparece en tu caso.`,
       targetPlan: "pro",
       triggerPoint: "revalidation_blocked",
       productKey: "pro",
@@ -896,13 +899,13 @@ function buildCommercePromptContext(params: {
 function buildCommerceCheckoutToast(productKey: CommerceProductKey) {
   switch (productKey) {
     case "essential":
-      return `Te estamos llevando al checkout seguro de Audita Esencial por ${formatCommercePriceMx(79)} al mes.`;
+      return `Te estamos llevando al checkout seguro de Audita Esencial por ${formatCommerceIvaSticker(getCommercePlanDefinition("essential").monthlyPriceMx)} al mes.`;
     case "pro":
-      return `Te estamos llevando al checkout seguro de Audita Pro por ${formatCommercePriceMx(199)} al mes.`;
+      return `Te estamos llevando al checkout seguro de Audita Pro por ${formatCommerceIvaSticker(getCommercePlanDefinition("pro").monthlyPriceMx)} al mes.`;
     case "informe_premium":
-      return `Te estamos llevando al checkout seguro de Informe Premium por ${formatCommercePriceMx(299)}.`;
+      return `Te estamos llevando al checkout seguro de Informe Premium por ${formatCommerceIvaSticker(getCommerceOneShotDefinition("informe_premium").priceMx)}.`;
     case "expediente_abogado":
-      return `Te estamos llevando al checkout seguro de Paquete para tu abogado por ${formatCommercePriceMx(499)}.`;
+      return `Te estamos llevando al checkout seguro de Paquete para tu abogado por ${formatCommerceIvaSticker(getCommerceOneShotDefinition("expediente_abogado").priceMx)}.`;
     default:
       return "Te estamos llevando al checkout seguro.";
   }
@@ -5416,8 +5419,8 @@ export default function Auditar() {
             : "Prepara el paquete para compartir",
         body:
           productKey === "informe_premium"
-            ? `Si solo necesitas un entregable puntual, puedes comprar Informe Premium por ${formatCommercePriceMx(299)} sin cambiar de plan mensual.`
-            : `Si lo que necesitas es ordenar el caso para llevarlo con una abogada o abogado, puedes comprar este paquete por ${formatCommercePriceMx(499)} sin activar suscripción.`,
+            ? `Si solo necesitas un entregable puntual, puedes comprar Informe Premium por ${formatCommerceIvaSticker(getCommerceOneShotDefinition("informe_premium").priceMx)} sin cambiar de plan mensual.`
+            : `Si lo que necesitas es ordenar el caso para llevarlo con una abogada o abogado, puedes comprar este paquete por ${formatCommerceIvaSticker(getCommerceOneShotDefinition("expediente_abogado").priceMx)} sin activar suscripción.`,
         targetPlan: activeCommercePlanKey,
         triggerPoint: "one_shot_card",
         productKey,
@@ -16435,6 +16438,8 @@ Reforzar con otro documento
                 })}
               </div>
             </div>
+
+            <p className="text-sm leading-6 text-slate-600">{COMMERCE_PRICE_FOOTER}</p>
           </div>
           <DrawerFooter>
             <a href="/planes" className="w-full">

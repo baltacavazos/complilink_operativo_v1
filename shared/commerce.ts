@@ -154,7 +154,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     key: "essential",
     name: "Audita Esencial",
     headline: "Para guardar más recibos en tu caso y compararlos.",
-    monthlyPriceMx: 79,
+    monthlyPriceMx: 92,
     badge: "Más vendido",
     ctaLabel: "Elegir plan",
     description:
@@ -176,7 +176,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     key: "pro",
     name: "Audita Pro",
     headline: "Para seguir tu caso y avisarte si algo cambia.",
-    monthlyPriceMx: 199,
+    monthlyPriceMx: 231,
     badge: "Operación completa",
     ctaLabel: "Elegir plan",
     description:
@@ -200,7 +200,7 @@ export const COMMERCE_ONE_SHOTS: CommerceOneShotDefinition[] = [
   {
     key: "informe_premium",
     name: "Informe Premium",
-    priceMx: 299,
+    priceMx: 347,
     badge: "Pago único",
     ctaLabel: "Comprar informe",
     description:
@@ -215,7 +215,7 @@ export const COMMERCE_ONE_SHOTS: CommerceOneShotDefinition[] = [
   {
     key: "expediente_abogado",
     name: "Paquete para tu abogado",
-    priceMx: 499,
+    priceMx: 579,
     badge: "Pago único",
     ctaLabel: "Preparar paquete",
     description:
@@ -282,6 +282,8 @@ export function buildCommerceEntitlements(params: {
   };
 }
 
+export const COMMERCE_PRICE_FOOTER = "Precios en MXN. IVA incluido.";
+
 export function formatCommercePriceMx(amount: number) {
   if (amount <= 0) {
     return "Gratis";
@@ -292,6 +294,15 @@ export function formatCommercePriceMx(amount: number) {
     currency: "MXN",
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+/** Sticker B2C: el número ya trae el IVA. No se muestra base ni «sin IVA». */
+export function formatCommerceIvaSticker(amount: number) {
+  if (amount <= 0) {
+    return "$0";
+  }
+
+  return `${formatCommercePriceMx(amount)} · IVA incluido`;
 }
 
 export function buildUpgradeMessage(params: {
