@@ -20,7 +20,7 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Sube un archivo y mira una señal real antes de decidir.");
     expect(homeSource).toContain("Aquí ves qué documento llegó, qué señal apareció y cuál es el siguiente paso útil.");
     expect(homeSource).toContain("Que no te vean la cara: ¿tu patrón te paga bien y declara el salario que corresponde?");
-    expect(homeSource).toContain("Primero ves si te sirve; después decides si lo guardas en tu expediente.");
+    expect(homeSource).toContain("Primero ves si te sirve; después decides si lo guardas en tu caso.");
     expect(homeSource).toContain("Tres pasos. Una lectura clara.");
     expect(homeSource).toContain("Control visible desde el primer archivo.");
     expect(homeSource).toContain("Privacidad visible y verificable");
@@ -34,12 +34,13 @@ describe("Auditapatron closeout experience", () => {
     expect(homeSource).toContain("Registro visible de tu control");
     expect(homeSource).toContain("3 señales claras");
     expect(homeSource).toContain("Antes de guardar");
-    expect(homeSource).toContain("Ves una lectura preliminar sin integrar nada a tu expediente.");
+    expect(homeSource).toContain("Ves una lectura preliminar sin integrar nada a tu caso.");
     expect(homeSource).toContain("Si aceptas");
     expect(homeSource).toContain("Queda rastro visible de versión, fecha y navegador.");
     expect(homeSource).toContain("Si resguardas");
     expect(homeSource).toContain("La interfaz te confirma que el archivo quedó listo para seguimiento.");
-    expect(homeSource).toContain("Toca una señal y mira qué quedaría visible para ti antes de abrir expediente.");
+    expect(homeSource).toContain("Toca una señal y mira qué quedaría visible para ti antes de abrir tu caso.");
+    expect(homeSource).not.toMatch(/expediente/i);
     expect(homeSource).toContain("Prueba tu control aquí");
     expect(homeSource).toContain("Qué queda visible para ti");
     expect(homeSource).toContain("Qué no ve tu empresa");
