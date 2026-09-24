@@ -1996,6 +1996,9 @@ export function buildOfficialCheckHeadline(
 export const OFFICIAL_CONSULTING_HEADLINE =
   "Ya leímos tu recibo. Todavía faltan respuestas para saber si tu patrón te tiene bien registrado.";
 export const OFFICIAL_CHECK_LOADING_LABEL = "Seguimos con tu caso…";
+export const OFFICIAL_WAIT_STILL_TRYING =
+  "Seguimos intentando. Te avisamos cuando haya resultado.";
+export const OFFICIAL_FACT_ARRIVED_NOTICE = "Ya hay un resultado de tu consulta.";
 export const OFFICIAL_CHECK_LOADING_DETAIL =
   "Todavía faltan respuestas para saber si tu patrón te tiene bien registrado. Si hoy no llegan, te lo diremos.";
 /** Solo si el retorno dice que otra consulta oficial aportó el dato. Nunca dice «backup». */

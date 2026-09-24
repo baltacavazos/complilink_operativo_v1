@@ -81,6 +81,7 @@ import {
   normalizeAuditarMimeType,
 } from "./docxSupport";
 import { extractPdfPlainText } from "./pdfTextExtraction";
+import { readInfonavitMiCuentaPdfBinary } from "./infonavitMiCuentaPdf";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { readBridgeSmokeMonitoringSnapshot, updateBridgeSmokeAlertThreshold } from "./bridgeSmokeMonitoring";
 import {
@@ -712,6 +713,7 @@ const AUDITAR_ANALYZE_RATE_LIMIT = 4;
 const AUDITAR_UPLOAD_RATE_LIMIT = 4;
 const AUDITAR_CONFIRM_RATE_LIMIT = 8;
 const GUEST_OFFICIAL_CHECK_RATE_LIMIT = 3;
+const INFONAVIT_DOCUMENT_RATE_LIMIT = 6;
 
 const COMPLILINK_RETURN_TIMEOUT_MS = 15 * 60 * 1000;
 const CEO_SNAPSHOT_STALE_WINDOW_MS = 2 * 60 * 1000;
@@ -843,6 +845,20 @@ function assertAuditarRateLimit(params: {
 
   if (recentTimestamps.length >= params.maxRequests) {
     throw new Error("Detectamos demasiados intentos seguidos en Auditar para este expediente. Espera un minuto y vuelve a intentarlo.");
+  }
+
+  auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
+}
+
+function assertInfonavitDocumentRateLimit(ip: string | null) {
+  const now = Date.now();
+  pruneAuditarRateWindow(now);
+
+  const key = ["readInfonavitMiCuentaPdf", ip ?? "ip:unknown"].join(":");
+  const recentTimestamps = auditarRateWindowByKey.get(key) ?? [];
+
+  if (recentTimestamps.length >= INFONAVIT_DOCUMENT_RATE_LIMIT) {
+    throw new Error("Detectamos demasiados PDF seguidos. Espera un minuto y vuelve a intentarlo.");
   }
 
   auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
@@ -4485,6 +4501,20 @@ export const appRouter = router({
           officialCheckHeadline: buildOfficialCheckHeadline(officialCheck),
           officialCheckConsent: OFFICIAL_CHECK_CONSENT,
         };
+      }),
+    readInfonavitMiCuentaPdf: publicProcedure
+      .input(
+        z.object({
+          fileName: z.string().min(1).max(180),
+          base64Content: z.string().min(20),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        assertInfonavitDocumentRateLimit(getClientIp(ctx.req));
+        const binary = decodeBase64File(input.base64Content, {
+          maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
+        });
+        return readInfonavitMiCuentaPdfBinary(binary);
       }),
     claimGuestPreview: protectedProcedure
       .input(
