@@ -26,6 +26,13 @@ import {
 import { inspectAuditaPatronBridgeInventory } from "./auditaPatronBridgeInventory";
 import { officialCheckFromBridgeReturn } from "./governmentLiveCheck";
 import { buildRemoteHeliosOpinionContract } from "./heliosIntegrationService";
+import { sendOfficialResultReadyEmail } from "./officialResultNotification";
+import {
+  OFFICIAL_RESULT_NOTIFICATION_COPY,
+  OFFICIAL_RESULT_NOTIFICATION_KIND,
+  hasUsableOfficialFact,
+} from "@shared/officialResultNotification";
+import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
 
 const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
 
@@ -515,8 +522,19 @@ function logUnknownBridgeEvent(params: { event: string | null; endpoint: string;
   });
 }
 
-function buildEventDescriptor(payload: CompliLinkReturnEnvelope, officialCheck?: { checks?: Array<{ sourceLabel: string; label: string }> } | null) {
+function buildEventDescriptor(
+  payload: CompliLinkReturnEnvelope,
+  officialCheck?: OfficialCheckSummary | null,
+) {
   if (payload.event === "document.processed.v1") {
+    if (hasUsableOfficialFact(officialCheck)) {
+      return {
+        eventType: "note_added" as const,
+        title: OFFICIAL_RESULT_NOTIFICATION_COPY.title,
+        description: `${OFFICIAL_RESULT_NOTIFICATION_COPY.body} ${OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}`,
+      };
+    }
+
     const statusLine = officialCheck?.checks
       ?.map((item) => `${item.sourceLabel}: ${item.label}`)
       .join(". ");
@@ -542,6 +560,36 @@ function buildEventDescriptor(payload: CompliLinkReturnEnvelope, officialCheck?:
     title: "Se pidió otra revisión",
     description: "Vamos a intentar de nuevo la lectura de este documento.",
   };
+}
+
+async function notifyOfficialFactRecipient(params: {
+  officialCheck: OfficialCheckSummary | null | undefined;
+  userId?: number | null;
+  caseId?: string | null;
+  traceId?: string | null;
+}) {
+  if (!hasUsableOfficialFact(params.officialCheck)) return;
+
+  try {
+    let userId = params.userId ?? null;
+    if (!userId) {
+      const caseRow = await findLaborCaseByTraceOrId([
+        params.caseId,
+        params.traceId,
+      ]);
+      userId = caseRow?.assignedUserId ?? null;
+    }
+
+    await sendOfficialResultReadyEmail({
+      userId,
+      officialCheck: params.officialCheck,
+    });
+  } catch (error) {
+    console.error(
+      "[Official result notification] Could not resolve the recipient:",
+      error,
+    );
+  }
 }
 
 function deriveRemoteForwardWebhookUrl(req: RawBodyRequest) {
@@ -886,6 +934,7 @@ export async function ingestCompliLinkReturnPayload(params: {
     if (!resolvedDocument) {
       const liveCheck = liveCheckFromReturnPayload(payload, receivedAt.toISOString());
       if (caseRow) {
+        const hasUsableFact = hasUsableOfficialFact(liveCheck);
         await upsertCanonicalContract({
           tenantId: caseRow.tenantId,
           caseId: caseRow.caseId,
@@ -901,6 +950,9 @@ export async function ingestCompliLinkReturnPayload(params: {
             receivedAt: receivedAt.toISOString(),
             officialCheck: liveCheck,
             live_check: liveCheck,
+            notification_kind: hasUsableFact
+              ? OFFICIAL_RESULT_NOTIFICATION_KIND
+              : null,
           }),
           status: "ready",
         });
@@ -909,16 +961,30 @@ export async function ingestCompliLinkReturnPayload(params: {
           caseId: caseRow.caseId,
           traceId: caseRow.traceId,
           eventType: "note_added",
-          title: "Consulta IMSS y SAT",
-          description: liveCheck?.overallDetail ?? "Llegó el resultado de la consulta oficial.",
+          title: hasUsableFact
+            ? OFFICIAL_RESULT_NOTIFICATION_COPY.title
+            : "Consulta IMSS y SAT",
+          description: hasUsableFact
+            ? `${OFFICIAL_RESULT_NOTIFICATION_COPY.body} ${OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}`
+            : liveCheck?.overallDetail ??
+              "Llegó el resultado de la consulta oficial.",
           metadata: JSON.stringify({
             revalidation_scope: "social_security",
             live_check: liveCheck,
+            notification_kind: hasUsableFact
+              ? OFFICIAL_RESULT_NOTIFICATION_KIND
+              : null,
             correlation_id: correlationId,
             event_id: eventId,
             generated_at: receivedAt.toISOString(),
           }),
           eventAt: receivedAt,
+        });
+        await notifyOfficialFactRecipient({
+          officialCheck: liveCheck,
+          userId: caseRow.assignedUserId,
+          caseId: caseRow.caseId,
+          traceId: caseRow.traceId,
         });
         return {
           ok: true as const,
@@ -1047,6 +1113,10 @@ export async function ingestCompliLinkReturnPayload(params: {
   }
 
   try {
+    const returnedOfficialCheck = liveCheckFromReturnPayload(
+      payload,
+      receivedAt.toISOString(),
+    );
     const canonicalReturnPayload = {
       source: "complilink_mx",
       event: payload.event,
@@ -1075,7 +1145,10 @@ export async function ingestCompliLinkReturnPayload(params: {
       guardrailsFlags: payload.guardrailsFlags ?? [],
       metadata: payload.metadata ?? null,
       receivedAt: receivedAt.toISOString(),
-      live_check: liveCheckFromReturnPayload(payload, receivedAt.toISOString()),
+      live_check: returnedOfficialCheck,
+      notification_kind: hasUsableOfficialFact(returnedOfficialCheck)
+        ? OFFICIAL_RESULT_NOTIFICATION_KIND
+        : null,
     };
 
     await upsertCanonicalContract({
@@ -1162,6 +1235,13 @@ export async function ingestCompliLinkReturnPayload(params: {
       processedAt: receivedAt,
       compliLinkId: payload.compliLinkId ?? null,
       correlationId,
+    });
+
+    await notifyOfficialFactRecipient({
+      officialCheck: canonicalReturnPayload.live_check,
+      userId: document.uploadedByUserId,
+      caseId: document.caseId,
+      traceId: document.traceId,
     });
 
     return {

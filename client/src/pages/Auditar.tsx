@@ -55,6 +55,7 @@ import {
   selectFiveSecondVerdictFromReceipt,
   type FiveSecondVerdict,
 } from "@shared/fiveSecondVerdict";
+import { OFFICIAL_RESULT_NOTIFICATION_COPY } from "@shared/officialResultNotification";
 import {
   INSTITUTE_SILENCE_ASK,
   INSTITUTE_SILENCE_CHAT,
@@ -127,6 +128,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Bell,
   Camera,
   CheckCircle2,
   FileSearch,
@@ -5067,6 +5069,11 @@ export default function Auditar() {
     enabled: auth.isAuthenticated,
     refetchOnWindowFocus: false,
   });
+  const latestOfficialInboxEvent = (
+    caseDetailQuery.data?.events ?? []
+  ).find(
+    event => event.title === OFFICIAL_RESULT_NOTIFICATION_COPY.title
+  );
   const sessionAccount = (auth.realUser ?? auth.user) as { name?: string | null; email?: string | null } | null | undefined;
   const exampleCaseVisible = [
     sessionAccount?.name,
@@ -9510,6 +9517,48 @@ export default function Auditar() {
             className="mb-4 rounded-2xl border-2 border-amber-500 bg-amber-100 px-4 py-4 text-base font-semibold leading-6 text-amber-950 shadow-sm"
           >
             Ejemplo. Estos papeles no son tu caso.
+          </section>
+        ) : null}
+        {latestOfficialInboxEvent ? (
+          <section
+            data-testid="official-result-inbox"
+            role="status"
+            className="mb-4 rounded-[1.5rem] border border-teal-200 bg-teal-50 px-4 py-4 text-left shadow-sm sm:px-5"
+          >
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-full bg-white p-2 text-teal-800 shadow-sm">
+                <Bell className="h-4 w-4" strokeWidth={1.9} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800">
+                  Bandeja
+                </p>
+                <p className="mt-1 text-base font-semibold text-slate-950">
+                  {OFFICIAL_RESULT_NOTIFICATION_COPY.title}
+                </p>
+                <p className="mt-1 text-sm leading-6 text-slate-800">
+                  {OFFICIAL_RESULT_NOTIFICATION_COPY.body}{" "}
+                  {OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="rounded-full bg-teal-700 text-white hover:bg-teal-800"
+                    onClick={() => {
+                      document
+                        .querySelector('[data-testid="official-check-card"]')
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                  >
+                    {OFFICIAL_RESULT_NOTIFICATION_COPY.actionLabel}
+                  </Button>
+                  <span className="text-xs font-medium text-teal-900">
+                    {formatDate(latestOfficialInboxEvent.eventAt)}
+                  </span>
+                </div>
+              </div>
+            </div>
           </section>
         ) : null}
         {officialCheckDisplay.silence ? null : (

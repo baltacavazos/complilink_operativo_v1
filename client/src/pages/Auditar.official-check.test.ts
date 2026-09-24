@@ -27,7 +27,9 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).not.toMatch(/data-testid="official-check-waiting"[\s\S]{0,400}animate-pulse/);
     expect(source).toContain("officialCheckConsent");
     expect(source).toContain('data-testid="official-check-card"');
-    expect(source).toContain("documents.length > 0 && !pendingDraft && !lastUpload");
+    expect(source).toContain(
+      "documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload",
+    );
     expect(source).toContain('data-testid="official-check-headline"');
     expect(source).toContain('data-testid="official-check-cta"');
     expect(source).toContain("setOfficialCheckResult(result.officialCheck)");
@@ -54,6 +56,10 @@ describe("Auditar consult UI — permiso y CTA", () => {
     expect(source).toContain("nowMs: officialNowMs");
     expect(source).toContain("pendingSinceMs");
     expect(source).toContain("officialPendingSinceRef");
+    expect(source).toContain("latestOfficialInboxEvent");
+    expect(source).toContain('data-testid="official-result-inbox"');
+    expect(source).toContain("OFFICIAL_RESULT_NOTIFICATION_COPY.title");
+    expect(source).toContain("Bandeja");
     expect(source).toContain("visibleOfficialChecks");
     expect(source).toContain("visibleOfficialChecks.map");
     expect(source).not.toMatch(/officialCheckSummary\??\.checks\.map/);
