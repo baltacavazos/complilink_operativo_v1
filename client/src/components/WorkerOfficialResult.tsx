@@ -1,6 +1,7 @@
 import { useRef } from "react";
-import { INSTITUTE_SILENCE_SMALL, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
+import { INSTITUTE_SILENCE_RETRY, INSTITUTE_SILENCE_SMALL, OFFICIAL_WAIT_STILL_TRYING, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
+import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 
 type WorkerOfficialResultProps = {
   presentation: InstituteSilencePresentation;
@@ -54,10 +55,11 @@ export function WorkerOfficialResult({
   receiptData = [],
 }: WorkerOfficialResultProps) {
   const detailRef = useRef<HTMLDetailsElement>(null);
+  const showWaitLayer = Boolean(presentation.stillWaiting) || (retryPending && presentation.retryLabel === INSTITUTE_SILENCE_RETRY);
   const lines = [
     { label: "Qué pasó", text: presentation.whatHappened },
     { label: "Qué significa", text: presentation.meaning },
-    { label: "Qué hacer", text: presentation.nextStep },
+    { label: "Qué hacer", text: showWaitLayer ? OFFICIAL_WAIT_STILL_TRYING : presentation.nextStep },
   ];
   const visibleSources = presentation.sourceLines.filter((line) => !isWorkerIdentifierLine(line));
   const hiddenSources = presentation.sourceLines.filter((line) => isWorkerIdentifierLine(line));
@@ -119,29 +121,33 @@ export function WorkerOfficialResult({
           </ul>
         ) : null}
       </details>
-      <Button
-        type="button"
-        data-testid="official-check-cta"
-        className="ap-btn-on-dark mt-5 h-12 w-full rounded-full bg-[#111111] text-base font-semibold text-white hover:bg-[#222222]"
-        disabled={retryPending}
-        onClick={() => {
-          if (presentation.retryLabel === POCKET_CTA_MISMATCH) {
-            const node = detailRef.current;
-            if (node) {
-              node.open = true;
-              node.scrollIntoView({ block: "nearest" });
+      {showWaitLayer ? (
+        <OfficialWaitLayer status={retryPending ? "consultando" : "pendiente"} />
+      ) : (
+        <Button
+          type="button"
+          data-testid="official-check-cta"
+          className="ap-btn-on-dark mt-5 h-12 w-full rounded-full bg-[#111111] text-base font-semibold text-white hover:bg-[#222222]"
+          disabled={retryPending}
+          onClick={() => {
+            if (presentation.retryLabel === POCKET_CTA_MISMATCH) {
+              const node = detailRef.current;
+              if (node) {
+                node.open = true;
+                node.scrollIntoView({ block: "nearest" });
+              }
+              return;
             }
-            return;
-          }
-          if (presentation.retryLabel === POCKET_CTA_SAVE) {
-            onDone?.();
-            return;
-          }
-          onRetry();
-        }}
-      >
-        {presentation.retryLabel}
-      </Button>
+            if (presentation.retryLabel === POCKET_CTA_SAVE) {
+              onDone?.();
+              return;
+            }
+            onRetry();
+          }}
+        >
+          {presentation.retryLabel}
+        </Button>
+      )}
       <button
         type="button"
         data-testid="official-check-chat-cta"
