@@ -369,7 +369,7 @@ const PERSISTENT_UPLOAD_GUARDRAILS = {
   fileRules:
     "Recibo, CFDI o PDF del IMSS. PDF, XML, foto o DOCX. Máximo 12 MB por archivo.",
   privacyRules:
-    "Tu documento no entra al expediente hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa.",
+    "Tu documento no entra al caso hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa.",
 };
 
 const COMPACT_UPLOAD_GUARDRAILS = {
@@ -8014,7 +8014,7 @@ export default function Auditar() {
     const documentEntries: DossierHistoryEntry[] = documents.map(document => ({
       id: `document-${document.documentId}`,
       title: `Subiste ${getSimpleDocumentTypeLabel(document.documentType).toLowerCase()}`,
-      description: `${document.originalName} ya quedó ordenado dentro de tu expediente digital.`,
+      description: `${document.originalName} ya quedó ordenado dentro de tu caso.`,
       tag: "Documento agregado",
       category: "document",
       timestamp: document.createdAt,
@@ -8031,10 +8031,10 @@ export default function Auditar() {
               : "Tu documento sigue avanzando",
         description:
           item.status === "received"
-            ? `${item.documentName} ya devolvió una respuesta útil para tu expediente.`
+            ? `${item.documentName} ya devolvió una respuesta útil para tu caso.`
             : item.status === "attention"
               ? `${item.documentName} requiere una revisión con más calma para no perder contexto importante.`
-              : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu expediente.`,
+              : `${item.documentName} sigue en revisión y se mantiene protegido dentro de tu caso.`,
         tag:
           item.status === "received"
             ? "Respuesta recibida"
@@ -8051,10 +8051,10 @@ export default function Auditar() {
         ? [
             {
               id: "visible-summary",
-              title: "Tu resumen del expediente se actualizó",
+              title: "Tu resumen del caso se actualizó",
               description:
                 warmVisibleNamingCopy(visibleHeliosOpinion.summary) ??
-                "Ya tienes una lectura más clara y útil dentro de tu expediente digital.",
+                "Ya tienes una lectura más clara y útil dentro de tu caso.",
               tag: "Resumen actualizado",
               category: "summary",
               timestamp: visibleHeliosOpinion.generatedAt,
@@ -10804,7 +10804,7 @@ export default function Auditar() {
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-teal-700">
-                              Alta utilidad para tu expediente
+                              Alta utilidad para tu caso
                             </p>
                             <p className="mt-1.5 font-semibold leading-5 text-slate-950">
                               {item.title}
@@ -13800,7 +13800,7 @@ Reforzar con otro documento
                       <div className="rounded-[1.2rem] border border-slate-200 bg-white p-4 text-sm leading-7 text-slate-700">
                         Lo confirmado aparece separado de lo estimado para que
                         sepas qué ya está claro, qué todavía conviene revisar
-                        con calma y qué ya forma parte de tu expediente digital.
+                        con calma y qué ya forma parte de tu caso.
                       </div>
                     </div>
 
@@ -14065,7 +14065,7 @@ Reforzar con otro documento
                                     Seguimos esperando la respuesta automática
                                   </p>
                                   <p className="mt-1">
-                                    Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu expediente digital.
+                                    Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu caso.
                                   </p>
                                 </div>
                               </div>
@@ -14340,7 +14340,7 @@ Reforzar con otro documento
                             Seguimos esperando la respuesta automática
                           </p>
                           <p className="mt-1">
-                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu expediente digital.
+                            Este documento ya entró a revisión automática. Aquí verás si la respuesta ya llegó, mientras sigue guardado y disponible dentro de tu caso.
                           </p>
                         </div>
                       </div>
@@ -15433,7 +15433,7 @@ Reforzar con otro documento
                 Privacidad y consentimiento
               </p>
               <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-slate-950">
-                Marco legal visible para tu expediente
+                Marco legal visible para tu caso
               </h2>
               <p className="mt-2 text-sm leading-7 text-slate-600">
                 {PRIVACY_CENTER_COPY.intro} La versión vigente que aplica hoy en

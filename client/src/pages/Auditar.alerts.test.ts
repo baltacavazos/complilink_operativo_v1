@@ -675,6 +675,35 @@ describe("getUploadCompactGuardrails", () => {
   });
 });
 
+describe("dossier history copy", () => {
+  it("habla de caso en el historial que se ve junto al chat", () => {
+    const start = auditarSource.indexOf("const dossierHistoryEntries");
+    const end = auditarSource.indexOf("const filteredDossierHistoryEntries");
+    const block = auditarSource.slice(start, end);
+
+    expect(block).toContain("ya quedó ordenado dentro de tu caso.");
+    expect(block).toContain("ya devolvió una respuesta útil para tu caso.");
+    expect(block).toContain("se mantiene protegido dentro de tu caso.");
+    expect(block).toContain('title: "Tu resumen del caso se actualizó"');
+    expect(block).toContain("Ya tienes una lectura más clara y útil dentro de tu caso.");
+    expect(block).not.toMatch(/expediente/i);
+    expect(auditarSource).toContain(
+      "Tu documento no entra al caso hasta que revisas el borrador y confirmas. No lo compartimos con tu empresa.",
+    );
+    expect(auditarSource).toContain(
+      "No se guarda en tu caso hasta que tú lo confirmes. No lo compartimos con tu empresa.",
+    );
+    expect(auditarSource).toContain("qué ya forma parte de tu caso.");
+    expect(auditarSource).toContain(
+      "mientras sigue guardado y disponible dentro de tu caso.",
+    );
+    expect(auditarSource).toContain("Alta utilidad para tu caso");
+    expect(auditarSource).toContain("Marco legal visible para tu caso");
+    expect(auditarSource).not.toMatch(/expediente digital/i);
+    expect(auditarSource).not.toContain("para tu expediente");
+  });
+});
+
 describe("getUploadHelpDisclosureSummary", () => {
   it("hace evidente que la ayuda colapsable muestra seguridad, límites y momento de guardado", () => {
     expect(getUploadHelpDisclosureSummary()).toBe(
