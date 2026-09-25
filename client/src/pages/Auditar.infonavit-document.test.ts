@@ -16,10 +16,32 @@ describe("Auditar interim PDF Infonavit", () => {
     expect(upload).toContain('data-fact-origin="document"');
     expect(upload).toContain('data-fact-source="user_upload"');
     expect(upload).toContain("INFONAVIT_DOCUMENT_CTA");
+    expect(upload).toContain("INFONAVIT_DOCUMENT_STEPS");
+    expect(upload).toContain("INFONAVIT_DOCUMENT_UPLOAD_LABEL");
     expect(upload).toContain("INFONAVIT_MICUENTA_URL");
+    expect(upload).toContain("ap-btn-on-dark");
+    expect(upload).not.toContain('variant="outline"');
+    expect(upload).not.toContain("mt-8");
     expect(upload).not.toMatch(/consulta en vivo/i);
     expect(upload).not.toMatch(/ApiMarket|Nufi|stripe|contrase[nñ]a/i);
     expect(upload).toContain('accept="application/pdf,.pdf"');
+    const stepsAt = upload.indexOf("INFONAVIT_DOCUMENT_STEPS");
+    const buttonAt = upload.indexOf('data-testid="infonavit-document-upload"');
+    expect(stepsAt).toBeGreaterThan(0);
+    expect(buttonAt).toBeGreaterThan(stepsAt);
+  });
+
+  it("deja el PDF junto al fallo de Infonavit y fuera del detalle cerrado", () => {
+    const offerAt = result.indexOf("{failureOffer}");
+    const detailAt = result.indexOf(">Ver detalle<");
+    expect(offerAt).toBeGreaterThan(0);
+    expect(detailAt).toBeGreaterThan(offerAt);
+    expect(auditar).toContain("failureOffer={infonavitDocumentSlot}");
+    const compactAt = auditar.indexOf('data-compact-official-detail="true"');
+    const beforeCompact = auditar.slice(Math.max(0, compactAt - 80), compactAt);
+    expect(beforeCompact).toContain("{infonavitDocumentSlot}");
+    const compactEnd = auditar.indexOf("</details>", compactAt);
+    expect(auditar.slice(compactAt, compactEnd)).not.toContain("infonavitDocumentSlot");
   });
 
   it("muestra el copy de espera y el aviso cuando llega un hecho", () => {

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, type ReactNode } from "react";
 import { INSTITUTE_SILENCE_RETRY, INSTITUTE_SILENCE_SMALL, OFFICIAL_WAIT_STILL_TRYING, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
@@ -13,6 +13,8 @@ type WorkerOfficialResultProps = {
   comparisonLines?: string[];
   pocketLead?: string[];
   receiptData?: string[];
+  /** Oferta de PDF justo después del fallo, antes del detalle cerrado. */
+  failureOffer?: ReactNode;
 };
 
 const WORKER_IDENTIFIER_RE = /\b(RFC|CURP|NSS|registro patronal)\b/i;
@@ -53,6 +55,7 @@ export function WorkerOfficialResult({
   comparisonLines = [],
   pocketLead = [],
   receiptData = [],
+  failureOffer = null,
 }: WorkerOfficialResultProps) {
   const detailRef = useRef<HTMLDetailsElement>(null);
   const showWaitLayer = Boolean(presentation.stillWaiting) || (retryPending && presentation.retryLabel === INSTITUTE_SILENCE_RETRY);
@@ -105,6 +108,7 @@ export function WorkerOfficialResult({
       {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
         <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
       ) : null}
+      {failureOffer}
       <details className="ap-result-detail mt-2 rounded-[1rem] border border-[#e4e4e4] px-3 py-2" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {visibleSources.length ? (

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import {
   INFONAVIT_DOCUMENT_CTA,
   INFONAVIT_DOCUMENT_READING_LABEL,
+  INFONAVIT_DOCUMENT_STEPS,
   INFONAVIT_DOCUMENT_UNREADABLE,
   INFONAVIT_DOCUMENT_UPLOAD_LABEL,
   INFONAVIT_MICUENTA_URL,
@@ -55,17 +56,11 @@ export function InfonavitDocumentUpload() {
       data-testid="infonavit-document-offer"
       data-fact-origin="document"
       data-fact-source="user_upload"
-      className="ap-infonavit-offer mt-8 flex flex-col items-stretch gap-3 rounded-[1.35rem] px-4 py-4 text-left"
+      className="ap-infonavit-offer mt-3 flex flex-col items-stretch gap-3 rounded-[1.35rem] px-4 py-4 text-left"
     >
-      <p className="text-[0.98rem] leading-6">{INFONAVIT_DOCUMENT_CTA}</p>
-      <a
-        href={INFONAVIT_MICUENTA_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block w-full text-sm font-semibold underline underline-offset-4 [overflow-wrap:anywhere]"
-      >
-        micuenta.infonavit.org.mx
-      </a>
+      <p data-testid="infonavit-document-steps" className="text-base font-semibold leading-6">
+        {INFONAVIT_DOCUMENT_STEPS}
+      </p>
       <input
         ref={inputRef}
         type="file"
@@ -80,13 +75,21 @@ export function InfonavitDocumentUpload() {
       <Button
         type="button"
         data-testid="infonavit-document-upload"
-        variant="outline"
-        className="ap-cta-secondary mt-1 h-11 w-fit rounded-full px-4"
+        className="ap-btn-on-dark mt-1 h-auto min-h-11 w-full whitespace-normal rounded-full bg-[#0f766e] px-4 py-3 text-base font-semibold leading-5 text-white hover:bg-[#0d6b64]"
         disabled={mutation.isPending}
         onClick={() => inputRef.current?.click()}
       >
         {mutation.isPending ? INFONAVIT_DOCUMENT_READING_LABEL : INFONAVIT_DOCUMENT_UPLOAD_LABEL}
       </Button>
+      <a
+        href={INFONAVIT_MICUENTA_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block w-full text-sm font-semibold underline underline-offset-4 [overflow-wrap:anywhere]"
+      >
+        micuenta.infonavit.org.mx
+      </a>
+      <p className="text-[0.98rem] leading-6">{INFONAVIT_DOCUMENT_CTA}</p>
       {mutation.isPending ? (
         <div data-testid="infonavit-read-skeleton" className="ap-read-skeleton space-y-2" aria-hidden="true">
           <span className="block h-3 w-4/5 rounded-full" />

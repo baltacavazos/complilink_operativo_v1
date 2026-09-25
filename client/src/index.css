@@ -1425,11 +1425,13 @@ html.dark .audita-auditar .ap-result-detail a.ap-btn-on-dark {
   overflow-wrap: anywhere;
 }
 
-.audita-auditar [data-testid="infonavit-document-offer"] button.ap-cta-secondary {
-  align-self: flex-start;
-  background: transparent !important;
-  color: #f8fafc !important;
-  border: 1px solid rgba(248, 250, 252, 0.78) !important;
+.audita-auditar [data-testid="infonavit-document-offer"] button[data-testid="infonavit-document-upload"] {
+  align-self: stretch !important;
+  width: 100% !important;
+  background-color: #0f766e !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  font-weight: 700 !important;
   box-shadow: none !important;
 }
 

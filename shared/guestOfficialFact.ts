@@ -39,13 +39,45 @@ export function officialChecksMatch(
   return officialCheckFingerprint(left) === officialCheckFingerprint(right);
 }
 
-/** Hechos IMSS que sí se pueden mostrar. No inventa un cumple ni un semáforo. */
-export function listGuestVisibleImssFacts(summary: OfficialCheckSummary | null | undefined): string[] {
-  const hechos = summary?.checks?.find((check) => check.source === "imss")?.hechos ?? [];
-  return citeableOfficialHechos("imss", hechos)
+const GUEST_VISIBLE_FACT_CAP = 3;
+
+/**
+ * Hechos de una fuente que ya contestó y sí se pueden citar.
+ * Misma ruta que el IMSS: citeableOfficialHechos + humanize. Tope de 3.
+ * No inventa un cumple ni un semáforo si el webhook no trajo el dato.
+ */
+function listGuestVisibleSourceFacts(
+  summary: OfficialCheckSummary | null | undefined,
+  source: "imss" | "infonavit",
+): string[] {
+  const check = summary?.checks?.find((item) => item.source === source);
+  if (!check) return [];
+  if (check.status !== "vivo" && check.honesty !== "live") return [];
+  return citeableOfficialHechos(source, check.hechos ?? [])
     .map((line) => humanizeOfficialHecho(line))
     .filter((line) => line.length > 0)
-    .slice(0, 3);
+    .slice(0, GUEST_VISIBLE_FACT_CAP);
+}
+
+/** Hechos IMSS que sí se pueden mostrar. No inventa un cumple ni un semáforo. */
+export function listGuestVisibleImssFacts(summary: OfficialCheckSummary | null | undefined): string[] {
+  return listGuestVisibleSourceFacts(summary, "imss");
+}
+
+/** Hechos Infonavit que sí se pueden mostrar. Misma ruta que el IMSS. */
+export function listGuestVisibleInfonavitFacts(summary: OfficialCheckSummary | null | undefined): string[] {
+  return listGuestVisibleSourceFacts(summary, "infonavit");
+}
+
+/** Líneas de bandeja: IMSS e Infonavit, cada uno con su tope. El SAT no entra aquí. */
+export function listGuestVisibleOfficialFacts(summary: OfficialCheckSummary | null | undefined): {
+  imss: string[];
+  infonavit: string[];
+} {
+  return {
+    imss: listGuestVisibleImssFacts(summary),
+    infonavit: listGuestVisibleInfonavitFacts(summary),
+  };
 }
 
 /**
