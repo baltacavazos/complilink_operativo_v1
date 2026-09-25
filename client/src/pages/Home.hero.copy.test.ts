@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 import {
+  BILLING_SOFT_NOTE,
+  COPILOT_SECTION_VISIBLE_LABEL,
+  HOME_HERO_ASSISTANT_PILL_SUPPORT,
+  HOME_HERO_ASSISTANT_PILL_TITLE,
   HOME_HERO_CHECKLIST,
   HOME_HERO_CLOSING_LINE,
   HOME_HERO_CTA_MICROCOPY,
@@ -68,6 +72,38 @@ describe("Home pública · mix aprobado del hero", () => {
     expect(home).toContain("min-w-0 w-full max-w-full text-pretty");
     expect(home).not.toContain("CompliLink");
     expect(home).not.toMatch(/\bHelios\b/);
+  });
+
+  it("opción E: pastilla suave bajo el CTA y misma promesa en #copiloto, con cobro apagado", () => {
+    const home = readHome();
+    const heroCta = home.indexOf('goToAuditFlow({ placement: "hero_primary", source: "hero" })');
+    const pill = home.indexOf('data-testid="home-hero-assistant-pill"');
+    const plansLink = home.indexOf("href={PLANS_PATH}");
+    const pillMarkup = home.slice(pill, pill + 700);
+    const copilotStart = home.indexOf("function CopilotPreviewSection");
+    const copilot = home.slice(copilotStart, home.indexOf("function HowItWorksSection"));
+
+    expect(HOME_HERO_ASSISTANT_PILL_TITLE).toBe("Asistente laboral inteligente en tu bolsillo");
+    expect(HOME_HERO_ASSISTANT_PILL_SUPPORT).toBe("Te explica tu caso, no un FAQ");
+    expect(COPILOT_SECTION_VISIBLE_LABEL).toBe(HOME_HERO_ASSISTANT_PILL_TITLE);
+    expect(HOME_HERO_PRIMARY_CTA).toBe("Revisar mi recibo gratis");
+
+    expect(pill).toBeGreaterThan(heroCta);
+    expect(plansLink).toBeGreaterThan(pill);
+    expect(pillMarkup).toContain("{HOME_HERO_ASSISTANT_PILL_TITLE}");
+    expect(pillMarkup).toContain("{HOME_HERO_ASSISTANT_PILL_SUPPORT}");
+    expect(pillMarkup).toContain("font-medium");
+    expect(pillMarkup).not.toContain("bg-teal-600");
+
+    expect(copilot).toContain('id="copiloto"');
+    expect(copilot).toContain("{COPILOT_SECTION_VISIBLE_LABEL}");
+    expect(copilot).not.toContain("Asesor laboral de AuditaPatron");
+    expect(copilot).not.toContain("Vista previa del asesor laboral");
+    expect(copilot).not.toMatch(/<h[12][^>]*>[^<]*[Cc]opiloto/);
+
+    expect(home).toContain(BILLING_SOFT_NOTE);
+    expect(home).toContain("Hoy no se cobra.");
+    expect(home).toContain('const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis"');
   });
 
   it("la card Gratis del home dice el precio en una línea y bullets de trabajador", () => {

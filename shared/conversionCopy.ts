@@ -40,6 +40,15 @@ export const HOME_HERO_CHECKLIST = [
 
 export const HOME_HERO_PRIMARY_CTA = "Revisar mi recibo gratis";
 
+/** Pastilla secundaria del hero. No compite con el titular ni con el CTA. */
+export const HOME_HERO_ASSISTANT_PILL_TITLE =
+  "Asistente laboral inteligente en tu bolsillo";
+
+export const HOME_HERO_ASSISTANT_PILL_SUPPORT = "Te explica tu caso, no un FAQ";
+
+/** Etiqueta visible de #copiloto. El ancla «copiloto» no se muestra al usuario. */
+export const COPILOT_SECTION_VISIBLE_LABEL = HOME_HERO_ASSISTANT_PILL_TITLE;
+
 export const HOME_HERO_CTA_MICROCOPY =
   "Subes el recibo, ves el resultado y solo se guarda si tú lo confirmas.";
 
