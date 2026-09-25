@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   INFONAVIT_DOCUMENT_CTA,
   INFONAVIT_DOCUMENT_ORIGIN_LINE,
+  INFONAVIT_DOCUMENT_STEPS,
   INFONAVIT_DOCUMENT_UNREADABLE,
+  INFONAVIT_DOCUMENT_UPLOAD_LABEL,
   INFONAVIT_MICUENTA_URL,
   infonavitDocumentCopyIsHonest,
   readInfonavitMiCuentaText,
@@ -74,7 +76,15 @@ describe("Infonavit Mi Cuenta — copy y CTA", () => {
   });
 
   it("el copy del documento no dice cumple, Bien, al corriente ni consulta en vivo", () => {
-    const copy = [INFONAVIT_DOCUMENT_CTA, publicCopy(FIXTURE_TEXT), INFONAVIT_DOCUMENT_UNREADABLE].join("\n");
+    const copy = [
+      INFONAVIT_DOCUMENT_CTA,
+      INFONAVIT_DOCUMENT_STEPS,
+      INFONAVIT_DOCUMENT_UPLOAD_LABEL,
+      publicCopy(FIXTURE_TEXT),
+      INFONAVIT_DOCUMENT_UNREADABLE,
+    ].join("\n");
+    expect(INFONAVIT_DOCUMENT_UPLOAD_LABEL).toBe("Subir PDF de Mi Cuenta");
+    expect(INFONAVIT_DOCUMENT_STEPS).toBe("(1) Baja el PDF en Mi Cuenta (2) Súbelo aquí.");
 
     expect(infonavitDocumentCopyIsHonest(copy)).toBe(true);
     expect(copy).not.toMatch(/consulta en vivo/i);

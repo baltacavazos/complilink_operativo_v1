@@ -9270,11 +9270,11 @@ export default function Auditar() {
             onAsk={() => openHeliosCopilot()}
             paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
             comparisonLines={officialCaseBriefing.comparisonLines}
+            failureOffer={infonavitDocumentSlot}
             onDone={() => {
               window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
             }}
           />
-          {infonavitDocumentSlot}
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
               <AlertTitle>No pudimos completar esto</AlertTitle>
@@ -9354,6 +9354,7 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
                   {officialCheckDisplay.detail}
                 </p>
+              {infonavitDocumentSlot}
               {workerPocketDetail.lead.length ? (
                 <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
                   {workerPocketDetail.lead.map(line => (
@@ -9428,7 +9429,6 @@ export default function Auditar() {
                 {officialCheckDisplay.buttonLabel}
               </Button>
             </div>
-            {infonavitDocumentSlot}
             {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos completar esto</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
             <p className="mt-5 text-sm leading-6 text-slate-700">Guardar esta revisión es opcional. Puedes consultar IMSS y SAT ahora y crear una cuenta después si quieres conservar el resultado.</p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -10104,11 +10104,11 @@ export default function Auditar() {
                   }}
                   onAsk={() => openHeliosCopilot()}
                   comparisonLines={officialCaseBriefing.comparisonLines}
+                  failureOffer={infonavitDocumentSlot}
                   onDone={() => {
                     verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 />
-                {infonavitDocumentSlot}
               </>
             ) : null}
             {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
@@ -10119,6 +10119,7 @@ export default function Auditar() {
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-slate-800">
                   {officialCheckDisplay.detail}
                 </p>
+                {infonavitDocumentSlot}
                 {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
                 {renderReceiptArrival(false)}
                 {workerPocketDetail.lead.length ? (
@@ -10187,7 +10188,6 @@ export default function Auditar() {
                     {INSTITUTE_SILENCE_ASK}
                   </Button>
                 ) : null}
-                {infonavitDocumentSlot}
               </div>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && officialCheckDisplay.silence ? (
@@ -10204,11 +10204,11 @@ export default function Auditar() {
                   onAsk={() => openHeliosCopilot()}
                   paperRead={lastUploadResultHeadline}
                   comparisonLines={officialCaseBriefing.comparisonLines}
+                  failureOffer={infonavitDocumentSlot}
                   onDone={() => {
                     verdictPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 />
-                {infonavitDocumentSlot}
               </>
             ) : null}
             {shouldCompactPostUploadExperience && lastUpload && !officialCheckDisplay.silence ? (
@@ -10271,6 +10271,7 @@ export default function Auditar() {
                               {getSimpleDocumentTypeLabel(lastUpload.classification.documentType)}. {lastUploadResultHeadline}
                             </p>
                           )}
+                          {infonavitDocumentSlot}
                           <details data-compact-official-detail="true" className="ap-result-detail mt-3 rounded-[1rem] border border-[#e4e4e4] px-3 py-3 text-left">
                             <summary className="cursor-pointer text-sm font-semibold tracking-tight text-[#111111]">
                               Ver detalle
@@ -10354,7 +10355,6 @@ export default function Auditar() {
                                   {INSTITUTE_SILENCE_ASK}
                                 </Button>
                               ) : null}
-                              {infonavitDocumentSlot}
                             </div>
                           </details>
                           </>

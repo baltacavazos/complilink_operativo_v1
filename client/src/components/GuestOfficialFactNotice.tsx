@@ -1,13 +1,35 @@
 import { Bell } from "lucide-react";
 
 import { isWorkerIdentifierLine } from "@/components/WorkerOfficialResult";
-import { GUEST_OFFICIAL_FACT_CLOSED_TAB_LIMIT, listGuestVisibleImssFacts } from "@shared/guestOfficialFact";
+import { GUEST_OFFICIAL_FACT_CLOSED_TAB_LIMIT, listGuestVisibleOfficialFacts } from "@shared/guestOfficialFact";
 import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
 import { OFFICIAL_FACT_ARRIVED_NOTICE } from "@shared/officialCheckCopy";
 import {
   hasUsableOfficialFact,
   OFFICIAL_RESULT_NOTIFICATION_COPY,
 } from "@shared/officialResultNotification";
+
+function GuestFactLines({
+  testId,
+  sourceLabel,
+  lines,
+}: {
+  testId: string;
+  sourceLabel: string;
+  lines: string[];
+}) {
+  if (!lines.length) return null;
+  return (
+    <div className="mt-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-900">{sourceLabel}</p>
+      <ul data-testid={testId} className="mt-1 space-y-1 text-sm leading-6 text-slate-900">
+        {lines.map((line, index) => (
+          <li key={`${sourceLabel}-${index}`}>{line}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function formatArrivedAt(value?: string | null) {
   if (!value) return null;
@@ -26,7 +48,9 @@ export function GuestOfficialFactNotice({
   waiting?: boolean;
 }) {
   if (hasUsableOfficialFact(summary)) {
-    const imssLines = listGuestVisibleImssFacts(summary).filter((line) => !isWorkerIdentifierLine(line));
+    const visible = listGuestVisibleOfficialFacts(summary);
+    const imssLines = visible.imss.filter((line) => !isWorkerIdentifierLine(line));
+    const infonavitLines = visible.infonavit.filter((line) => !isWorkerIdentifierLine(line));
     const when = formatArrivedAt(arrivedAt);
     return (
       <section
@@ -45,13 +69,8 @@ export function GuestOfficialFactNotice({
               {OFFICIAL_FACT_ARRIVED_NOTICE} {OFFICIAL_RESULT_NOTIFICATION_COPY.body}{" "}
               {OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}
             </p>
-            {imssLines.length ? (
-              <ul data-testid="guest-official-imss-fact" className="mt-3 space-y-1 text-sm leading-6 text-slate-900">
-                {imssLines.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            ) : null}
+            <GuestFactLines testId="guest-official-imss-fact" sourceLabel="IMSS" lines={imssLines} />
+            <GuestFactLines testId="guest-official-infonavit-fact" sourceLabel="Infonavit" lines={infonavitLines} />
             {when ? <p className="mt-2 text-xs font-medium text-teal-900">{when}</p> : null}
           </div>
         </div>

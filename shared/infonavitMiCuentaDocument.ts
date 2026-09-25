@@ -20,8 +20,12 @@ export const INFONAVIT_DOCUMENT_UNREADABLE =
 
 export const INFONAVIT_DOCUMENT_ORIGIN_LINE = "Origen: documento que subiste.";
 
-export const INFONAVIT_DOCUMENT_UPLOAD_LABEL = "Subir PDF";
+export const INFONAVIT_DOCUMENT_UPLOAD_LABEL = "Subir PDF de Mi Cuenta";
 export const INFONAVIT_DOCUMENT_READING_LABEL = "Leyendo el PDF…";
+
+/** Dos pasos visibles la primera vez que Infonavit no contestó. */
+export const INFONAVIT_DOCUMENT_STEPS =
+  "(1) Baja el PDF en Mi Cuenta (2) Súbelo aquí.";
 
 const CREDIT_RE =
   /(?:n[uú]mero\s+de\s+cr[eé]dito|no\.?\s+de\s+cr[eé]dito|cr[eé]dito)\s*[:#\-]\s*(\d{6,18})/i;
