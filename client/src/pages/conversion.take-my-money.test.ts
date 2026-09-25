@@ -11,8 +11,11 @@ import {
 } from "../../../shared/commerce";
 import {
   BILLING_SOFT_NOTE,
+  COPILOT_SECTION_VISIBLE_LABEL,
   FIRST_WIN_PROMISE,
   GUARANTEE_LINE,
+  HOME_HERO_ASSISTANT_PILL_SUPPORT,
+  HOME_HERO_ASSISTANT_PILL_TITLE,
   HOME_HERO_CHECKLIST,
   HOME_HERO_CLOSING_LINE,
   HOME_HERO_CTA_MICROCOPY,
@@ -221,6 +224,28 @@ describe("Claridad — take my money without live charge", () => {
     for (const variant of variants) {
       expect(home).toContain(`${variant}: approvedGuestHeroCopy`);
     }
+  });
+
+  it("opción E: la pastilla del hero y #copiloto comparten la promesa, sin mover el CTA ni el cobro", () => {
+    const home = readPage("Home");
+    const pill = home.indexOf('data-testid="home-hero-assistant-pill"');
+    const heroCta = home.indexOf('placement: "hero_primary", source: "hero"');
+    const copilotStart = home.indexOf("function CopilotPreviewSection");
+    const copilot = home.slice(copilotStart, home.indexOf("function HowItWorksSection", copilotStart));
+
+    expect(HOME_HERO_ASSISTANT_PILL_TITLE).toBe("Asistente laboral inteligente en tu bolsillo");
+    expect(HOME_HERO_ASSISTANT_PILL_SUPPORT).toBe("Te explica tu caso, no un FAQ");
+    expect(COPILOT_SECTION_VISIBLE_LABEL).toBe(HOME_HERO_ASSISTANT_PILL_TITLE);
+    expect(HOME_HERO_PRIMARY_CTA).toBe("Revisar mi recibo gratis");
+    expect(home).toContain(HOME_HERO_ASSISTANT_PILL_TITLE);
+    expect(home).toContain(HOME_HERO_ASSISTANT_PILL_SUPPORT);
+    expect(home.slice(pill, pill + 700)).toContain("{HOME_HERO_ASSISTANT_PILL_TITLE}");
+    expect(pill).toBeGreaterThan(heroCta);
+    expect(copilot).toContain("{COPILOT_SECTION_VISIBLE_LABEL}");
+    expect(copilot).toContain('id="copiloto"');
+    expect(copilot).not.toContain("Asesor laboral de AuditaPatron");
+    expect(home).toContain(BILLING_SOFT_NOTE);
+    expect(home).toContain("Hoy no se cobra.");
   });
 
   it("deja la anécdota de recibo/IMSS como máximo dos veces en Home", () => {

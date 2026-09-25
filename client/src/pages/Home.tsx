@@ -115,6 +115,8 @@ Revisar mi recibo gratis
 Subes el recibo, ves el resultado y solo se guarda si tú lo confirmas.
 Explicamos lo que dicen tus documentos. No demuestra por sí sola un incumplimiento ni garantiza el cálculo completo.
 Cuentas claras. Primero entiende. Luego decides si hablas con RH o pides aclaración.
+Asistente laboral inteligente en tu bolsillo
+Te explica tu caso, no un FAQ
 Sube tu recibo y te decimos qué revisar.
 Primero ves una señal clara, qué significa y cuál es el siguiente paso útil para no dejar dinero ni evidencia en el aire.
 Sube un solo recibo y recibe una primera lectura sobre lo que conviene revisar.
@@ -141,6 +143,9 @@ import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { COMMERCE_PRICE_FOOTER } from "@shared/commerce";
 import {
   FIRST_WIN_STEPS,
+  COPILOT_SECTION_VISIBLE_LABEL,
+  HOME_HERO_ASSISTANT_PILL_SUPPORT,
+  HOME_HERO_ASSISTANT_PILL_TITLE,
   HOME_HERO_CHECKLIST,
   HOME_HERO_CLOSING_LINE,
   HOME_HERO_CTA_MICROCOPY,
@@ -1313,6 +1318,17 @@ function HeroSection() {
               <ArrowRight className="motion-arrow ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
             </Button>
             </div>
+            <div
+              data-testid="home-hero-assistant-pill"
+              className="flex w-fit max-w-full flex-col self-center rounded-full border border-slate-200/80 bg-white/55 px-3.5 py-1.5 text-center lg:self-start lg:text-left"
+            >
+              <span className="text-pretty text-[0.8rem] font-medium leading-5 text-slate-600">
+                {HOME_HERO_ASSISTANT_PILL_TITLE}
+              </span>
+              <span className="text-pretty text-[0.72rem] font-normal leading-4 text-slate-500">
+                {HOME_HERO_ASSISTANT_PILL_SUPPORT}
+              </span>
+            </div>
             <a href={PLANS_PATH} className="text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4">
               Ver planes y activar
             </a>
@@ -2303,8 +2319,8 @@ function CopilotPreviewSection() {
     <section id="copiloto" className="bg-[#edf4f5] py-14 sm:bg-[#f5f7f8] sm:py-16">
       <div className="container mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
         <div>
-          <p className="text-sm font-semibold tracking-tight text-teal-700">
-            Asesor laboral de AuditaPatron
+          <p className="max-w-xl text-sm font-medium leading-6 text-teal-800/90">
+            {COPILOT_SECTION_VISIBLE_LABEL}
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">
             Preguntas cortas sobre tu caso, cuando ya subiste un recibo.
@@ -2351,11 +2367,11 @@ function CopilotPreviewSection() {
         <div className="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-[0_40px_100px_-60px_rgba(15,23,42,0.45)] sm:p-7">
           <div className="flex items-center justify-between gap-4 rounded-[1.4rem] border border-teal-100 bg-teal-50 px-4 py-3">
             <div>
-              <p className="text-xs font-semibold tracking-tight text-teal-700">
-                Vista previa del asesor laboral
+              <p className="text-xs font-medium tracking-tight text-teal-700/80">
+                Vista previa
               </p>
               <p className="mt-1 text-lg font-semibold tracking-[-0.02em] text-slate-950">
-                El asesor laboral te explica tu caso con palabras simples
+                {COPILOT_SECTION_VISIBLE_LABEL}
               </p>
             </div>
             <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-teal-700 shadow-sm">
