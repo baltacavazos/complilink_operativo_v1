@@ -118,15 +118,15 @@ function formatFreePlanDescription(maxDocumentsPerCase: number) {
     return "1 documento. Primera lectura y asesor básico.";
   }
 
-  return `Incluye tu primera lectura, hasta ${maxDocumentsPerCase} documentos en tu caso y el asesor laboral básico sobre ese contexto.`;
+  return `Incluye tu primera lectura, hasta ${maxDocumentsPerCase} documentos en tu caso y el asistente laboral básico sobre ese contexto.`;
 }
 
 function formatFreePlanAdvisorBullet(maxDocumentsPerCase: number) {
   if (maxDocumentsPerCase === 1) {
-    return "Asesor laboral básico sobre ese documento.";
+    return "Asistente laboral básico sobre ese documento.";
   }
 
-  return "Asesor laboral básico sobre los documentos de tu caso.";
+  return "Asistente laboral básico sobre los documentos de tu caso.";
 }
 
 const ESSENTIAL_MAX_DOCUMENTS_PER_CASE = 15;
@@ -190,7 +190,7 @@ export const COMMERCE_PLANS: CommercePlanDefinition[] = [
     },
     featureBullets: [
       "Hasta 50 recibos en tu caso.",
-      "Asesor laboral con el historial de tu caso.",
+      "Asistente laboral con el historial de tu caso.",
       "Volvemos a preguntar a IMSS e Infonavit y te avisamos si algo cambia.",
     ],
   },
