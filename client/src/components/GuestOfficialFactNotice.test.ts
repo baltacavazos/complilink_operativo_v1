@@ -54,6 +54,8 @@ describe("GuestOfficialFactNotice", () => {
     ]);
 
     expect(html).toContain('data-testid="official-result-inbox"');
+    expect(html).toContain("Ya puedes verlo con calma aquí.");
+    expect(html).not.toContain("Entra a AuditaPatrón");
     expect(html).toContain('data-testid="guest-official-imss-fact"');
     expect(html).toContain("Hay un movimiento de alta en el IMSS.");
     expect(html).toContain(">IMSS<");

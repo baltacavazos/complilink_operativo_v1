@@ -6,6 +6,7 @@ import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
 import { OFFICIAL_FACT_ARRIVED_NOTICE } from "@shared/officialCheckCopy";
 import {
   hasUsableOfficialFact,
+  OFFICIAL_RESULT_INBOX_BODY,
   OFFICIAL_RESULT_NOTIFICATION_COPY,
 } from "@shared/officialResultNotification";
 
@@ -66,7 +67,7 @@ export function GuestOfficialFactNotice({
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-teal-800">Bandeja</p>
             <p className="mt-1 text-base font-semibold text-slate-950">{OFFICIAL_RESULT_NOTIFICATION_COPY.title}</p>
             <p className="mt-1 text-sm leading-6 text-slate-800">
-              {OFFICIAL_FACT_ARRIVED_NOTICE} {OFFICIAL_RESULT_NOTIFICATION_COPY.body}{" "}
+              {OFFICIAL_FACT_ARRIVED_NOTICE} {OFFICIAL_RESULT_INBOX_BODY}{" "}
               {OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}
             </p>
             <GuestFactLines testId="guest-official-imss-fact" sourceLabel="IMSS" lines={imssLines} />

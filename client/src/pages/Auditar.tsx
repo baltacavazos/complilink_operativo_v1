@@ -57,7 +57,10 @@ import {
   selectFiveSecondVerdictFromReceipt,
   type FiveSecondVerdict,
 } from "@shared/fiveSecondVerdict";
-import { OFFICIAL_RESULT_NOTIFICATION_COPY } from "@shared/officialResultNotification";
+import {
+  OFFICIAL_RESULT_INBOX_BODY,
+  OFFICIAL_RESULT_NOTIFICATION_COPY,
+} from "@shared/officialResultNotification";
 import {
   INSTITUTE_SILENCE_ASK,
   INSTITUTE_SILENCE_CHAT,
@@ -9623,7 +9626,7 @@ export default function Auditar() {
                   {OFFICIAL_RESULT_NOTIFICATION_COPY.title}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-slate-800">
-                  {OFFICIAL_RESULT_NOTIFICATION_COPY.body}{" "}
+                  {OFFICIAL_RESULT_INBOX_BODY}{" "}
                   {OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-3">
