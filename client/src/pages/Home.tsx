@@ -2326,10 +2326,10 @@ function CopilotPreviewSection() {
             Preguntas cortas sobre tu caso, cuando ya subiste un recibo.
           </h2>
           <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg sm:leading-8">
-            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asesor laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro de tu caso.
+            Cuando ya tienes documentos visibles dentro de AuditaPatron, tu asistente laboral puede ayudarte a resumir riesgos, explicar qué todavía falta confirmar y sugerir el siguiente paso útil con base en lo que AuditaPatron ya analizó y resguardó dentro de tu caso.
           </p>
           <p className="mt-4 inline-flex max-w-xl rounded-full border border-teal-100 bg-teal-50/90 px-4 py-2 text-sm font-medium text-teal-900 shadow-sm">
-            Aquí te acompañamos paso a paso para cuidar tus derechos laborales.
+            {HOME_HERO_ASSISTANT_PILL_SUPPORT}
           </p>
 
           <div className="mt-6 space-y-3">
@@ -2346,7 +2346,7 @@ function CopilotPreviewSection() {
           </div>
 
           <div className="mt-6 rounded-[1.5rem] border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-amber-950">
-            El asesor laboral es una guía contextual basada en tu caso. No sustituye a un abogado ni constituye una opinión legal vinculante.
+            El asistente laboral es una guía contextual basada en tu caso. No sustituye a un abogado ni constituye una opinión legal vinculante.
           </div>
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -2387,7 +2387,7 @@ function CopilotPreviewSection() {
               </p>
             </div>
             <div className="rounded-[1.35rem] border border-teal-100 bg-teal-50 p-4">
-              <p className="text-xs font-semibold tracking-tight text-teal-700">El asesor laboral responde</p>
+              <p className="text-xs font-semibold tracking-tight text-teal-700">El asistente laboral responde</p>
               <div className="mt-3 space-y-3 text-sm leading-6 text-teal-950">
                 <div>
                   <p className="text-[11px] font-semibold tracking-tight text-teal-800">Respuesta clara</p>

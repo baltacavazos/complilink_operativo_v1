@@ -4,7 +4,12 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { getVisibleCatalogPlans, PLAN_PRIMARY_CTA } from "../../../shared/conversionCopy";
+import {
+  getVisibleCatalogPlans,
+  HOME_HERO_ASSISTANT_PILL_SUPPORT,
+  HOME_HERO_ASSISTANT_PILL_TITLE,
+  PLAN_PRIMARY_CTA,
+} from "../../../shared/conversionCopy";
 import { getAuditapatronPricingExperience } from "../lib/pricingExperience";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -74,5 +79,32 @@ describe("Plans · título gratis y one-shots", () => {
     expect(visible).toContain("Paquete para tu abogado");
     expect(visible).toContain("Preparar paquete");
     expect(visible).not.toMatch(FORBIDDEN_VISIBLE);
+  });
+
+  it("muestra el nombre del asistente y no la marca Asesor laboral en las cards", () => {
+    const plans = readPlans();
+    const header = plans.slice(0, plans.indexOf('data-testid="planes-plan-cards"'));
+    const visible = visiblePlansCopy();
+    const pro = getVisibleCatalogPlans().find((plan) => plan.key === "pro");
+
+    expect(HOME_HERO_ASSISTANT_PILL_TITLE).toBe("Asistente laboral inteligente en tu bolsillo");
+    expect(HOME_HERO_ASSISTANT_PILL_SUPPORT).toBe("Te explica tu caso, no un FAQ");
+    expect(plans).toContain("{HOME_HERO_ASSISTANT_PILL_TITLE}");
+    expect(plans).toContain("{HOME_HERO_ASSISTANT_PILL_SUPPORT}");
+    expect(plans).toContain('data-testid="planes-assistant-title"');
+    expect(header.indexOf('data-testid="planes-assistant-title"')).toBeGreaterThan(
+      header.indexOf("Elige un plan, con precio en MXN al mes"),
+    );
+    expect(plans).not.toContain("sanitizeClientVisibleCopy");
+    expect(pro?.monthlyPriceMx).toBe(231);
+    expect(pro?.includes).toContain("Asistente laboral con el historial de tu caso.");
+    expect(getVisibleCatalogPlans().find((plan) => plan.key === "free")?.ctaLabel).toBe(
+      "Revisar mi recibo gratis",
+    );
+    expect(visible).toContain("Asistente laboral con el historial de tu caso.");
+    expect(visible).toContain("1 documento. Primera lectura y asesor básico.");
+    expect(visible).toContain("el asesor recuerda lo que ya vimos");
+    expect(visible).not.toMatch(/Asesor laboral|copiloto/i);
+    expect(plans).toContain("Hoy no se cobra.");
   });
 });

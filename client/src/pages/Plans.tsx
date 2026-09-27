@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { COMMERCE_PRICE_FOOTER } from "@shared/commerce";
-import { PLAN_PRIMARY_CTA, getVisibleCatalogPlans } from "@shared/conversionCopy";
+import {
+  HOME_HERO_ASSISTANT_PILL_SUPPORT,
+  HOME_HERO_ASSISTANT_PILL_TITLE,
+  PLAN_PRIMARY_CTA,
+  getVisibleCatalogPlans,
+} from "@shared/conversionCopy";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 
 function visiblePlanCopy(value: string) {
@@ -33,6 +38,13 @@ export default function Plans() {
             Sube tu documento y en minutos ves el resultado y qué hacer. La primera lectura es gratis. Si quieres más documentos o un entregable, aquí ves qué incluye cada plan.
           </p>
           <p className="mt-3 text-sm leading-6 text-slate-600">Activaremos el cobro cuando esté listo. Hoy no se cobra.</p>
+          <p
+            data-testid="planes-assistant-title"
+            className="mt-4 text-sm font-medium leading-6 text-teal-800"
+          >
+            {HOME_HERO_ASSISTANT_PILL_TITLE}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-600">{HOME_HERO_ASSISTANT_PILL_SUPPORT}</p>
         </section>
 
           <section data-testid="planes-plan-cards" className="grid items-stretch gap-3 sm:grid-cols-3 sm:gap-4">

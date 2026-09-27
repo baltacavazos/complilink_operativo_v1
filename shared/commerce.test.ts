@@ -131,5 +131,13 @@ describe("tope de documentos por plan", () => {
     expect(COMMERCE_PLANS.find((plan) => plan.key === "pro")?.featureBullets.join(" ")).toMatch(
       /Volvemos a preguntar a IMSS e Infonavit/,
     );
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "pro")?.featureBullets).toContain(
+      "Asistente laboral con el historial de tu caso.",
+    );
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "pro")?.monthlyPriceMx).toBe(231);
+    expect(COMMERCE_PLANS.find((plan) => plan.key === "essential")?.monthlyPriceMx).toBe(92);
+    expect(
+      COMMERCE_PLANS.flatMap((plan) => plan.featureBullets).join(" "),
+    ).not.toMatch(/Asesor laboral|copiloto/i);
   });
 });

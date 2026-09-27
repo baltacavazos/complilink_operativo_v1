@@ -17,6 +17,7 @@ import {
   HOME_HERO_PRIMARY_CTA,
   HOME_HERO_SECTION_TITLE,
   HOME_HERO_SUBHEAD,
+  getVisibleCatalogPlans,
 } from "../../../shared/conversionCopy";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -94,12 +95,37 @@ describe("Home pública · mix aprobado del hero", () => {
     expect(pillMarkup).toContain("{HOME_HERO_ASSISTANT_PILL_SUPPORT}");
     expect(pillMarkup).toContain("font-medium");
     expect(pillMarkup).not.toContain("bg-teal-600");
+    expect(pillMarkup).not.toMatch(/copiloto/i);
+    expect(pillMarkup).not.toContain("sanitizeClientVisibleCopy");
+    expect(pillMarkup).not.toContain("Tu copiloto laboral");
+    expect(pillMarkup).not.toContain("(Tu copiloto laboral, paso a paso)");
+
+    const plansStripStart = home.indexOf("function HomePlansStrip");
+    const plansStrip = home.slice(plansStripStart, home.indexOf("function FinalCtaSection", plansStripStart));
+    expect(plansStrip).toContain("{plan.includes.map");
+    expect(plansStrip).not.toContain("sanitizeClientVisibleCopy");
+    expect(plansStrip).not.toMatch(/Asesor laboral|copiloto laboral|Tu copiloto/i);
 
     expect(copilot).toContain('id="copiloto"');
     expect(copilot).toContain("{COPILOT_SECTION_VISIBLE_LABEL}");
+    expect(copilot).toContain("{HOME_HERO_ASSISTANT_PILL_SUPPORT}");
+    expect(copilot).toContain("tu asistente laboral puede ayudarte");
+    expect(copilot).toContain("El asistente laboral es una guía contextual");
+    expect(copilot).toContain("El asistente laboral responde");
     expect(copilot).not.toContain("Asesor laboral de AuditaPatron");
     expect(copilot).not.toContain("Vista previa del asesor laboral");
+    expect(copilot).not.toContain("tu asesor laboral");
+    expect(copilot).not.toContain("El asesor laboral");
+    expect(copilot).not.toContain("Tu copiloto laboral");
+    expect(copilot).not.toContain("Aquí te acompañamos paso a paso");
     expect(copilot).not.toMatch(/<h[12][^>]*>[^<]*[Cc]opiloto/);
+
+    const pro = getVisibleCatalogPlans().find((plan) => plan.key === "pro");
+    expect(pro?.includes).toContain("Asistente laboral con el historial de tu caso.");
+    expect(pro?.includes.join(" ")).not.toMatch(/Asesor laboral|copiloto/i);
+    const essential = getVisibleCatalogPlans().find((plan) => plan.key === "essential");
+    expect(essential?.includes.join(" ")).toContain("el asesor recuerda lo que ya vimos");
+    expect(essential?.includes.join(" ")).not.toMatch(/Asesor laboral/);
 
     expect(home).toContain(BILLING_SOFT_NOTE);
     expect(home).toContain("Hoy no se cobra.");
