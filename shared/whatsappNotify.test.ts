@@ -72,7 +72,9 @@ describe("aviso por WhatsApp", () => {
     ].join(" ");
 
     expect(message.title).toBe("Ya hay un resultado de tu consulta oficial");
-    expect(message.body).toContain("tu caso");
+    expect(message.body).toBe(
+      "Ya llegó un dato oficial para tu caso. Entra a AuditaPatrón para verlo con calma.",
+    );
     expect(message.body).not.toContain("expediente");
     expect(message.text).toContain("Este resultado no prueba por sí solo que tu patrón cumpla.");
     expect(message.text).toContain("https://auditapatron.com/auditar");

@@ -13,7 +13,7 @@ export const WHATSAPP_NOTIFY_UI_COPY = {
   phoneRequired: "Para activarlo, escribe tu número.",
 } as const;
 
-/** Same moment as the inbox and the account email, in worker voice. */
+/** Outbound WhatsApp. Keeps the "enter the app" line; the in-app bandeja does not. */
 export const WHATSAPP_RESULT_NOTIFICATION_COPY = {
   title: OFFICIAL_RESULT_NOTIFICATION_COPY.title,
   body: "Ya llegó un dato oficial para tu caso. Entra a AuditaPatrón para verlo con calma.",

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { OfficialCheckSummary } from "./officialCheckCopy";
 import {
+  OFFICIAL_RESULT_INBOX_BODY,
   OFFICIAL_RESULT_NOTIFICATION_COPY,
   hasUsableOfficialFact,
   listUsableOfficialFacts,
@@ -75,5 +76,15 @@ describe("notificación durable de resultado oficial", () => {
     );
     expect(copy).not.toMatch(/tu patrón (sí )?cumple|confirmamos que cumple/i);
     expect(copy).toContain("no prueba por sí solo");
+    expect(OFFICIAL_RESULT_NOTIFICATION_COPY.body).toBe(
+      "Ya llegó un dato oficial para tu caso. Entra a AuditaPatrón para verlo con calma.",
+    );
+    expect(OFFICIAL_RESULT_INBOX_BODY).toBe(
+      "Ya llegó un dato oficial para tu caso. Ya puedes verlo con calma aquí.",
+    );
+    expect(OFFICIAL_RESULT_INBOX_BODY).not.toMatch(/Entra a AuditaPatrón/);
+    expect(`${OFFICIAL_RESULT_INBOX_BODY} ${copy}`).not.toMatch(
+      /al corriente|semáforo|semaforo|syntage/i,
+    );
   });
 });

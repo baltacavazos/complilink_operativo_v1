@@ -7,10 +7,15 @@ export const OFFICIAL_RESULT_NOTIFICATION_KIND = "official_fact_ready" as const;
 
 export const OFFICIAL_RESULT_NOTIFICATION_COPY = {
   title: "Ya hay un resultado de tu consulta oficial",
+  /** Correo y aviso de salida. WhatsApp repite esta frase en su propio copy. */
   body: "Ya llegó un dato oficial para tu caso. Entra a AuditaPatrón para verlo con calma.",
   disclaimer: "Este resultado no prueba por sí solo que tu patrón cumpla.",
   actionLabel: "Ver mi resultado",
 } as const;
+
+/** Bandeja in-app (guest Home, /auditar y cuenta). La persona ya está dentro. */
+export const OFFICIAL_RESULT_INBOX_BODY =
+  "Ya llegó un dato oficial para tu caso. Ya puedes verlo con calma aquí.";
 
 export function listUsableOfficialFacts(
   summary: OfficialCheckSummary | null | undefined,
