@@ -4588,13 +4588,15 @@ export const appRouter = router({
           officialCheckConsent: OFFICIAL_CHECK_CONSENT,
         };
       }),
+    // Mutation so the guest preview token travels in the POST body.
+    // A GET query string embeds the whole receipt analysis and trips HTTP 431.
     guestOfficialFact: publicProcedure
       .input(
         z.object({
           guestPreviewToken: z.string().min(40),
         }),
       )
-      .query(({ ctx, input }) => {
+      .mutation(({ ctx, input }) => {
         const payload = readGuestPreviewToken(input.guestPreviewToken);
         assertGuestOfficialFactReadLimit({
           guestPreviewId: payload.guestPreviewId,
