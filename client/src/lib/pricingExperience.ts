@@ -8,6 +8,10 @@ import {
 import { sanitizeClientVisibleCopy } from "./clientVisibleCopy";
 
 function visiblePricingCopy(value: string) {
+  // «Asistente laboral» es el nombre de tip E. El sanitizador lo reescribe a «Asesor laboral».
+  if (/asistente laboral/i.test(value)) {
+    return value;
+  }
   return sanitizeClientVisibleCopy(value) ?? value;
 }
 

@@ -30,6 +30,9 @@ describe("sanitizeClientVisibleCopy", () => {
   it("oculta Helios, Manus y jerga de score/ONLINE", () => {
     expect(sanitizeClientVisibleCopy("Preguntar a Helios")).toBe("Preguntar al asesor");
     expect(sanitizeClientVisibleCopy("Modo Helios")).toBe("Asesor laboral");
+    expect(sanitizeClientVisibleCopy("Asistente laboral inteligente en tu bolsillo")).toBe(
+      "Asesor laboral inteligente en tu bolsillo",
+    );
     expect(sanitizeClientVisibleCopy("Helios básico")).toBe("asesor laboral básico");
     expect(sanitizeClientVisibleCopy("Helios multi-documento")).toBe("lectura de varios documentos");
     expect(sanitizeClientVisibleCopy("motor Helios")).toBe("inteligencia laboral");

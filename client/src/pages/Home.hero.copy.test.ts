@@ -96,8 +96,15 @@ describe("Home pública · mix aprobado del hero", () => {
     expect(pillMarkup).toContain("font-medium");
     expect(pillMarkup).not.toContain("bg-teal-600");
     expect(pillMarkup).not.toMatch(/copiloto/i);
+    expect(pillMarkup).not.toContain("sanitizeClientVisibleCopy");
     expect(pillMarkup).not.toContain("Tu copiloto laboral");
     expect(pillMarkup).not.toContain("(Tu copiloto laboral, paso a paso)");
+
+    const plansStripStart = home.indexOf("function HomePlansStrip");
+    const plansStrip = home.slice(plansStripStart, home.indexOf("function FinalCtaSection", plansStripStart));
+    expect(plansStrip).toContain("{plan.includes.map");
+    expect(plansStrip).not.toContain("sanitizeClientVisibleCopy");
+    expect(plansStrip).not.toMatch(/Asesor laboral|copiloto laboral|Tu copiloto/i);
 
     expect(copilot).toContain('id="copiloto"');
     expect(copilot).toContain("{COPILOT_SECTION_VISIBLE_LABEL}");

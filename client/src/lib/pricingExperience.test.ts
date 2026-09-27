@@ -108,4 +108,13 @@ describe("getAuditapatronPricingExperience", () => {
     const experience = getAuditapatronPricingExperience(3);
     expect(JSON.stringify(experience)).not.toMatch(/Helios|CompliLink|complilink/i);
   });
+
+  it("conserva Asistente laboral en Audita Pro y no lo pasa por el sanitizador", () => {
+    const experience = getAuditapatronPricingExperience(0);
+    const pro = experience.platform.plans.find((plan) => plan.key === "pro");
+
+    expect(pro?.priceLabel).toBe("$231 · IVA incluido");
+    expect(pro?.featureBullets).toContain("Asistente laboral con el historial de tu caso.");
+    expect(pro?.featureBullets.join(" ")).not.toMatch(/Asesor laboral|copiloto/i);
+  });
 });
