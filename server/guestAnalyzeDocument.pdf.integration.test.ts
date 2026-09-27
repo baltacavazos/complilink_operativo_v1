@@ -1,9 +1,16 @@
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
+import { createTRPCClient, httpBatchLink } from "@trpc/client";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import express from "express";
+import superjson from "superjson";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { OFFICIAL_FACT_ARRIVED_NOTICE } from "@shared/officialCheckCopy";
 import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
 import { readGuestPreviewToken } from "./heliosPublicExperience";
 import { persistGuestOfficialFact, rememberGuestOfficialSession } from "./guestOfficialFactStore";
+import type { AppRouter } from "./routers";
 
 const storageMocks = vi.hoisted(() => ({
   storagePut: vi.fn(async () => ({
@@ -241,5 +248,80 @@ describe("cases.guestOfficialCheck", () => {
       "Hay un movimiento de alta en el IMSS.",
     ]);
     expect(JSON.stringify(arrived)).not.toMatch(/syntage|cumple|@/i);
+  });
+
+  it("publica guestOfficialFact como mutation para que el token no viaje en el query string", () => {
+    const procedure = appRouter._def.procedures["cases.guestOfficialFact"] as { _def: { type: string } };
+    expect(procedure._def.type).toBe("mutation");
+  });
+
+  it("responde el poll por POST con el token en el body y sin input en la URL", async () => {
+    const preview = await analyzeGuestReceipt();
+    const decoded = readGuestPreviewToken(preview.guestPreviewToken);
+    rememberGuestOfficialSession({
+      guestPreviewId: decoded.guestPreviewId,
+      traceId: decoded.traceId,
+      officialCheck: null,
+    });
+
+    const app = express();
+    app.use(express.json({ limit: "50mb" }));
+    app.use(
+      "/api/trpc",
+      createExpressMiddleware({
+        router: appRouter,
+        createContext: ({ req, res }) => ({ req, res, user: null }),
+      }),
+    );
+    const server = createServer(app);
+    await new Promise<void>((resolve) => {
+      server.listen(0, "127.0.0.1", () => resolve());
+    });
+    const address = server.address() as AddressInfo;
+    const seen: { method: string; url: string; body: string }[] = [];
+
+    try {
+      const client = createTRPCClient<AppRouter>({
+        links: [
+          httpBatchLink({
+            url: `http://127.0.0.1:${address.port}/api/trpc`,
+            transformer: superjson,
+            fetch(input, init) {
+              const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+              seen.push({
+                method: init?.method ?? "GET",
+                url,
+                body: typeof init?.body === "string" ? init.body : "",
+              });
+              return globalThis.fetch(input, init);
+            },
+          }),
+        ],
+      });
+
+      const pending = await client.cases.guestOfficialFact.mutate({
+        guestPreviewToken: preview.guestPreviewToken,
+      });
+
+      expect(preview.guestPreviewToken.length).toBeGreaterThan(500);
+      expect(decoded.preliminaryAnalysis).toBeTruthy();
+      expect(seen).toHaveLength(1);
+      const request = seen[0];
+      const url = new URL(request.url);
+      expect(request.method).toBe("POST");
+      expect(url.pathname).toBe("/api/trpc/cases.guestOfficialFact");
+      expect(url.searchParams.get("input")).toBeNull();
+      expect(request.url).not.toContain(preview.guestPreviewToken);
+      expect(request.url).not.toContain("preliminaryAnalysis");
+      expect(request.body).toContain(preview.guestPreviewToken);
+      expect(pending.awaiting).toBe(true);
+      expect(pending.notice).toBeNull();
+      expect(pending.officialCheck).toBeNull();
+      expect(JSON.stringify(pending)).not.toMatch(/cumple|syntage/i);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
   });
 });
