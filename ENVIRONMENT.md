@@ -118,9 +118,26 @@ El día de la línea: poner las tres credenciales, la plantilla, y `WHATSAPP_NOT
 | `VITE_APP_LOGO` |
 | `VITE_ANALYTICS_ENDPOINT` |
 | `VITE_ANALYTICS_WEBSITE_ID` |
+| `VITE_GA_MEASUREMENT_ID` |
+| `VITE_META_PIXEL_ID` |
 | `PORT` |
 
-Umami es opcional. El HTML no incluye el script. Solo se inserta en el navegador si `VITE_ANALYTICS_ENDPOINT` es una URL `http://` o `https://` sin `%` y `VITE_ANALYTICS_WEBSITE_ID` tampoco trae `%`. Sin esas variables no hay petición a `/umami`.
+Umami, GA4 y Meta Pixel son opcionales. El HTML no incluye los scripts. Cada uno se inserta en el navegador solo si su variable pasa la validación. Los helpers `track*` siguen en Umami y no mandan datos personales.
+
+- Umami: `VITE_ANALYTICS_ENDPOINT` http(s) sin `%` y `VITE_ANALYTICS_WEBSITE_ID` sin `%`. El script es `{endpoint}/script.js` (Umami Cloud responde 200 ahí; `/umami` responde 404). Si el endpoint ya termina en `.js`, se usa tal cual. Sin esas variables no hay petición.
+- GA4: `VITE_GA_MEASUREMENT_ID` con forma `G-` seguido de letras o números. Carga gtag en diferido, con IP anonimizada y page view. Sin ID válido no hay petición a Google.
+- Meta Pixel: `VITE_META_PIXEL_ID` numérico (5 a 20 dígitos). Init y PageView, sin Advanced Matching ni identificadores. Sin ID válido no se carga el pixel.
+
+Vite hornea `VITE_*` en el build. Cambiar estos valores exige un deploy nuevo del servicio web. No van hardcodeados en el cliente.
+
+Producción `auditapatron.com`:
+
+| Variable | Valor |
+| --- | --- |
+| `VITE_ANALYTICS_ENDPOINT` | `https://cloud.umami.is` |
+| `VITE_ANALYTICS_WEBSITE_ID` | `8e64a62c-8a6e-4999-9931-0733ba98825e` |
+| `VITE_GA_MEASUREMENT_ID` | `G-53TT3R757R` |
+| `VITE_META_PIXEL_ID` | `2261364804655594` |
 
 ## Legacy / opcional
 

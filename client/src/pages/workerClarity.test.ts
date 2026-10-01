@@ -171,7 +171,7 @@ describe("contraste y claridad del resultado", () => {
 
   it("no pide Umami si la variable de analítica no es una URL", () => {
     expect(indexHtml).not.toMatch(/src=["'][^"']*%VITE_ANALYTICS_ENDPOINT%\/umami/);
-    expect(analytics).toContain("!ANALYTICS_ENDPOINT_PATTERN.test(endpoint)");
+    expect(analytics).toContain("isAnalyticsEndpoint(endpoint)");
     expect(analytics).toContain("/^https?:\\/\\/[^\\s%]+$/i");
   });
 });
