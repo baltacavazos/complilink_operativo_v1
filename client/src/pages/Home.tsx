@@ -767,6 +767,22 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
+function handleHomeNavActivation(
+  event: { preventDefault: () => void },
+  href: string,
+  closeMenu?: () => void,
+) {
+  if (href.startsWith("#")) {
+    event.preventDefault();
+    closeMenu?.();
+    scrollToId(href.replace("#", ""));
+    return;
+  }
+
+  event.preventDefault();
+  window.location.assign(href);
+}
+
 const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
 const FREE_HOME_PLAN_BULLETS = [
   "1 documento. Primera lectura y asesor básico.",
@@ -826,10 +842,7 @@ function SiteHeader() {
             <a
               key={link.href}
               href={link.href}
-              onClick={(event) => {
-                event.preventDefault();
-                scrollToId(link.href.replace("#", ""));
-              }}
+              onClick={(event) => handleHomeNavActivation(event, link.href)}
               className="rounded-full px-2.25 py-1.5 text-[0.84rem] font-medium text-slate-300/80 transition hover:bg-white/8 hover:text-white"
             >
               {link.label}
@@ -868,9 +881,13 @@ function SiteHeader() {
             <div className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(15,23,42,0.2)]">
               <div className="flex items-center justify-between gap-3">
                 <AuditaPatronLogoWordmark imageClassName="h-6 max-w-[184px]" />
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700">
+                <a
+                  href="/acceso?returnTo=/auditar"
+                  data-testid="home-quick-entry"
+                  className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700"
+                >
                   Entrada rápida
-                </span>
+                </a>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 Entra para continuar tu caso. Aquí dejamos una sola ruta principal para que empezar sea más claro.
@@ -888,11 +905,7 @@ function SiteHeader() {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setOpen(false);
-                      scrollToId(link.href.replace("#", ""));
-                    }}
+                    onClick={(event) => handleHomeNavActivation(event, link.href, () => setOpen(false))}
                     className="flex items-center justify-between px-4 py-4 text-[0.97rem] font-semibold text-slate-700 transition duration-200 ease-out hover:bg-slate-50 hover:text-slate-950"
                   >
                     <span>{link.label}</span>
@@ -1212,14 +1225,20 @@ function HeroSection() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
       <div className="container relative z-10 mx-auto grid max-w-6xl items-start gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 xl:gap-8">
         <div className="ap-hero-copy mx-auto flex min-w-0 max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
-          <div
-            className="ap-status-chip motion-enter-soft inline-flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+          <a
+            href="/auditar"
+            data-testid="home-upload-chip"
+            onClick={(event) => {
+              event.preventDefault();
+              goToAuditFlow({ placement: "hero_upload_chip", source: "hero" });
+            }}
+            className="ap-status-chip motion-enter-soft inline-flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 no-underline shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
             <span className="min-w-0 text-pretty sm:hidden">Sube foto o PDF</span>
             <span className="hidden min-w-0 text-pretty sm:inline">Sube tu recibo y revísalo gratis</span>
-          </div>
+          </a>
 
             <h1
               className="ap-hero-headline motion-enter-soft mt-2.5 min-w-0 w-full max-w-full text-pretty text-[1.68rem] font-bold leading-[1.2] tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.5rem] max-[359px]:leading-[1.22] sm:mt-4 sm:text-[2.25rem] sm:leading-[1.16] lg:text-[2.55rem]"
@@ -1285,9 +1304,16 @@ function HeroSection() {
                     Un recibo reciente, una foto clara o el comprobante del mismo mes suele bastar para arrancar.
                   </p>
                 </div>
-                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-emerald-800">
+                <a
+                  href="/auditar"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    goToAuditFlow({ placement: "hero_single_receipt_chip", source: "hero" });
+                  }}
+                  className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-emerald-800 no-underline"
+                >
                   Un solo recibo basta
-                </span>
+                </a>
               </div>
 
               <div className="mt-2.5 rounded-[1rem] border border-slate-200 bg-slate-50/90 px-3.5 py-2">
@@ -1295,9 +1321,16 @@ function HeroSection() {
                   <p className="text-[11px] font-semibold tracking-tight text-teal-800">
                     Documento recomendado
                   </p>
-                  <span className="rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">
+                  <a
+                    href="/auditar"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      goToAuditFlow({ placement: "hero_recommended_document_chip", source: "hero" });
+                    }}
+                    className="inline-flex items-center rounded-full border border-white bg-white px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600 no-underline"
+                  >
                     Más útil para empezar
-                  </span>
+                  </a>
                 </div>
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">{activePrediagnostic.document}</p>
                 <p className="mt-1.5 text-sm leading-5 text-slate-700">{activePrediagnostic.reason}</p>
@@ -1318,9 +1351,10 @@ function HeroSection() {
               <ArrowRight className="motion-arrow ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
             </Button>
             </div>
-            <div
+            <a
+              href="/auditar?chat=1"
               data-testid="home-hero-assistant-pill"
-              className="flex w-fit max-w-full flex-col self-center rounded-full border border-slate-200/80 bg-white/55 px-3.5 py-1.5 text-center lg:self-start lg:text-left"
+              className="flex w-fit max-w-full flex-col self-center rounded-full border border-slate-200/80 bg-white/55 px-3.5 py-1.5 text-center no-underline lg:self-start lg:text-left"
             >
               <span className="text-pretty text-[0.8rem] font-medium leading-5 text-slate-600">
                 {HOME_HERO_ASSISTANT_PILL_TITLE}
@@ -1328,7 +1362,7 @@ function HeroSection() {
               <span className="text-pretty text-[0.72rem] font-normal leading-4 text-slate-500">
                 {HOME_HERO_ASSISTANT_PILL_SUPPORT}
               </span>
-            </div>
+            </a>
             <a href={PLANS_PATH} className="text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4">
               Ver planes y activar
             </a>
@@ -1344,9 +1378,20 @@ function HeroSection() {
                     "Tu empresa no lo ve",
                     "Borras tu archivo cuando quieras",
                   ].map((item) => (
-                    <span key={item} className="ap-status-chip rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800 shadow-sm">
+                    <a
+                      key={item}
+                      href={item === "Tu empresa no lo ve" || item === "Borras tu archivo cuando quieras" ? "/aviso-de-privacidad" : "/auditar"}
+                      onClick={(event) => {
+                        if (item === "Tu empresa no lo ve" || item === "Borras tu archivo cuando quieras") {
+                          return;
+                        }
+                        event.preventDefault();
+                        goToAuditFlow({ placement: "hero_trust_chip", source: "hero" });
+                      }}
+                      className="ap-status-chip rounded-full border border-teal-100 bg-white/92 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-teal-800 no-underline shadow-sm"
+                    >
                       {item}
-                    </span>
+                    </a>
                   ))}
                 </div>
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700 max-[359px]:hidden">
@@ -1375,7 +1420,7 @@ function HeroSection() {
                   <p className="mt-1 max-w-full text-pretty text-[1.45rem] font-bold leading-[1.12] tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.32rem] sm:text-[1.7rem]">
                     {activeReportDemoCopy.title}
                   </p>
-                  <p className="mt-3 inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900 shadow-sm">
+                  <p className="mt-3 text-xs font-semibold text-emerald-900">
                     {selectedReportDemoState === "hallazgo-preliminar"
                       ? "Un resultado claro."
                       : selectedReportDemoState === "documento-recibido"
@@ -1383,9 +1428,9 @@ function HeroSection() {
                         : "Te decimos qué revisar primero."}
                   </p>
                 </div>
-                <div className="ap-status-chip rounded-full border border-amber-200 bg-amber-100/90 px-3 py-1 text-xs font-semibold text-amber-800 shadow-sm">
+                <p className="text-xs font-semibold text-amber-800">
                   1 resultado por vista
-                </div>
+                </p>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-700">
                 {activeReportDemoCopy.description}
@@ -1826,10 +1871,14 @@ function HeliosFirstEntrySection() {
     <section id="lectura-gratis" className="bg-white py-10 sm:py-12">
       <div className="container mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-start">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold tracking-tight text-teal-800">
+          <button
+            type="button"
+            onClick={handleGuestUploadClick}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[11px] font-semibold tracking-tight text-teal-800"
+          >
             <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
             Primera lectura sin correo
-          </div>
+          </button>
           <h2 className="mt-3 max-w-[14ch] text-[1.9rem] font-bold leading-[0.96] tracking-[-0.05em] text-slate-950 sm:mt-4 sm:text-[2.5rem]">
             Sube un archivo y mira una primera lectura antes de decidir.
           </h2>
@@ -1838,15 +1887,26 @@ function HeliosFirstEntrySection() {
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900">
+            <button
+              type="button"
+              onClick={handleGuestUploadClick}
+              className="cursor-pointer rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900"
+            >
               Sin correo para empezar
-            </span>
-            <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900">
+            </button>
+            <a
+              href="/aviso-de-privacidad"
+              className="inline-flex items-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-900 no-underline"
+            >
               Privado desde el inicio
-            </span>
-            <span className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700">
+            </a>
+            <button
+              type="button"
+              onClick={handleGuestUploadClick}
+              className="cursor-pointer rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+            >
               Tú decides si lo guardas
-            </span>
+            </button>
           </div>
 
           <div className="mt-5 rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#ffffff_0%,_#f6fbfa_100%)] p-4 shadow-[0_24px_60px_-42px_rgba(15,23,42,0.24)] sm:p-5">
@@ -1987,13 +2047,13 @@ function HeliosFirstEntrySection() {
               <div className="rounded-[1rem] border border-amber-200 bg-amber-50 px-3.5 py-3">
                 <p className="text-[10px] font-semibold tracking-tight text-amber-800">Lo que se ve</p>
                 <p className="mt-1.5 text-sm leading-5 text-amber-950">
-                  {featuredExample?.primaryConcern ?? "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
+                  {featuredExample?.primaryConcern || "La lectura vuelve visible una preocupación principal antes de pedir más contexto."}
                 </p>
               </div>
               <div className="rounded-[1rem] border border-emerald-200 bg-emerald-50 px-3.5 py-3">
                 <p className="text-[10px] font-semibold tracking-tight text-emerald-800">Qué sigue</p>
                 <p className="mt-1.5 text-sm leading-5 text-emerald-950">
-                  {featuredExample?.nextStep ?? "La lectura te sugiere el siguiente documento útil para fortalecer tu bóveda laboral."}
+                  {featuredExample?.nextStep || "La lectura te sugiere el siguiente documento útil para fortalecer tu bóveda laboral."}
                 </p>
               </div>
             </div>
@@ -2002,7 +2062,12 @@ function HeliosFirstEntrySection() {
           <article className="rounded-[1.2rem] border border-slate-200 bg-white px-4 py-3.5 shadow-sm">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold tracking-tight text-slate-500">Si ya entraste</span>
-              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600">Primero ves valor y luego decides</span>
+              <a
+                href="/acceso?returnTo=/auditar"
+                className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold tracking-tight text-slate-600 no-underline"
+              >
+                Primero ves valor y luego decides
+              </a>
             </div>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-950">
               {latestCase?.stageLabel ? `Tu bóveda va en ${humanizeDossierProgressLabel(latestCase.stageLabel)}.` : "Si ya entraste antes, retomamos tu lectura y la guardas solo si te sirve."}
@@ -2463,9 +2528,9 @@ function HowItWorksSection() {
                 key={item.title}
                 className="rounded-[1.2rem] border border-slate-200 bg-slate-50 px-3.5 py-3"
               >
-                <div className="inline-flex rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-teal-700 shadow-sm">
+                <p className="text-xs font-semibold text-teal-700">
                   {String(index + 1).padStart(2, "0")}
-                </div>
+                </p>
                 <h3 className="mt-2 text-[0.98rem] font-semibold tracking-[-0.02em] text-slate-950">
                   {item.title}
                 </h3>
@@ -3233,16 +3298,20 @@ function HomePlansStrip() {
                     <li key={feature}>{feature}</li>
                   ))}
                 </ul>
-                {plan.key === "free" ? null : (
                 <Button
-                  className="mt-4 h-11 w-full rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                  className={`mt-4 h-11 w-full rounded-full text-white ${
+                    plan.key === "free" ? "bg-teal-700 hover:bg-teal-800" : "bg-slate-950 hover:bg-slate-800"
+                  }`}
                   onClick={() => {
+                    if (plan.key === "free") {
+                      goToAuditFlow({ placement: "home_free_plan", source: "home_plans" });
+                      return;
+                    }
                     window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
                   }}
                 >
-                  {PLAN_PRIMARY_CTA}
+                  {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
                 </Button>
-                )}
               </article>
             ))}
           </div>
@@ -3296,12 +3365,9 @@ function FinalCtaSection() {
 
             <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               {pricingExperience.landing.principles.slice(0, 2).map((principle) => (
-                <span
-                  key={principle}
-                  className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-sm text-slate-700 shadow-[0_18px_40px_-34px_rgba(15,23,42,0.32)]"
-                >
+                <p key={principle} className="text-sm leading-6 text-slate-700">
                   {principle}
-                </span>
+                </p>
               ))}
               <span className="text-sm leading-6 text-slate-600">
                 Si más adelante quieres avanzar, lo activas en un plan.
