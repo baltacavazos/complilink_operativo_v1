@@ -538,16 +538,14 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Tu avance sigue listo</p>
                   <p className="mt-2 text-base font-semibold text-slate-950">Entras y sigues directo a {returnToLabel}.</p>
                 </div>
-                <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                   1 paso para volver
-                </span>
+                </p>
               </div>
               <p className="mt-3 leading-6 text-slate-600">{returnToValueCopy}</p>
-              <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Correo seguro</span>
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Código de 6 dígitos</span>
-                <span className="rounded-full border border-slate-200 bg-white px-3 py-1">Regreso directo</span>
-              </div>
+              <p className="mt-3 text-xs font-semibold leading-5 text-slate-600">
+                Correo seguro. Código de 6 dígitos. Regreso directo.
+              </p>
             </div>
 
             {rememberedEmail && emailStep === "request" ? (

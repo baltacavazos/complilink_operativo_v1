@@ -22,6 +22,15 @@ describe("controles móviles de la home pública", () => {
     expect(chip).toContain("Sube foto o PDF");
   });
 
+  it("da destino a las pastillas que parecen controles", () => {
+    expect(home).toContain('href="/auditar?chat=1"');
+    expect(home).toContain('data-testid="home-hero-assistant-pill"');
+    expect(home).toContain("Primera lectura sin correo");
+    expect(home).toContain("Privado desde el inicio");
+    expect(home).toContain("Primero ves valor y luego decides");
+    expect(home).toContain('goToAuditFlow({ placement: "home_free_plan", source: "home_plans" })');
+  });
+
   it("sigue la ruta real de Privacidad y solo intercepta anclas internas", () => {
     const activatorStart = home.indexOf("function handleHomeNavActivation");
     const activator = home.slice(activatorStart, activatorStart + 700);

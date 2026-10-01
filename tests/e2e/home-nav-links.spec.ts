@@ -72,4 +72,54 @@ test.describe("navegación pública del landing", () => {
     await page.locator("header").getByRole("button", { name: "Entrar" }).click();
     await expect(page).toHaveURL(/\/acceso\?returnTo=(%2F|\/)auditar$/);
   });
+
+  test("las demás pastillas, el plan gratis, el pie y el acceso también actúan", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    await page.getByRole("button", { name: "Recibo recibido" }).click();
+    await expect(page.getByText("Primero vemos tu recibo.")).toBeVisible();
+
+    const fileChooserPromise = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "Primera lectura sin correo" }).click();
+    await fileChooserPromise;
+
+    await page.getByRole("link", { name: "Privado desde el inicio" }).click();
+    await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
+
+    await page.goto("/");
+    await page.getByRole("link", { name: "Primero ves valor y luego decides" }).click();
+    await expect(page).toHaveURL(/\/acceso\?returnTo=(%2F|\/)auditar$/);
+
+    await page.goto("/");
+    await page.getByTestId("home-hero-assistant-pill").click();
+    await expect(page).toHaveURL(/\/auditar\?chat=1$/);
+
+    await page.goto("/");
+    await page.locator("#planes").getByRole("button", { name: "Revisar mi recibo gratis" }).click();
+    await expect(page).toHaveURL(/\/auditar$/);
+
+    await page.goto("/");
+    await page.locator("#planes").getByRole("button", { name: "Ver el plan" }).first().click();
+    await expect(page).toHaveURL(/\/auditar\?plan=/);
+
+    await page.goto("/");
+    await page.getByRole("link", { name: "Ver planes y activar" }).first().click();
+    await expect(page).toHaveURL(/\/planes$/);
+
+    await page.goto("/");
+    await page.locator("header").getByRole("link", { name: "Ir al inicio de AuditaPatron" }).click();
+    await expect(page).toHaveURL(/#top$/);
+
+    await page.locator("footer").getByRole("link", { name: "Aviso de Privacidad" }).click();
+    await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
+
+    await page.goto("/acceso?returnTo=/auditar");
+    await page.getByRole("button", { name: "Crear mi cuenta por primera vez" }).click();
+    await expect(page.getByRole("heading", { name: "Crea tu cuenta" })).toBeVisible();
+    await page.getByRole("button", { name: "Ya tengo cuenta: iniciar sesión" }).click();
+    await expect(page.getByRole("heading", { name: "Entra a tu cuenta" })).toBeVisible();
+    await page.getByTestId("mobile-header-back").click();
+    await expect(page).toHaveURL(/\/$/);
+  });
 });
