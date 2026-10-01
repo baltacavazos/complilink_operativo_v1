@@ -767,6 +767,22 @@ function scrollToId(id: string) {
   window.scrollTo({ top: Math.max(0, targetTop), behavior: "smooth" });
 }
 
+function handleHomeNavActivation(
+  event: { preventDefault: () => void },
+  href: string,
+  closeMenu?: () => void,
+) {
+  if (href.startsWith("#")) {
+    event.preventDefault();
+    closeMenu?.();
+    scrollToId(href.replace("#", ""));
+    return;
+  }
+
+  event.preventDefault();
+  window.location.assign(href);
+}
+
 const PRIMARY_CTA_LABEL = "Revisar mi recibo gratis";
 const FREE_HOME_PLAN_BULLETS = [
   "1 documento. Primera lectura y asesor básico.",
@@ -826,10 +842,7 @@ function SiteHeader() {
             <a
               key={link.href}
               href={link.href}
-              onClick={(event) => {
-                event.preventDefault();
-                scrollToId(link.href.replace("#", ""));
-              }}
+              onClick={(event) => handleHomeNavActivation(event, link.href)}
               className="rounded-full px-2.25 py-1.5 text-[0.84rem] font-medium text-slate-300/80 transition hover:bg-white/8 hover:text-white"
             >
               {link.label}
@@ -868,9 +881,13 @@ function SiteHeader() {
             <div className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(15,23,42,0.2)]">
               <div className="flex items-center justify-between gap-3">
                 <AuditaPatronLogoWordmark imageClassName="h-6 max-w-[184px]" />
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700">
+                <a
+                  href="/acceso?returnTo=/auditar"
+                  data-testid="home-quick-entry"
+                  className="inline-flex items-center rounded-full bg-teal-50 px-3 py-1 text-[11px] font-semibold tracking-tight text-teal-700"
+                >
                   Entrada rápida
-                </span>
+                </a>
               </div>
               <p className="mt-3 text-sm leading-6 text-slate-600">
                 Entra para continuar tu caso. Aquí dejamos una sola ruta principal para que empezar sea más claro.
@@ -888,11 +905,7 @@ function SiteHeader() {
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setOpen(false);
-                      scrollToId(link.href.replace("#", ""));
-                    }}
+                    onClick={(event) => handleHomeNavActivation(event, link.href, () => setOpen(false))}
                     className="flex items-center justify-between px-4 py-4 text-[0.97rem] font-semibold text-slate-700 transition duration-200 ease-out hover:bg-slate-50 hover:text-slate-950"
                   >
                     <span>{link.label}</span>
@@ -1212,14 +1225,20 @@ function HeroSection() {
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,_rgba(229,244,242,0.92)_0%,_rgba(216,236,233,0.98)_100%)] sm:hidden" />
       <div className="container relative z-10 mx-auto grid max-w-6xl items-start gap-5 sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:gap-8 xl:gap-8">
         <div className="ap-hero-copy mx-auto flex min-w-0 max-w-2xl flex-col items-center text-center lg:mx-0 lg:items-start lg:text-left">
-          <div
-            className="ap-status-chip motion-enter-soft inline-flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
+          <a
+            href="/auditar"
+            data-testid="home-upload-chip"
+            onClick={(event) => {
+              event.preventDefault();
+              goToAuditFlow({ placement: "hero_upload_chip", source: "hero" });
+            }}
+            className="ap-status-chip motion-enter-soft inline-flex max-w-full min-w-0 flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-white/92 px-3 py-1.5 text-center text-[10px] font-semibold tracking-tight text-teal-800 no-underline shadow-[0_18px_40px_-30px_rgba(20,184,166,0.35)] max-[359px]:gap-1.5 max-[359px]:px-2.5 max-[359px]:text-[9px] max-[359px]:tracking-[0.12em] sm:max-w-fit sm:flex-nowrap sm:px-4 sm:py-2 sm:text-xs sm:tracking-[0.16em]"
             style={{ ["--motion-delay" as string]: "20ms" }}
           >
             <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={1.8} />
             <span className="min-w-0 text-pretty sm:hidden">Sube foto o PDF</span>
             <span className="hidden min-w-0 text-pretty sm:inline">Sube tu recibo y revísalo gratis</span>
-          </div>
+          </a>
 
             <h1
               className="ap-hero-headline motion-enter-soft mt-2.5 min-w-0 w-full max-w-full text-pretty text-[1.68rem] font-bold leading-[1.2] tracking-[-0.04em] text-slate-950 max-[359px]:text-[1.5rem] max-[359px]:leading-[1.22] sm:mt-4 sm:text-[2.25rem] sm:leading-[1.16] lg:text-[2.55rem]"
