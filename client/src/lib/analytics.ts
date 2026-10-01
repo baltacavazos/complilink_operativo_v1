@@ -1,5 +1,7 @@
 const ANALYTICS_ENDPOINT_PATTERN = /^https?:\/\/[^\s%]+$/i;
 const ANALYTICS_WEBSITE_ID_PATTERN = /^[^\s%]+$/;
+const GA_MEASUREMENT_ID_PATTERN = /^G-[A-Z0-9]+$/;
+const META_PIXEL_ID_PATTERN = /^\d{5,20}$/;
 
 export function isAnalyticsEndpoint(value: unknown): value is string {
   return typeof value === "string" && ANALYTICS_ENDPOINT_PATTERN.test(value);
@@ -9,19 +11,30 @@ export function isAnalyticsWebsiteId(value: unknown): value is string {
   return typeof value === "string" && ANALYTICS_WEBSITE_ID_PATTERN.test(value);
 }
 
-export function analyticsScriptSrc(endpoint: string) {
-  return `${endpoint.replace(/\/+$/, "")}/umami`;
+export function isGaMeasurementId(value: unknown): value is string {
+  return typeof value === "string" && GA_MEASUREMENT_ID_PATTERN.test(value);
 }
 
-export function installOptionalAnalytics() {
+export function isMetaPixelId(value: unknown): value is string {
+  return typeof value === "string" && META_PIXEL_ID_PATTERN.test(value);
+}
+
+/** Umami Cloud and current self-host builds serve `/script.js`, not legacy `/umami`. */
+export function analyticsScriptSrc(endpoint: string) {
+  const trimmed = endpoint.replace(/\/+$/, "");
+  if (/\.js$/i.test(trimmed)) {
+    return trimmed;
+  }
+  return `${trimmed}/script.js`;
+}
+
+function installUmamiAnalytics() {
   const endpoint = import.meta.env.VITE_ANALYTICS_ENDPOINT;
   const websiteId = import.meta.env.VITE_ANALYTICS_WEBSITE_ID;
 
   if (
-    typeof endpoint !== "string" ||
-    !ANALYTICS_ENDPOINT_PATTERN.test(endpoint) ||
-    typeof websiteId !== "string" ||
-    !ANALYTICS_WEBSITE_ID_PATTERN.test(websiteId) ||
+    !isAnalyticsEndpoint(endpoint) ||
+    !isAnalyticsWebsiteId(websiteId) ||
     typeof document === "undefined" ||
     document.querySelector('script[data-auditapatron-analytics="1"]')
   ) {
@@ -30,10 +43,114 @@ export function installOptionalAnalytics() {
 
   const script = document.createElement("script");
   script.defer = true;
-  script.src = `${endpoint.replace(/\/+$/, "")}/umami`;
+  script.src = analyticsScriptSrc(endpoint);
   script.setAttribute("data-website-id", websiteId);
   script.setAttribute("data-auditapatron-analytics", "1");
   document.head.appendChild(script);
+}
+
+function installGoogleAnalytics() {
+  const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+
+  if (
+    !isGaMeasurementId(measurementId) ||
+    typeof document === "undefined" ||
+    typeof window === "undefined" ||
+    document.querySelector('script[data-auditapatron-ga="1"]')
+  ) {
+    return;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  if (typeof window.gtag !== "function") {
+    window.gtag = function gtag(...args: unknown[]) {
+      window.dataLayer?.push(args);
+    };
+  }
+
+  window.gtag("js", new Date());
+  window.gtag("config", measurementId, {
+    anonymize_ip: true,
+    send_page_view: true,
+  });
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.defer = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(measurementId)}`;
+  script.setAttribute("data-auditapatron-ga", "1");
+  document.head.appendChild(script);
+}
+
+type FbqFn = ((...args: unknown[]) => void) & {
+  callMethod?: (...args: unknown[]) => void;
+  queue: unknown[];
+  loaded: boolean;
+  version: string;
+  push: (...args: unknown[]) => void;
+};
+
+function createMetaPixelStub(): FbqFn {
+  const holder: { fn?: FbqFn } = {};
+  const fbq = function (...args: unknown[]) {
+    const fn = holder.fn;
+    if (!fn) {
+      return;
+    }
+    if (typeof fn.callMethod === "function") {
+      fn.callMethod(...args);
+    } else {
+      fn.queue.push(args);
+    }
+  } as FbqFn;
+  fbq.queue = [];
+  fbq.loaded = true;
+  fbq.version = "2.0";
+  fbq.push = fbq;
+  holder.fn = fbq;
+  return fbq;
+}
+
+function installMetaPixel() {
+  const pixelId = import.meta.env.VITE_META_PIXEL_ID;
+
+  if (
+    !isMetaPixelId(pixelId) ||
+    typeof document === "undefined" ||
+    typeof window === "undefined" ||
+    document.querySelector('script[data-auditapatron-meta="1"]')
+  ) {
+    return;
+  }
+
+  if (typeof window.fbq !== "function") {
+    const fbq = createMetaPixelStub();
+    window.fbq = fbq;
+    if (!window._fbq) {
+      window._fbq = fbq;
+    }
+  }
+
+  window.fbq("init", pixelId);
+  window.fbq("track", "PageView");
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.defer = true;
+  script.src = "https://connect.facebook.net/en_US/fbevents.js";
+  script.setAttribute("data-auditapatron-meta", "1");
+  document.head.appendChild(script);
+}
+
+/**
+ * Optional analytics installers. Each one no-ops when its env var is missing or invalid.
+ * Page views only for GA4 and Meta. No personal data is attached.
+ * Product `track*` helpers stay on Umami and do not forward identifiers.
+ */
+export function installOptionalAnalytics() {
+  installUmamiAnalytics();
+  installGoogleAnalytics();
+  installMetaPixel();
 }
 
 type AnalyticsPayload = Record<string, string | number | boolean | null | undefined>;
@@ -45,6 +162,10 @@ type UmamiTracker = {
 declare global {
   interface Window {
     umami?: UmamiTracker;
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+    fbq?: FbqFn;
+    _fbq?: FbqFn;
   }
 }
 

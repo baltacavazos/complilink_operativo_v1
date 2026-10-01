@@ -44,8 +44,10 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | `DROPBOX_API_KEY` | Respaldo | Sí para backup | Respaldo obligatorio en Dropbox | Validación y backup |
 | `RESEND_API_KEY` | Correo | Sí si hay notificaciones | Envío de correo | Backend |
 | `RESEND_FROM_EMAIL` | Correo | Sí si hay notificaciones | Remitente operativo | Backend |
-| `VITE_ANALYTICS_ENDPOINT` | Analítica | Opcional | URL http(s) de Umami. Si falta o no es URL real, no se carga el script | Frontend |
-| `VITE_ANALYTICS_WEBSITE_ID` | Analítica | Opcional | Id del sitio, sin `%`. Si falta, no se inserta el script | Frontend |
+| `VITE_ANALYTICS_ENDPOINT` | Analítica | Opcional | URL http(s) de Umami. El cliente carga `{endpoint}/script.js`. Si falta o no es URL real, no se carga el script | Frontend |
+| `VITE_ANALYTICS_WEBSITE_ID` | Analítica | Opcional | Id del sitio, sin `%`. Si falta, no se inserta Umami | Frontend |
+| `VITE_GA_MEASUREMENT_ID` | Analítica | Opcional | Measurement ID de GA4 (`G-` + letras o números). Si falta o no coincide, no se carga gtag | Frontend |
+| `VITE_META_PIXEL_ID` | Analítica | Opcional | Id numérico del Meta Pixel. Si falta o no es numérico, no se carga. Sin datos personales | Frontend |
 | `VITE_APP_TITLE` | Branding | Recomendable | Título de la app | Frontend |
 | `VITE_APP_LOGO` | Branding | Recomendable | Logo de la app | Frontend |
 | `PORT` | Runtime | No | Puerto preferido del backend | Backend |
@@ -64,7 +66,7 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | Consenso multi-IA | `OPENAI_API_KEY`, `GEMINI_API_KEY` | Se pierde el contraste multimodelo solicitado |
 | Respaldo | `DROPBOX_API_KEY` | No pueden ejecutarse respaldos automáticos |
 | Comunicación | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Fallan correos y avisos operativos |
-| Branding y medición | `VITE_APP_TITLE`, `VITE_APP_LOGO`, `VITE_ANALYTICS_ENDPOINT`, `VITE_ANALYTICS_WEBSITE_ID` | No bloquea el núcleo. Sin URL real de analítica no hay script ni medición |
+| Branding y medición | `VITE_APP_TITLE`, `VITE_APP_LOGO`, `VITE_ANALYTICS_ENDPOINT`, `VITE_ANALYTICS_WEBSITE_ID`, `VITE_GA_MEASUREMENT_ID`, `VITE_META_PIXEL_ID` | No bloquea el núcleo. Sin variables válidas no hay script de Umami, GA4 ni Meta. Los valores de producción de auditapatron.com están en `ENVIRONMENT.md` |
 
 ## Puertos, rutas y URLs relevantes
 
