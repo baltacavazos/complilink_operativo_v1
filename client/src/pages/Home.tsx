@@ -3411,11 +3411,19 @@ function SiteFooter() {
           </p>
         </div>
         <div className="flex flex-wrap gap-x-4 gap-y-2">
-          <a href="#lectura-gratis" className="transition-colors hover:text-slate-900">
+          <a
+            href="#lectura-gratis"
+            className="transition-colors hover:text-slate-900"
+            onClick={(event) => handleHomeNavActivation(event, "#lectura-gratis")}
+          >
             Tu recibo
           </a>
 
-          <a href="#como-funciona" className="transition-colors hover:text-slate-900">
+          <a
+            href="#como-funciona"
+            className="transition-colors hover:text-slate-900"
+            onClick={(event) => handleHomeNavActivation(event, "#como-funciona")}
+          >
             Cómo funciona
           </a>
           <a href="/aviso-de-privacidad" className="transition-colors hover:text-slate-900">

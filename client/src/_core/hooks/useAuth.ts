@@ -4,7 +4,7 @@ import {
   getEffectiveRole,
   isViewingAsUser as resolveIsViewingAsUser,
 } from "@/lib/viewMode";
-import { getLoginUrl } from "@/const";
+import { getAccessUrl, getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
@@ -98,9 +98,16 @@ export function useAuth(options?: UseAuthOptions) {
     if (meQuery.isLoading || logoutMutation.isPending) return;
     if (state.realUser) return;
     if (typeof window === "undefined") return;
-    if (window.location.pathname === redirectPath) return;
+    if (window.location.pathname === "/acceso") return;
 
-    window.location.href = redirectPath;
+    const destination =
+      redirectPath.startsWith("/acceso") || /^https?:\/\//.test(redirectPath)
+        ? redirectPath
+        : getAccessUrl(redirectPath);
+    const current = `${window.location.pathname}${window.location.search}`;
+    if (current === destination) return;
+
+    window.location.href = destination;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

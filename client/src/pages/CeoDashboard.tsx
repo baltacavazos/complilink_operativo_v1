@@ -1946,8 +1946,20 @@ export default function CeoDashboard() {
                   Este expediente privado sólo está disponible para el owner autorizado.
                 </h2>
                 <p className="text-base leading-7 text-slate-700">
-                  Tu sesión está activa, pero no tiene permiso para entrar aquí. Si este acceso debe revisarse, confirma primero la cuenta autorizada y luego valida los permisos internos.
+                  {user
+                    ? "Tu sesión está activa, pero no tiene permiso para entrar aquí. Si este acceso debe revisarse, confirma primero la cuenta autorizada y luego valida los permisos internos."
+                    : "Entra con la cuenta autorizada para abrir esta consola."}
                 </p>
+                {user ? null : (
+                  <Button
+                    className="rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                    onClick={() => {
+                      window.location.href = "/acceso?returnTo=/ceo";
+                    }}
+                  >
+                    Entrar
+                  </Button>
+                )}
                 <Button variant="outline" className="rounded-full bg-white" onClick={() => setLocation("/")}>
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Volver al sitio

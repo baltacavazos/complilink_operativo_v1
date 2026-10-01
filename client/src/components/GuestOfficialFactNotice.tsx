@@ -43,10 +43,12 @@ export function GuestOfficialFactNotice({
   summary,
   arrivedAt,
   waiting,
+  onView,
 }: {
   summary?: OfficialCheckSummary | null;
   arrivedAt?: string | null;
   waiting?: boolean;
+  onView?: () => void;
 }) {
   if (hasUsableOfficialFact(summary)) {
     const visible = listGuestVisibleOfficialFacts(summary);
@@ -73,6 +75,22 @@ export function GuestOfficialFactNotice({
             <GuestFactLines testId="guest-official-imss-fact" sourceLabel="IMSS" lines={imssLines} />
             <GuestFactLines testId="guest-official-infonavit-fact" sourceLabel="Infonavit" lines={infonavitLines} />
             {when ? <p className="mt-2 text-xs font-medium text-teal-900">{when}</p> : null}
+            <button
+              type="button"
+              data-testid="official-result-inbox-cta"
+              className="mt-3 inline-flex items-center rounded-full bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white"
+              onClick={() => {
+                if (onView) {
+                  onView();
+                  return;
+                }
+                document
+                  .querySelector('[data-testid="official-check-card"]')
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              {OFFICIAL_RESULT_NOTIFICATION_COPY.actionLabel}
+            </button>
           </div>
         </div>
       </section>

@@ -7913,6 +7913,36 @@ export default function Auditar() {
   };
 
   const handleHeliosCopilotSend = (content: string) => {
+    if (!auth.isAuthenticated) {
+      const normalized = content.trim().toLowerCase();
+      const aboutPrivacy = /empresa|privac|compart/.test(normalized);
+      const receiptRead = [
+        plainWorkerCopy(
+          guestReview?.heliosOpinion.resultCard?.headline ??
+            guestReview?.heliosOpinion.summary,
+        ),
+        plainWorkerCopy(guestReview?.heliosOpinion.recommendedNextStep),
+      ]
+        .filter(Boolean)
+        .join(" ");
+      const aboutReceipt =
+        Boolean(guestReview) && /recibo|pago|imss|revis|descuento|retenc/.test(normalized);
+      const reply = aboutPrivacy
+        ? "No. Lo que subes no se comparte con tu empresa. El aviso de privacidad se lee sin cuenta, desde el inicio."
+        : aboutReceipt && receiptRead
+          ? `${receiptRead} Esto es una lectura inicial, no una prueba de que tu patrón cumpla.`
+          : guestReview
+            ? "Puedo hablar de la lectura de tu recibo. Pregunta qué se ve, qué falta o cuál es el siguiente paso."
+            : "Sube tu recibo en esta pantalla y te explico lo que se ve. Si ya lo guardaste, entra con tu correo para seguir el caso.";
+      setHeliosCopilotMessages((current) =>
+        appendHeliosCopilotMessage(
+          appendHeliosCopilotMessage(current, { role: "user", content }),
+          { role: "assistant", content: reply },
+        ),
+      );
+      return;
+    }
+
     if (!selectedTenantId || !selectedCaseId) {
       setHeliosCopilotMessages(current =>
         appendHeliosCopilotMessage(current, {
@@ -9125,7 +9155,55 @@ export default function Auditar() {
     plainWorkerCopy(
       guestReview?.heliosOpinion.resultCard?.nextStepSummary ??
         guestReview?.heliosOpinion.recommendedNextStep
-    ) ?? guestSignalFallback.nextStep;
+    )     ?? guestSignalFallback.nextStep;
+
+  const guestAdvisorPrompts = heliosCopilotSuggestedPrompts.length
+    ? heliosCopilotSuggestedPrompts
+    : ["¿Qué documento subo primero?", "¿Mi empresa puede ver lo que subo?"];
+  const guestAdvisorSheet = auth.isAuthenticated ? null : (
+    <HeliosCopilotSheet
+      open={heliosCopilotOpen}
+      onOpenChange={setHeliosCopilotOpen}
+      onSendMessage={handleHeliosCopilotSend}
+      messages={[
+        {
+          role: "assistant",
+          content: guestReview
+            ? `${guestSignalWhy} Pregúntame qué se ve, qué falta y el siguiente paso.`
+            : "Puedes preguntar antes de crear cuenta. Si subes tu recibo, te explico lo que se ve.",
+        },
+        ...alignedCopilotMessages,
+      ]}
+      isLoading={false}
+      suggestedPrompts={guestAdvisorPrompts}
+      suggestedPromptsContext={guestReview ? "Preguntas sobre la lectura de tu recibo." : "Preguntas para empezar."}
+      disclaimer={WORKER_CHAT_DISCLAIMER}
+      summary={guestReview ? guestSignalWhy : null}
+      hideCaseChips
+      nextSuggestedDocument={{
+        title: guestReview ? "Si quieres otro archivo" : "Para empezar",
+        label: guestReview ? "Otro recibo o PDF" : "Tu recibo o PDF",
+        reason: guestReview
+          ? "Puedes cambiar el archivo y volver a ver la lectura."
+          : "Con un archivo ya puedo explicarte qué se ve.",
+        ctaLabel: guestReview ? "Cambiar recibo" : "Sube tu documento",
+      }}
+      onFocusSuggestedDocument={() => {
+        setHeliosCopilotOpen(false);
+        guestFileInputRef.current?.click();
+      }}
+      uiCopy={{
+        eyebrow: "Asistente",
+        description: "Te explico en pocas palabras. Esto no es asesoría legal.",
+        emptyStateMessage: guestReview
+          ? "Pregúntame qué se ve en tu recibo y qué conviene revisar."
+          : "Pregunta antes de entrar, o sube tu recibo para hablar de ese documento.",
+        quickHighlights: [],
+        capabilityBadge: "Sin cuenta",
+        documentBadge: guestReview ? "Recibo leído" : "Aún sin archivo",
+      }}
+    />
+  );
 
   if (chatHarnessMode) {
     return (
@@ -9284,6 +9362,7 @@ export default function Auditar() {
               <AlertDescription>{guestReviewError}</AlertDescription>
             </Alert>
           ) : null}
+          {guestAdvisorSheet}
         </div>
       </main>
     );
@@ -9443,8 +9522,12 @@ export default function Auditar() {
               <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
                 Cambiar recibo
               </Button>
+              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => openHeliosCopilot()}>
+                {WORKER_CHAT_ASK_CTA}
+              </Button>
             </div>
           </section>
+          {guestAdvisorSheet}
         </div>
       </main>
     );
@@ -9485,10 +9568,15 @@ export default function Auditar() {
                 className="inline-flex max-w-full justify-center lg:justify-start"
                 imageClassName="h-auto w-full max-w-[min(62vw,13rem)] object-contain sm:max-w-[280px]"
               />
-              <div className="mt-5 inline-flex max-w-full flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start">
+              <button
+                type="button"
+                data-testid="auditar-upload-chip"
+                onClick={() => guestFileInputRef.current?.click()}
+                className="mt-5 inline-flex max-w-full cursor-pointer flex-wrap items-center justify-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 py-2 text-center text-sm font-medium leading-5 text-teal-800 lg:justify-start"
+              >
                 <ShieldCheck className="h-4 w-4" strokeWidth={1.8} />
                 {isNativeAppExperience ? "Directo desde tu app" : "Lectura inicial"}
-              </div>
+              </button>
               <h1 className="mt-5 max-w-[16ch] text-balance text-3xl font-semibold tracking-[-0.03em] text-slate-950 sm:text-4xl">
                 Tu documento, en palabras simples
               </h1>
@@ -9537,6 +9625,14 @@ export default function Auditar() {
                 >
                   Entrar si ya empezaste
                 </button>
+                <button
+                  type="button"
+                  data-testid="auditar-guest-advisor"
+                  className="inline-flex w-fit items-center justify-center px-1 py-1 text-xs font-semibold text-teal-800 underline decoration-teal-300 underline-offset-4"
+                  onClick={() => openHeliosCopilot()}
+                >
+                  {WORKER_CHAT_ASK_CTA}
+                </button>
               </div>
               {guestAnalyzeMutation.isPending || receiptAck ? (
                 <section
@@ -9577,6 +9673,7 @@ export default function Auditar() {
               </div>
             </div>
           </div>
+          {guestAdvisorSheet}
         </div>
       </main>
     );
@@ -9724,7 +9821,10 @@ export default function Auditar() {
               )}
             </p>
             {!shouldCompactPostUploadExperience && !presentEmptyWorkerUpload ? (
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200">
+              <a
+                href="/aviso-de-privacidad"
+                className="mt-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-slate-200 no-underline"
+              >
                 <ShieldCheck
                   className="h-3.5 w-3.5 text-teal-300"
                   strokeWidth={1.8}
@@ -9732,7 +9832,7 @@ export default function Auditar() {
                 {isNativeAppExperience
                   ? "Tu documento sigue privado dentro de la app"
                   : "Tu recibo está seguro y solo tú lo ves"}
-              </div>
+              </a>
             ) : null}
           </div>
 
@@ -9774,21 +9874,24 @@ export default function Auditar() {
                   {privacySignal.title}
                 </p>
               </div>
-              <span className={`ap-status-chip rounded-full border px-3 py-1 text-xs font-semibold ${privacySignal.badgeClass}`}>
+              <a
+                href="/aviso-de-privacidad"
+                className={`ap-status-chip inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold no-underline ${privacySignal.badgeClass}`}
+              >
                 {privacySignal.badge}
-              </span>
+              </a>
             </div>
             <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
               <p className="max-w-2xl text-sm leading-6 text-slate-700">
                 {privacySignal.detail}
               </p>
               <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-700">
-                <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
+                <a href="/aviso-de-privacidad" className="inline-flex items-center rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-slate-700 no-underline shadow-sm">
                   {privacySignal.company}
-                </span>
-                <span className="rounded-full border border-white/80 bg-white/90 px-3 py-1.5 shadow-sm">
+                </a>
+                <a href="/aviso-de-privacidad" className="inline-flex items-center rounded-full border border-white/80 bg-white/90 px-3 py-1.5 text-slate-700 no-underline shadow-sm">
                   {privacySignal.control} · {privacySignal.trace}
-                </span>
+                </a>
               </div>
             </div>
           </div>
@@ -13271,10 +13374,27 @@ export default function Auditar() {
                                 Puedes guardar este hallazgo en tu archivo privado, descargarlo como respaldo o sumar otro documento para fortalecer tu caso. Solo tú decides qué conservar; no lo compartimos con tu empresa.
                               </p>
                               <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-teal-900/80">
-                                <span className="rounded-full bg-white/90 px-3 py-1">Guardar evidencia útil</span>
-                                <span className="rounded-full bg-white/90 px-3 py-1">Privacidad bajo tu control</span>
-                                <span className="rounded-full bg-white/90 px-3 py-1">Descargar reporte</span>
-                                <span className="rounded-full bg-white/90 px-3 py-1">Seguir con más contexto</span>
+                                <button
+                                  type="button"
+                                  className="rounded-full bg-white/90 px-3 py-1"
+                                  onClick={() => {
+                                    document.getElementById("mi-archivo-digital")?.scrollIntoView({
+                                      behavior: "smooth",
+                                      block: "start",
+                                    });
+                                  }}
+                                >
+                                  Guardar evidencia útil
+                                </button>
+                                <a href="/aviso-de-privacidad" className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-teal-900/80 no-underline">
+                                  Privacidad bajo tu control
+                                </a>
+                                <button type="button" className="rounded-full bg-white/90 px-3 py-1" onClick={exportQuickHallazgoPdf}>
+                                  Descargar reporte
+                                </button>
+                                <button type="button" className="rounded-full bg-white/90 px-3 py-1" onClick={() => openPreferredPicker()}>
+                                  Seguir con más contexto
+                                </button>
                               </div>
                               <div className="mt-3 rounded-[0.95rem] border border-white/80 bg-white/85 px-3 py-3 text-xs leading-5 text-slate-700 shadow-sm sm:text-sm">
                                 <p className="font-semibold uppercase tracking-[0.14em] text-teal-800">Transparencia de esta sesión</p>
@@ -16566,21 +16686,16 @@ Reforzar con otro documento
             <p className="text-sm leading-6 text-slate-600">{COMMERCE_PRICE_FOOTER}</p>
           </div>
           <DrawerFooter>
-            <a href="/planes" className="w-full">
-              <Button
-                className="w-full rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
-              >
-                Ver planes y activar
-              </Button>
-            </a>
-            <a href="/pagos" className="w-full">
-              <Button
-                variant="outline"
-                className="w-full rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
-              >
-                Ver historial de pagos
-              </Button>
-            </a>
+            <Button asChild className="w-full rounded-2xl bg-slate-900 text-white hover:bg-slate-800">
+              <a href="/planes">Ver planes y activar</a>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full rounded-2xl border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+            >
+              <a href="/pagos">Ver historial de pagos</a>
+            </Button>
             {commerceStatusQuery.data?.canManageBilling ? (
               <Button
                 variant="outline"

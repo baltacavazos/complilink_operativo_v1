@@ -217,7 +217,13 @@ export default function Payments() {
             <Button
               variant="outline"
               className="h-11 w-full rounded-full border-slate-200 bg-white text-slate-800 hover:bg-slate-50 sm:w-auto"
-              onClick={() => void historyQuery.refetch()}
+              onClick={() => {
+                if (!auth.isAuthenticated) {
+                  window.location.href = "/acceso?returnTo=/pagos";
+                  return;
+                }
+                void historyQuery.refetch();
+              }}
               disabled={historyQuery.isFetching}
             >
               {historyQuery.isFetching ? (
@@ -233,6 +239,18 @@ export default function Payments() {
             <div className="flex items-center gap-3 py-8 text-sm text-slate-600">
               <Loader2 className="h-4 w-4 animate-spin" />
               Consultando tus pagos…
+            </div>
+          ) : !auth.isAuthenticated ? (
+            <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm leading-6 text-slate-700">
+              <p>Entra para ver los pagos de tu cuenta.</p>
+              <Button
+                className="mt-4 h-11 rounded-full bg-slate-950 text-white hover:bg-slate-800"
+                onClick={() => {
+                  window.location.href = "/acceso?returnTo=/pagos";
+                }}
+              >
+                Entrar
+              </Button>
             </div>
           ) : payments.length === 0 ? (
             <div className="mt-5 rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm leading-6 text-slate-700">
