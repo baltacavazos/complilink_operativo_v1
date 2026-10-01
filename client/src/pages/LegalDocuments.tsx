@@ -192,17 +192,17 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
               </div>
               {slug === "privacidad" ? (
                 <div className="mt-4 max-w-3xl rounded-[1.45rem] border border-teal-200 bg-[linear-gradient(135deg,_rgba(240,253,250,0.96),_rgba(255,255,255,0.98))] p-5 text-sm leading-6 text-slate-800 shadow-[0_22px_46px_-30px_rgba(20,184,166,0.35)] sm:p-6 sm:text-base sm:leading-7">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-teal-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800 shadow-sm">
+                  <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800">
                     <Lock className="h-4 w-4" strokeWidth={1.8} />
                     Privacidad visible y pública
-                  </div>
+                  </p>
                   <p className="mt-4 text-lg font-semibold leading-8 text-slate-950 sm:text-[1.35rem] sm:leading-9">
                     No compartimos lo que subes con tu empresa. Tus documentos son tuyos. Puedes borrarlos cuando quieras.
                   </p>
                   <p className="mt-3 text-sm leading-6 text-slate-700 sm:text-base sm:leading-7">
                     Este aviso carga sin login para que puedas leerlo antes de usar la plataforma. La información se mantiene bajo resguardo con acceso controlado y medidas razonables de seguridad.
                   </p>
-                  <p className="mt-3 inline-flex w-fit rounded-full border border-teal-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800 shadow-sm">
+                  <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-teal-800">
                     Revisión vigente visible · sin cambios ocultos
                   </p>
                   <div className="mt-4 grid gap-2 text-xs font-semibold text-teal-950/85 sm:grid-cols-3 sm:text-sm">
@@ -223,10 +223,10 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
               ) : null}
               {slug === "terminos" ? (
                 <div className="mt-4 max-w-3xl rounded-[1.45rem] border border-amber-200 bg-[linear-gradient(135deg,_rgba(255,251,235,0.96),_rgba(255,255,255,0.98))] p-5 text-sm leading-6 text-slate-800 shadow-[0_22px_46px_-30px_rgba(245,158,11,0.25)] sm:p-6 sm:text-base sm:leading-7">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800 shadow-sm">
+                  <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-800">
                     <Lock className="h-4 w-4" strokeWidth={1.8} />
                     Resumen humano de uso de datos
-                  </div>
+                  </p>
                   <p className="mt-4 text-lg font-semibold leading-8 text-slate-950 sm:text-[1.35rem] sm:leading-9">
                     Tus documentos originales se usan para darte el servicio. Los datos anonimizados o agregados pueden ayudarnos a mejorar el producto sin identificarte razonablemente.
                   </p>
@@ -236,10 +236,9 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
                 </div>
               ) : null}
             </div>
-            <div className="flex flex-wrap gap-2 text-xs font-semibold sm:justify-end">
-              <span className="rounded-full bg-white/10 px-3 py-1.5 text-white">{document.version}</span>
-              <span className="rounded-full bg-white/10 px-3 py-1.5 text-white">Vigente desde {document.effectiveDate}</span>
-            </div>
+            <p className="text-xs font-semibold text-slate-300 sm:text-right">
+              {document.version}. Vigente desde {document.effectiveDate}.
+            </p>
           </div>
         </div>
 
@@ -265,7 +264,8 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
             Términos de Uso
           </a>
           <a
-            href="/"
+            href="/auditar"
+            data-testid="legal-review-cta"
             className="rounded-full border border-teal-200 bg-teal-50 px-4 py-2 font-medium text-teal-800 transition hover:border-teal-300 hover:bg-teal-100"
           >
             Revisar mi recibo gratis
