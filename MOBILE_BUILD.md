@@ -27,14 +27,14 @@ La app móvil reutiliza la plataforma actual y la envuelve con Capacitor. En est
 
 | Modo | Cuándo conviene | Cómo se activa |
 |---|---|---|
-| **Shell remoto** | Primera etapa, máxima paridad con la web actual y menor riesgo de autenticación. | Es el modo por defecto. |
-| **Activos locales** | Siguiente etapa, menor dependencia de red y mayor cercanía a una app empaquetada completa. | Definiendo `CAPACITOR_USE_LOCAL_ASSETS=1`. |
+| **Shell remoto** | Primera etapa, máxima paridad con la web actual y menor riesgo de autenticación. | Definiendo `CAPACITOR_SERVER_URL` (la prueba en teléfono usa `https://auditapatron.com`). |
+| **Activos locales** | Siguiente etapa, menor dependencia de red y mayor cercanía a una app empaquetada completa. | Sin `CAPACITOR_SERVER_URL`, o con `CAPACITOR_USE_LOCAL_ASSETS=1`. Capacitor empaqueta `dist/public`. |
 
 ## Variables de entorno útiles
 
 | Variable | Uso |
 |---|---|
-| `CAPACITOR_SERVER_URL` | Permite apuntar el shell móvil a otra URL remota, por ejemplo una preview o staging. |
+| `CAPACITOR_SERVER_URL` | Activa el shell remoto. Sin esta variable el WebView no abre una URL y carga `dist/public`. Para la prueba en teléfono: `https://auditapatron.com`. |
 | `CAPACITOR_USE_LOCAL_ASSETS` | Si vale `1`, desactiva el shell remoto y usa el build local en `dist/public`. |
 
 ## Flujo recomendado de trabajo
@@ -122,11 +122,6 @@ Para la primera prueba en Android físico, sigue `ANDROID_DEVICE_QA.md` en la ra
 
 ## APK descargable de prueba
 
-El repositorio incluye la automatización manual **Android debug APK**. Genera un APK de prueba con Android SDK y Java 21 en un entorno limpio, luego conserva el archivo descargable durante 14 días.
+`pnpm mobile:android:debug-apk` sincroniza Android con `CAPACITOR_SERVER_URL=https://auditapatron.com` y compila `assembleDebug`. Hace falta JDK 21 y Android SDK (compileSdk 36). El resultado es `android/app/build/outputs/apk/debug/app-debug.apk`.
 
-1. Abre la sección **Actions** del repositorio y ejecuta `Android debug APK` con **Run workflow**.
-2. Cuando termine, descarga el artefacto `auditapatron-android-debug-apk`.
-3. Descomprime el archivo y pasa `app-debug.apk` a tu teléfono.
-4. En Android, permite la instalación desde esa fuente solo para esta prueba y abre el APK.
-
-La build es de validación interna; no sustituye el bundle firmado (`.aab`) requerido para una publicación de Google Play.
+Ese APK es de validación interna. No es un Android App Bundle (`.aab`) ni usa firma de release.
