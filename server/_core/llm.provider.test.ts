@@ -440,6 +440,127 @@ describe("invokeLLM OpenAI Responses", () => {
     errorSpy.mockRestore();
   });
 
+  it("pide el esquema a Gemini y se queda con la respuesta, no con el pensamiento", async () => {
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      const target = String(url);
+      if (target.includes("api.openai.com")) {
+        return errorResponse(401, "invalid api key", "Unauthorized");
+      }
+      return jsonResponse({
+        candidates: [
+          {
+            content: {
+              parts: [
+                { thought: true, text: "voy a pensar sin entregar el json" },
+                { text: "{\"payrollNetAmount\":\"$3,519.50\",\"payrollNss\":\"84129214965\"}" },
+              ],
+            },
+          },
+        ],
+      });
+    });
+
+    const result = await invokeLLM(
+      {
+        messages: [
+          { role: "system", content: "Extrae solo lo visible." },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "payrollNetAmount es el pago neto. payrollNss es el número de seguridad social." },
+              { type: "image_url", image_url: { url: "data:image/jpeg;base64,QUJD", detail: "high" } },
+            ],
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "auditar_structured_extraction",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                payrollNetAmount: { type: "string" },
+              },
+              required: ["payrollNetAmount"],
+              additionalProperties: false,
+            },
+          },
+        },
+      },
+      {
+        env: { OPENAI_API_KEY: "sk-test", GEMINI_API_KEY: "gemini-test" },
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      },
+    );
+
+    expect(result.choices[0]?.message.content).toBe("{\"payrollNetAmount\":\"$3,519.50\",\"payrollNss\":\"84129214965\"}");
+    expect(String(result.choices[0]?.message.content)).not.toContain("pensar");
+    const body = JSON.parse(String(fetchImpl.mock.calls[1]?.[1]?.body));
+    expect(body.generationConfig.responseMimeType).toBe("application/json");
+    expect(body.generationConfig.responseSchema.type).toBe("OBJECT");
+    expect(body.generationConfig.responseSchema.properties.payrollNetAmount.type).toBe("STRING");
+    expect(body.generationConfig.responseSchema.additionalProperties).toBeUndefined();
+    expect(body.contents[0].parts[0]).toEqual({ inlineData: { mimeType: "image/jpeg", data: "QUJD" } });
+    expect(body.contents[0].parts.some((part: { text?: string }) => part.text?.includes("Extrae solo lo visible."))).toBe(true);
+  });
+
+  it("si Gemini no trae cifras, reintenta la foto en el otro formato y luego el otro camino", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      const target = String(url);
+      if (target.includes("api.openai.com")) {
+        return errorResponse(401, "invalid api key", "Unauthorized");
+      }
+      if (target.includes(":generateContent")) {
+        return jsonResponse({
+          candidates: [{ content: { parts: [{ text: "{\"headline\":\"sin datos\",\"fields\":[]}" }] } }],
+        });
+      }
+      return jsonResponse({
+        id: "chat_gemini",
+        created: 1,
+        model: "gemini-3.1-pro-preview",
+        choices: [
+          {
+            index: 0,
+            message: { role: "assistant", content: "{\"payrollNetAmount\":\"$3,519.50\"}" },
+            finish_reason: "stop",
+          },
+        ],
+      });
+    });
+
+    const result = await invokeLLM(
+      {
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "payrollNetAmount es el pago neto." },
+              { type: "image_url", image_url: { url: "data:image/jpeg;base64,QUJD" } },
+            ],
+          },
+        ],
+      },
+      {
+        env: { OPENAI_API_KEY: "sk-test", GEMINI_API_KEY: "gemini-test" },
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      },
+    );
+
+    expect(result.choices[0]?.message.content).toContain("$3,519.50");
+    const urls = fetchImpl.mock.calls.map((call) => String(call[0]));
+    expect(urls.filter((url) => url.includes(":generateContent"))).toHaveLength(2);
+    const secondBody = JSON.parse(String(fetchImpl.mock.calls[2]?.[1]?.body));
+    expect(secondBody.contents[0].parts).toEqual(
+      expect.arrayContaining([{ inline_data: { mime_type: "image/jpeg", data: "QUJD" } }]),
+    );
+    expect(urls.some((url) => url.includes("/openai/chat/completions"))).toBe(true);
+    expect(errorSpy.mock.calls.some((call) => String(call[0]).includes("[invokeLLM] Gemini no devolvió cifras"))).toBe(true);
+    errorSpy.mockRestore();
+  });
+
   it("mantiene Gemini Pro en chat completions si no hay OpenAI", async () => {
     const fetchImpl = vi.fn(async () =>
       jsonResponse({

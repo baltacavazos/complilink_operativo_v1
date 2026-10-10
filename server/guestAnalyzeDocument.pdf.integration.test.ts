@@ -203,6 +203,106 @@ describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
     });
     expect(JSON.stringify(result)).not.toMatch(/\bcumple\b/);
   });
+
+  it("llena pago, NSS e IMSS aunque la foto regrese un JSON plano", async () => {
+    vi.mocked(invokeLLM).mockImplementation(async (params) => {
+      const payload = JSON.stringify(params);
+      if (!payload.includes("auditar_structured_extraction")) {
+        throw new Error("la revisión de nitidez no es obligatoria");
+      }
+      return {
+        id: "vision-flat",
+        created: 1,
+        model: "test",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: JSON.stringify({
+                payrollNetAmount: "$3,519.50",
+                payrollNss: "84129214965",
+                imss: "$245.30",
+              }),
+            },
+            finish_reason: "stop",
+          },
+        ],
+      };
+    });
+
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+    ]);
+    const caller = appRouter.createCaller({
+      user: null,
+      req: { headers: {} },
+      res: {},
+    } as never);
+    const result = await caller.cases.guestAnalyzeDocument({
+      fileName: "recibo-nitido.jpg",
+      mimeType: "image/jpeg",
+      base64Content: jpeg.toString("base64"),
+      sourceChannel: "manual",
+    });
+
+    expect(result.preview.preliminaryAnalysis.confirmedData).toMatchObject({
+      payrollNetAmount: "$3,519.50",
+      payrollNss: "84129214965",
+      imssWithheld: "$245.30",
+    });
+  });
+
+  it("rescata pago, NSS e IMSS si la foto solo regresa texto", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(invokeLLM).mockImplementation(async (params) => {
+      const payload = JSON.stringify(params);
+      if (!payload.includes("auditar_structured_extraction")) {
+        throw new Error("la revisión de nitidez no es obligatoria");
+      }
+      return {
+        id: "vision-prose",
+        created: 1,
+        model: "test",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: "Pago neto $3,519.50. NSS 84129214965. IMSS $245.30. Periodo 2026-09-01 al 2026-09-15.",
+            },
+            finish_reason: "stop",
+          },
+        ],
+      };
+    });
+
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+    ]);
+    const caller = appRouter.createCaller({
+      user: null,
+      req: { headers: {} },
+      res: {},
+    } as never);
+    const result = await caller.cases.guestAnalyzeDocument({
+      fileName: "recibo-nitido.jpg",
+      mimeType: "image/jpeg",
+      base64Content: jpeg.toString("base64"),
+      sourceChannel: "manual",
+    });
+
+    expect(result.preview.preliminaryAnalysis.confirmedData).toMatchObject({
+      payrollNetAmount: "$3,519.50",
+      payrollNss: "84129214965",
+      imssWithheld: "$245.30",
+      payrollPeriod: "2026-09-01 al 2026-09-15",
+    });
+    expect(errorSpy.mock.calls.some((call) => String(call[0]).includes("La lectura no trajo montos"))).toBe(false);
+    errorSpy.mockRestore();
+  });
 });
 
 describe("cases.guestOfficialCheck", () => {
