@@ -74,6 +74,33 @@ describe("veredicto de 5 segundos", () => {
     expect(verdict.nextStepLine.startsWith("Qué hacer ahora:")).toBe(true);
   });
 
+  it("no dice bien si falta el monto o el periodo", () => {
+    const missingPayment = selectFiveSecondVerdict({
+      hasEmployer: true,
+      hasPeriod: true,
+      hasPayment: false,
+      classificationConfidence: 90,
+      riskLevel: "low",
+    });
+    const missingPeriod = selectFiveSecondVerdict({
+      hasEmployer: true,
+      hasPeriod: false,
+      hasPayment: true,
+      classificationConfidence: 90,
+    });
+
+    expect(missingPayment.seen).toBe("falta_dato");
+    expect(missingPayment.seenLine).toBe("Esto vimos: falta un dato");
+    expect(missingPayment.seenLine).not.toBe("Esto vimos: bien");
+    expect(missingPayment.seen).not.toBe("bien");
+    expect(missingPayment.nextStep).toBe(
+      "No alcanzamos a leer cuánto te pagaron. Toma otra foto donde se vea el total, o sube el PDF.",
+    );
+    expect(missingPeriod.seenLine).toBe("Esto vimos: falta un dato");
+    expect(missingPeriod.nextStep).toMatch(/otra foto|PDF/);
+    expect(`${missingPayment.seenLine} ${missingPayment.nextStep}`).not.toMatch(/\bcumple\b/);
+  });
+
   it("nunca inventa que el patrón cumple", () => {
     const verdicts = [
       selectFiveSecondVerdict({ hasEmployer: true, hasPeriod: true, hasPayment: true }),

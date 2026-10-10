@@ -2017,14 +2017,25 @@ function mergeStructuredPayrollFields(
 const AUDITAR_VISION_DATA_URL_MAX_BYTES = 15 * 1024 * 1024;
 
 function auditarModelFileUrl(params: { mimeType: string; binary: Buffer; remoteUrl: string }) {
+  const sendInline =
+    params.mimeType.startsWith("image/") || params.mimeType === "application/pdf";
   if (
-    params.mimeType.startsWith("image/") &&
+    sendInline &&
     params.binary.byteLength > 0 &&
     params.binary.byteLength <= AUDITAR_VISION_DATA_URL_MAX_BYTES
   ) {
     return `data:${params.mimeType};base64,${params.binary.toString("base64")}`;
   }
   return params.remoteUrl;
+}
+
+function payrollReadMissingAmountOrPeriod(analysis: {
+  confirmedData?: Record<string, unknown> | null;
+  estimatedData?: Record<string, unknown> | null;
+}) {
+  const has = (key: string) =>
+    analysisValuePresent(analysis.confirmedData, key) || analysisValuePresent(analysis.estimatedData, key);
+  return !has("payrollNetAmount") || !has("payrollPeriod");
 }
 
 async function prepareAuditarDocumentPipeline(params: {
@@ -2044,7 +2055,7 @@ async function prepareAuditarDocumentPipeline(params: {
     fileName: params.fileName,
   });
   const uploaded = await storagePut(storageKey, params.binary, params.mimeType);
-  // Las fotos van al modelo como data URL: no dependemos de que pueda bajar la URL firmada del bucket.
+  // Fotos y PDF van al modelo como data URL: no dependemos de que pueda bajar la URL firmada del bucket.
   const visionUrl = auditarModelFileUrl({
     mimeType: params.mimeType,
     binary: params.binary,
@@ -2082,7 +2093,19 @@ async function prepareAuditarDocumentPipeline(params: {
     classification,
     preliminaryAnalysis: basePreliminaryAnalysis,
   });
-  const preliminaryAnalysis = mergeStructuredPayrollFields(basePreliminaryAnalysis, structuredExtraction);
+  let preliminaryAnalysis = mergeStructuredPayrollFields(basePreliminaryAnalysis, structuredExtraction);
+  if (params.mimeType.startsWith("image/") && payrollReadMissingAmountOrPeriod(preliminaryAnalysis)) {
+    console.error("[invokeLLM] Faltó el pago o el periodo. Intento leer la foto otra vez.");
+    const retryExtraction = await analyzeStructuredDocumentPreview({
+      fileUrl: visionUrl,
+      mimeType: params.mimeType,
+      fileName: params.fileName,
+      textHint: enrichedTextHint || undefined,
+      classification,
+      preliminaryAnalysis: basePreliminaryAnalysis,
+    });
+    preliminaryAnalysis = mergeStructuredPayrollFields(preliminaryAnalysis, retryExtraction);
+  }
 
   return {
     storageKey,

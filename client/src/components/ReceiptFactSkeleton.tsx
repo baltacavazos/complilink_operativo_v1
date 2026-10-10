@@ -21,6 +21,20 @@ const RECEIPT_FACT_ROWS = [
   ["Estatus", "estatus"],
 ] as const;
 
+export const RECEIPT_FACT_MISSING = "No se alcanzó a leer";
+
+export function receiptFactDisplayValue(
+  key: (typeof RECEIPT_FACT_ROWS)[number][1],
+  value: string | null,
+  revealMissing: boolean,
+) {
+  if (value) return value;
+  if (revealMissing && (key === "emisor" || key === "monto" || key === "fecha")) {
+    return RECEIPT_FACT_MISSING;
+  }
+  return null;
+}
+
 export function buildReceiptFactSlots(params: {
   employer?: string | null;
   employerRfc?: string | null;
@@ -38,11 +52,17 @@ export function buildReceiptFactSlots(params: {
 }
 
 /** Cuatro huecos grises. Se llenan con hechos. No giran. */
-export function ReceiptFactSkeleton({ slots }: { slots: ReceiptFactSlots }) {
+export function ReceiptFactSkeleton({
+  slots,
+  revealMissing = false,
+}: {
+  slots: ReceiptFactSlots;
+  revealMissing?: boolean;
+}) {
   return (
     <dl data-testid="receipt-fact-skeleton" className="mt-3 space-y-3">
       {RECEIPT_FACT_ROWS.map(([label, key]) => {
-        const value = slots[key];
+        const value = receiptFactDisplayValue(key, slots[key], revealMissing);
         return (
           <div key={label} className="grid grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-3">
             <dt className="text-sm font-semibold text-[#111111]">{label}</dt>
@@ -70,12 +90,14 @@ export function ReceiptArrival({
   satFacts,
   laborReady,
   showSkeleton = true,
+  reading = false,
 }: {
   ack: ReceiptAck;
   slots: ReceiptFactSlots;
   satFacts: string[];
   laborReady: boolean;
   showSkeleton?: boolean;
+  reading?: boolean;
 }) {
   if (!showSkeleton && satFacts.length === 0 && !laborReady) return null;
   return (
@@ -90,7 +112,7 @@ export function ReceiptArrival({
           {RECEIPT_VALIDATION_CORRECTION}
         </p>
       ) : null}
-      {showSkeleton ? <ReceiptFactSkeleton slots={slots} /> : null}
+      {showSkeleton ? <ReceiptFactSkeleton slots={slots} revealMissing={!reading} /> : null}
       {satFacts.length > 0 ? (
         <ul data-testid="sat-live-facts" className="mt-3 space-y-1 text-sm leading-6 text-[#161616]">
           {satFacts.map((line) => (

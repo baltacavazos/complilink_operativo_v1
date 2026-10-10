@@ -3,7 +3,7 @@
  * Una línea de lo que se vio + un solo siguiente paso. Sin jerga.
  */
 
-export type FiveSecondSeen = "bien" | "hay_diferencia" | "no_se_leyo";
+export type FiveSecondSeen = "bien" | "hay_diferencia" | "no_se_leyo" | "falta_dato";
 
 export type FiveSecondVerdict = {
   seen: FiveSecondSeen;
@@ -20,6 +20,7 @@ const SEEN_LABEL: Record<FiveSecondSeen, string> = {
   bien: "bien",
   hay_diferencia: "hay diferencia",
   no_se_leyo: "no se leyó",
+  falta_dato: "falta un dato",
 };
 
 export type FiveSecondVerdictInput = {
@@ -48,6 +49,7 @@ export function selectFiveSecondSeen(input: FiveSecondVerdictInput): FiveSecondS
     (coreCount <= 1 && (confidence === null || confidence < 50));
 
   if (unread) return "no_se_leyo";
+  if (!input.hasPayment || !input.hasPeriod) return "falta_dato";
   if (input.hasDifferenceSignal || risky) return "hay_diferencia";
   return "bien";
 }
@@ -57,6 +59,13 @@ export function selectFiveSecondNextStep(input: FiveSecondVerdictInput, seen: Fi
 
   if (seen === "no_se_leyo") {
     return "Sube una foto más clara del mismo recibo o el CFDI del mismo periodo.";
+  }
+
+  if (seen === "falta_dato") {
+    if (!input.hasPayment) {
+      return "No alcanzamos a leer cuánto te pagaron. Toma otra foto donde se vea el total, o sube el PDF.";
+    }
+    return "No alcanzamos a leer el periodo. Toma otra foto donde se vea la fecha, o sube el PDF.";
   }
 
   if (seen === "hay_diferencia") {

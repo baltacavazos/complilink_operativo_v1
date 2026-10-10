@@ -82,11 +82,8 @@ export function WorkerOfficialResult({
         data-testid="five-second-verdict-seen"
         className="mt-2 text-[1.22rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.38rem]"
       >
-        {presentation.verdict}
+        <span data-testid="official-check-headline">{presentation.verdict}</span>
       </h2>
-      <p data-testid="official-check-headline" className="sr-only">
-        {presentation.verdict}
-      </p>
       {pocketLead.length ? (
         <ul data-testid="official-check-pocket" className="mt-2 space-y-0.5 text-sm leading-5 text-[#161616]">
           {pocketLead.slice(0, 3).map((line) => (
@@ -95,16 +92,15 @@ export function WorkerOfficialResult({
         </ul>
       ) : null}
       <div data-testid="official-check-silence" className="mt-2 space-y-1">
-        {lines.map((line) => (
-          <p key={line.label} className="text-sm leading-5 text-[#161616]">
-            <span className="font-semibold text-[#111111]">{line.label}. </span>
-            {line.text}
-          </p>
-        ))}
+        <div data-testid="official-check-detail">
+          {lines.map((line) => (
+            <p key={line.label} className="text-sm leading-5 text-[#161616]">
+              <span className="font-semibold text-[#111111]">{line.label}. </span>
+              {line.text}
+            </p>
+          ))}
+        </div>
       </div>
-      <p data-testid="official-check-detail" className="sr-only">
-        {lines.map((line) => `${line.label}. ${line.text}`).join(" ")}
-      </p>
       {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
         <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
       ) : null}
