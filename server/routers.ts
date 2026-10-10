@@ -1497,7 +1497,7 @@ async function analyzeStructuredDocumentPreview(params: {
             ? [
                 {
                   type: "text",
-                  text: `Analiza este documento laboral y responde exclusivamente con el JSON solicitado. Archivo: ${params.fileName}. Tipo detectado: ${params.classification.normalizedDocType}. Objetivos de extracción: ${targetList}. Resumen preliminar: ${params.preliminaryAnalysis.summary}. Pista adicional: ${params.textHint ?? "sin pista adicional"}. Extrae solo lo visible, marca como confirmed lo claramente visible y como estimated lo ambiguo pero plausible.`,
+                  text: `Analiza este documento laboral y responde exclusivamente con el JSON solicitado. Archivo: ${params.fileName}. Tipo detectado: ${params.classification.normalizedDocType}. Objetivos de extracción: ${targetList}. Resumen preliminar: ${params.preliminaryAnalysis.summary}. Pista adicional: ${params.textHint ?? "sin pista adicional"}. Extrae solo lo visible, marca como confirmed lo claramente visible y como estimated lo ambiguo pero plausible. En fields[].key usa, cuando el dato se vea: payrollEmployerName, payrollPeriod, payrollNetAmount, payrollDeductions, payrollPerceptions, payrollNss, payrollEmployerRegistration, payrollCurp, employerRfc, workerRfc, isrWithheld, imssWithheld, infonavitWithheld. payrollNetAmount es el pago neto. payrollNss es el número de seguridad social si aparece.`,
                 },
                 {
                   type: "image_url",
@@ -1565,6 +1565,7 @@ async function analyzeStructuredDocumentPreview(params: {
 
     const serialized = readLlmMessageText(response.choices[0]?.message.content);
     if (!serialized) {
+      console.error("[invokeLLM] El modelo contestó vacío al leer el documento.");
       return fallback;
     }
 
@@ -1596,7 +1597,9 @@ async function analyzeStructuredDocumentPreview(params: {
       },
       fallback,
     );
-  } catch {
+  } catch (error) {
+    const detail = error instanceof Error ? error.message.slice(0, 400) : String(error);
+    console.error("[invokeLLM] No se pudo leer el documento:", detail.replace(/data:[^;\s]+;base64,[A-Za-z0-9+/=]+/g, "data:[omitido]"));
     return fallback;
   }
 }
@@ -1709,6 +1712,133 @@ function prepareAuditarUploadAsset(params: { fileName: string; mimeType: string;
   };
 }
 
+const STRUCTURED_PAYROLL_KEYS: Record<string, string> = {
+  payrollemployername: "payrollEmployerName",
+  employername: "payrollEmployerName",
+  employer: "payrollEmployerName",
+  razonsocial: "payrollEmployerName",
+  nombreemisor: "payrollEmployerName",
+  nombrepatron: "payrollEmployerName",
+  empresa: "payrollEmployerName",
+  patron: "payrollEmployerName",
+  payrollperiod: "payrollPeriod",
+  period: "payrollPeriod",
+  periodo: "payrollPeriod",
+  paymentperiod: "payrollPeriod",
+  payperiod: "payrollPeriod",
+  fechapago: "payrollPeriod",
+  payrollnetamount: "payrollNetAmount",
+  neto: "payrollNetAmount",
+  netamount: "payrollNetAmount",
+  totalneto: "payrollNetAmount",
+  apparentamount: "payrollNetAmount",
+  totalpagar: "payrollNetAmount",
+  importe: "payrollNetAmount",
+  pagoneto: "payrollNetAmount",
+  montoneto: "payrollNetAmount",
+  sueldoneto: "payrollNetAmount",
+  payrolldeductions: "payrollDeductions",
+  deducciones: "payrollDeductions",
+  totaldeducciones: "payrollDeductions",
+  deductions: "payrollDeductions",
+  payrollperceptions: "payrollPerceptions",
+  percepciones: "payrollPerceptions",
+  totalpercepciones: "payrollPerceptions",
+  perceptions: "payrollPerceptions",
+  grossamount: "payrollPerceptions",
+  bruto: "payrollPerceptions",
+  payrollnss: "payrollNss",
+  nss: "payrollNss",
+  numseguridadsocial: "payrollNss",
+  numerodeseguridadsocial: "payrollNss",
+  payrollcurp: "payrollCurp",
+  curp: "payrollCurp",
+  payrollemployerregistration: "payrollEmployerRegistration",
+  registropatronal: "payrollEmployerRegistration",
+  regpatronal: "payrollEmployerRegistration",
+  employerrfc: "employerRfc",
+  rfcemisor: "employerRfc",
+  rfcpatron: "employerRfc",
+  workerrfc: "workerRfc",
+  rfctrabajador: "workerRfc",
+  rfcreceptor: "workerRfc",
+  rfcempleado: "workerRfc",
+  isrwithheld: "isrWithheld",
+  isr: "isrWithheld",
+  retencionisr: "isrWithheld",
+  imsswithheld: "imssWithheld",
+  cuotaimss: "imssWithheld",
+  retencionimss: "imssWithheld",
+  infonavitwithheld: "infonavitWithheld",
+  pagoinfonavit: "infonavitWithheld",
+  retencioninfonavit: "infonavitWithheld",
+};
+
+function normalizeStructuredToken(value: string) {
+  return value.replace(/[^a-z0-9]/gi, "").toLowerCase();
+}
+
+function canonicalStructuredPayrollKey(field: { key: string; label: string; value: string }) {
+  const fromKey = STRUCTURED_PAYROLL_KEYS[normalizeStructuredToken(field.key)];
+  if (fromKey) return fromKey;
+  const label = `${field.label} ${field.key}`.toLowerCase();
+  const digits = field.value.replace(/\D/g, "");
+  if (/nss|seguridad social/.test(label) && digits.length === 11) return "payrollNss";
+  if (/registro patronal/.test(label)) return "payrollEmployerRegistration";
+  if (/(pago neto|neto a pagar|sueldo neto|\bneto\b)/.test(label)) return "payrollNetAmount";
+  if (/periodo|quincena/.test(label)) return "payrollPeriod";
+  if (/raz[oó]n social|nombre del patr[oó]n|\bempresa\b/.test(label)) return "payrollEmployerName";
+  if (/deduccion/.test(label)) return "payrollDeductions";
+  if (/percepcion/.test(label)) return "payrollPerceptions";
+  if (/\bisr\b/.test(label)) return "isrWithheld";
+  if (/infonavit/.test(label)) return "infonavitWithheld";
+  if (/cuota imss|retenci[oó]n imss/.test(label)) return "imssWithheld";
+  if (/\bcurp\b/.test(label)) return "payrollCurp";
+  if (/rfc del patr[oó]n|rfc emisor/.test(label)) return "employerRfc";
+  if (/rfc del trabajador|rfc receptor/.test(label)) return "workerRfc";
+  return null;
+}
+
+function analysisValuePresent(record: Record<string, unknown> | null | undefined, key: string) {
+  const value = record?.[key];
+  if (typeof value === "string") return value.trim().length > 0;
+  return value !== null && value !== undefined && value !== "";
+}
+
+function mergeStructuredPayrollFields(
+  analysis: ReturnType<typeof buildPreliminaryLaborAnalysis>,
+  extraction: StructuredExtractionResult,
+): DraftPreliminaryAnalysis {
+  const confirmedData = { ...(analysis.confirmedData ?? {}) };
+  const estimatedData = { ...(analysis.estimatedData ?? {}) };
+  for (const field of extraction.fields) {
+    const canonical = canonicalStructuredPayrollKey(field);
+    if (!canonical || !field.value.trim()) continue;
+    if (analysisValuePresent(confirmedData, canonical) || analysisValuePresent(estimatedData, canonical)) continue;
+    const target = field.status === "estimated" ? estimatedData : confirmedData;
+    target[canonical] = field.value.trim();
+  }
+  return {
+    ...analysis,
+    confirmedData,
+    estimatedData,
+    structuredExtraction: extraction,
+  };
+}
+
+const AUDITAR_VISION_DATA_URL_MAX_BYTES = 15 * 1024 * 1024;
+
+function auditarModelFileUrl(params: { mimeType: string; binary: Buffer; remoteUrl: string }) {
+  if (
+    params.mimeType.startsWith("image/") &&
+    params.binary.byteLength > 0 &&
+    params.binary.byteLength <= AUDITAR_VISION_DATA_URL_MAX_BYTES
+  ) {
+    return `data:${params.mimeType};base64,${params.binary.toString("base64")}`;
+  }
+  return params.remoteUrl;
+}
+
 async function prepareAuditarDocumentPipeline(params: {
   tenantId: string;
   caseId: string;
@@ -1726,6 +1856,12 @@ async function prepareAuditarDocumentPipeline(params: {
     fileName: params.fileName,
   });
   const uploaded = await storagePut(storageKey, params.binary, params.mimeType);
+  // Las fotos van al modelo como data URL: no dependemos de que pueda bajar la URL firmada del bucket.
+  const visionUrl = auditarModelFileUrl({
+    mimeType: params.mimeType,
+    binary: params.binary,
+    remoteUrl: uploaded.url,
+  });
   const expectedDocumentTypeHint = buildExpectedDocumentTypeHint(params.expectedDocumentType);
   const binaryDerivedTextHint = await buildBinaryDerivedTextHint({
     mimeType: params.mimeType,
@@ -1738,7 +1874,7 @@ async function prepareAuditarDocumentPipeline(params: {
     textHint: enrichedTextHint || undefined,
   });
   const scanAssistance = await analyzeDocumentScanAssist({
-    fileUrl: uploaded.url,
+    fileUrl: visionUrl,
     mimeType: params.mimeType,
     fileName: params.fileName,
     expectedDocumentType: params.expectedDocumentType,
@@ -1751,17 +1887,14 @@ async function prepareAuditarDocumentPipeline(params: {
     classification,
   });
   const structuredExtraction = await analyzeStructuredDocumentPreview({
-    fileUrl: uploaded.url,
+    fileUrl: visionUrl,
     mimeType: params.mimeType,
     fileName: params.fileName,
     textHint: enrichedTextHint || undefined,
     classification,
     preliminaryAnalysis: basePreliminaryAnalysis,
   });
-  const preliminaryAnalysis: DraftPreliminaryAnalysis = {
-    ...basePreliminaryAnalysis,
-    structuredExtraction,
-  };
+  const preliminaryAnalysis = mergeStructuredPayrollFields(basePreliminaryAnalysis, structuredExtraction);
 
   return {
     storageKey,
@@ -2043,6 +2176,7 @@ async function analyzeDocumentScanAssist(params: {
           : "";
 
     if (!serialized) {
+      console.error("[invokeLLM] El modelo contestó vacío al revisar el archivo.");
       return fallback;
     }
 
@@ -2062,7 +2196,9 @@ async function analyzeDocumentScanAssist(params: {
           ? Math.min(100, Math.max(0, Math.round(parsed.confidence)))
           : fallback.confidence,
     };
-  } catch {
+  } catch (error) {
+    const detail = error instanceof Error ? error.message.slice(0, 400) : String(error);
+    console.error("[invokeLLM] No se pudo revisar el archivo:", detail.replace(/data:[^;\s]+;base64,[A-Za-z0-9+/=]+/g, "data:[omitido]"));
     return fallback;
   }
 }

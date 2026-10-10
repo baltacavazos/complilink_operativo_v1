@@ -5,6 +5,18 @@ import { describe, expect, it } from "vitest";
 describe("controles móviles de la home pública", () => {
   const home = readFileSync(resolve(process.cwd(), "client/src/pages/Home.tsx"), "utf8");
 
+  it("el botón del menú en celular tiene nombre y dice Menú", () => {
+    const buttonStart = home.indexOf('data-testid="home-menu-button"');
+    const button = home.slice(buttonStart, buttonStart + 1100);
+
+    expect(buttonStart).toBeGreaterThan(-1);
+    expect(button).toContain('aria-label={open ? "Cerrar menú" : "Abrir menú"}');
+    expect(button).toContain('aria-controls="home-mobile-menu"');
+    expect(button).toContain('aria-hidden="true"');
+    expect(button).toContain('{open ? "Cerrar" : "Menú"}');
+    expect(home).toContain('id="home-mobile-menu"');
+  });
+
   it("manda Entrada rápida al acceso para continuar el caso", () => {
     expect(home).toMatch(
       /href="\/acceso\?returnTo=\/auditar"[\s\S]{0,80}data-testid="home-quick-entry"[\s\S]{0,320}Entrada rápida/,

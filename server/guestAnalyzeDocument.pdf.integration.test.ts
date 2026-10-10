@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { OFFICIAL_FACT_ARRIVED_NOTICE } from "@shared/officialCheckCopy";
 import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
+import { invokeLLM } from "./_core/llm";
 import { readGuestPreviewToken } from "./heliosPublicExperience";
 import { persistGuestOfficialFact, rememberGuestOfficialSession } from "./guestOfficialFactStore";
 import type { AppRouter } from "./routers";
@@ -82,6 +83,10 @@ function buildPrintablePayrollPdf() {
 describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
   afterEach(() => {
     resetAuditarRuntimeGuardsForTests();
+    vi.mocked(invokeLLM).mockReset();
+    vi.mocked(invokeLLM).mockImplementation(async () => {
+      throw new Error("No se requiere LLM para la regresión factual de PDF.");
+    });
   });
 
   it("carries native PDF text through the public response with all payroll facts", async () => {
@@ -108,6 +113,95 @@ describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
     });
     expect(result.preview.classification.documentType).toBe("cfdi");
     expect(storageMocks.storagePut).toHaveBeenCalledTimes(1);
+  });
+
+  it("manda la foto del recibo como data URL y deja el error en el log", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(invokeLLM).mockClear();
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+    ]);
+
+    const caller = appRouter.createCaller({
+      user: null,
+      req: { headers: {} },
+      res: {},
+    } as never);
+
+    const result = await caller.cases.guestAnalyzeDocument({
+      fileName: "recibo-nitido.jpg",
+      mimeType: "image/jpeg",
+      base64Content: jpeg.toString("base64"),
+      sourceChannel: "manual",
+    });
+
+    expect(result.preview.previewAsset.mimeType).toBe("image/jpeg");
+    expect(vi.mocked(invokeLLM).mock.calls.length).toBeGreaterThan(0);
+    for (const [params] of vi.mocked(invokeLLM).mock.calls) {
+      const payload = JSON.stringify(params);
+      expect(payload).toContain(`data:image/jpeg;base64,${jpeg.toString("base64")}`);
+      expect(payload).not.toContain("https://example.test");
+    }
+    expect(
+      errorSpy.mock.calls.some((call) => String(call[0]).startsWith("[invokeLLM]")),
+    ).toBe(true);
+    errorSpy.mockRestore();
+  });
+
+  it("pasa el pago y el NSS leídos en la foto al resultado", async () => {
+    vi.mocked(invokeLLM).mockImplementation(async (params) => {
+      const payload = JSON.stringify(params);
+      if (!payload.includes("auditar_structured_extraction")) {
+        throw new Error("la revisión de nitidez no es obligatoria");
+      }
+      return {
+        id: "vision-ok",
+        created: 1,
+        model: "test",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: JSON.stringify({
+                headline: "Se ve el pago",
+                summary: "El recibo muestra neto e IMSS.",
+                fields: [
+                  { key: "pago neto", label: "Pago neto", value: "$3,519.50", status: "confirmed", confidence: "high" },
+                  { key: "nss", label: "NSS", value: "12345678901", status: "confirmed", confidence: "high" },
+                ],
+                missingFields: [],
+                reviewNotes: [],
+              }),
+            },
+            finish_reason: "stop",
+          },
+        ],
+      };
+    });
+
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+    ]);
+    const caller = appRouter.createCaller({
+      user: null,
+      req: { headers: {} },
+      res: {},
+    } as never);
+    const result = await caller.cases.guestAnalyzeDocument({
+      fileName: "recibo-nitido.jpg",
+      mimeType: "image/jpeg",
+      base64Content: jpeg.toString("base64"),
+      sourceChannel: "manual",
+    });
+
+    expect(result.preview.preliminaryAnalysis.confirmedData).toMatchObject({
+      payrollNetAmount: "$3,519.50",
+      payrollNss: "12345678901",
+    });
+    expect(JSON.stringify(result)).not.toMatch(/\bcumple\b/);
   });
 });
 

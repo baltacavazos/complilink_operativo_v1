@@ -6,6 +6,8 @@ import {
   invokeLLM,
   isOpenAiModelUnavailableError,
   mapResponsesApiToInvokeResult,
+  messagesIncludeImage,
+  toResponsesInput,
   OPENAI_FALLBACK_MODELS,
   OPENAI_FLAGSHIP_MODEL,
   OPENAI_REASONING_EFFORT,
@@ -357,6 +359,7 @@ describe("invokeLLM OpenAI Responses", () => {
   });
 
   it("no degrada a otro modelo si el error no es de disponibilidad", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const fetchImpl = vi.fn(async () => errorResponse(500, "internal boom", "Server Error"));
 
     await expect(
@@ -369,6 +372,72 @@ describe("invokeLLM OpenAI Responses", () => {
       ),
     ).rejects.toThrow(/internal boom/);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(errorSpy.mock.calls.some((call) => String(call[0]).includes("[invokeLLM] OpenAI falló"))).toBe(true);
+    errorSpy.mockRestore();
+  });
+
+  it("manda la foto como data URL al modelo de visión", () => {
+    const input = toResponsesInput([
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Lee este recibo." },
+          { type: "image_url", image_url: { url: "data:image/jpeg;base64,QUJD", detail: "high" } },
+        ],
+      },
+    ]);
+    expect(messagesIncludeImage([{ role: "user", content: [{ type: "image_url", image_url: { url: "data:image/jpeg;base64,QUJD" } }] }])).toBe(true);
+    expect(JSON.stringify(input)).toContain('"type":"input_image"');
+    expect(JSON.stringify(input)).toContain("data:image/jpeg;base64,QUJD");
+  });
+
+  it("si OpenAI falla y hay Gemini, Gemini lee la foto sin mostrar el fallo", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      const target = String(url);
+      if (target.includes("api.openai.com")) {
+        return errorResponse(400, "could not download image", "Bad Request");
+      }
+      return jsonResponse({
+        candidates: [{ content: { parts: [{ text: "{\"headline\":\"Pago visible\"}" }] } }],
+      });
+    });
+
+    const result = await invokeLLM(
+      {
+        messages: [
+          { role: "system", content: "Extrae solo lo visible." },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Lee el recibo." },
+              { type: "image_url", image_url: { url: "data:image/jpeg;base64,QUJD", detail: "high" } },
+            ],
+          },
+        ],
+      },
+      {
+        env: { OPENAI_API_KEY: "sk-test", GEMINI_API_KEY: "gemini-test" },
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      },
+    );
+
+    expect(result.choices[0]?.message.content).toContain("Pago visible");
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    const geminiUrl = String(fetchImpl.mock.calls[1]?.[0]);
+    expect(geminiUrl).toContain("generativelanguage.googleapis.com");
+    expect(geminiUrl).toContain(":generateContent");
+    expect(geminiUrl).not.toContain("sk-test");
+    const body = JSON.parse(String(fetchImpl.mock.calls[1]?.[1]?.body));
+    expect(body.contents[0].parts).toEqual(
+      expect.arrayContaining([
+        { text: "Lee el recibo." },
+        { inlineData: { mimeType: "image/jpeg", data: "QUJD" } },
+      ]),
+    );
+    expect(JSON.stringify(body)).not.toContain("detail");
+    expect(errorSpy.mock.calls.some((call) => String(call[0]).includes("[invokeLLM] OpenAI falló; uso Gemini"))).toBe(true);
+    errorSpy.mockRestore();
   });
 
   it("mantiene Gemini Pro en chat completions si no hay OpenAI", async () => {

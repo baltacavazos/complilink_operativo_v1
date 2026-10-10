@@ -865,18 +865,21 @@ function SiteHeader() {
         <div className="flex min-w-0 shrink-0 items-center gap-2 lg:hidden">
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
+            data-testid="home-menu-button"
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-white/15 bg-white/10 px-3 text-sm font-semibold text-white shadow-[0_14px_26px_-20px_rgba(15,23,42,0.9)] transition duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/14 active:scale-[0.98]"
             onClick={() => setOpen((value) => !value)}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={open}
+            aria-controls="home-mobile-menu"
           >
-            {open ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
+            {open ? <X aria-hidden="true" className="h-4.5 w-4.5" /> : <Menu aria-hidden="true" className="h-4.5 w-4.5" />}
+            <span>{open ? "Cerrar" : "Menú"}</span>
           </button>
         </div>
       </div>
 
       {open ? (
-        <div className="border-t border-white/8 bg-white/98 shadow-[0_28px_60px_-42px_rgba(15,23,42,0.42)] backdrop-blur-sm md:hidden">
+        <div id="home-mobile-menu" className="border-t border-white/8 bg-white/98 shadow-[0_28px_60px_-42px_rgba(15,23,42,0.42)] backdrop-blur-sm lg:hidden">
           <div className="container mx-auto max-w-6xl space-y-3 py-4">
             <div className="rounded-[1.55rem] border border-slate-200 bg-[linear-gradient(180deg,_#f8fbfb_0%,_#eef6f5_100%)] p-4 shadow-[0_18px_36px_-28px_rgba(15,23,42,0.2)]">
               <div className="flex items-center justify-between gap-3">
