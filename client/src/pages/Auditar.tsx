@@ -9406,10 +9406,21 @@ export default function Auditar() {
                 <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
               </>
             )}
+            {guestFiveSecond.seen === "no_se_leyo" && guestReview.preview.previewAsset.mimeType.startsWith("image/") ? (
+              <div data-testid="guest-unreadable-tips" className="mt-5 rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
+                <p className="text-base font-semibold text-amber-900">No pudimos leer tu foto. Tómala otra vez así:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-base leading-7 text-slate-900">
+                  <li>Pon el recibo en una mesa, con buena luz.</li>
+                  <li>Que se vea completo, sin dedos ni sombras.</li>
+                  <li>Toma la foto de frente y sin moverte.</li>
+                </ul>
+                <p className="mt-2 text-sm leading-6 text-slate-700">Si tienes el PDF del recibo, mejor súbelo: se lee completo.</p>
+              </div>
+            ) : (
             <div className="mt-5 grid gap-4">
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
                 <p className="text-sm font-semibold tracking-tight text-amber-900">Qué conviene revisar</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalHeadline}. {guestSignalWhy}</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalHeadline}. {String(guestSignalWhy).split(/(?<=\.)\s+(?=(?:IMSS:|Retenciones))/)[0]}</p>
               </div>
               <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-4">
                 <p className="text-sm font-semibold tracking-tight text-amber-900">Hoy conviene poner atención especial en esto</p>
@@ -9428,6 +9439,7 @@ export default function Auditar() {
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
               </div>
             </div>
+            )}
             <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
             <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left">
                 <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-[#161616]">

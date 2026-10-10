@@ -18,6 +18,12 @@ describe("Auditar first visit", () => {
   it("keeps a plain-Spanish signal and the same review through account access", () => {
     expect(source).toContain("buildPayrollSignalFallback");
     expect(source).toContain("Qué conviene revisar");
+    expect(source).toContain('data-testid="guest-unreadable-tips"');
+    expect(source).toContain("Pon el recibo en una mesa, con buena luz.");
+    expect(source).toContain("Que se vea completo, sin dedos ni sombras.");
+    expect(source).toContain("Toma la foto de frente y sin moverte.");
+    expect(source).toContain("Si tienes el PDF del recibo, mejor súbelo: se lee completo.");
+    expect(source).not.toMatch(/\bcumple\b/);
     expect(source).toContain("Siguiente paso útil");
     expect(source).toContain("claimGuestPreview.useMutation()");
     expect(source).toContain('"/auditar?resume=guest-review"');

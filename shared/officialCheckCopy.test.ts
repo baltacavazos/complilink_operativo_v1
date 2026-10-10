@@ -1114,7 +1114,7 @@ describe("esqueleto del recibo y lo laboral en segundo plano", () => {
     expect(liveSatFactLines(silent)).toEqual([]);
     expect(buildReceiptEstatusLine(silent)).toBe(`Sin respuesta hoy. ${LABOR_REVIEW_READY}`);
     expect(RECEIPT_RECEIVED_ACK).toBe("Recibo recibido ✓");
-    expect(RECEIPT_VALIDATION_CORRECTION).toBe("No pudimos validar el recibo. Intenta de nuevo.");
+    expect(RECEIPT_VALIDATION_CORRECTION).toBe("Ese archivo no parece un recibo. Sube una foto o PDF de tu recibo de pago.");
     expect(`${RECEIPT_RECEIVED_ACK} ${LABOR_REVIEW_READY}`).not.toMatch(/\bcumple\b|Helios|CompliLink/i);
   });
 });

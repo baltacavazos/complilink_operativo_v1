@@ -396,7 +396,7 @@ export function readOfficialSourceOutcomes(
 
 export const LABOR_REVIEW_READY = "Ya preguntamos a IMSS e Infonavit.";
 export const RECEIPT_RECEIVED_ACK = "Recibo recibido ✓";
-export const RECEIPT_VALIDATION_CORRECTION = "No pudimos validar el recibo. Intenta de nuevo.";
+export const RECEIPT_VALIDATION_CORRECTION = "Ese archivo no parece un recibo. Sube una foto o PDF de tu recibo de pago.";
 
 const LABOR_SETTLED_STATUS = new Set<OfficialCheckStatus>(["vivo", "no_se_pudo"]);
 

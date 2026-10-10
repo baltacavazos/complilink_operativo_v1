@@ -365,7 +365,11 @@ const toResponsesContent = (content: MessageContent | MessageContent[]): unknown
       return { type: "input_text", text: part.text };
     }
     if (part.type === "image_url") {
-      return { type: "input_image", image_url: part.image_url.url };
+      return {
+        type: "input_image",
+        image_url: part.image_url.url,
+        ...(part.image_url.detail ? { detail: part.image_url.detail } : {}),
+      };
     }
     return {
       type: "input_file",
@@ -638,11 +642,13 @@ const buildChatCompletionsPayload = (
     max_tokens,
   } = params;
 
+  const chatMessages = transport.provider === "gemini" ? stripImageDetail(messages) : messages;
+  const requestedTokens = maxTokens ?? max_tokens ?? 32768;
   const payload: Record<string, unknown> = {
     model: model?.trim() || transport.model,
-    messages: messages.map(normalizeMessage),
+    messages: chatMessages.map(normalizeMessage),
     ...transport.extraPayload,
-    max_tokens: maxTokens ?? max_tokens ?? 32768,
+    max_tokens: transport.provider === "gemini" ? Math.min(requestedTokens, 8192) : requestedTokens,
   };
 
   if (tools && tools.length > 0) {
@@ -798,6 +804,153 @@ async function invokeChatCompletions(
   throw lastError ?? new Error("LLM invoke failed: no hay un modelo usable en este proveedor.");
 }
 
+function publicErrorDetail(error: unknown): string {
+  const text = error instanceof Error ? error.message : String(error);
+  return text
+    .replace(/key=[^&\s"]+/gi, "key=[omitida]")
+    .replace(/data:[^;\s"]+;base64,[A-Za-z0-9+/=\s]+/g, "data:[omitido]")
+    .slice(0, 300);
+}
+
+function stripImageDetail(messages: Message[]): Message[] {
+  return messages.map((message) => {
+    if (!Array.isArray(message.content)) return message;
+    return {
+      ...message,
+      content: message.content.map((part) => {
+        if (typeof part !== "string" && part.type === "image_url") {
+          return { type: "image_url" as const, image_url: { url: part.image_url.url } };
+        }
+        return part;
+      }),
+    };
+  });
+}
+
+export function messagesIncludeImage(messages: Message[]): boolean {
+  return messages.some((message) =>
+    ensureArray(message.content).some((part) => typeof part !== "string" && part.type === "image_url"),
+  );
+}
+
+function parseDataUrl(url: string): { mimeType: string; data: string } | null {
+  const match = /^data:([^;,]+);base64,([A-Za-z0-9+/=\s]+)$/i.exec(url.trim());
+  if (!match) return null;
+  return { mimeType: match[1].toLowerCase(), data: match[2].replace(/\s/g, "") };
+}
+
+function messagesToGeminiRequest(messages: Message[]): {
+  system: string;
+  parts: Array<Record<string, unknown>>;
+} {
+  const system: string[] = [];
+  const parts: Array<Record<string, unknown>> = [];
+
+  for (const message of messages) {
+    for (const part of ensureArray(message.content)) {
+      if (message.role === "system") {
+        if (typeof part === "string") system.push(part);
+        else if (part.type === "text") system.push(part.text);
+        continue;
+      }
+      if (typeof part === "string") {
+        parts.push({ text: part });
+        continue;
+      }
+      if (part.type === "text") {
+        parts.push({ text: part.text });
+        continue;
+      }
+      if (part.type === "image_url" || part.type === "file_url") {
+        const url = part.type === "image_url" ? part.image_url.url : part.file_url.url;
+        const inline = parseDataUrl(url);
+        if (inline) {
+          parts.push({ inlineData: { mimeType: inline.mimeType, data: inline.data } });
+        }
+      }
+    }
+  }
+
+  if (parts.length === 0) {
+    parts.push({ text: system.join("\n\n") || "Responde." });
+  }
+
+  return { system: system.join("\n\n"), parts };
+}
+
+function stripJsonFence(text: string): string {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  return fenced ? fenced[1].trim() : trimmed;
+}
+
+async function invokeGeminiGenerateContent(
+  transport: LlmTransport,
+  params: InvokeParams,
+  fetchImpl: typeof fetch,
+): Promise<InvokeResult> {
+  const models = transport.models?.length ? transport.models : [transport.model];
+  const { system, parts } = messagesToGeminiRequest(params.messages);
+  const wantsJson = Boolean(
+    params.responseFormat || params.response_format || params.outputSchema || params.output_schema,
+  );
+  let lastError: Error | null = null;
+
+  for (let index = 0; index < models.length; index += 1) {
+    const model = models[index];
+    const response = await fetchImpl(geminiGenerateContentUrl(model, transport.apiKey), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+        contents: [{ role: "user", parts }],
+        generationConfig: {
+          maxOutputTokens: Math.min(params.maxTokens ?? params.max_tokens ?? 8192, 8192),
+          ...(wantsJson ? { responseMimeType: "application/json" } : {}),
+        },
+      }),
+    });
+
+    if (response.ok) {
+      const payload = (await response.json()) as {
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      };
+      const text = stripJsonFence(
+        payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n") ?? "",
+      );
+      if (!text.trim()) {
+        lastError = new Error("LLM invoke failed: Gemini contestó vacío.");
+        if (index < models.length - 1) continue;
+        throw lastError;
+      }
+      return {
+        id: `gemini-${Date.now()}`,
+        created: Math.floor(Date.now() / 1000),
+        model,
+        choices: [
+          {
+            index: 0,
+            message: { role: "assistant", content: text },
+            finish_reason: "stop",
+          },
+        ],
+      };
+    }
+
+    const errorText = await response.text();
+    lastError = new Error(
+      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText.slice(0, 500)}`,
+    );
+    const canFallback =
+      index < models.length - 1 && isOpenAiModelUnavailableError(response.status, errorText);
+    if (!canFallback) {
+      throw lastError;
+    }
+  }
+
+  throw lastError ?? new Error("LLM invoke failed: Gemini no devolvió un modelo usable.");
+}
+
 export async function invokeLLM(
   params: InvokeParams,
   options: InvokeLlmOptions = {},
@@ -807,7 +960,46 @@ export async function invokeLLM(
   const transport = assertApiKey(resolveLlmTransport(env));
 
   if (transport.provider === "openai") {
-    return invokeOpenAiResponses(transport, params, fetchImpl);
+    try {
+      return await invokeOpenAiResponses(transport, params, fetchImpl);
+    } catch (error) {
+      const geminiKey = env.GEMINI_API_KEY?.trim();
+      if (!geminiKey) {
+        console.error("[invokeLLM] OpenAI falló:", publicErrorDetail(error));
+        throw error;
+      }
+      // Respaldo invisible: si OpenAI falla, contesta Gemini.
+      console.error("[invokeLLM] OpenAI falló; uso Gemini:", publicErrorDetail(error));
+      const models = resolveGeminiModelChain(env);
+      const geminiTransport: LlmTransport = {
+        provider: "gemini",
+        apiKey: geminiKey,
+        url: GEMINI_OPENAI_COMPAT_URL,
+        model: models[0] ?? GEMINI_FLAGSHIP_MODEL,
+        models,
+        extraPayload: {},
+      };
+      const geminiParams: InvokeParams = {
+        ...params,
+        maxTokens: Math.min(params.maxTokens ?? params.max_tokens ?? 8192, 8192),
+      };
+      try {
+        if (messagesIncludeImage(params.messages)) {
+          try {
+            return await invokeGeminiGenerateContent(geminiTransport, geminiParams, fetchImpl);
+          } catch (nativeError) {
+            console.error(
+              "[invokeLLM] Gemini visión falló; intento el otro camino:",
+              publicErrorDetail(nativeError),
+            );
+          }
+        }
+        return await invokeChatCompletions(geminiTransport, geminiParams, fetchImpl);
+      } catch (geminiError) {
+        console.error("[invokeLLM] Gemini falló:", publicErrorDetail(geminiError));
+        throw geminiError;
+      }
+    }
   }
 
   return invokeChatCompletions(transport, params, fetchImpl);
