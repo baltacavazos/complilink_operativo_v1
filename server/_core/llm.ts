@@ -642,7 +642,7 @@ const buildChatCompletionsPayload = (
     max_tokens,
   } = params;
 
-  const chatMessages = transport.provider === "gemini" ? stripImageDetail(messages) : messages;
+  const chatMessages = transport.provider === "gemini" ? asGeminiChatMessages(messages) : messages;
   const requestedTokens = maxTokens ?? max_tokens ?? 32768;
   const payload: Record<string, unknown> = {
     model: model?.trim() || transport.model,
@@ -807,9 +807,28 @@ async function invokeChatCompletions(
 function publicErrorDetail(error: unknown): string {
   const text = error instanceof Error ? error.message : String(error);
   return text
+    .replace(/sk-[A-Za-z0-9_-]+/g, "sk-[omitida]")
     .replace(/key=[^&\s"]+/gi, "key=[omitida]")
     .replace(/data:[^;\s"]+;base64,[A-Za-z0-9+/=\s]+/g, "data:[omitido]")
     .slice(0, 300);
+}
+
+let openAiAuthBlockedUntil = 0;
+let openAiAuthNoticeLogged = false;
+const OPENAI_AUTH_COOLDOWN_MS = 15 * 60 * 1000;
+
+export function resetLlmCircuitForTests() {
+  openAiAuthBlockedUntil = 0;
+  openAiAuthNoticeLogged = false;
+}
+
+function isOpenAiAuthFailure(error: unknown): boolean {
+  const text = error instanceof Error ? error.message : String(error);
+  return /\b401\b/.test(text) && /unauthorized|incorrect api key|invalid api key|api key/i.test(text);
+}
+
+function openAiCircuitOpen(now = Date.now()) {
+  return now < openAiAuthBlockedUntil;
 }
 
 function stripImageDetail(messages: Message[]): Message[] {
@@ -831,6 +850,37 @@ export function messagesIncludeImage(messages: Message[]): boolean {
   return messages.some((message) =>
     ensureArray(message.content).some((part) => typeof part !== "string" && part.type === "image_url"),
   );
+}
+
+function messagesNeedGeminiNative(messages: Message[]): boolean {
+  return messages.some((message) =>
+    ensureArray(message.content).some((part) => {
+      if (typeof part === "string") return false;
+      if (part.type === "image_url") return true;
+      if (part.type === "file_url") return parseDataUrl(part.file_url.url) !== null;
+      return false;
+    }),
+  );
+}
+
+function asGeminiChatMessages(messages: Message[]): Message[] {
+  return stripImageDetail(messages).map((message) => {
+    if (!Array.isArray(message.content)) return message;
+    return {
+      ...message,
+      content: message.content.map((part) => {
+        if (typeof part === "string" || part.type !== "file_url") return part;
+        const inline = parseDataUrl(part.file_url.url);
+        if (!inline) {
+          return { type: "text" as const, text: "Adjunta el PDF otra vez." };
+        }
+        return {
+          type: "image_url" as const,
+          image_url: { url: `data:${inline.mimeType};base64,${inline.data}` },
+        };
+      }),
+    };
+  });
 }
 
 function parseDataUrl(url: string): { mimeType: string; data: string } | null {
@@ -1063,6 +1113,41 @@ async function invokeGeminiGenerateContent(
   throw lastError ?? new Error("LLM invoke failed: Gemini no devolvió un modelo usable.");
 }
 
+async function invokeGeminiTransport(
+  env: NodeJS.ProcessEnv,
+  params: InvokeParams,
+  fetchImpl: typeof fetch,
+): Promise<InvokeResult> {
+  const geminiKey = env.GEMINI_API_KEY?.trim();
+  if (!geminiKey) {
+    throw new Error("LLM invoke failed: no hay un modelo de respaldo.");
+  }
+  const models = resolveGeminiModelChain(env);
+  const geminiTransport: LlmTransport = {
+    provider: "gemini",
+    apiKey: geminiKey,
+    url: GEMINI_OPENAI_COMPAT_URL,
+    model: models[0] ?? GEMINI_FLAGSHIP_MODEL,
+    models,
+    extraPayload: {},
+  };
+  const geminiParams: InvokeParams = {
+    ...params,
+    maxTokens: Math.min(params.maxTokens ?? params.max_tokens ?? 8192, 8192),
+  };
+  if (messagesNeedGeminiNative(params.messages)) {
+    try {
+      return await invokeGeminiGenerateContent(geminiTransport, geminiParams, fetchImpl);
+    } catch (nativeError) {
+      console.error(
+        "[invokeLLM] Gemini visión falló; intento el otro camino:",
+        publicErrorDetail(nativeError),
+      );
+    }
+  }
+  return invokeChatCompletions(geminiTransport, geminiParams, fetchImpl);
+}
+
 export async function invokeLLM(
   params: InvokeParams,
   options: InvokeLlmOptions = {},
@@ -1072,41 +1157,33 @@ export async function invokeLLM(
   const transport = assertApiKey(resolveLlmTransport(env));
 
   if (transport.provider === "openai") {
+    const geminiKey = env.GEMINI_API_KEY?.trim();
+    if (geminiKey && openAiCircuitOpen()) {
+      try {
+        return await invokeGeminiTransport(env, params, fetchImpl);
+      } catch (geminiError) {
+        console.error("[invokeLLM] Gemini falló:", publicErrorDetail(geminiError));
+        throw geminiError;
+      }
+    }
     try {
       return await invokeOpenAiResponses(transport, params, fetchImpl);
     } catch (error) {
-      const geminiKey = env.GEMINI_API_KEY?.trim();
       if (!geminiKey) {
         console.error("[invokeLLM] OpenAI falló:", publicErrorDetail(error));
         throw error;
       }
-      // Respaldo invisible: si OpenAI falla, contesta Gemini.
-      console.error("[invokeLLM] OpenAI falló; uso Gemini:", publicErrorDetail(error));
-      const models = resolveGeminiModelChain(env);
-      const geminiTransport: LlmTransport = {
-        provider: "gemini",
-        apiKey: geminiKey,
-        url: GEMINI_OPENAI_COMPAT_URL,
-        model: models[0] ?? GEMINI_FLAGSHIP_MODEL,
-        models,
-        extraPayload: {},
-      };
-      const geminiParams: InvokeParams = {
-        ...params,
-        maxTokens: Math.min(params.maxTokens ?? params.max_tokens ?? 8192, 8192),
-      };
-      try {
-        if (messagesIncludeImage(params.messages)) {
-          try {
-            return await invokeGeminiGenerateContent(geminiTransport, geminiParams, fetchImpl);
-          } catch (nativeError) {
-            console.error(
-              "[invokeLLM] Gemini visión falló; intento el otro camino:",
-              publicErrorDetail(nativeError),
-            );
-          }
+      if (isOpenAiAuthFailure(error)) {
+        openAiAuthBlockedUntil = Date.now() + OPENAI_AUTH_COOLDOWN_MS;
+        if (!openAiAuthNoticeLogged) {
+          openAiAuthNoticeLogged = true;
+          console.error("[invokeLLM] OpenAI no autoriza. Sigo con Gemini.");
         }
-        return await invokeChatCompletions(geminiTransport, geminiParams, fetchImpl);
+      } else {
+        console.error("[invokeLLM] OpenAI falló; uso Gemini:", publicErrorDetail(error));
+      }
+      try {
+        return await invokeGeminiTransport(env, params, fetchImpl);
       } catch (geminiError) {
         console.error("[invokeLLM] Gemini falló:", publicErrorDetail(geminiError));
         throw geminiError;

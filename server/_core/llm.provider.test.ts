@@ -7,6 +7,7 @@ import {
   isOpenAiModelUnavailableError,
   mapResponsesApiToInvokeResult,
   messagesIncludeImage,
+  resetLlmCircuitForTests,
   toResponsesInput,
   OPENAI_FALLBACK_MODELS,
   OPENAI_FLAGSHIP_MODEL,
@@ -256,6 +257,7 @@ describe("mapResponsesApiToInvokeResult", () => {
 
 describe("invokeLLM OpenAI Responses", () => {
   afterEach(() => {
+    resetLlmCircuitForTests();
     withEnv({})();
   });
 
@@ -558,6 +560,93 @@ describe("invokeLLM OpenAI Responses", () => {
     );
     expect(urls.some((url) => url.includes("/openai/chat/completions"))).toBe(true);
     expect(errorSpy.mock.calls.some((call) => String(call[0]).includes("[invokeLLM] Gemini no devolvió cifras"))).toBe(true);
+    errorSpy.mockRestore();
+  });
+
+  it("Gemini recibe el PDF como data URL y nunca manda file_url", async () => {
+    const fetchImpl = vi.fn(async () =>
+      jsonResponse({
+        id: "chat_gemini",
+        created: 1,
+        model: "gemini-3.1-pro-preview",
+        choices: [{ index: 0, message: { role: "assistant", content: "ok" }, finish_reason: "stop" }],
+      }),
+    );
+
+    await invokeLLM(
+      {
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: "Lee el PDF." },
+              {
+                type: "file_url",
+                file_url: { url: "data:application/pdf;base64,JVBERg==", mime_type: "application/pdf" },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        env: { GEMINI_API_KEY: "gemini-test" },
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      },
+    );
+
+    expect(fetchImpl).toHaveBeenCalled();
+    for (const call of fetchImpl.mock.calls) {
+      const body = String(call[1]?.body);
+      expect(body).not.toContain("file_url");
+      expect(body).toContain("data:application/pdf;base64,JVBERg==");
+    }
+  });
+
+  it("si OpenAI no autoriza, el PDF igual llega a Gemini sin file_url y no se reintenta OpenAI", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchImpl = vi.fn(async (url: string | URL | Request) => {
+      const target = String(url);
+      if (target.includes("api.openai.com")) {
+        return errorResponse(401, "Incorrect API key provided: sk-testsecret", "Unauthorized");
+      }
+      return jsonResponse({
+        candidates: [{ content: { parts: [{ text: "{\"pago neto\":\"$3,519.50\"}" }] } }],
+      });
+    });
+    const params = {
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Lee el PDF." },
+            {
+              type: "file_url",
+              file_url: { url: "data:application/pdf;base64,JVBERg==", mime_type: "application/pdf" },
+            },
+          ],
+        },
+      ],
+    };
+    const options = {
+      env: { OPENAI_API_KEY: "sk-test", GEMINI_API_KEY: "gemini-test" },
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    };
+
+    await invokeLLM(params, options);
+    await invokeLLM(params, options);
+
+    const urls = fetchImpl.mock.calls.map((call) => String(call[0]));
+    expect(urls.filter((url) => url.includes("api.openai.com"))).toHaveLength(1);
+    const geminiCalls = fetchImpl.mock.calls.filter((call) => String(call[0]).includes("generativelanguage.googleapis.com"));
+    expect(geminiCalls.length).toBeGreaterThan(0);
+    for (const call of geminiCalls) {
+      const body = String(call[1]?.body);
+      expect(body).not.toContain("file_url");
+      expect(body).toContain("JVBERg");
+      expect(body).not.toContain("sk-testsecret");
+    }
+    expect(urls.some((url) => url.includes(":generateContent"))).toBe(true);
+    expect(errorSpy.mock.calls.filter((call) => String(call[0]).includes("OpenAI no autoriza"))).toHaveLength(1);
     errorSpy.mockRestore();
   });
 

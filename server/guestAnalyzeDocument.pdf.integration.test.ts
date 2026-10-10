@@ -303,6 +303,64 @@ describe("cases.guestAnalyzeDocument printable payroll PDF", () => {
     expect(errorSpy.mock.calls.some((call) => String(call[0]).includes("La lectura no trajo montos"))).toBe(false);
     errorSpy.mockRestore();
   });
+
+  it("vuelve a leer la foto una vez si la primera lectura no trae el monto", async () => {
+    let structuredCalls = 0;
+    vi.mocked(invokeLLM).mockImplementation(async (params) => {
+      const payload = JSON.stringify(params);
+      if (!payload.includes("auditar_structured_extraction")) {
+        throw new Error("la revisión de nitidez no es obligatoria");
+      }
+      structuredCalls += 1;
+      const fields =
+        structuredCalls === 1
+          ? [
+              { key: "payrollEmployerName", label: "Empresa", value: "Taller El Roble SA de CV", status: "confirmed", confidence: "high" },
+              { key: "payrollPeriod", label: "Periodo", value: "2026-09-01 al 2026-09-15", status: "confirmed", confidence: "high" },
+            ]
+          : [
+              { key: "payrollNetAmount", label: "Pago neto", value: "$3,519.50", status: "confirmed", confidence: "high" },
+            ];
+      return {
+        id: "vision-retry",
+        created: 1,
+        model: "test",
+        choices: [
+          {
+            index: 0,
+            message: {
+              role: "assistant",
+              content: JSON.stringify({ headline: "Se ve el recibo", summary: "Faltaba el pago.", fields, missingFields: [], reviewNotes: [] }),
+            },
+            finish_reason: "stop",
+          },
+        ],
+      };
+    });
+
+    const jpeg = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+      0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xd9,
+    ]);
+    const caller = appRouter.createCaller({
+      user: null,
+      req: { headers: {} },
+      res: {},
+    } as never);
+    const result = await caller.cases.guestAnalyzeDocument({
+      fileName: "recibo-nitido.jpg",
+      mimeType: "image/jpeg",
+      base64Content: jpeg.toString("base64"),
+      sourceChannel: "manual",
+    });
+
+    expect(structuredCalls).toBe(2);
+    expect(result.preview.preliminaryAnalysis.confirmedData).toMatchObject({
+      payrollEmployerName: "Taller El Roble SA de CV",
+      payrollPeriod: "2026-09-01 al 2026-09-15",
+      payrollNetAmount: "$3,519.50",
+    });
+  });
 });
 
 describe("cases.guestOfficialCheck", () => {

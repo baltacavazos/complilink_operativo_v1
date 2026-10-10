@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildReceiptFactSlots } from "./ReceiptFactSkeleton";
+import { buildReceiptFactSlots, receiptFactDisplayValue } from "./ReceiptFactSkeleton";
 
 describe("huecos del recibo", () => {
   it("no pone un expediente ni un RFC en el lugar del emisor", () => {
@@ -27,5 +27,13 @@ describe("huecos del recibo", () => {
     expect(slots.emisor).toBe("Taller Norte SA de CV");
     expect(slots.estatus).toBe("RFC: UIPD9211257I0");
     expect(slots.estatus).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("un monto o periodo vacío dice que no se alcanzó a leer", () => {
+    expect(receiptFactDisplayValue("monto", null, true)).toBe("No se alcanzó a leer");
+    expect(receiptFactDisplayValue("fecha", null, true)).toBe("No se alcanzó a leer");
+    expect(receiptFactDisplayValue("emisor", null, true)).toBe("No se alcanzó a leer");
+    expect(receiptFactDisplayValue("monto", "$3,519.50", true)).toBe("$3,519.50");
+    expect(receiptFactDisplayValue("monto", null, false)).toBeNull();
   });
 });

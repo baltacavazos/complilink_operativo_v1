@@ -21,6 +21,7 @@ import {
   buildReceiptFactSlots,
   type ReceiptAck,
 } from "@/components/ReceiptFactSkeleton";
+import { ReceiptReadWaitCard } from "@/components/ReceiptReadWaitCard";
 import MobileAppShell from "@/components/MobileAppShell";
 import {
   canUseNativeDocumentInput,
@@ -4536,6 +4537,8 @@ export default function Auditar() {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const guestFileInputRef = useRef<HTMLInputElement | null>(null);
+  const guestReadEpochRef = useRef(0);
+  const [guestReadEpoch, setGuestReadEpoch] = useState(0);
   const heroCardRef = useRef<HTMLDivElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
   const digitalArchiveSectionRef = useRef<HTMLDivElement | null>(null);
@@ -7386,6 +7389,7 @@ export default function Auditar() {
       satFacts={satLiveFacts}
       laborReady={laborReviewReady}
       showSkeleton={showSkeleton}
+      reading={receiptInFlight}
     />
   );
   const condensedDossierTargets = shouldCompactPostUploadExperience
@@ -8612,6 +8616,9 @@ export default function Auditar() {
       return;
     }
 
+    const readAttempt = guestReadEpochRef.current + 1;
+    guestReadEpochRef.current = readAttempt;
+    setGuestReadEpoch(readAttempt);
     setReceiptAck("received");
     setGuestReviewError(null);
     setGuestReviewClaimStarted(false);
@@ -8627,6 +8634,7 @@ export default function Auditar() {
         sourceChannel: "manual",
       });
 
+      if (guestReadEpochRef.current !== readAttempt) return;
       setGuestReview({
         guestPreviewId: result.guestPreviewId,
         guestPreviewToken: result.guestPreviewToken,
@@ -8635,6 +8643,7 @@ export default function Auditar() {
         heliosOpinion: result.heliosOpinion,
       } as StoredGuestReview);
     } catch (error) {
+      if (guestReadEpochRef.current !== readAttempt) return;
       setReceiptAck("failed");
       setGuestReviewError(
         toFriendlyAuditarRuntimeMessage(
@@ -9602,6 +9611,12 @@ export default function Auditar() {
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
+                {guestAnalyzeMutation.isPending ? (
+                  <ReceiptReadWaitCard
+                    key={guestReadEpoch}
+                    onTryAnother={() => guestFileInputRef.current?.click()}
+                  />
+                ) : null}
                 <Button
                   className="h-auto min-h-12 w-full rounded-full bg-teal-600 px-5 py-3 text-sm leading-5 text-white hover:bg-teal-700 sm:h-12 sm:w-auto sm:px-7 sm:py-0 sm:text-base"
                   onClick={() => {
