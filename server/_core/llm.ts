@@ -839,12 +839,26 @@ function parseDataUrl(url: string): { mimeType: string; data: string } | null {
   return { mimeType: match[1].toLowerCase(), data: match[2].replace(/\s/g, "") };
 }
 
-function messagesToGeminiRequest(messages: Message[]): {
+function geminiInlinePart(
+  inline: { mimeType: string; data: string },
+  wire: "camel" | "snake",
+): Record<string, unknown> {
+  if (wire === "snake") {
+    return { inline_data: { mime_type: inline.mimeType, data: inline.data } };
+  }
+  return { inlineData: { mimeType: inline.mimeType, data: inline.data } };
+}
+
+function messagesToGeminiRequest(
+  messages: Message[],
+  wire: "camel" | "snake" = "camel",
+): {
   system: string;
   parts: Array<Record<string, unknown>>;
 } {
   const system: string[] = [];
-  const parts: Array<Record<string, unknown>> = [];
+  const imageParts: Array<Record<string, unknown>> = [];
+  const textParts: Array<Record<string, unknown>> = [];
 
   for (const message of messages) {
     for (const part of ensureArray(message.content)) {
@@ -854,28 +868,32 @@ function messagesToGeminiRequest(messages: Message[]): {
         continue;
       }
       if (typeof part === "string") {
-        parts.push({ text: part });
+        textParts.push({ text: part });
         continue;
       }
       if (part.type === "text") {
-        parts.push({ text: part.text });
+        textParts.push({ text: part.text });
         continue;
       }
       if (part.type === "image_url" || part.type === "file_url") {
         const url = part.type === "image_url" ? part.image_url.url : part.file_url.url;
         const inline = parseDataUrl(url);
-        if (inline) {
-          parts.push({ inlineData: { mimeType: inline.mimeType, data: inline.data } });
-        }
+        if (inline) imageParts.push(geminiInlinePart(inline, wire));
       }
     }
   }
 
-  if (parts.length === 0) {
-    parts.push({ text: system.join("\n\n") || "Responde." });
+  const systemText = system.join("\n\n");
+  if (imageParts.length > 0 && systemText) {
+    textParts.unshift({ text: systemText });
   }
 
-  return { system: system.join("\n\n"), parts };
+  const parts = [...imageParts, ...textParts];
+  if (parts.length === 0) {
+    parts.push({ text: systemText || "Responde." });
+  }
+
+  return { system: systemText, parts };
 }
 
 function stripJsonFence(text: string): string {
@@ -884,67 +902,161 @@ function stripJsonFence(text: string): string {
   return fenced ? fenced[1].trim() : trimmed;
 }
 
+function clipModelText(text: string): string {
+  return text
+    .replace(/key=[^&\s"]+/gi, "key=[omitida]")
+    .replace(/data:[^;\s"]+;base64,[A-Za-z0-9+/=\s]+/g, "data:[omitido]")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 240);
+}
+
+function geminiAnswerText(
+  parts: Array<{ text?: string; thought?: boolean }> | undefined,
+  preferFigures = false,
+): string {
+  const withText = (parts ?? []).filter((part) => typeof part.text === "string" && part.text.trim().length > 0);
+  const visible = withText.filter((part) => part.thought !== true);
+  const visibleText = stripJsonFence(visible[visible.length - 1]?.text ?? "");
+  if (preferFigures && visibleText && !/\d/.test(visibleText)) {
+    const thoughtWithFigures = [...withText]
+      .reverse()
+      .find((part) => part.thought === true && /\d/.test(part.text ?? ""));
+    if (thoughtWithFigures?.text) return stripJsonFence(thoughtWithFigures.text);
+  }
+  if (visibleText) return visibleText;
+  return stripJsonFence(withText[withText.length - 1]?.text ?? "");
+}
+
+function promptExpectsPayrollFigures(params: InvokeParams): boolean {
+  const blob = params.messages.map((message) => flattenMessageText(message.content)).join("\n");
+  return /payrollNetAmount|pago neto|payrollNss/i.test(blob);
+}
+
+function convertGeminiSchema(schema: unknown): unknown {
+  if (!schema || typeof schema !== "object") return schema;
+  if (Array.isArray(schema)) return schema.map((item) => convertGeminiSchema(item));
+  const next: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(schema as Record<string, unknown>)) {
+    if (key === "additionalProperties" || key === "strict" || key === "$schema") continue;
+    if (key === "type" && typeof value === "string") {
+      next.type = value.toUpperCase();
+      continue;
+    }
+    if (key === "properties" && value && typeof value === "object" && !Array.isArray(value)) {
+      next.properties = Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(([property, propertySchema]) => [
+          property,
+          convertGeminiSchema(propertySchema),
+        ]),
+      );
+      continue;
+    }
+    if (key === "items") {
+      next.items = convertGeminiSchema(value);
+      continue;
+    }
+    next[key] = value;
+  }
+  return next;
+}
+
+function geminiResponseSchema(params: InvokeParams): Record<string, unknown> | null {
+  const format = normalizeResponseFormat({
+    responseFormat: params.responseFormat,
+    response_format: params.response_format,
+    outputSchema: params.outputSchema,
+    output_schema: params.output_schema,
+  });
+  if (!format || format.type !== "json_schema") return null;
+  const converted = convertGeminiSchema(format.json_schema.schema);
+  return converted && typeof converted === "object" && !Array.isArray(converted)
+    ? (converted as Record<string, unknown>)
+    : null;
+}
+
+function isGeminiSchemaRejected(status: number, body: string): boolean {
+  return status === 400 && /schema|responseSchema|response_schema|unknown name/i.test(body);
+}
+
+function geminiInvokeResult(model: string, text: string): InvokeResult {
+  return {
+    id: `gemini-${Date.now()}`,
+    created: Math.floor(Date.now() / 1000),
+    model,
+    choices: [
+      {
+        index: 0,
+        message: { role: "assistant", content: text },
+        finish_reason: "stop",
+      },
+    ],
+  };
+}
+
 async function invokeGeminiGenerateContent(
   transport: LlmTransport,
   params: InvokeParams,
   fetchImpl: typeof fetch,
 ): Promise<InvokeResult> {
   const models = transport.models?.length ? transport.models : [transport.model];
-  const { system, parts } = messagesToGeminiRequest(params.messages);
-  const wantsJson = Boolean(
-    params.responseFormat || params.response_format || params.outputSchema || params.output_schema,
-  );
+  const schema = geminiResponseSchema(params);
+  const expectFigures = messagesIncludeImage(params.messages) && promptExpectsPayrollFigures(params);
+  const attempts: Array<{ model: string; wire: "camel" | "snake" }> = expectFigures
+    ? [
+        { model: models[0], wire: "camel" },
+        { model: models[0], wire: "snake" },
+      ]
+    : models.map((model) => ({ model, wire: "camel" as const }));
   let lastError: Error | null = null;
 
-  for (let index = 0; index < models.length; index += 1) {
-    const model = models[index];
-    const response = await fetchImpl(geminiGenerateContentUrl(model, transport.apiKey), {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
-        contents: [{ role: "user", parts }],
-        generationConfig: {
-          maxOutputTokens: Math.min(params.maxTokens ?? params.max_tokens ?? 8192, 8192),
-          ...(wantsJson ? { responseMimeType: "application/json" } : {}),
-        },
-      }),
-    });
+  for (const attempt of attempts) {
+    const schemaPasses = schema ? [true, false] : [false];
+    for (const withSchema of schemaPasses) {
+      const { system, parts } = messagesToGeminiRequest(params.messages, attempt.wire);
+      const response = await fetchImpl(geminiGenerateContentUrl(attempt.model, transport.apiKey), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+          contents: [{ role: "user", parts }],
+          generationConfig: {
+            maxOutputTokens: Math.min(params.maxTokens ?? params.max_tokens ?? 8192, 8192),
+            ...(schema || params.responseFormat || params.response_format || params.outputSchema || params.output_schema
+              ? { responseMimeType: "application/json" }
+              : {}),
+            ...(withSchema && schema ? { responseSchema: schema } : {}),
+          },
+        }),
+      });
 
-    if (response.ok) {
+      if (!response.ok) {
+        const errorText = await response.text();
+        lastError = new Error(
+          `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText.slice(0, 500)}`,
+        );
+        if (withSchema && isGeminiSchemaRejected(response.status, errorText)) continue;
+        if (!expectFigures && !isOpenAiModelUnavailableError(response.status, errorText)) {
+          throw lastError;
+        }
+        break;
+      }
+
       const payload = (await response.json()) as {
-        candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+        candidates?: Array<{ content?: { parts?: Array<{ text?: string; thought?: boolean }> } }>;
       };
-      const text = stripJsonFence(
-        payload.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("\n") ?? "",
-      );
+      const text = geminiAnswerText(payload.candidates?.[0]?.content?.parts, expectFigures);
       if (!text.trim()) {
         lastError = new Error("LLM invoke failed: Gemini contestó vacío.");
-        if (index < models.length - 1) continue;
-        throw lastError;
+        console.error("[invokeLLM] Gemini contestó vacío.");
+        break;
       }
-      return {
-        id: `gemini-${Date.now()}`,
-        created: Math.floor(Date.now() / 1000),
-        model,
-        choices: [
-          {
-            index: 0,
-            message: { role: "assistant", content: text },
-            finish_reason: "stop",
-          },
-        ],
-      };
-    }
-
-    const errorText = await response.text();
-    lastError = new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText.slice(0, 500)}`,
-    );
-    const canFallback =
-      index < models.length - 1 && isOpenAiModelUnavailableError(response.status, errorText);
-    if (!canFallback) {
-      throw lastError;
+      if (expectFigures && !/\d/.test(text)) {
+        lastError = new Error(`LLM invoke failed: Gemini no devolvió cifras. ${clipModelText(text)}`);
+        console.error("[invokeLLM] Gemini no devolvió cifras:", clipModelText(text));
+        break;
+      }
+      return geminiInvokeResult(attempt.model, text);
     }
   }
 

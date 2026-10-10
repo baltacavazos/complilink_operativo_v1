@@ -1460,6 +1460,190 @@ export function buildStructuredExtractionFallback(params: {
   };
 }
 
+function extractFirstJsonObject(text: string): string | null {
+  const trimmed = text.trim();
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  const body = fenced ? fenced[1].trim() : trimmed;
+  const start = body.indexOf("{");
+  const end = body.lastIndexOf("}");
+  if (start >= 0 && end > start) return body.slice(start, end + 1);
+  return null;
+}
+
+function clipInvokeText(text: string): string {
+  return text
+    .replace(/data:[^;\s"]+;base64,[A-Za-z0-9+/=\s]+/g, "data:[omitido]")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 300);
+}
+
+const PAYROLL_FIGURE_KEYS = new Set([
+  "payrollNetAmount",
+  "payrollNss",
+  "imssWithheld",
+  "isrWithheld",
+  "infonavitWithheld",
+  "payrollPerceptions",
+  "payrollDeductions",
+  "payrollPeriod",
+  "payrollEmployerName",
+]);
+
+function structuredFieldIdentity(field: { key: string; label: string; value: string }) {
+  return canonicalStructuredPayrollKey(field) ?? normalizeStructuredToken(field.key);
+}
+
+function addStructuredField(fields: StructuredExtractionField[], field: StructuredExtractionField) {
+  const key = field.key.trim();
+  const label = field.label.trim();
+  const value = field.value.trim();
+  if (!key || !label || !value) return;
+  const next = { ...field, key, label, value };
+  const identity = structuredFieldIdentity(next);
+  if (fields.some((item) => structuredFieldIdentity(item) === identity)) return;
+  const canonical = canonicalStructuredPayrollKey(next);
+  fields.push(canonical ? { ...next, key: canonical } : next);
+}
+
+function absorbExplicitFields(node: unknown, fields: StructuredExtractionField[]) {
+  if (!Array.isArray(node)) return;
+  for (const item of node) {
+    if (!item || typeof item !== "object") continue;
+    const record = item as Record<string, unknown>;
+    const key =
+      typeof record.key === "string"
+        ? record.key
+        : typeof record.label === "string"
+          ? record.label
+          : typeof record.nombre === "string"
+            ? record.nombre
+            : "";
+    const label = typeof record.label === "string" ? record.label : key;
+    const rawValue = record.value ?? record.valor ?? record.monto;
+    if (typeof rawValue !== "string" && typeof rawValue !== "number") continue;
+    addStructuredField(fields, {
+      key,
+      label,
+      value: String(rawValue),
+      status: record.status === "estimated" ? "estimated" : "confirmed",
+      confidence: record.confidence === "high" ? "high" : record.confidence === "low" ? "low" : "medium",
+    });
+  }
+}
+
+const STRUCTURED_WALK_SKIP = new Set([
+  "headline",
+  "summary",
+  "missingfields",
+  "reviewnotes",
+  "fields",
+  "status",
+  "confidence",
+  "type",
+  "notes",
+  "label",
+  "key",
+  "value",
+  "valor",
+  "monto",
+  "nombre",
+]);
+
+function walkStructuredPayrollNode(node: unknown, fields: StructuredExtractionField[], depth = 0) {
+  if (depth > 5 || node == null) return;
+  if (Array.isArray(node)) {
+    absorbExplicitFields(node, fields);
+    for (const item of node) walkStructuredPayrollNode(item, fields, depth + 1);
+    return;
+  }
+  if (typeof node !== "object") return;
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    if (value != null && typeof value === "object") {
+      walkStructuredPayrollNode(value, fields, depth + 1);
+      continue;
+    }
+    if (STRUCTURED_WALK_SKIP.has(normalizeStructuredToken(key))) continue;
+    if (typeof value !== "string" && typeof value !== "number") continue;
+    const text = String(value).trim();
+    if (!text) continue;
+    const canonical = canonicalStructuredPayrollKey({ key, label: key, value: text });
+    if (!canonical) continue;
+    addStructuredField(fields, {
+      key: canonical,
+      label: humanizeStructuredFieldLabel(canonical),
+      value: text,
+      status: "confirmed",
+      confidence: "medium",
+    });
+  }
+}
+
+function salvagePayrollFiguresFromText(raw: string, fields: StructuredExtractionField[]) {
+  const has = (key: string) => fields.some((field) => structuredFieldIdentity(field) === key);
+  const money = String.raw`\$?\s?\d{1,3}(?:,\d{3})*\.\d{2}`;
+  const take = (key: string, label: string, pattern: RegExp) => {
+    if (has(key)) return;
+    const match = raw.match(pattern);
+    const value = match?.[1]?.replace(/\s+/g, "").trim();
+    if (!value) return;
+    addStructuredField(fields, {
+      key,
+      label,
+      value,
+      status: "confirmed",
+      confidence: "medium",
+    });
+  };
+
+  take("payrollNetAmount", "Pago neto", new RegExp(`(?:pago\\s+neto|neto\\s+a\\s+pagar|sueldo\\s+neto)[^\\d$]{0,30}(${money})`, "i"));
+  take("imssWithheld", "IMSS", new RegExp(`\\bimss\\b[^\\d$]{0,30}(${money})`, "i"));
+  take("isrWithheld", "ISR", new RegExp(`\\bisr\\b[^\\d$]{0,30}(${money})`, "i"));
+  take("infonavitWithheld", "Infonavit", new RegExp(`\\binfonavit\\b[^\\d$]{0,30}(${money})`, "i"));
+  take("payrollDeductions", "Deducciones", new RegExp(`\\bdeducciones\\b[^\\d$]{0,30}(${money})`, "i"));
+  take("payrollPerceptions", "Percepciones", new RegExp(`\\bpercepciones\\b[^\\d$]{0,30}(${money})`, "i"));
+
+  if (!has("payrollNss")) {
+    const match = raw.match(/(?:nss|seguridad social)[^\d]{0,24}(\d{11})\b/i);
+    if (match?.[1]) {
+      addStructuredField(fields, {
+        key: "payrollNss",
+        label: "NSS",
+        value: match[1],
+        status: "confirmed",
+        confidence: "medium",
+      });
+    }
+  }
+
+  if (!has("payrollPeriod")) {
+    const match = raw.match(/(\d{4}-\d{2}-\d{2}\s*(?:al|a)\s*\d{4}-\d{2}-\d{2})/i);
+    if (match?.[1]) {
+      addStructuredField(fields, {
+        key: "payrollPeriod",
+        label: "Periodo",
+        value: match[1].replace(/\s+/g, " ").trim(),
+        status: "confirmed",
+        confidence: "medium",
+      });
+    }
+  }
+}
+
+function collectStructuredPayrollFields(parsed: unknown, raw: string): StructuredExtractionField[] {
+  const fields: StructuredExtractionField[] = [];
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && Array.isArray((parsed as { fields?: unknown }).fields)) {
+    absorbExplicitFields((parsed as { fields: unknown }).fields, fields);
+  }
+  walkStructuredPayrollNode(parsed, fields);
+  salvagePayrollFiguresFromText(raw, fields);
+  return fields.slice(0, 12);
+}
+
+function structuredFieldsIncludePayrollFigure(fields: StructuredExtractionField[]) {
+  return fields.some((field) => PAYROLL_FIGURE_KEYS.has(structuredFieldIdentity(field)));
+}
+
 async function analyzeStructuredDocumentPreview(params: {
   fileUrl: string;
   mimeType: string;
@@ -1569,30 +1753,33 @@ async function analyzeStructuredDocumentPreview(params: {
       return fallback;
     }
 
-    const parsed = JSON.parse(serialized) as StructuredExtractionResult;
+    let parsed: unknown = null;
+    const jsonSlice = extractFirstJsonObject(serialized);
+    if (jsonSlice) {
+      try {
+        parsed = JSON.parse(jsonSlice);
+      } catch {
+        parsed = null;
+      }
+    }
+
+    const fields = collectStructuredPayrollFields(parsed, serialized);
+    if (supportsImageVision && !structuredFieldsIncludePayrollFigure(fields)) {
+      console.error("[invokeLLM] La lectura no trajo montos:", clipInvokeText(serialized));
+    }
+    const record =
+      parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
 
     return sanitizeStructuredExtractionResult(
       {
-        headline: typeof parsed.headline === "string" && parsed.headline.trim().length > 0 ? parsed.headline.trim() : fallback.headline,
-        summary: typeof parsed.summary === "string" && parsed.summary.trim().length > 0 ? parsed.summary.trim() : fallback.summary,
-        fields: Array.isArray(parsed.fields)
-          ? parsed.fields
-              .filter((field) => field && typeof field.key === "string" && typeof field.label === "string" && typeof field.value === "string")
-              .map((field): StructuredExtractionField => ({
-                key: field.key.trim(),
-                label: field.label.trim(),
-                value: field.value.trim(),
-                status: field.status === "estimated" ? "estimated" : "confirmed",
-                confidence: field.confidence === "high" ? "high" : field.confidence === "low" ? "low" : "medium",
-              }))
-              .filter((field) => field.key.length > 0 && field.label.length > 0 && field.value.length > 0)
-              .slice(0, 12)
-          : fallback.fields,
-        missingFields: Array.isArray(parsed.missingFields)
-          ? parsed.missingFields.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 6)
+        headline: typeof record.headline === "string" && record.headline.trim().length > 0 ? record.headline.trim() : fallback.headline,
+        summary: typeof record.summary === "string" && record.summary.trim().length > 0 ? record.summary.trim() : fallback.summary,
+        fields: fields.length > 0 ? fields : fallback.fields,
+        missingFields: Array.isArray(record.missingFields)
+          ? record.missingFields.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 6)
           : fallback.missingFields,
-        reviewNotes: Array.isArray(parsed.reviewNotes)
-          ? parsed.reviewNotes.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 4)
+        reviewNotes: Array.isArray(record.reviewNotes)
+          ? record.reviewNotes.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, 4)
           : fallback.reviewNotes,
       },
       fallback,
@@ -1767,6 +1954,7 @@ const STRUCTURED_PAYROLL_KEYS: Record<string, string> = {
   isr: "isrWithheld",
   retencionisr: "isrWithheld",
   imsswithheld: "imssWithheld",
+  imss: "imssWithheld",
   cuotaimss: "imssWithheld",
   retencionimss: "imssWithheld",
   infonavitwithheld: "infonavitWithheld",
@@ -1792,7 +1980,7 @@ function canonicalStructuredPayrollKey(field: { key: string; label: string; valu
   if (/percepcion/.test(label)) return "payrollPerceptions";
   if (/\bisr\b/.test(label)) return "isrWithheld";
   if (/infonavit/.test(label)) return "infonavitWithheld";
-  if (/cuota imss|retenci[oó]n imss/.test(label)) return "imssWithheld";
+  if (/\bimss\b/.test(label) && !/nss|seguridad social|registro/.test(label)) return "imssWithheld";
   if (/\bcurp\b/.test(label)) return "payrollCurp";
   if (/rfc del patr[oó]n|rfc emisor/.test(label)) return "employerRfc";
   if (/rfc del trabajador|rfc receptor/.test(label)) return "workerRfc";
