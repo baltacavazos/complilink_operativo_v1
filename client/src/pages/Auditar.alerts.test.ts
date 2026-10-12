@@ -6,6 +6,7 @@ vi.mock("@/components/HeliosCopilotSheet", () => ({
 
 import { readFileSync } from "node:fs";
 
+import { selectFiveSecondVerdictFromReceipt } from "@shared/fiveSecondVerdict";
 import {
   buildAuditarTimelineEntryState,
   buildDossierTypeProgress,
@@ -233,6 +234,37 @@ describe("dato factual del recibo", () => {
     expect(signal.facts).toContain("Periodo identificado: 2026-04-30");
     expect(signal.facts).toContain("El monto pagado no se alcanzó a leer completo");
     expect(signal.facts).toContain("No se alcanzó a leer con claridad el total de deducciones");
+  });
+
+  it("no dice bien si la foto trae emisor y fecha pero el monto no se leyó", () => {
+    const signal = buildPayrollFactSignal({
+      documentType: "payroll_receipt",
+      confirmedData: {
+        payrollEmployerName: "Taller El Roble SA de CV",
+        payrollPeriod: "01/09/2026 al 15/09/2026",
+        payrollNetAmount: "N/A",
+      },
+      estimatedData: {
+        apparentAmount: "$245.30",
+      },
+    });
+    const verdict = selectFiveSecondVerdictFromReceipt({
+      employer: signal.employer,
+      employerRfc: signal.employerRfc,
+      period: signal.period,
+      payment: signal.payment,
+      classificationConfidence: 90,
+      riskLevel: "low",
+    });
+
+    expect(signal.employer).toBe("Taller El Roble SA de CV");
+    expect(signal.period).toBe("01/09/2026 al 15/09/2026");
+    expect(signal.payment).toBeNull();
+    expect(verdict.seenLine).toBe("Esto vimos: falta un dato");
+    expect(verdict.seenLine).not.toBe("Esto vimos: bien");
+    expect(verdict.nextStep).toBe(
+      "No alcanzamos a leer cuánto te pagaron. Toma otra foto donde se vea el total, o sube el PDF.",
+    );
   });
 
   it("explica los indicios de IMSS y las retenciones solo con los datos presentes en el recibo", () => {

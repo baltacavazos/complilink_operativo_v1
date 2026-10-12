@@ -79,6 +79,31 @@ export function selectFiveSecondNextStep(input: FiveSecondVerdictInput, seen: Fi
   return "Sube el CFDI del mismo periodo para comparar lo timbrado con lo que te pagaron.";
 }
 
+const UNREAD_AMOUNT =
+  /^(?:n\/?a|n\.?\s?d\.?|s\/d|sin dato|no visible|no se (?:lee|ley[oó]|ve|alcanz[oó]\w*)|ilegible|no legible|pendiente|null|undefined|none|desconocido|no aplica|no disponible|mxn|pesos?|—|–|-|\.{1,})$/i;
+
+/** Un monto neto se leyó solo si hay un número de dinero, no un hueco ni una etiqueta. */
+export function isReadableNetAmount(value?: string | null): boolean {
+  if (value == null) return false;
+  const text = String(value).replace(/\s+/g, " ").trim();
+  if (text.length < 2 || UNREAD_AMOUNT.test(text) || !/\d/.test(text)) return false;
+  if (/^\d{1,2}[/-]\d{1,2}[/-]\d{2,4}$/.test(text)) return false;
+  if (/^20\d{2}-\d{2}(?:-\d{2})?(?:\s+al\s+20\d{2}-\d{2}(?:-\d{2})?)?$/i.test(text)) return false;
+  return true;
+}
+
+const UNREAD_PERIOD =
+  /^(?:n\/?a|sin dato|no visible|ilegible|no legible|pendiente|null|undefined|—|–|-)$/i;
+
+export function isReadablePeriod(value?: string | null): boolean {
+  if (value == null) return false;
+  const text = String(value).replace(/\s+/g, " ").trim();
+  if (text.length < 4 || UNREAD_PERIOD.test(text)) return false;
+  return /\d|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre|quincena/i.test(
+    text,
+  );
+}
+
 export function formatFiveSecondSeenLine(seen: FiveSecondSeen) {
   return `Esto vimos: ${SEEN_LABEL[seen]}`;
 }
@@ -113,8 +138,8 @@ export function selectFiveSecondVerdictFromReceipt(params: {
 }): FiveSecondVerdict {
   return selectFiveSecondVerdict({
     hasEmployer: Boolean(params.employer || params.employerRfc),
-    hasPeriod: Boolean(params.period),
-    hasPayment: Boolean(params.payment),
+    hasPeriod: isReadablePeriod(params.period),
+    hasPayment: isReadableNetAmount(params.payment),
     hasNss: Boolean(params.nss),
     hasCurp: Boolean(params.curp),
     hasWorkerRfc: Boolean(params.workerRfc),

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const RECEIPT_READ_WAIT_COPY = {
   start: "Estamos leyendo tu recibo. Tarda como medio minuto. No cierres esta pantalla.",
@@ -16,45 +16,63 @@ export function receiptReadWaitMessage(elapsedMs: number) {
   return RECEIPT_READ_WAIT_COPY.late;
 }
 
-export function ReceiptReadWaitCard({ onTryAnother }: { onTryAnother: () => void }) {
-  const [elapsedMs, setElapsedMs] = useState(0);
+export function receiptReadElapsed(startedAt: number, now = Date.now()) {
+  return Math.max(0, now - startedAt);
+}
+
+export function ReceiptReadWaitCard({
+  onTryAnother,
+  startedAt,
+}: {
+  onTryAnother: () => void;
+  startedAt: number;
+}) {
+  const rootRef = useRef<HTMLElement>(null);
+  const [elapsedMs, setElapsedMs] = useState(() => receiptReadElapsed(startedAt));
 
   useEffect(() => {
-    const started = Date.now();
     const timer = window.setInterval(() => {
-      setElapsedMs(Date.now() - started);
+      setElapsedMs(receiptReadElapsed(startedAt));
     }, 500);
     return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    document.getElementById("receipt-read-wait")?.scrollIntoView({ block: "nearest" });
-  }, []);
+  }, [startedAt]);
 
   const message = receiptReadWaitMessage(elapsedMs);
   const late = elapsedMs > 45_000;
 
+  useEffect(() => {
+    rootRef.current?.scrollIntoView({ block: "start", inline: "nearest", behavior: "auto" });
+  }, [message]);
+
   return (
     <section
+      ref={rootRef}
       id="receipt-read-wait"
       data-testid="receipt-read-wait"
       aria-live={RECEIPT_READ_WAIT_ARIA_LIVE}
-      className="mb-3 w-full rounded-2xl border-2 border-[#111111] bg-[#fffdf6] px-4 py-4 text-left text-[#111111]"
+      className="ap-read-wait sticky top-2 z-40 mb-3 w-full scroll-mt-3 rounded-2xl border-2 border-[#111111] px-4 py-4 text-left"
+      style={{ backgroundColor: "#fffdf6", color: "#111111", fontSize: "17px" }}
     >
-      <p data-testid="receipt-read-steps" className="text-base font-semibold leading-6 text-[#111111]">
+      <p data-testid="receipt-read-steps" className="font-semibold leading-6">
         Subido ✓ · Leyendo · Resultado
       </p>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#e7e0cc]" aria-hidden="true">
-        <div className="h-full w-1/3 animate-pulse rounded-full bg-[#111111]" />
+      <div
+        className="ap-read-wait-track mt-3 h-1.5 overflow-hidden rounded-full"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Leyendo tu recibo"
+      >
+        <div className="ap-read-wait-bar h-full rounded-full" />
       </div>
-      <p data-testid="receipt-read-message" className="mt-3 text-base font-medium leading-6 text-[#111111]">
+      <p data-testid="receipt-read-message" className="mt-3 font-medium leading-6">
         {message}
       </p>
       {late ? (
         <button
           type="button"
           data-testid="receipt-read-try-another"
-          className="mt-3 inline-flex min-h-12 items-center rounded-full border-2 border-[#111111] bg-white px-4 text-base font-semibold text-[#111111]"
+          className="mt-3 inline-flex min-h-12 items-center rounded-full border-2 border-[#111111] bg-white px-4 font-semibold text-[#111111]"
           onClick={onTryAnother}
         >
           Probar con otra foto

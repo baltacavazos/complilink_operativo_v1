@@ -1,3 +1,4 @@
+import { isReadableNetAmount, isReadablePeriod } from "@shared/fiveSecondVerdict";
 import {
   isPlaceholderSatLegalName,
   LABOR_REVIEW_READY,
@@ -45,8 +46,8 @@ export function buildReceiptFactSlots(params: {
   const employer = params.employer?.trim() || null;
   return {
     emisor: employer && !isPlaceholderSatLegalName(employer, params.employerRfc) ? employer : null,
-    monto: params.payment?.trim() || null,
-    fecha: params.period?.trim() || null,
+    monto: isReadableNetAmount(params.payment) ? params.payment!.trim() : null,
+    fecha: isReadablePeriod(params.period) ? params.period!.trim() : null,
     estatus: params.estatus?.trim() || null,
   };
 }
@@ -68,7 +69,9 @@ export function ReceiptFactSkeleton({
             <dt className="text-sm font-semibold text-[#111111]">{label}</dt>
             <dd className="min-w-0 text-sm font-medium leading-6 text-[#161616]">
               {value ? (
-                <span>{value}</span>
+                <span className={value === RECEIPT_FACT_MISSING ? "text-base font-semibold text-[#111111]" : undefined}>
+                  {value}
+                </span>
               ) : (
                 <span
                   data-placeholder="true"

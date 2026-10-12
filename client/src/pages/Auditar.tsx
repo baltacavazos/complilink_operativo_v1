@@ -55,6 +55,8 @@ import {
 } from "@shared/workerChatUx";
 import {
   FIVE_SECOND_DISCLAIMER,
+  isReadableNetAmount,
+  isReadablePeriod,
   selectFiveSecondVerdictFromReceipt,
   type FiveSecondVerdict,
 } from "@shared/fiveSecondVerdict";
@@ -2488,7 +2490,7 @@ export function buildPayrollFactSignal(params: {
     ],
     employerRfc,
   );
-  const period = readValue([
+  const periodCandidate = readValue([
     "period",
     "periodo",
     "paymentperiod",
@@ -2497,15 +2499,33 @@ export function buildPayrollFactSignal(params: {
     "apparenteffectivedate",
     "payrollperiod",
   ]);
-  const payment = readValue([
+  const period = isReadablePeriod(periodCandidate) ? periodCandidate : null;
+  const netAmountKeys = [
+    "payrollnetamount",
     "neto",
     "netamount",
     "totalneto",
-    "apparentamount",
+    "pagoneto",
+    "montoneto",
+    "sueldoneto",
     "totalpagar",
-    "importe",
-    "payrollnetamount",
-  ]);
+  ];
+  const netCandidate = readValue(netAmountKeys);
+  const netKeyHadText = [confirmedData, estimatedData].some((source) =>
+    Object.entries(source).some(([key, rawValue]) => {
+      const normalizedKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+      if (!netAmountKeys.includes(normalizedKey) || rawValue == null) return false;
+      return String(rawValue).trim().length > 0;
+    }),
+  );
+  const fallbackAmount = readValue(["apparentamount", "importe"]);
+  const payment = isReadableNetAmount(netCandidate)
+    ? netCandidate
+    : netKeyHadText
+      ? null
+      : isReadableNetAmount(fallbackAmount)
+        ? fallbackAmount
+        : null;
   const deductions = readValue([
     "deducciones",
     "totaldeducciones",
@@ -4539,6 +4559,7 @@ export default function Auditar() {
   const guestFileInputRef = useRef<HTMLInputElement | null>(null);
   const guestReadEpochRef = useRef(0);
   const [guestReadEpoch, setGuestReadEpoch] = useState(0);
+  const [guestReadStartedAt, setGuestReadStartedAt] = useState<number | null>(null);
   const heroCardRef = useRef<HTMLDivElement | null>(null);
   const uploadSectionRef = useRef<HTMLDivElement | null>(null);
   const digitalArchiveSectionRef = useRef<HTMLDivElement | null>(null);
@@ -8619,6 +8640,7 @@ export default function Auditar() {
     const readAttempt = guestReadEpochRef.current + 1;
     guestReadEpochRef.current = readAttempt;
     setGuestReadEpoch(readAttempt);
+    setGuestReadStartedAt(Date.now());
     setReceiptAck("received");
     setGuestReviewError(null);
     setGuestReviewClaimStarted(false);
@@ -8652,6 +8674,9 @@ export default function Auditar() {
         )
       );
     } finally {
+      if (guestReadEpochRef.current === readAttempt) {
+        setGuestReadStartedAt(null);
+      }
       event.target.value = "";
     }
   };
@@ -9611,9 +9636,10 @@ export default function Auditar() {
               </p>
 
               <div className="mt-6 flex w-full max-w-md flex-col gap-2 sm:max-w-none sm:items-start lg:justify-start">
-                {guestAnalyzeMutation.isPending ? (
+                {guestReadStartedAt != null ? (
                   <ReceiptReadWaitCard
                     key={guestReadEpoch}
+                    startedAt={guestReadStartedAt}
                     onTryAnother={() => guestFileInputRef.current?.click()}
                   />
                 ) : null}
@@ -9625,9 +9651,9 @@ export default function Auditar() {
                     });
                     guestFileInputRef.current?.click();
                   }}
-                  disabled={guestAnalyzeMutation.isPending}
+                  disabled={guestReadStartedAt != null}
                 >
-                  {guestAnalyzeMutation.isPending ? "Leyendo tu documento…" : UPLOAD_PRIMARY_EMPTY_LABEL}
+                  {guestReadStartedAt != null ? "Leyendo tu documento…" : UPLOAD_PRIMARY_EMPTY_LABEL}
                   <ArrowRight className="ml-2 h-4 w-4 shrink-0" strokeWidth={1.8} />
                 </Button>
                 <p className="text-sm font-medium leading-5 text-slate-800">{EMPTY_UPLOAD_TRUST}</p>

@@ -1634,13 +1634,50 @@ html:not(.dark) .audita-auditar .ap-wa-unavailable-control {
   animation: ap-brand-pulse 1.4s ease-in-out infinite;
 }
 
+.ap-read-wait {
+  background-color: #fffdf6 !important;
+  color: #111111 !important;
+  font-size: 17px;
+}
+
+.ap-read-wait p,
+.ap-read-wait button {
+  color: #111111 !important;
+  font-size: 17px;
+}
+
+.ap-read-wait-track {
+  background-color: #e7e0cc;
+}
+
+.ap-read-wait-bar {
+  width: 38%;
+  background-color: #111111;
+  animation: ap-read-wait-indeterminate 1.35s ease-in-out infinite;
+}
+
+@keyframes ap-read-wait-indeterminate {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(280%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ap-brand-pulse,
   .ap-result-enter,
   .ap-result-detail[open] > :not(summary),
   .ap-read-skeleton,
-  .ap-read-skeleton > span {
+  .ap-read-skeleton > span,
+  .ap-read-wait-bar {
     animation: none !important;
+  }
+
+  .ap-read-wait-bar {
+    width: 70%;
+    transform: none;
   }
 
   .ap-result-detail::details-content,

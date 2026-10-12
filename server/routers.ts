@@ -195,6 +195,7 @@ import {
   rememberGuestOfficialSession,
   resetGuestOfficialFactStoreForTests,
 } from "./guestOfficialFactStore";
+import { isReadableNetAmount } from "@shared/fiveSecondVerdict";
 import { GUEST_OFFICIAL_FACT_WAIT_MS } from "@shared/guestOfficialFact";
 import { hasUsableOfficialFact } from "@shared/officialResultNotification";
 import { buildHeliosCalculatorSnapshot } from "./heliosCalculatorService";
@@ -2002,7 +2003,13 @@ function mergeStructuredPayrollFields(
   for (const field of extraction.fields) {
     const canonical = canonicalStructuredPayrollKey(field);
     if (!canonical || !field.value.trim()) continue;
-    if (analysisValuePresent(confirmedData, canonical) || analysisValuePresent(estimatedData, canonical)) continue;
+    if (canonical === "payrollNetAmount" && !isReadableNetAmount(field.value)) continue;
+    const alreadyRead =
+      canonical === "payrollNetAmount"
+        ? isReadableNetAmount(stringAnalysisValue(confirmedData, canonical)) ||
+          isReadableNetAmount(stringAnalysisValue(estimatedData, canonical))
+        : analysisValuePresent(confirmedData, canonical) || analysisValuePresent(estimatedData, canonical);
+    if (alreadyRead) continue;
     const target = field.status === "estimated" ? estimatedData : confirmedData;
     target[canonical] = field.value.trim();
   }
@@ -2029,13 +2036,21 @@ function auditarModelFileUrl(params: { mimeType: string; binary: Buffer; remoteU
   return params.remoteUrl;
 }
 
+function stringAnalysisValue(record: Record<string, unknown> | null | undefined, key: string) {
+  const value = record?.[key];
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return typeof value === "string" ? value : null;
+}
+
 function payrollReadMissingAmountOrPeriod(analysis: {
   confirmedData?: Record<string, unknown> | null;
   estimatedData?: Record<string, unknown> | null;
 }) {
   const has = (key: string) =>
     analysisValuePresent(analysis.confirmedData, key) || analysisValuePresent(analysis.estimatedData, key);
-  return !has("payrollNetAmount") || !has("payrollPeriod");
+  const amount = stringAnalysisValue(analysis.confirmedData, "payrollNetAmount") ??
+    stringAnalysisValue(analysis.estimatedData, "payrollNetAmount");
+  return !isReadableNetAmount(amount) || !has("payrollPeriod");
 }
 
 async function prepareAuditarDocumentPipeline(params: {

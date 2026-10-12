@@ -36,4 +36,16 @@ describe("huecos del recibo", () => {
     expect(receiptFactDisplayValue("monto", "$3,519.50", true)).toBe("$3,519.50");
     expect(receiptFactDisplayValue("monto", null, false)).toBeNull();
   });
+
+  it("un monto que no es dinero se ve como no leído", () => {
+    const slots = buildReceiptFactSlots({
+      employer: "Taller El Roble SA de CV",
+      payment: "N/A",
+      period: "01/09/2026 al 15/09/2026",
+    });
+    expect(slots.emisor).toBe("Taller El Roble SA de CV");
+    expect(slots.fecha).toBe("01/09/2026 al 15/09/2026");
+    expect(slots.monto).toBeNull();
+    expect(receiptFactDisplayValue("monto", slots.monto, true)).toBe("No se alcanzó a leer");
+  });
 });
