@@ -4,8 +4,10 @@ import path from "node:path";
 
 import { sanitizeClientVisibleCopy } from "./lib/clientVisibleCopy";
 import {
+  LEGAL_CONTROLLER_NAME,
   LEGAL_DOCUMENTS,
   LEGAL_GATE_COPY,
+  LEGAL_IDENTITY_LINE,
   PRIVACY_CENTER_COPY,
 } from "../../shared/legal";
 
@@ -38,6 +40,13 @@ describe("copy público y aviso de privacidad", () => {
     expect(home).not.toContain("valor probatorio");
     expect(home).toContain('alt="AuditaPatron - Conoce tus derechos"');
     expect(html).toContain("AuditaPatrón · Conoce tus derechos");
+    expect(html).toContain('<meta name="author" content="Infraestructura Laboral Mundial, SA de CV"');
+    expect(LEGAL_CONTROLLER_NAME).toBe("Infraestructura Laboral Mundial, SA de CV");
+    expect(LEGAL_IDENTITY_LINE).toBe(
+      "AuditaPatrón es un servicio de Infraestructura Laboral Mundial, SA de CV · RFC ILM190306A59 · Av. Universidad 526, int. 3-C, col. Vertiz Narvarte, Benito Juárez, CP 03600, Ciudad de México · Tel. +52 55 2580 6470",
+    );
+    expect(html).toContain(LEGAL_IDENTITY_LINE);
+    expect(html).toContain('href="/aviso-de-privacidad"');
     expect(html).toContain('<html lang="es">');
     expect(html).toContain("No es asesoría legal ni validación oficial.");
     expect(html).toContain("Logotipo oficial de AuditaPatron con el lema Conoce tus derechos");
@@ -57,8 +66,12 @@ describe("copy público y aviso de privacidad", () => {
     expect(legalPage).toContain("Este aviso carga sin login");
     expect(legalPage).toContain("resguardo con acceso controlado");
     expect(legalCopy).toContain('route: "/aviso-de-privacidad"');
+    expect(legalCopy).toContain('LEGAL_CONTROLLER_NAME = "Infraestructura Laboral Mundial, SA de CV"');
     expect(legalCopy).toContain("LEGAL_CONTROLLER_NAME");
     expect(legalCopy).toContain("LEGAL_CONTROLLER_ADDRESS");
+    expect(legalCopy).toContain("Av. Universidad 526, int. 3-C, col. Vertiz Narvarte, Benito Juárez, CP 03600, Ciudad de México");
+    expect(legalPage).toContain("LEGAL_IDENTITY_LINE");
+    expect(legalPage).toContain("Responsable: {LEGAL_CONTROLLER_NAME}");
     expect(legalCopy).not.toContain("La identidad legal del responsable y el domicilio se publicarán antes del lanzamiento comercial definitivo.");
     expect(legalCopy).not.toMatch(/helios/i);
     expect(legalCopy).not.toMatch(/complilink/i);

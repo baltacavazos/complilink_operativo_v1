@@ -8,6 +8,7 @@
       content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <meta name="theme-color" content="#143c86" />
     <meta name="application-name" content="AuditaPatrón" />
+    <meta name="author" content="Infraestructura Laboral Mundial, SA de CV" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="AuditaPatrón" />
@@ -28,6 +29,33 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <title>AuditaPatrón · Conoce tus derechos</title>
+    <style>
+      #ap-legal-footer {
+        position: relative;
+        z-index: 40;
+        background: #1C2B48 !important;
+        color: #ffffff !important;
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 12px;
+        line-height: 1.55;
+        padding: 12px 16px 16px;
+        text-align: center;
+      }
+      #ap-legal-footer p {
+        color: #ffffff !important;
+        margin: 0 auto;
+        max-width: 68rem;
+      }
+      #ap-legal-footer a {
+        color: #ffffff !important;
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+    </style>
     <!-- THIS IS THE START OF A COMMENT BLOCK, BLOCK TO BE DELETED: Google Fonts here, example:
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,6 +65,13 @@
 
   <body>
     <div id="root"></div>
+    <footer id="ap-legal-footer">
+      <p>AuditaPatrón es un servicio de Infraestructura Laboral Mundial, SA de CV · RFC ILM190306A59 · Av. Universidad 526, int. 3-C, col. Vertiz Narvarte, Benito Juárez, CP 03600, Ciudad de México · Tel. +52 55 2580 6470</p>
+      <p><a href="/aviso-de-privacidad">Aviso de Privacidad</a></p>
+    </footer>
+    <noscript>
+      <p>AuditaPatrón es un servicio de Infraestructura Laboral Mundial, SA de CV · RFC ILM190306A59 · Av. Universidad 526, int. 3-C, col. Vertiz Narvarte, Benito Juárez, CP 03600, Ciudad de México · Tel. +52 55 2580 6470</p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 

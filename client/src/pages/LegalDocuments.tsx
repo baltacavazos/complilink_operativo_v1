@@ -4,6 +4,8 @@ import {
   LEGAL_CONTACT_EMAIL,
   LEGAL_CONTROLLER_ADDRESS,
   LEGAL_CONTROLLER_NAME,
+  LEGAL_CONTROLLER_RFC,
+  LEGAL_IDENTITY_LINE,
   LEGAL_DOCUMENTS_BY_SLUG,
   type LegalDocumentDefinition,
   type LegalDocumentSlug,
@@ -106,7 +108,7 @@ function LegalDocumentArticle({ document }: { document: LegalDocumentDefinition 
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-teal-700">Documento legal vigente</p>
               <h1 className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-slate-950 sm:text-4xl">{block.content}</h1>
               <p className="mt-4 text-sm leading-7 text-slate-500 sm:text-base">
-                Responsable: {LEGAL_CONTROLLER_NAME}. Domicilio: {LEGAL_CONTROLLER_ADDRESS}.
+                Responsable: {LEGAL_CONTROLLER_NAME}. RFC: {LEGAL_CONTROLLER_RFC}. Domicilio: {LEGAL_CONTROLLER_ADDRESS}.
                 {" "}
                 Si necesitas ejercer derechos ARCO o realizar una consulta de privacidad,
                 escríbenos a <a className="font-semibold text-slate-900 underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>.
@@ -277,7 +279,8 @@ function LegalDocumentPage({ slug }: { slug: LegalDocumentSlug }) {
         </div>
 
         <footer className="mt-8 border-t border-slate-200 pt-5 text-xs leading-6 text-slate-500">
-          <p>
+          <p className="text-[#1C2B48]">{LEGAL_IDENTITY_LINE}</p>
+          <p className="mt-2">
             Este documento forma parte del marco legal visible de AuditaPatron. Primero puedes leer el resumen humano y después, si lo necesitas, revisar el texto completo. Si necesitas apoyo para ejercer derechos ARCO,
             solicitar revocación o aclarar una versión legal, contáctanos en{" "}
             <a className="font-medium text-slate-700 underline underline-offset-4" href={`mailto:${LEGAL_CONTACT_EMAIL}`}>

@@ -2,10 +2,14 @@ export const LEGAL_VERSION = "v2.0";
 export const LEGAL_ACCEPTANCE_VERSION = "auditapatron-legal-mx-v2.0-2026-04";
 export const LEGAL_CONTRACT_SCHEMA_VERSION = "legal-mx-v2.0-2026-04";
 export const LEGAL_EFFECTIVE_DATE = "2026-04-09";
-export const LEGAL_CONTROLLER_NAME = "CVZ Liderazgo en Gestión Laboral, S.A. de C.V.";
+export const LEGAL_CONTROLLER_NAME = "Infraestructura Laboral Mundial, SA de CV";
+export const LEGAL_CONTROLLER_RFC = "ILM190306A59";
 export const LEGAL_CONTACT_EMAIL = "privacidad@auditapatron.com";
 export const LEGAL_CONTROLLER_ADDRESS =
-  "459 Av. Santa Fe, Col. Cruz Manca, Cuajimalpa, Ciudad de México, C.P. 05349";
+  "Av. Universidad 526, int. 3-C, col. Vertiz Narvarte, Benito Juárez, CP 03600, Ciudad de México";
+export const LEGAL_CONTROLLER_PHONE = "+52 55 2580 6470";
+export const LEGAL_IDENTITY_LINE =
+  `AuditaPatrón es un servicio de ${LEGAL_CONTROLLER_NAME} · RFC ${LEGAL_CONTROLLER_RFC} · ${LEGAL_CONTROLLER_ADDRESS} · Tel. ${LEGAL_CONTROLLER_PHONE}`;
 
 export const LEGAL_CONSENT_TYPES = [
   "privacy_policy",
@@ -70,7 +74,7 @@ export const ADVISOR_CONTEXT_NOTE = ADVISOR_CONTEXT_BULLETS.map((item) => `- ${i
 
 const PRIVACY_NOTICE_MARKDOWN = `# Aviso de Privacidad Integral ${LEGAL_VERSION}
 
-**Responsable y domicilio:** ${LEGAL_CONTROLLER_NAME}. Domicilio: ${LEGAL_CONTROLLER_ADDRESS}.
+**Responsable y domicilio:** ${LEGAL_CONTROLLER_NAME}. Domicilio: ${LEGAL_CONTROLLER_ADDRESS}. RFC: ${LEGAL_CONTROLLER_RFC}.
 
 **Correo de contacto para privacidad:** ${LEGAL_CONTACT_EMAIL}
 
