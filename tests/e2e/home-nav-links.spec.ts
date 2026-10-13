@@ -111,7 +111,11 @@ test.describe("navegación pública del landing", () => {
     await page.locator("header").getByRole("link", { name: "Ir al inicio de AuditaPatron" }).click();
     await expect(page).toHaveURL(/#top$/);
 
-    await page.locator("footer").getByRole("link", { name: "Aviso de Privacidad" }).click();
+    await page
+      .locator("footer")
+      .filter({ hasText: "Derechos ARCO" })
+      .getByRole("link", { name: "Aviso de Privacidad" })
+      .click();
     await expect(page).toHaveURL(/\/aviso-de-privacidad$/);
 
     await page.goto("/acceso?returnTo=/auditar");
