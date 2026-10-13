@@ -19,6 +19,7 @@ describe("brand metadata", () => {
 
     expect(indexHtml).toContain('<html lang="es">');
     expect(indexHtml).toContain('<meta name="application-name" content="AuditaPatrón" />');
+    expect(indexHtml).toContain('<meta name="facebook-domain-verification" content="u0rlb0twnj5bvx22lew08zyz1tl4cj" />');
     expect(indexHtml).toContain('<meta name="apple-mobile-web-app-capable" content="yes" />');
     expect(indexHtml).toContain('<meta name="apple-mobile-web-app-title" content="AuditaPatrón" />');
     expect(indexHtml).toContain('<meta property="og:site_name" content="AuditaPatrón" />');
