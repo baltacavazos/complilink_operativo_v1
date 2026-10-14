@@ -1165,3 +1165,100 @@ describe("veredicto de bolsillo", () => {
     expect(unknown.buttonLabel).toBe("Probar de nuevo mañana");
   });
 });
+
+describe("título con lo que el IMSS ya contestó", () => {
+  const checkedAt = "2026-10-14T21:11:00.147Z";
+
+  function imssMixed(hechos: string[], infonavitStatus: "no_se_pudo" | "pendiente" = "no_se_pudo") {
+    return summary("vivo", {
+      checkedAt,
+      identity: { nss: true, curp: true, rfc: true },
+      checks: [
+        instituteCheck("imss", "vivo", hechos),
+        instituteCheck("sat", "vivo", [
+          "El SAT confirmó el RFC consultado.",
+          "Nombre en el SAT: HECTOR JOVANE ORTIZ HERNANDEZ.",
+        ]),
+        instituteCheck("infonavit", infonavitStatus, [
+          infonavitStatus === "pendiente"
+            ? "Infonavit: seguimos preguntando."
+            : "Infonavit no respondió en esta consulta.",
+        ]),
+      ],
+    });
+  }
+
+  it("si el IMSS ya dio salario y alta, el título dice eso y Infonavit queda abajo", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: imssMixed([
+        "Salario registrado: $331.45.",
+        "Fecha de alta reportada: 2023-09-01.",
+        "Patrón: EVOLUCION CREATIVA CAMREFLEX.",
+      ]),
+    });
+
+    expect(display.headline).toBe(
+      "El IMSS te tiene registrado desde el 01/09/2023. El salario que tiene es $331.45, en EVOLUCION CREATIVA CAMREFLEX.",
+    );
+    expect(display.headline).not.toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
+    expect(display.silence?.meaning).toBe("Esto es lo que el IMSS contestó hoy.");
+    expect(display.silence?.whatHappened).toBe(display.detail);
+    expect(`${display.headline} ${display.detail} ${display.silence?.chat ?? ""}`).not.toMatch(/\bcumple\b/i);
+    expect(JSON.stringify(display)).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("compara el salario del IMSS con el del recibo solo si el recibo trae cifra", () => {
+    const hechos = ["Salario registrado: $331.45.", "Fecha de alta reportada: 2023-09-01."];
+    const different = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: imssMixed(hechos),
+      facts: { salary: "400.00" },
+    });
+    expect(different.headline).toBe(
+      "El IMSS te tiene registrado desde el 01/09/2023. El salario que tiene es $331.45 y en tu recibo se lee $400.00. No son el mismo.",
+    );
+
+    const same = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: imssMixed(hechos),
+      facts: { salary: "$331.45" },
+    });
+    expect(same.headline).toBe(
+      "El IMSS te tiene registrado desde el 01/09/2023. El salario que tiene es $331.45, igual que en tu recibo.",
+    );
+    expect(`${different.headline} ${same.headline}`).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("si Infonavit sigue pendiente, la línea de abajo dice que lo seguimos revisando", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
+      pendingSinceMs: Date.parse("2026-09-21T12:00:05.000Z"),
+      summary: imssMixed(["Alta vigente: sí.", "Salario registrado: $450.25."], "pendiente"),
+    });
+    expect(display.headline).toBe("El IMSS te tiene registrado. El salario que tiene es $450.25.");
+    expect(display.detail).toBe("Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.");
+    expect(display.silence?.stillWaiting).toBe(true);
+    expect(display.silence?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
+  });
+
+  it("si el IMSS dice que no hay registro, no inventa que sí", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: imssMixed(["Sin registro en esta consulta."]),
+    });
+    expect(display.headline).toBe("El IMSS no muestra un registro tuyo en esta consulta.");
+    expect(display.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
+    expect(display.headline).not.toMatch(/\bcumple\b/i);
+  });
+
+  it("un IMSS vivo sin salario ni alta deja el título cauteloso", () => {
+    const display = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: imssMixed(["NSS localizado."]),
+    });
+    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+  });
+});
