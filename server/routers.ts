@@ -83,6 +83,12 @@ import {
 } from "./docxSupport";
 import { extractPdfPlainText } from "./pdfTextExtraction";
 import { readInfonavitMiCuentaPdfBinary } from "./infonavitMiCuentaPdf";
+import {
+  checkOfficialSourceHealth,
+  readOfficialWorkerPdf,
+  readRememberedOfficialWorkerReading,
+} from "./officialWorkerDocument";
+import { tagOfficialCheckFuente } from "@shared/officialWorkerDocument";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   isWhatsappChannelLive,
@@ -861,6 +867,17 @@ function assertAuditarRateLimit(params: {
     throw new Error("Detectamos demasiados intentos seguidos en Auditar para este expediente. Espera un minuto y vuelve a intentarlo.");
   }
 
+  auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
+}
+
+function assertOfficialWorkerDocumentRateLimit(ip: string | null) {
+  const now = Date.now();
+  pruneAuditarRateWindow(now);
+  const key = ["readOfficialWorkerDocument", ip ?? "ip:unknown"].join(":");
+  const recentTimestamps = auditarRateWindowByKey.get(key) ?? [];
+  if (recentTimestamps.length >= INFONAVIT_DOCUMENT_RATE_LIMIT) {
+    throw new Error("Detectamos demasiados PDF seguidos. Espera un minuto y vuelve a intentarlo.");
+  }
   auditarRateWindowByKey.set(key, [...recentTimestamps, now]);
 }
 
@@ -4207,6 +4224,7 @@ export const appRouter = router({
             })
             .optional(),
           pendingSinceMs: z.number().finite().optional(),
+          officialReadingId: z.string().regex(/^[a-f0-9]{32}$/).optional(),
           cardOfficialCheck: cardOfficialCheckInput.optional(),
           conversationHistory: z.preprocess(
             (value) => (value == null ? undefined : capWorkerChatConversationHistory(value)),
@@ -4295,6 +4313,7 @@ export const appRouter = router({
           nowMs: Date.now(),
           pendingSinceMs: input.pendingSinceMs ?? null,
         });
+        const officialWorkerDocument = readRememberedOfficialWorkerReading(input.officialReadingId);
         const workerChatGrounding = buildWorkerChatGrounding({
           documents: chatDocuments,
           opinion: latestOpinion,
@@ -4310,6 +4329,7 @@ export const appRouter = router({
           employerName: detail.case.employerEntity,
           caseTitle: detail.case.title,
           riskLevel: getOptionalString(latestOpinion?.riskLevel),
+          officialWorkerDocument,
         });
         const suggestedPrompts = buildHeliosCopilotSuggestedPrompts({
           opinion: latestOpinion,
@@ -4337,6 +4357,7 @@ export const appRouter = router({
 
         let answer = fallbackAnswer;
         const canGroundLlm =
+          !officialWorkerDocument &&
           chatDocuments.length > 0 &&
           (officialBriefing.hasLiveOfficialResult ||
             hasLiveOfficialResult(socialSecurityForChat.officialCheck));
@@ -4456,6 +4477,7 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           consentGranted: z.boolean().optional(),
+          workerCannotProvideDocument: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -4482,7 +4504,7 @@ export const appRouter = router({
           events: detail.events,
         });
         const recordedAt = new Date();
-        const officialCheck = await runOfficialGovernmentCheck({
+        const officialCheck = tagOfficialCheckFuente(await runOfficialGovernmentCheck({
           identity: mergeWorkerOfficialIdentities(
             collectWorkerOfficialIdentity(socialSecurityValidation.facts),
             ...documents.map((document) => officialIdentityForEngineDispatch(document)),
@@ -4494,7 +4516,8 @@ export const appRouter = router({
           traceId: detail.case.traceId,
           caseId: input.caseId,
           sourceDocumentId: documents[0]?.documentId ?? null,
-        });
+          workerCannotProvideDocument: input.workerCannotProvideDocument === true,
+        }), input.workerCannotProvideDocument === true);
         const liveRan = Boolean(input.consentGranted) && officialCheck.configured;
         const revalidationContract = {
           engine: "helios" as const,
@@ -4901,6 +4924,7 @@ export const appRouter = router({
         z.object({
           guestPreviewToken: z.string().min(40),
           consentGranted: z.boolean(),
+          workerCannotProvideDocument: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -4915,7 +4939,7 @@ export const appRouter = router({
           officialCheck: null,
         });
         const guestFacts = guestReceiptFacts(payload);
-        const officialCheck = await runOfficialGovernmentCheck({
+        const officialCheck = tagOfficialCheckFuente(await runOfficialGovernmentCheck({
           identity: collectWorkerOfficialIdentity(guestFacts),
           receipt: officialReceiptFromLaborFacts(guestFacts),
           consentGranted: input.consentGranted,
@@ -4923,7 +4947,8 @@ export const appRouter = router({
           correlationId: payload.traceId,
           traceId: payload.traceId,
           caseId: payload.guestPreviewId,
-        });
+          workerCannotProvideDocument: input.workerCannotProvideDocument === true,
+        }), input.workerCannotProvideDocument === true);
         rememberGuestOfficialSession({
           guestPreviewId: payload.guestPreviewId,
           traceId: payload.traceId,
@@ -4967,6 +4992,35 @@ export const appRouter = router({
           notice: hasUsableOfficialFact(officialCheck) ? OFFICIAL_FACT_ARRIVED_NOTICE : null,
           awaiting,
         };
+      }),
+    officialSourceHealth: publicProcedure.query(async () => {
+      return checkOfficialSourceHealth();
+    }),
+    readOfficialWorkerDocument: publicProcedure
+      .input(
+        z.object({
+          kind: z.enum(["imss", "infonavit", "sat"]),
+          fileName: z.string().min(1).max(180),
+          base64Content: z.string().min(20),
+          expectedNss: z.string().max(20).optional(),
+          expectedCurp: z.string().max(24).optional(),
+          expectedRfc: z.string().max(16).optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        assertOfficialWorkerDocumentRateLimit(getClientIp(ctx.req));
+        const binary = decodeBase64File(input.base64Content, {
+          maxBytes: AUDITAR_MAX_UPLOAD_BYTES,
+        });
+        return readOfficialWorkerPdf({
+          kind: input.kind,
+          binary,
+          expected: {
+            nss: input.expectedNss ?? null,
+            curp: input.expectedCurp ?? null,
+            rfc: input.expectedRfc ?? null,
+          },
+        });
       }),
     readInfonavitMiCuentaPdf: publicProcedure
       .input(

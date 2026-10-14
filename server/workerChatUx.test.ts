@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { RECEIPT_OFFICIAL_COMPARISON_COPY, type OfficialCheckSummary } from "@shared/officialCheckCopy";
+import { readOfficialWorkerDocumentText } from "@shared/officialWorkerDocument";
 import { listLastGoodOfficialCitations } from "@shared/officialDigest";
 import {
   WORKER_CHAT_DISCLAIMER,
@@ -888,5 +889,37 @@ describe("workerChatUx grounding", () => {
     expect(scoped.scopedToSingleDocument).toBe(false);
     expect(scoped.documents).toHaveLength(2);
     expect(scoped.upsell).toBeNull();
+  });
+
+  it("el asesor responde el caso con el papel oficial y no lo tapa con el silencio", () => {
+    const paper = readOfficialWorkerDocumentText({
+      kind: "imss",
+      text: "IMSS Constancia de Semanas Cotizadas NSS: 12345678901 Total de semanas cotizadas: 520 Patrón: TALLER NORTE SA DE CV Registro patronal: Y1234567890 Fecha de alta: 15/01/2018",
+      online: "matched",
+    });
+    const grounding = buildWorkerChatGrounding({
+      documents: [payrollDocument],
+      opinion: payrollDocument.heliosOpinion,
+      officialWorkerDocument: paper,
+      caseOnly: true,
+    });
+    const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué dice mi IMSS?" });
+    expect(answer).toMatch(/Fuente oficial\. Cumple\./);
+    expect(answer).toContain("12345678901");
+    expect(answer).toContain("520");
+    expect(answer).not.toMatch(/Aún no hay resultado de TU consulta/);
+    expect(sanitizeWorkerChatAnswer("Hoy no pudimos consultar.", grounding, { prompt: "¿Qué dice mi IMSS?" })).toContain(
+      "12345678901",
+    );
+    expect(hasForbiddenWorkerChatClaim(answer)).toBe(false);
+
+    const unverified = buildWorkerChatFallbackAnswer(
+      buildWorkerChatGrounding({
+        documents: [],
+        officialWorkerDocument: { ...paper, online: "not_attempted", verdict: "no_pudimos_confirmar", verdictLabel: "No pudimos confirmar" },
+      }),
+    );
+    expect(unverified).toMatch(/No pudimos confirmar/);
+    expect(unverified).not.toMatch(/\bCumple\./);
   });
 });

@@ -1451,6 +1451,23 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     expect(JSON.stringify(emptyDisplay)).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);
   });
 
+  it("marca la consulta del puente como respaldo solo si la persona no puede subir el papel", () => {
+    const payload = buildOfficialCheckBridgePayload({
+      identity: { nss: "12345678901", curp: null, rfc: null },
+      nowIso: "2026-10-14T12:00:00.000Z",
+      workerCannotProvideDocument: true,
+    });
+    expect(payload.dataOrigin).toBe("respaldo");
+    expect(payload.officialDocumentFirst).toBe(true);
+    expect(payload.providerId).toBeUndefined();
+
+    const primary = buildOfficialCheckBridgePayload({
+      identity: { nss: "12345678901", curp: null, rfc: null },
+      nowIso: "2026-10-14T12:00:00.000Z",
+    });
+    expect(primary.dataOrigin).toBeUndefined();
+  });
+
   it("no lee APIMARKET_* ni las trata como configuración", async () => {
     const fetchImpl = vi.fn();
     const result = await runOfficialGovernmentCheck({
