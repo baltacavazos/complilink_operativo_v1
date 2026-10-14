@@ -393,7 +393,7 @@ export function buildWorkerChatLlmInstructions(
   options?: { prompt?: string | null },
 ): string {
   const paperFactLine = grounding.officialWorkerDocument
-    ? `Papel de este caso (${grounding.officialWorkerDocument.fuente}). Veredicto permitido: ${grounding.officialWorkerDocument.verdictLabel}. Hechos: ${grounding.officialWorkerDocument.lines.join(" | ") || grounding.officialWorkerDocument.notice}. Si el veredicto no es Cumple, no escribas Cumple.`
+    ? `Papel de este caso (${grounding.officialWorkerDocument.fuente}). Veredicto permitido: ${grounding.officialWorkerDocument.verdictLabel}. Hechos: ${grounding.officialWorkerDocument.lines.join(" | ") || grounding.officialWorkerDocument.notice}. Si el veredicto no es Verificado con documento oficial, no escribas que cumple ni que está verificado.`
     : null;
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
   const nextStep = grounding.officialBriefing.verdict?.kind === "mixed"

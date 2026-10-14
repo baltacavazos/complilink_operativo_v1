@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { humanizeDossierProgressLabel, humanizeWorkerVisibleScalar, sanitizeClientVisibleCopy } from "@/lib/clientVisibleCopy";
 import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
-import { OfficialDocumentGuide } from "@/components/OfficialDocumentGuide";
+import { OfficialDocumentGuide, type OfficialWorkerUploadResult } from "@/components/OfficialDocumentGuide";
+import { shouldOfferOfficialDocumentFallback } from "@shared/officialWorkerDocument";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
 import { trpc } from "@/lib/trpc";
@@ -1550,6 +1551,7 @@ function HomeGuestOfficialCheck({
     () => readHomeGuestOfficial(guestPreviewId)?.arrivedAt ?? null,
   );
   const [officialCheckError, setOfficialCheckError] = useState<string | null>(null);
+  const [officialDocument, setOfficialDocument] = useState<OfficialWorkerUploadResult | null>(null);
   const guestOfficialFactQuery = useGuestOfficialFact({
     guestPreviewToken,
     enabled: true,
@@ -1592,7 +1594,6 @@ function HomeGuestOfficialCheck({
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken,
         consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
-        workerCannotProvideDocument: true,
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -1619,12 +1620,6 @@ function HomeGuestOfficialCheck({
       data-guest-preview-id={guestPreviewId}
       className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left lg:col-span-2"
     >
-      <OfficialDocumentGuide
-        onNeedFallback={() => {
-          void handleGuestOfficialCheck();
-        }}
-        fallbackActive={officialCheckSummary?.sourceRole === "respaldo"}
-      />
       <GuestOfficialFactNotice
         summary={officialCheckSummary}
         arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? officialFactArrivedAt}
@@ -1665,6 +1660,19 @@ function HomeGuestOfficialCheck({
       </Button>
       {officialCheckError ? (
         <p className="mt-3 text-sm leading-6 text-amber-950">{officialCheckError}</p>
+      ) : null}
+      {shouldOfferOfficialDocumentFallback({
+        silence: Boolean(officialCheckDisplay.silence),
+        status: officialCheckDisplay.status,
+      }) || officialDocument ? (
+        <OfficialDocumentGuide
+          offerUpload={shouldOfferOfficialDocumentFallback({
+            silence: Boolean(officialCheckDisplay.silence),
+            status: officialCheckDisplay.status,
+          })}
+          reading={officialDocument}
+          onReading={setOfficialDocument}
+        />
       ) : null}
     </div>
   );

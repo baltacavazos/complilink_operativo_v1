@@ -25,9 +25,12 @@ export const ONLINE_VERIFICATIONS = [
 export type OnlineVerification = (typeof ONLINE_VERIFICATIONS)[number];
 
 export const OFFICIAL_UPLOAD_LABEL = "Ya te llegó? Súbela";
-export const OFFICIAL_FALLBACK_LABEL = "No pude conseguir el papel";
+export const OFFICIAL_DOCUMENT_FALLBACK_LEAD =
+  "Pide tu constancia aquí (te llega en un minuto), súbela y te la reviso";
+export const OFFICIAL_FALLBACK_LABEL = OFFICIAL_DOCUMENT_FALLBACK_LEAD;
+export const OFFICIAL_VERIFIED_LABEL = "Verificado con documento oficial";
 export const OFFICIAL_GUIDE_INTRO =
-  "Primero tu papel oficial. Lo bajas tú en la página del gobierno. Aquí no escribas tu clave.";
+  "La consulta no contestó. Pide tu papel en la página del gobierno. Aquí no escribas tu clave.";
 export const OFFICIAL_PAGE_DOWN =
   "La página oficial no abre ahora. Si ya te llegó el PDF, súbelo.";
 export const OFFICIAL_NO_PASSWORD = "No pedimos tu clave del gobierno. Nadie entra por ti.";
@@ -94,7 +97,7 @@ export type OfficialWorkerReading = {
   identityMismatch: boolean;
 };
 
-export type WorkerSourceChoice = "fuente oficial" | "respaldo" | "pedir_papel";
+export type WorkerSourceChoice = "fuente oficial" | "consulta" | "pedir_papel" | "respaldo";
 
 const CURP_RE = /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/;
 const RFC_RE = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/;
@@ -123,26 +126,39 @@ export function normalizeWorkerRfc(value: unknown): string | null {
 }
 
 export function verdictLabel(verdict: WorkerDataVerdict): string {
-  if (verdict === "cumple") return "Cumple";
+  if (verdict === "cumple") return OFFICIAL_VERIFIED_LABEL;
   if (verdict === "falta_un_dato") return "Falta un dato";
   return "No pudimos confirmar";
 }
 
+/**
+ * La consulta con CURP o NSS va primero.
+ * El papel oficial solo se pide si esa consulta no contestó, o si la persona ya lo subió.
+ */
 export function selectWorkerDataPath(input: {
   hasOfficialDocument: boolean;
-  workerCannotProvideDocument: boolean;
+  instantSourcesFailed?: boolean;
 }): WorkerSourceChoice {
   if (input.hasOfficialDocument) return "fuente oficial";
-  if (input.workerCannotProvideDocument) return "respaldo";
-  return "pedir_papel";
+  if (input.instantSourcesFailed) return "pedir_papel";
+  return "consulta";
 }
 
-/** El tercero solo se llama si no hay papel y la persona dice que no puede conseguirlo. */
+/** La consulta instantánea corre salvo que ya haya un papel oficial verificado. */
 export function shouldCallThirdPartyFallback(input: {
   hasOfficialDocument: boolean;
-  workerCannotProvideDocument: boolean;
+  workerCannotProvideDocument?: boolean;
 }): boolean {
-  return selectWorkerDataPath(input) === "respaldo";
+  return !input.hasOfficialDocument;
+}
+
+/** La guía del PDF solo aparece cuando ninguna consulta instantánea contestó. */
+export function shouldOfferOfficialDocumentFallback(input: {
+  silence?: boolean | null;
+  status?: string | null;
+}): boolean {
+  if (input.silence) return true;
+  return input.status === "no_se_pudo" || input.status === "no_configurado";
 }
 
 export function tagOfficialCheckFuente<T extends { sourceRole?: WorkerDataFuente | null }>(
@@ -353,11 +369,7 @@ export function readOfficialWorkerDocumentText(params: {
   const patrones = params.kind === "imss" ? readImssPatrones(text) : [];
 
   const infonavit = params.kind === "infonavit" ? readInfonavitMiCuentaText(text) : null;
-  const satNombre = tidy(
-    text.match(
-      /(?:denominaci[oó]n(?:\s+o\s+raz[oó]n\s+social)?|raz[oó]n social|nombre(?:\s+del\s+contribuyente)?)\s*[:\s]\s*([A-ZÁÉÍÓÚÜÑ]{2,}(?:\s+[A-ZÁÉÍÓÚÜÑ]{2,}){0,6})/i,
-    )?.[1] ?? "",
-  );
+  const satNombre = readSatName(text);
   const satEstatus = tidy(text.match(/estatus(?:\s+en\s+el\s+padr[oó]n)?\s*[:\s]\s*([A-Za-zÁÉÍÓÚÜáéíóúüñÑ ]{3,40})/i)?.[1] ?? "");
 
   const lines: string[] = [];
@@ -421,14 +433,23 @@ export function readOfficialWorkerDocumentText(params: {
   });
 }
 
+function readSatName(text: string): string {
+  const match = text.match(
+    /(?:denominaci[oó]n(?:\s+o\s+raz[oó]n\s+social)?|raz[oó]n\s+social|nombre(?:\s+del\s+contribuyente)?)\s*[:\s]\s*([A-Za-zÁÉÍÓÚÜÑáéíóúüñ][^:\n]{1,80})/i,
+  );
+  if (!match?.[1]) return "";
+  const stopped = match[1].split(/\b(?:estatus|rfc|curp|regimen|régimen)\b/i)[0] ?? "";
+  return tidy(stopped).replace(/[:\s]+$/g, "");
+}
+
 export function buildOfficialWorkerAdvisorAnswer(
   reading: OfficialWorkerReading,
   prompt?: string | null,
 ): string {
-  const fuente = reading.fuente === "respaldo" ? "Respaldo." : "Fuente oficial.";
-  const canSayCumple = reading.fuente === "fuente oficial" && reading.verdict === "cumple";
-  const verdictLine = canSayCumple
-    ? "Cumple."
+  const verified = reading.fuente === "fuente oficial" && reading.verdict === "cumple";
+  const fuente = verified ? "" : reading.fuente === "respaldo" ? "Respaldo." : "Fuente oficial.";
+  const verdictLine = verified
+    ? `${OFFICIAL_VERIFIED_LABEL}.`
     : reading.verdict === "falta_un_dato"
       ? "Falta un dato."
       : "No pudimos confirmar.";

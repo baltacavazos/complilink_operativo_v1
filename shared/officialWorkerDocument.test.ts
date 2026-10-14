@@ -10,6 +10,7 @@ import {
   readOfficialWorkerDocumentText,
   selectWorkerDataPath,
   shouldCallThirdPartyFallback,
+  shouldOfferOfficialDocumentFallback,
   tagOfficialCheckFuente,
 } from "./officialWorkerDocument";
 
@@ -45,15 +46,16 @@ const INFONAVIT_TEXT = [
   "2026-08-15 Aportacion patronal $1250.00",
 ].join(" ");
 
-describe("papel oficial primero", () => {
-  it("pide el papel antes del tercero", () => {
-    expect(selectWorkerDataPath({ hasOfficialDocument: true, workerCannotProvideDocument: true })).toBe(
+describe("consulta instantánea primero", () => {
+  it("consulta al momento y solo pide el papel si esa consulta falló", () => {
+    expect(selectWorkerDataPath({ hasOfficialDocument: true, instantSourcesFailed: true })).toBe(
       "fuente oficial",
     );
-    expect(selectWorkerDataPath({ hasOfficialDocument: false, workerCannotProvideDocument: false })).toBe(
+    expect(selectWorkerDataPath({ hasOfficialDocument: false })).toBe("consulta");
+    expect(selectWorkerDataPath({ hasOfficialDocument: false, instantSourcesFailed: true })).toBe(
       "pedir_papel",
     );
-    expect(shouldCallThirdPartyFallback({ hasOfficialDocument: false, workerCannotProvideDocument: true })).toBe(
+    expect(shouldCallThirdPartyFallback({ hasOfficialDocument: false, workerCannotProvideDocument: false })).toBe(
       true,
     );
     expect(shouldCallThirdPartyFallback({ hasOfficialDocument: true, workerCannotProvideDocument: true })).toBe(
@@ -82,8 +84,9 @@ describe("papel oficial primero", () => {
 
     const verified = readOfficialWorkerDocumentText({ kind: "imss", text: IMSS_TEXT, online: "matched" });
     expect(verified.verdict).toBe("cumple");
-    expect(verified.verdictLabel).toBe("Cumple");
-    expect(buildOfficialWorkerAdvisorAnswer(verified)).toMatch(/^Fuente oficial\. Cumple\./);
+    expect(verified.verdictLabel).toBe("Verificado con documento oficial");
+    expect(buildOfficialWorkerAdvisorAnswer(verified)).toMatch(/^Verificado con documento oficial\./);
+    expect(buildOfficialWorkerAdvisorAnswer(verified)).not.toMatch(/\bCumple\./);
     expect(hasForbiddenWorkerChatClaim(buildOfficialWorkerAdvisorAnswer(verified))).toBe(false);
   });
 
@@ -156,7 +159,7 @@ describe("papel oficial primero", () => {
     expect(OFFICIAL_WORKER_PAGES.infonavit.title).toBe("Descarga tu estado de cuenta de Mi Cuenta Infonavit");
     expect(OFFICIAL_WORKER_PAGES.sat.title).toBe("Tu constancia del SAT (CSF)");
     expect(OFFICIAL_UPLOAD_LABEL).toBe("Ya te llegó? Súbela");
-    expect(OFFICIAL_FALLBACK_LABEL).toBe("No pude conseguir el papel");
+    expect(OFFICIAL_FALLBACK_LABEL).toBe("Pide tu constancia aquí (te llega en un minuto), súbela y te la reviso");
     expect(decideOfficialVerdict({
       readable: true,
       missingCore: false,
@@ -164,5 +167,9 @@ describe("papel oficial primero", () => {
       editSuspicious: false,
       online: "unavailable",
     })).toBe("no_pudimos_confirmar");
+    expect(shouldOfferOfficialDocumentFallback({ silence: false, status: "vivo" })).toBe(false);
+    expect(shouldOfferOfficialDocumentFallback({ silence: true, status: "vivo" })).toBe(true);
+    expect(shouldOfferOfficialDocumentFallback({ status: "no_se_pudo" })).toBe(true);
+    expect(shouldOfferOfficialDocumentFallback({ status: "listo" })).toBe(false);
   });
 });

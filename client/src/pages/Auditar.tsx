@@ -15,6 +15,7 @@ import {
   OfficialDocumentGuide,
   type OfficialWorkerUploadResult,
 } from "@/components/OfficialDocumentGuide";
+import { shouldOfferOfficialDocumentFallback } from "@shared/officialWorkerDocument";
 import { WhatsappNotifyPreference } from "@/components/WhatsappNotifyPreference";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
@@ -4458,7 +4459,6 @@ export default function Auditar() {
     useState<OfficialCheckSummary | null>(() => readStoredGuestReview()?.officialCheck ?? null);
   const [officialWorkerDocument, setOfficialWorkerDocument] =
     useState<OfficialWorkerUploadResult | null>(null);
-  const [officialFallbackAsked, setOfficialFallbackAsked] = useState(false);
   const officialPendingSinceRef = useRef<number | null>(null);
   const [officialNowMs, setOfficialNowMs] = useState(() => Date.now());
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
@@ -7888,7 +7888,6 @@ export default function Auditar() {
       const result = await revalidateSocialSecurityMutation.mutateAsync({
         ...caseDetailInput,
         consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
-        workerCannotProvideDocument: true,
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -8682,7 +8681,6 @@ export default function Auditar() {
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken: guestReview.guestPreviewToken,
         consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
-        workerCannotProvideDocument: true,
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -8710,15 +8708,6 @@ export default function Auditar() {
         )
       );
     }
-  };
-
-  const askOfficialFallback = () => {
-    setOfficialFallbackAsked(true);
-    if (guestReview) {
-      void handleGuestOfficialCheck();
-      return;
-    }
-    void handleRevalidateSocialSecurity();
   };
 
   const openCameraPicker = () => {
@@ -9370,15 +9359,6 @@ export default function Auditar() {
             arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
             waiting={officialWaitLeads}
           />
-          <OfficialDocumentGuide
-            expectedNss={officialCaseBriefing.facts.nss}
-            expectedCurp={officialCaseBriefing.facts.curp}
-            expectedRfc={officialCaseBriefing.facts.workerRfc}
-            reading={officialWorkerDocument}
-            onReading={setOfficialWorkerDocument}
-            fallbackActive={officialFallbackAsked || officialCheckSummary?.sourceRole === "respaldo"}
-            onNeedFallback={askOfficialFallback}
-          />
           <WorkerOfficialResult
             pocketLead={workerPocketDetail.lead}
             receiptData={workerPocketDetail.receiptData}
@@ -9394,6 +9374,14 @@ export default function Auditar() {
             onDone={() => {
               window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
             }}
+          />
+          <OfficialDocumentGuide
+            offerUpload
+            expectedNss={officialCaseBriefing.facts.nss}
+            expectedCurp={officialCaseBriefing.facts.curp}
+            expectedRfc={officialCaseBriefing.facts.workerRfc}
+            reading={officialWorkerDocument}
+            onReading={setOfficialWorkerDocument}
           />
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
@@ -9433,6 +9421,13 @@ export default function Auditar() {
               arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
               waiting={officialWaitLeads}
             />
+            {officialWorkerDocument ? (
+              <OfficialDocumentGuide
+                offerUpload={false}
+                reading={officialWorkerDocument}
+                onReading={setOfficialWorkerDocument}
+              />
+            ) : null}
             <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
             {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
               <>
@@ -11357,15 +11352,22 @@ export default function Auditar() {
               </p>
             </div>
 
-            <OfficialDocumentGuide
-              expectedNss={officialCaseBriefing.facts.nss}
-              expectedCurp={officialCaseBriefing.facts.curp}
-              expectedRfc={officialCaseBriefing.facts.workerRfc}
-              reading={officialWorkerDocument}
-              onReading={setOfficialWorkerDocument}
-              fallbackActive={officialFallbackAsked || officialCheckSummary?.sourceRole === "respaldo"}
-              onNeedFallback={askOfficialFallback}
-            />
+            {shouldOfferOfficialDocumentFallback({
+              silence: Boolean(officialCheckDisplay.silence),
+              status: officialCheckDisplay.status,
+            }) || officialWorkerDocument ? (
+              <OfficialDocumentGuide
+                offerUpload={shouldOfferOfficialDocumentFallback({
+                  silence: Boolean(officialCheckDisplay.silence),
+                  status: officialCheckDisplay.status,
+                })}
+                expectedNss={officialCaseBriefing.facts.nss}
+                expectedCurp={officialCaseBriefing.facts.curp}
+                expectedRfc={officialCaseBriefing.facts.workerRfc}
+                reading={officialWorkerDocument}
+                onReading={setOfficialWorkerDocument}
+              />
+            ) : null}
             <div className={shouldCompactPostUploadExperience || (showWorkspaceSectionSelector && !isSummaryWorkspaceSection) ? "hidden" : "motion-hover-lift rounded-[1.55rem] border border-slate-200 bg-white p-4 shadow-sm sm:p-5"}>
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-end sm:justify-between sm:gap-3">
                 <div>
