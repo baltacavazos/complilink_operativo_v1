@@ -474,13 +474,136 @@ export function answeredOfficialSourceLine(label: string, checkedAt?: string | n
   return date ? `${label} contestó · ${date}` : `${label} contestó`;
 }
 
+function formatReportedAlta(raw: string): string | null {
+  const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const month = Number(iso[2]);
+    const day = Number(iso[3]);
+    if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+    return `${iso[3]}/${iso[2]}/${iso[1]}`;
+  }
+  const dmy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!dmy) return null;
+  const day = Number(dmy[1]);
+  const month = Number(dmy[2]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return `${dmy[1].padStart(2, "0")}/${dmy[2].padStart(2, "0")}/${dmy[3]}`;
+}
+
+function cleanReportedEmployer(value: string): string | null {
+  const cleaned = value.replace(/\s+/g, " ").replace(/[.\s;]+$/g, "").trim();
+  if (cleaned.length < 3 || /^\$?\d/.test(cleaned)) return null;
+  return cleaned;
+}
+
+function imssSaysNotRegistered(text: string): boolean {
+  return /sin\s+registro|no\s+(?:est[aá]|aparece)\s+registrad|no\s+muestra\s+(?:un\s+)?registro|no\s+te\s+tiene\s+registrad|sin\s+alta|no\s+(?:hay|tiene)\s+alta/i.test(
+    text,
+  );
+}
+
+function moneyCentsFromText(value: string): number | null {
+  const cleaned = value.replace(/[^\d.,-]/g, "");
+  if (!cleaned) return null;
+  const normalized =
+    cleaned.includes(",") && cleaned.includes(".")
+      ? cleaned.replace(/,/g, "")
+      : /,\d{1,2}$/.test(cleaned)
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "");
+  const amount = Number(normalized);
+  if (!Number.isFinite(amount)) return null;
+  return Math.round(amount * 100);
+}
+
+/**
+ * Título cuando el IMSS ya contestó con un dato de registro.
+ * Null si no hay salario, alta o un sí/no de registro: ahí se queda el título cauteloso.
+ * No dice que el patrón cumple.
+ */
+function imssKnownHeadline(hechos: string[], receiptSalary?: string | null): string | null {
+  let salary: string | null = null;
+  let alta: string | null = null;
+  let employer: string | null = null;
+  let explicitlyRegistered = false;
+  let notRegistered = false;
+  for (const raw of hechos) {
+    const text = raw.replace(/\s+/g, " ").trim();
+    if (!text) continue;
+    if (imssSaysNotRegistered(text)) notRegistered = true;
+    if (/alta vigente:\s*s[ií]\b/i.test(text) || /vigencia:\s*registrad/i.test(text)) explicitlyRegistered = true;
+    if (!salary) {
+      const match = text.match(
+        /salario(?:\s+que el IMSS tiene)?\s+registrado:\s*(\$?\s?\d[\d,]*(?:\.\d{2,4})?)/i,
+      );
+      if (match?.[1]) salary = moneyFromInstituteText(match[1]);
+    }
+    if (!alta) {
+      const match = text.match(/fecha de alta(?:\s+reportada)?:\s*(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{4})/i);
+      if (match?.[1]) alta = formatReportedAlta(match[1]);
+    }
+    if (!employer) {
+      const match = text.match(/^(?:el\s+)?patr[oó]n\s*:\s*(.+)$/i);
+      if (match?.[1]) employer = cleanReportedEmployer(match[1]);
+    }
+  }
+  if (notRegistered) return "El IMSS no muestra un registro tuyo en esta consulta.";
+  if (!salary && !alta && !explicitlyRegistered) return null;
+
+  const registered = alta
+    ? `El IMSS te tiene registrado desde el ${alta}.`
+    : "El IMSS te tiene registrado.";
+  const receipt = receiptSalary ? moneyFromInstituteText(receiptSalary) : null;
+  const sentences = [registered];
+  if (salary && receipt) {
+    const officialCents = moneyCentsFromText(salary);
+    const receiptCents = moneyCentsFromText(receipt);
+    if (officialCents != null && receiptCents != null && officialCents === receiptCents) {
+      sentences.push(
+        employer
+          ? `El salario que tiene es ${salary}, igual que en tu recibo, en ${employer}.`
+          : `El salario que tiene es ${salary}, igual que en tu recibo.`,
+      );
+    } else if (officialCents != null && receiptCents != null) {
+      sentences.push(`El salario que tiene es ${salary} y en tu recibo se lee ${receipt}. No son el mismo.`);
+      if (employer) sentences.push(`El patrón que tiene es ${employer}.`);
+    } else {
+      sentences.push(
+        employer ? `El salario que tiene es ${salary}, en ${employer}.` : `El salario que tiene es ${salary}.`,
+      );
+    }
+  } else if (salary) {
+    sentences.push(
+      employer ? `El salario que tiene es ${salary}, en ${employer}.` : `El salario que tiene es ${salary}.`,
+    );
+  } else if (employer) {
+    sentences.push(`El patrón que tiene es ${employer}.`);
+  }
+  return sentences.join(" ");
+}
+
+function infonavitSecondaryLine(item: OfficialSourceOutcome): string {
+  if (item.status === "pendiente") {
+    return "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.";
+  }
+  if (item.status === "sin_datos") {
+    return "Para Infonavit falta un dato. Si ya tienes tu estado de cuenta, súbelo.";
+  }
+  return "Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.";
+}
+
 function mixedOfficialPresentation(
   live: OfficialSourceOutcome[],
   silent: OfficialSourceOutcome[],
-  options?: { stillWaiting?: boolean },
+  options?: { stillWaiting?: boolean; receiptSalary?: string | null },
 ): OfficialResultPresentation {
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
+  const imss = live.find((item) => item.source === "imss");
+  const lead = imss ? imssKnownHeadline(imss.hechos, options?.receiptSalary) : null;
+  const infonavit = silent.find((item) => item.source === "infonavit");
+  const follow = lead && infonavit ? infonavitSecondaryLine(infonavit) : null;
   const partialSatNote =
+    !lead &&
     live.length === 1 &&
     live[0]?.source === "sat" &&
     silent.some((item) => item.source === "imss") &&
@@ -495,20 +618,31 @@ function mixedOfficialPresentation(
     }),
     ...silent.map((item) => unansweredOfficialSourceLine(item)),
   ];
+  const close = options?.stillWaiting
+    ? OFFICIAL_WAIT_STILL_TRYING
+    : "Prueba mañana, o pregúntame qué implica para tu pago.";
   return {
     kind: "mixed",
-    verdict: POCKET_PARTIAL_VERDICT,
-    whatHappened: pocketOfficeStatusLine(
-      live.map((item) => item.source),
-      silent.map((item) => item.source),
-    ),
-    meaning: `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
+    verdict: lead ?? POCKET_PARTIAL_VERDICT,
+    whatHappened: lead
+      ? (follow ?? "Esto es lo que el IMSS contestó hoy.")
+      : pocketOfficeStatusLine(
+          live.map((item) => item.source),
+          silent.map((item) => item.source),
+        ),
+    meaning: lead
+      ? follow
+        ? "Esto es lo que el IMSS contestó hoy."
+        : `Todavía no tenemos la respuesta de ${silentNames}.`
+      : `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
     nextStep: options?.stillWaiting ? OFFICIAL_WAIT_STILL_TRYING : "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: options?.stillWaiting ? OFFICIAL_CHECK_BUTTON : INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
     sourceLines,
-    chat: mixedOfficialChat(live, silent, { stillWaiting: options?.stillWaiting }),
+    chat: lead
+      ? [lead, follow, close].filter(Boolean).join(" ")
+      : mixedOfficialChat(live, silent, { stillWaiting: options?.stillWaiting }),
     opener: WORKER_RESULT_CHAT_OPENER,
     stillWaiting: Boolean(options?.stillWaiting),
   };
@@ -646,6 +780,7 @@ function settledOfficialPresentation(
 export function buildHonestOfficialPresentation(
   summary?: (Pick<OfficialCheckSummary, "overallStatus" | "checkedAt"> &
     Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor" | "alternateRoute" | "reciboVsOficial">>) | null,
+  options?: { receiptSalary?: string | null },
 ): OfficialResultPresentation | null {
   if (!summary) return null;
   const outcomes = fillUnansweredWhileLive(readOfficialSourceOutcomes(summary));
@@ -665,6 +800,7 @@ export function buildHonestOfficialPresentation(
     });
     const presentation = mixedOfficialPresentation(live, unanswered, {
       stillWaiting: outcomes.some((item) => outcomeStillWaiting(item.status)),
+      receiptSalary: options?.receiptSalary,
     });
     return withAlternateRouteCopy(presentation, alternateRouteContributedFacts(summary, live));
   }
@@ -1997,8 +2133,9 @@ export function formatOfficialCheckDate(iso: string | null | undefined) {
 export function buildOfficialCheckHeadline(
   summary: Pick<OfficialCheckSummary, "overallStatus" | "checkedAt"> &
     Partial<Pick<OfficialCheckSummary, "checks" | "chatAnchor">>,
+  options?: { receiptSalary?: string | null },
 ) {
-  const presentation = buildHonestOfficialPresentation(summary);
+  const presentation = buildHonestOfficialPresentation(summary, options);
   if (presentation?.kind === "mixed" || presentation?.kind === "silent" || presentation?.kind === "settled") {
     return presentation.verdict;
   }
@@ -2182,6 +2319,13 @@ export function pickPromptOfficialCheck(params: {
   });
 }
 
+function receiptSalaryHint(facts?: { salary?: unknown; sdi?: unknown } | null): string | null {
+  const salary = typeof facts?.salary === "string" ? facts.salary.trim() : "";
+  if (salary) return salary;
+  const sdi = typeof facts?.sdi === "string" ? facts.sdi.trim() : "";
+  return sdi || null;
+}
+
 export function resolveOfficialCheckDisplay(params: {
   consentGranted: boolean;
   isPending?: boolean;
@@ -2190,7 +2334,14 @@ export function resolveOfficialCheckDisplay(params: {
   identity?: OfficialIdentityFlags | null;
   nowMs?: number;
   pendingSinceMs?: number | null;
-  facts?: { nss?: unknown; workerRfc?: unknown; rfc?: unknown; employerRfc?: unknown } | null;
+  facts?: {
+    nss?: unknown;
+    workerRfc?: unknown;
+    rfc?: unknown;
+    employerRfc?: unknown;
+    salary?: unknown;
+    sdi?: unknown;
+  } | null;
 }): OfficialCheckDisplay {
   if (params.isPending) {
     const settled = resolveOfficialCheckDisplay({ ...params, isPending: false });
@@ -2266,7 +2417,9 @@ export function resolveOfficialCheckDisplay(params: {
           showPermissionCopy: false,
         };
       }
-      const presentation = buildHonestOfficialPresentation(honest);
+      const presentation = buildHonestOfficialPresentation(honest, {
+        receiptSalary: receiptSalaryHint(params.facts),
+      });
       if (presentation?.kind === "mixed" || presentation?.kind === "settled") {
         return {
           headline: presentation.verdict,

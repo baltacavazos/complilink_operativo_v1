@@ -727,7 +727,8 @@ export function buildOfficialCaseBriefing(params: {
       hasOfficialConsulta: true,
     };
   }
-  const verdict = buildHonestOfficialPresentation(reconciled);
+  const receiptSalary = facts.salary || facts.sdi || null;
+  const verdict = buildHonestOfficialPresentation(reconciled, { receiptSalary });
   const formattedStatusLines = formatOfficialCheckStatusLines(reconciled);
   const statusLines = verdict?.sourceLines?.length
     ? [
@@ -754,7 +755,7 @@ export function buildOfficialCaseBriefing(params: {
     reciboVsOficial,
     statusLines,
     hechoLines: listChatAnchorHechos(reconciled?.chatAnchor ?? chatAnchor, identity),
-    headline: headlineStatus ? buildOfficialCheckHeadline(headlineStatus) : null,
+    headline: headlineStatus ? buildOfficialCheckHeadline(headlineStatus, { receiptSalary }) : null,
     missingIdentity,
     missingIdentityDetail: officialChatIdentityGapDetail(identity, facts),
     receiptLines: listReceiptFactLines(facts),
