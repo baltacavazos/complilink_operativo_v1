@@ -904,7 +904,8 @@ describe("workerChatUx grounding", () => {
       caseOnly: true,
     });
     const answer = buildWorkerChatFallbackAnswer(grounding, { prompt: "¿Qué dice mi IMSS?" });
-    expect(answer).toMatch(/Fuente oficial\. Cumple\./);
+    expect(answer).toMatch(/Verificado con documento oficial\./);
+    expect(answer).not.toMatch(/\bCumple\./);
     expect(answer).toContain("12345678901");
     expect(answer).toContain("520");
     expect(answer).not.toMatch(/Aún no hay resultado de TU consulta/);

@@ -1071,7 +1071,7 @@ export async function runOfficialGovernmentCheck(params: {
   caseId?: string | null;
   sourceDocumentId?: string | null;
   receipt?: OfficialReceiptBridgeFacts | null;
-  /** Tercero (puente). No llama a ApiMarket desde esta app. Solo si no hay papel oficial. */
+  /** El puente no llama proveedores directos. La consulta en paralelo vive en instantLookup. */
   workerCannotProvideDocument?: boolean;
 }): Promise<OfficialCheckSummary> {
   const env = params.env ?? process.env;

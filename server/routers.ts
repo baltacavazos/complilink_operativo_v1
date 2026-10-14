@@ -88,7 +88,7 @@ import {
   readOfficialWorkerPdf,
   readRememberedOfficialWorkerReading,
 } from "./officialWorkerDocument";
-import { tagOfficialCheckFuente } from "@shared/officialWorkerDocument";
+import { runInstantWorkerLookup } from "./instantLookup";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   isWhatsappChannelLive,
@@ -148,7 +148,6 @@ import {
   getOfficialCheckAvailability,
   mergeWorkerOfficialIdentities,
   readOfficialCheckFromMetadata,
-  runOfficialGovernmentCheck,
 } from "./governmentLiveCheck";
 import {
   OFFICIAL_CHECK_BUTTON,
@@ -4477,7 +4476,6 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           consentGranted: z.boolean().optional(),
-          workerCannotProvideDocument: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -4504,7 +4502,7 @@ export const appRouter = router({
           events: detail.events,
         });
         const recordedAt = new Date();
-        const officialCheck = tagOfficialCheckFuente(await runOfficialGovernmentCheck({
+        const officialCheck = await runInstantWorkerLookup({
           identity: mergeWorkerOfficialIdentities(
             collectWorkerOfficialIdentity(socialSecurityValidation.facts),
             ...documents.map((document) => officialIdentityForEngineDispatch(document)),
@@ -4516,8 +4514,7 @@ export const appRouter = router({
           traceId: detail.case.traceId,
           caseId: input.caseId,
           sourceDocumentId: documents[0]?.documentId ?? null,
-          workerCannotProvideDocument: input.workerCannotProvideDocument === true,
-        }), input.workerCannotProvideDocument === true);
+        });
         const liveRan = Boolean(input.consentGranted) && officialCheck.configured;
         const revalidationContract = {
           engine: "helios" as const,
@@ -4924,7 +4921,6 @@ export const appRouter = router({
         z.object({
           guestPreviewToken: z.string().min(40),
           consentGranted: z.boolean(),
-          workerCannotProvideDocument: z.boolean().optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -4939,7 +4935,7 @@ export const appRouter = router({
           officialCheck: null,
         });
         const guestFacts = guestReceiptFacts(payload);
-        const officialCheck = tagOfficialCheckFuente(await runOfficialGovernmentCheck({
+        const officialCheck = await runInstantWorkerLookup({
           identity: collectWorkerOfficialIdentity(guestFacts),
           receipt: officialReceiptFromLaborFacts(guestFacts),
           consentGranted: input.consentGranted,
@@ -4947,8 +4943,7 @@ export const appRouter = router({
           correlationId: payload.traceId,
           traceId: payload.traceId,
           caseId: payload.guestPreviewId,
-          workerCannotProvideDocument: input.workerCannotProvideDocument === true,
-        }), input.workerCannotProvideDocument === true);
+        });
         rememberGuestOfficialSession({
           guestPreviewId: payload.guestPreviewId,
           traceId: payload.traceId,

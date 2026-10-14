@@ -53,7 +53,7 @@ Cablear al servicio web. **No** usar Forge para storage en Railway (`BUILT_IN_FO
 
 ## Consulta IMSS / SAT (puente Helios / CompliLink)
 
-AuditaPatrón **no** cablea `APIMARKET_*` ni `CAPSOLVER_*`. Esas llaves viven en el servicio **CompliLink** (cerebro Helios), no en este Railway.
+La consulta instantánea (CURP/NSS) sale primero por el puente Helios. Si existen `APIMARKET_API_KEY` más una URL https (`APIMARKET_IMSS_URL`, `APIMARKET_SAT_URL` o `APIMARKET_INFONAVIT_URL`) o `NUFI_API_KEY` más `NUFI_INFONAVIT_URL`, esos proveedores corren en paralelo y gana la primera respuesta usable. Un proveedor caído se salta. **Nunca** `SYNTAGE_*`. Hoy Railway no tiene esas llaves: solo corre el puente. El PDF oficial se pide solo si ninguna consulta contestó.
 
 La consulta del trabajador dispara **la URL configurada**, sin reescribir la ruta. Auth del puente ya está viva (Bearer = `AUDITAPATRON_ENGINE_HMAC_SECRET`, alineado con el `BRIDGE_TOKEN` de CompliLink).
 
@@ -64,7 +64,7 @@ En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`)
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Canónica: `https://complilink.mx/api/integrations/auditapatron/bridge`. No hardcodear otro host. Evitar `www`. |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)` y Bearer. Nunca en Git. |
 
-Sin URL o HMAC → «Aún no configurado» (solo lee el recibo). 200 con datos → «Vivo». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «Falló». Nunca «cumple». **No** agregar `APIMARKET_*` aquí.
+Sin URL o HMAC y sin llaves de proveedor → «Aún no configurado» (solo lee el recibo). 200 con datos → «Vivo». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «Falló». Nunca «cumple». `APIMARKET_*` y `NUFI_*` son opcionales y no se muestran al trabajador.
 
 ## Bridge AuditaPatrón
 

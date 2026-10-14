@@ -305,6 +305,7 @@ export function humanizeOfficialHecho(text: string): string {
     .replace(/salario\s+rpci/gi, "salario que el IMSS tiene registrado")
     .replace(/\brpci\b/gi, "registro del IMSS")
     .replace(/\bapimarket\b/gi, "")
+    .replace(/\bnufi\b/gi, "")
     .replace(/\bcomplilink\b/gi, "")
     .replace(/\bsyntage\b/gi, "")
     .replace(/\bhelios\b/gi, "")
