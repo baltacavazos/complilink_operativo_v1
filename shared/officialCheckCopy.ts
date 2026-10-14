@@ -1187,6 +1187,8 @@ export type OfficialCheckSummary = {
   alternateRoute?: boolean | null;
   /** Presente solo cuando el retorno ya trae salario o patrón del registro. Nunca inventa el estado. */
   institutePay?: InstitutePayFacts | null;
+  /** `respaldo` solo cuando la persona no pudo subir el papel y se usó el tercero. */
+  sourceRole?: "fuente oficial" | "respaldo" | null;
 };
 
 export type OfficialIdentityField = keyof OfficialIdentityFlags;

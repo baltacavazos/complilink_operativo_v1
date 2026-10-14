@@ -23,6 +23,10 @@ import {
   type ReciboVsOficial,
 } from "@shared/officialCheckCopy";
 import {
+  buildOfficialWorkerAdvisorAnswer,
+  type OfficialWorkerReading,
+} from "@shared/officialWorkerDocument";
+import {
   emptyOfficialDigest,
   shouldAttachOfficialDigest,
   shortenOfficialTitle,
@@ -98,6 +102,7 @@ export type WorkerChatGrounding = {
   reciboVsOficial: ReciboVsOficial | null;
   officialBriefing: OfficialCaseBriefing;
   caseOnly: boolean;
+  officialWorkerDocument: OfficialWorkerReading | null;
 };
 
 function asRecord(value: unknown): RecordLike | null {
@@ -156,6 +161,7 @@ export function buildWorkerChatGrounding(params: {
   reciboVsOficial?: ReciboVsOficial | null;
   caseOnly?: boolean;
   nowMs?: number;
+  officialWorkerDocument?: OfficialWorkerReading | null;
 }): WorkerChatGrounding {
   const opinion = asRecord(params.opinion);
   const labor = summarizeLaborFiscalSignals(params.documents);
@@ -228,6 +234,7 @@ export function buildWorkerChatGrounding(params: {
     employerName: asText(params.employerName),
     caseTitle: asText(params.caseTitle),
     riskLevel: asText(params.riskLevel),
+    officialWorkerDocument: params.officialWorkerDocument ?? null,
   };
 }
 
@@ -283,6 +290,12 @@ export function buildWorkerChatFallbackAnswer(
   grounding: WorkerChatGrounding,
   options?: { prompt?: string | null },
 ): string {
+  if (grounding.officialWorkerDocument) {
+    const concrete = buildOfficialWorkerAdvisorAnswer(grounding.officialWorkerDocument, options?.prompt);
+    return concrete.includes(WORKER_CHAT_DISCLAIMER)
+      ? concrete
+      : `${concrete} ${WORKER_CHAT_DISCLAIMER}`;
+  }
   let answer: string;
   if (
     grounding.documentsCount > 0 &&
@@ -379,6 +392,9 @@ export function buildWorkerChatLlmInstructions(
   grounding: WorkerChatGrounding,
   options?: { prompt?: string | null },
 ): string {
+  const paperFactLine = grounding.officialWorkerDocument
+    ? `Papel de este caso (${grounding.officialWorkerDocument.fuente}). Veredicto permitido: ${grounding.officialWorkerDocument.verdictLabel}. Hechos: ${grounding.officialWorkerDocument.lines.join(" | ") || grounding.officialWorkerDocument.notice}. Si el veredicto no es Cumple, no escribas Cumple.`
+    : null;
   const guidance = resolveWorkerChatGuidance(grounding, options?.prompt);
   const nextStep = grounding.officialBriefing.verdict?.kind === "mixed"
     ? grounding.officialBriefing.verdict.nextStep
@@ -422,6 +438,7 @@ export function buildWorkerChatLlmInstructions(
     return [
       CASE_ADVISOR_RULE,
       CASE_ADVISOR_FALLO_RULE,
+      ...(paperFactLine ? [paperFactLine] : []),
       formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),
       `chatAnchor: ${JSON.stringify(grounding.chatAnchor)}`,
       `reciboVsOficial: ${JSON.stringify(grounding.reciboVsOficial)}`,
@@ -461,6 +478,7 @@ export function buildWorkerChatLlmInstructions(
   return [
     CASE_ADVISOR_RULE,
     CASE_ADVISOR_FALLO_RULE,
+    ...(paperFactLine ? [paperFactLine] : []),
     formatOfficialCaseBriefingForPrompt(grounding.officialBriefing),
     `chatAnchor: ${JSON.stringify(grounding.chatAnchor)}`,
     `reciboVsOficial: ${JSON.stringify(grounding.reciboVsOficial)}`,
@@ -524,6 +542,9 @@ export function sanitizeWorkerChatAnswer(
   grounding: WorkerChatGrounding,
   options?: { prompt?: string | null },
 ): string {
+  if (grounding.officialWorkerDocument) {
+    return buildWorkerChatFallbackAnswer(grounding, options);
+  }
   const cleaned = sanitizeWorkerChatCopy(answer) ?? answer;
   const briefing = grounding.officialBriefing;
   if (briefing.verdict?.kind === "mixed") {

@@ -384,6 +384,8 @@ export function buildOfficialCheckBridgePayload(params: {
   caseId?: string | null;
   sourceDocumentId?: string | null;
   receipt?: OfficialReceiptBridgeFacts | null;
+  /** Solo cuando la persona no puede subir el papel oficial. No es la vía principal. */
+  workerCannotProvideDocument?: boolean;
 }) {
   const autonomousInput: Record<string, string> = {};
   if (params.identity.nss) autonomousInput.nss = params.identity.nss;
@@ -441,6 +443,9 @@ export function buildOfficialCheckBridgePayload(params: {
     traceId: fitBridgeField(params.traceId, 8, 180),
     sourceCaseId: fitBridgeField(params.caseId, 1, 120),
     sourceDocumentId: fitBridgeField(params.sourceDocumentId, 1, 120),
+    ...(params.workerCannotProvideDocument
+      ? { dataOrigin: "respaldo" as const, officialDocumentFirst: true }
+      : {}),
   };
 }
 
@@ -1066,6 +1071,8 @@ export async function runOfficialGovernmentCheck(params: {
   caseId?: string | null;
   sourceDocumentId?: string | null;
   receipt?: OfficialReceiptBridgeFacts | null;
+  /** Tercero (puente). No llama a ApiMarket desde esta app. Solo si no hay papel oficial. */
+  workerCannotProvideDocument?: boolean;
 }): Promise<OfficialCheckSummary> {
   const env = params.env ?? process.env;
   const identity = {
@@ -1114,6 +1121,7 @@ export async function runOfficialGovernmentCheck(params: {
     caseId: params.caseId,
     sourceDocumentId: params.sourceDocumentId,
     receipt: params.receipt,
+    workerCannotProvideDocument: params.workerCannotProvideDocument,
   });
 
   const targetUrls = resolveOfficialCheckTargetUrls(String(env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? engine.webhookUrl));
