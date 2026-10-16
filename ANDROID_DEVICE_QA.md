@@ -4,14 +4,15 @@ Este protocolo valida la primera versión móvil empaquetada de AuditaPatron con
 
 ## Antes de instalar
 
-La compilación de Android requiere Android Studio con Android SDK y un JDK compatible. Desde la raíz del proyecto, ejecuta:
+La prueba en teléfono usa un APK de depuración que abre `https://auditapatron.com`. Así la cookie de sesión queda en el mismo origen que en el navegador. Ese modo solo se activa con `CAPACITOR_SERVER_URL`; sin esa variable Capacitor empaqueta `dist/public`.
 
 ```bash
-pnpm mobile:sync
-pnpm mobile:android
+pnpm mobile:android:debug-apk
 ```
 
-En Android Studio, conecta el teléfono por USB o utiliza la depuración inalámbrica. Después selecciona el dispositivo y usa **Run** para instalar una build de depuración. Para distribución privada o Play Console, genera un **Android App Bundle (`.aab`)** firmado desde el menú de Android Studio.
+El archivo queda en `android/app/build/outputs/apk/debug/app-debug.apk`. Cópialo al teléfono y permite la instalación desde esa fuente solo para esta prueba. No es un bundle de Play ni lleva firma de release.
+
+Android Studio sigue sirviendo para depurar por USB: antes de **Run**, exporta la misma variable y ejecuta `pnpm exec cap sync android`, o el proyecto nativo cargará los activos locales.
 
 ## Matriz de validación esencial
 

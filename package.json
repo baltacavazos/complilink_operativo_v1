@@ -17,6 +17,7 @@
     "db:push": "drizzle-kit generate && drizzle-kit migrate",
     "mobile:sync": "pnpm build && cap sync",
     "mobile:android": "pnpm build && cap sync android && cap open android",
+    "mobile:android:debug-apk": "bash scripts/android-debug-apk.sh",
     "mobile:ios": "pnpm build && cap sync ios && cap open ios"
   },
   "dependencies": {
