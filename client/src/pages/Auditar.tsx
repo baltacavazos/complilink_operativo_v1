@@ -9399,7 +9399,7 @@ export default function Auditar() {
     return (
       <main
         data-testid="worker-result-only"
-        className="audita-auditar min-h-screen bg-white px-3 py-6 text-[#111111] sm:px-4 sm:py-8"
+        className="audita-auditar min-h-screen bg-white px-3 py-6 pb-24 text-[#111111] sm:px-4 sm:py-8"
       >
         <div className="container mx-auto max-w-xl">
           <input
@@ -9408,12 +9408,6 @@ export default function Auditar() {
             accept={DOCUMENT_UPLOAD_PICKER_ACCEPT}
             onChange={handleGuestFileChange}
             className="hidden"
-          />
-          {renderReceiptArrival()}
-          <GuestOfficialFactNotice
-            summary={officialCaseBriefing.officialCheck ?? officialCheckSummary}
-            arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
-            waiting={officialWaitLeads}
           />
           <WorkerOfficialResult
             pocketLead={workerPocketDetail.lead}
@@ -9441,6 +9435,12 @@ export default function Auditar() {
             onReading={setOfficialWorkerDocument}
           />
           <ShareWithCompaCard />
+          {renderReceiptArrival()}
+          <GuestOfficialFactNotice
+            summary={officialCaseBriefing.officialCheck ?? officialCheckSummary}
+            arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
+            waiting={officialWaitLeads}
+          />
           {officialCheckDisplay.headline.includes(IMSS_SLOW_WAIT_LINE) &&
           imssWaitedLongEnough(officialCaseBriefing.officialCheck?.checkedAt) ? (
             <ImssEmailWhenSlow guestPreviewToken={guestReview.guestPreviewToken} />
