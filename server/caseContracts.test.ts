@@ -174,6 +174,21 @@ describe("caseContracts", () => {
     expect(cfdiAnalysis.confirmedData.integratedDailySalary).toBe("331.45");
   });
 
+  it("keeps the paid net when percepciones appear first and the listed total is short", () => {
+    const analysis = buildPreliminaryLaborAnalysis({
+      fileName: "recibo-hector.pdf",
+      mimeType: "application/pdf",
+      textHint:
+        "RECIBO DE NOMINA Razon social: EVOLUCION CREATIVA CAMREFLEX Periodo: 1 al 15 de octubre de 2026 Total percepciones: $6,500.00 Neto a pagar: $5,960.00 Total deducciones: $160.00 ISR: $380.00 Cuota IMSS: $160.00",
+    });
+
+    expect(analysis.confirmedData.payrollNetAmount).toBe("$5,960.00");
+    expect(analysis.confirmedData.payrollPerceptions).toBe("$6,500.00");
+    expect(analysis.confirmedData.payrollDeductions).toBe("$540.00");
+    expect(analysis.confirmedData.payrollPeriod).toBe("1 al 15 de octubre de 2026");
+    expect(String(analysis.confirmedData.payrollPeriod)).not.toMatch(/Total/);
+  });
+
   it("keeps factual payroll and IMSS fields found in a printable CFDI PDF text layer", () => {
     const analysis = buildPreliminaryLaborAnalysis({
       fileName: "recibo-nomina.pdf",

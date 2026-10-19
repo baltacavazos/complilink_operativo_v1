@@ -2542,7 +2542,7 @@ function HowItWorksSection() {
             {[
               {
                 title: "Sube tu documento",
-                detail: FIRST_WIN_STEPS[0].detail,
+                detail: "Tu recibo timbrado (CFDI) o un PDF del IMSS. Un solo archivo basta para empezar.",
               },
               {
                 title: "Mira el resultado",

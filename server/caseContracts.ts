@@ -272,10 +272,13 @@ function extractTagAttribute(tag: string, attributeName: string) {
 }
 
 function extractSalaryByLabel(text: string, labels: string[]) {
-  const normalizedLabels = labels.map((label) => label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  const regex = new RegExp(`(?:${normalizedLabels.join("|")})[^$\\d]{0,30}(\\$?\\s?\\d[\\d,]*(?:\\.\\d{2,4})?)`, "i");
-  const match = text.match(regex);
-  return match?.[1]?.replace(/\s+/g, "") ?? null;
+  for (const label of labels) {
+    const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = text.match(new RegExp(`${escaped}[^$\\d]{0,40}(\\$?\\s?\\d[\\d,]*(?:\\.\\d{2,4})?)`, "i"));
+    const amount = match?.[1]?.replace(/\s+/g, "");
+    if (amount) return amount;
+  }
+  return null;
 }
 
 function extractContractDailySalary(text: string) {
@@ -373,7 +376,7 @@ function extractPayrollAmount(text: string, labels: string[], xmlAttributes: str
 function extractPayrollNetAmount(text: string) {
   const total = extractPayrollAmount(
     text,
-    ["neto a pagar", "total neto", "importe neto", "total a pagar", "total percepciones"],
+    ["neto a pagar", "total neto", "importe neto", "neto", "total a pagar"],
     ["Total"],
   );
   if (total) return total;
@@ -409,7 +412,16 @@ function extractPayrollPeriod(text: string) {
   }
 
   const paidOn = extractXmlAttribute(text, "FechaPago") ?? extractNamedField(text, ["periodo de pago", "periodo", "fecha de pago"]);
-  return paidOn ?? extractPeriod(text);
+  return cleanCapturedPeriod(paidOn ?? extractPeriod(text));
+}
+
+function cleanCapturedPeriod(value: string | null) {
+  if (!value) return null;
+  const trimmed = value
+    .replace(/\s+(?:total|percepciones|deducciones|neto|isr|imss|cuota)\b[\s\S]*$/i, "")
+    .replace(/[.\s]+$/g, "")
+    .trim();
+  return trimmed || null;
 }
 
 function extractPayrollEmployerRegistration(text: string) {
