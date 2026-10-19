@@ -2374,9 +2374,11 @@ function writeStoredGuestReview(review: StoredGuestReview | null) {
 
 function reviewCopyWithoutIdentity(text: string) {
   return text
-    .split(/(?<=\.)\s+/)
-    .filter((sentence) => !/\b(CURP|NSS|RFC)\b/.test(sentence))
-    .join(" ")
+    .replace(/\bNSS\s+[A-Z0-9-]{6,}/gi, "tu número del IMSS")
+    .replace(/\bCURP:\s*[^.]+\.?/gi, "")
+    .replace(/\bRFC de la persona trabajadora:\s*[^.]+\.?/gi, "")
+    .replace(/\bRFC del patrón:\s*[^.]+\.?/gi, "")
+    .replace(/\bRFC:\s*[A-ZÑ&0-9]{10,13}\.?/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -9495,15 +9497,27 @@ export default function Auditar() {
             onChange={handleGuestFileChange}
             className="hidden"
           />
-          <section className="ap-light-surface mt-5 rounded-[2rem] border border-emerald-200 bg-white p-5 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-8">
-            <div className="flex items-center gap-3">
+          <section className="ap-light-surface mt-3 rounded-[2rem] border border-emerald-200 bg-white p-4 shadow-[0_35px_100px_-60px_rgba(15,23,42,0.45)] sm:p-8">
+            <div className="hidden">
               <AuditaPatronLogoIcon imageClassName="h-11 w-11 rounded-2xl border border-slate-200 bg-white object-contain p-1.5 shadow-sm" />
               <div>
                 <p className="text-sm font-semibold tracking-tight text-[#161616]">Resultado inicial</p>
                 <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
-            <div className="mt-5">{renderReceiptArrival()}</div>
+            <p data-testid="five-second-verdict-seen" className="text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
+            {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
+              <>
+                <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
+                <OfficialWaitLayer status={officialCheckDisplay.status} />
+              </>
+            ) : (
+              <>
+                <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
+                <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
+              </>
+            )}
+            <div className="mt-4">{renderReceiptArrival()}</div>
             <GuestOfficialFactNotice
               summary={officialCaseBriefing.officialCheck ?? officialCheckSummary}
               arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
@@ -9516,26 +9530,33 @@ export default function Auditar() {
                 onReading={setOfficialWorkerDocument}
               />
             ) : null}
-            <p data-testid="five-second-verdict-seen" className="mt-6 text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
-            {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
-              <>
-                <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
-                <OfficialWaitLayer status={officialCheckDisplay.status} />
-              </>
-            ) : (
-              <>
-                <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
-                <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
-              </>
-            )}
-            <ShareWithCompaCard />
-            <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left">
+            <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-4 rounded-[1.35rem] border p-4 text-left">
                 <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-[#161616]">
                   {officialCheckDisplay.headline}
                 </p>
                 <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
                   {officialCheckDisplay.detail}
                 </p>
+              <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-[#161616]">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-5 w-5"
+                  checked={officialCheckConsent}
+                  onChange={event => setOfficialCheckConsent(event.target.checked)}
+                />
+                <span>{OFFICIAL_CHECK_CONSENT}</span>
+              </label>
+              <Button
+                type="button"
+                data-testid="official-check-cta"
+                className="ap-btn-on-dark mt-3 h-12 w-full rounded-full bg-[#111111] px-4 text-base font-semibold text-white hover:bg-[#222222]"
+                disabled={guestOfficialCheckMutation.isPending || !officialCheckConsent}
+                onClick={() => {
+                  void handleGuestOfficialCheck();
+                }}
+              >
+                {officialCheckDisplay.buttonLabel}
+              </Button>
               {infonavitDocumentSlot}
               {workerPocketDetail.lead.length ? (
                 <ul data-testid="official-check-pocket" className="mt-2 space-y-1 text-sm leading-6 text-[#161616]">
@@ -9590,27 +9611,8 @@ export default function Auditar() {
                   <p>{officialCaseBriefing.comparison.nextStepLine}</p>
                 </div>
               ) : null}
-              <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-[#161616]">
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  checked={officialCheckConsent}
-                  onChange={event => setOfficialCheckConsent(event.target.checked)}
-                />
-                <span>{OFFICIAL_CHECK_CONSENT}</span>
-              </label>
-              <Button
-                type="button"
-                data-testid="official-check-cta"
-                className="ap-btn-on-dark mt-3 h-11 rounded-full bg-[#111111] px-4 text-white hover:bg-[#222222]"
-                disabled={guestOfficialCheckMutation.isPending || !officialCheckConsent}
-                onClick={() => {
-                  void handleGuestOfficialCheck();
-                }}
-              >
-                {officialCheckDisplay.buttonLabel}
-              </Button>
             </div>
+            <ShareWithCompaCard />
             {guestFiveSecond.seen === "no_se_leyo" && guestReview.preview.previewAsset.mimeType.startsWith("image/") ? (
               <div data-testid="guest-unreadable-tips" className="mt-5 rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
                 <p className="text-base font-semibold text-amber-900">No pudimos leer tu foto. Tómala otra vez así:</p>
@@ -9628,6 +9630,7 @@ export default function Auditar() {
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalHeadline}. {reviewCopyWithoutIdentity(String(guestSignalWhy).split(/(?<=\.)\s+(?=(?:IMSS:|Retenciones))/)[0] ?? "")}</p>
                 <p className="mt-3 text-sm font-semibold tracking-tight text-amber-900">Hoy conviene poner atención especial en esto</p>
                 <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
+                {guestFactSignal.curp || guestFactSignal.workerRfc || guestFactSignal.employerRfc || guestFactSignal.nss ? (
                 <details data-testid="ver-mis-datos" className="mt-3">
                   <summary className="cursor-pointer text-sm font-semibold text-slate-950">Ver mis datos</summary>
                   <ul className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
@@ -9637,6 +9640,7 @@ export default function Auditar() {
                     {guestFactSignal.nss ? <li>NSS: {guestFactSignal.nss}</li> : null}
                   </ul>
                 </details>
+                ) : null}
               </div>
               <div data-testid="receipt-review-rows" className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
                 <div className="border-b border-slate-200 pb-3">

@@ -8,9 +8,10 @@ import {
 } from "./caseContracts";
 import { buildHeliosOpinion, type HeliosOpinion } from "./heliosIntegrationService";
 import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
+import { extractStructuredLaborFiscalFacts } from "./laborFiscalSignals";
 import {
   applyLaborFiscalNarrativeToOpinion,
-  resolveLaborFiscalNarrative,
+  buildDeterministicLaborFiscalNarrative,
 } from "./laborFiscalNarrative";
 
 const GUEST_PREVIEW_TTL_MS = 45 * 60 * 1000;
@@ -128,16 +129,13 @@ export async function buildGuestPreviewOpinion(params: {
     },
   });
 
-  const narrative = await resolveLaborFiscalNarrative({
+  const facts = extractStructuredLaborFiscalFacts({
     documentType: params.classification.documentType,
-    document: {
-      documentType: params.classification.documentType,
-      originalName: params.fileName,
-      preliminaryAnalysis: params.preliminaryAnalysis,
-      heliosOpinion: opinion,
-    },
-    preferredOpinion: opinion,
+    originalName: params.fileName,
+    preliminaryAnalysis: params.preliminaryAnalysis,
+    heliosOpinion: opinion,
   });
+  const narrative = buildDeterministicLaborFiscalNarrative(facts, params.classification.documentType);
 
   return applyLaborFiscalNarrativeToOpinion(opinion, narrative);
 }

@@ -1256,14 +1256,19 @@ function HeroSection() {
             </h1>
 
             <p
-              className="ap-hero-support motion-enter-soft mt-2.5 min-w-0 w-full max-w-xl text-pretty text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
+              className="ap-hero-support motion-enter-soft mt-2.5 min-w-0 w-full max-w-xl text-pretty text-[1.05rem] leading-7 text-slate-800 sm:hidden"
+            >
+              Sube tu recibo timbrado (CFDI). En un minuto ves tus descuentos. Tu patrón no se entera.
+            </p>
+            <p
+              className="ap-hero-support motion-enter-soft mt-2.5 hidden min-w-0 w-full max-w-xl text-pretty text-[0.98rem] leading-7 text-slate-700 sm:block sm:text-[1rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
               {activeHeroVariant.supportLine.replace("recibo, CFDI", "recibo timbrado (CFDI)")}
             </p>
 
             <div
-              className="motion-enter-soft mt-4 min-w-0 w-full max-w-xl text-left"
+              className="motion-enter-soft mt-4 hidden min-w-0 w-full max-w-xl text-left sm:block"
               style={{ ["--motion-delay" as string]: "210ms" }}
             >
               <p className="min-w-0 text-pretty text-[0.95rem] font-semibold tracking-tight text-slate-950">
@@ -1289,7 +1294,7 @@ function HeroSection() {
             ) : null}
 
             <p
-              className="ap-legal-note motion-enter-soft mt-2 min-w-0 max-w-xl rounded-[1rem] border border-slate-200/80 bg-white/70 px-3.5 py-2 text-pretty text-sm font-normal leading-5 text-slate-600 sm:mt-3 sm:bg-white/90 sm:font-medium sm:text-slate-700"
+              className="ap-legal-note motion-enter-soft mt-2 hidden min-w-0 max-w-xl rounded-[1rem] border border-slate-200/80 bg-white/70 px-3.5 py-2 text-pretty text-sm font-normal leading-5 text-slate-600 sm:mt-3 sm:block sm:bg-white/90 sm:font-medium sm:text-slate-700"
               style={{ ["--motion-delay" as string]: "230ms" }}
             >
               Esto no es asesoría legal. AuditaPatrón no sustituye a un abogado ni presenta quejas por ti. Leemos tu recibo; si das permiso, también podemos consultar IMSS y SAT. Si no hay respuesta, te lo decimos.
@@ -1374,7 +1379,8 @@ function HeroSection() {
             <a href={PLANS_PATH} className="text-sm font-medium text-slate-600 underline decoration-slate-300 underline-offset-4">
               Ver planes y activar
             </a>
-              <div className="min-w-0 space-y-1.5">
+              <p className="text-sm font-semibold leading-5 text-slate-800 sm:hidden">Gratis. Tu patrón no se entera.</p>
+              <div className="hidden min-w-0 space-y-1.5 sm:block">
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">{activeHeroVariant.microDescription}</p>
                 <p className="min-w-0 text-pretty text-sm leading-5 text-slate-700">{activeHeroVariant.honestyLine}</p>
                 <p className="min-w-0 text-pretty text-sm font-medium leading-5 text-slate-800">{activeHeroVariant.closingLine}</p>
@@ -1411,7 +1417,7 @@ function HeroSection() {
 
         </div>
 
-        <div className="relative lg:pl-2">
+        <div className="relative hidden sm:block lg:pl-2">
           <div className="absolute -left-4 top-6 h-24 w-24 rounded-full bg-teal-200/50 blur-3xl" />
           <div className="absolute -right-4 bottom-8 h-24 w-24 rounded-full bg-sky-200/60 blur-3xl" />
           <div
