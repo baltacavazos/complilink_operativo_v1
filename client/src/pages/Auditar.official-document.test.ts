@@ -9,6 +9,9 @@ const home = readFileSync(new URL("./Home.tsx", import.meta.url), "utf8");
 describe("guía de papel oficial", () => {
   it("el papel es el plan B, en español simple y sin claves", () => {
     expect(copy).toContain("Pide tu constancia aquí (te llega en un minuto), súbela y te la reviso");
+    expect(copy).toContain("Pide tu constancia del IMSS y súbela.");
+    expect(guide).toContain("IMSS_CONSTANCIA_WHILE_WAITING");
+    expect(guide).toContain("OFFICIAL_WORKER_PAGES.imss");
     expect(copy).toContain("Verificado con documento oficial");
     expect(copy).toContain("Ya te llegó? Súbela");
     expect(guide).toContain("OFFICIAL_DOCUMENT_FALLBACK_LEAD");

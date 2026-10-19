@@ -10,7 +10,8 @@ import {
   listGuestVisibleInfonavitFacts,
   listGuestVisibleOfficialFacts,
 } from "./guestOfficialFact";
-import { OFFICIAL_FACT_ARRIVED_NOTICE, OFFICIAL_WAIT_STILL_TRYING } from "./officialCheckCopy";
+import { OFFICIAL_FACT_ARRIVED_NOTICE, OFFICIAL_WAIT_STILL_TRYING, SLOW_IMSS_WAIT_MS } from "./officialCheckCopy";
+import { officialImssArrivalSentence } from "./officialResultNotification";
 import type { OfficialCheckSummary } from "./officialCheckCopy";
 import { OFFICIAL_RESULT_NOTIFICATION_KIND } from "./officialResultNotification";
 
@@ -89,6 +90,27 @@ describe("guest official fact", () => {
     expect(guestOfficialFactStillWaiting(failed, now + GUEST_OFFICIAL_FACT_WAIT_MS)).toBe(false);
     expect(guestOfficialFactStillWaiting(imssFact(["Hay un movimiento de alta en el IMSS."]), now)).toBe(false);
     expect(guestOfficialFactStillWaiting(null, now)).toBe(false);
+
+    const satWhileImssWaits = factSummary(
+      [
+        sourceCheck("sat", ["El SAT confirmó el RFC consultado."]),
+        sourceCheck("imss", [], "pendiente"),
+        sourceCheck("infonavit", [], "no_se_pudo"),
+      ],
+      "vivo",
+    );
+    satWhileImssWaits.checkedAt = new Date(now - 10 * 60 * 1000).toISOString();
+    expect(guestOfficialFactStillWaiting(satWhileImssWaits, now)).toBe(true);
+    expect(guestOfficialFactStillWaiting(satWhileImssWaits, now + SLOW_IMSS_WAIT_MS)).toBe(false);
+  });
+
+  it("el correo del IMSS cita el hecho y no dice que el patrón cumple", () => {
+    const sentence = officialImssArrivalSentence(
+      imssFact(["Salario registrado: $331.45.", "Fecha de alta reportada: 2023-09-01."]),
+    );
+    expect(sentence).toBe("El IMSS ya contestó. Salario registrado: $331.45. Fecha de alta reportada: 2023-09-01.");
+    expect(sentence).not.toMatch(/\bcumple\b/i);
+    expect(officialImssArrivalSentence(imssFact([], "pendiente"))).toBeNull();
   });
 
   it("lista el hecho IMSS usable sin inventar un cumple", () => {

@@ -18,6 +18,7 @@ import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
 import { trpc } from "@/lib/trpc";
 import { mergeGuestOfficialCheck, useGuestOfficialFact } from "@/lib/useGuestOfficialFact";
 import {
+  IMSS_SLOW_WAIT_LINE,
   OFFICIAL_CHECK_CONSENT,
   pickPromptOfficialCheck,
   resolveOfficialCheckDisplay,
@@ -1670,6 +1671,7 @@ function HomeGuestOfficialCheck({
             silence: Boolean(officialCheckDisplay.silence),
             status: officialCheckDisplay.status,
           })}
+          imssWhileWaiting={officialCheckDisplay.headline.includes(IMSS_SLOW_WAIT_LINE)}
           reading={officialDocument}
           onReading={setOfficialDocument}
         />

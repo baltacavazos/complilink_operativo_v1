@@ -2,6 +2,7 @@ import {
   OFFICIAL_RESULT_NOTIFICATION_COPY,
   hasUsableOfficialFact,
   listUsableOfficialFacts,
+  officialImssArrivalSentence,
 } from "@shared/officialResultNotification";
 import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
 import {
@@ -55,6 +56,7 @@ export async function sendOfficialResultReadyEmail(params: {
 
     const { title, body, disclaimer, actionLabel } =
       OFFICIAL_RESULT_NOTIFICATION_COPY;
+    const imssLine = officialImssArrivalSentence(params.officialCheck);
 
     await sendEmailWithResend({
       to: [email],
@@ -63,12 +65,13 @@ export async function sendOfficialResultReadyEmail(params: {
         '<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">',
         `<h2 style="margin:0 0 12px">${title}</h2>`,
         `<p>${body}</p>`,
+        imssLine ? `<p>${imssLine}</p>` : "",
         `<p>${disclaimer}</p>`,
         `<p style="margin-top:20px"><a href="${AUDITAR_RESULT_URL}" style="display:inline-block;border-radius:999px;background:#0f766e;color:#ffffff;padding:12px 20px;text-decoration:none;font-weight:700">${actionLabel}</a></p>`,
         '<p style="margin-top:20px;color:#475569">También queda guardado en la bandeja de tu cuenta.</p>',
         "</div>",
       ].join(""),
-      text: `${title}\n\n${body}\n\n${disclaimer}\n\n${actionLabel}: ${AUDITAR_RESULT_URL}\n\nTambién queda guardado en la bandeja de tu cuenta.`,
+      text: `${title}\n\n${body}${imssLine ? `\n\n${imssLine}` : ""}\n\n${disclaimer}\n\n${actionLabel}: ${AUDITAR_RESULT_URL}\n\nTambién queda guardado en la bandeja de tu cuenta.`,
     });
 
     return "sent";

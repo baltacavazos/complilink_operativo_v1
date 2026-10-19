@@ -25,6 +25,7 @@ export const ONLINE_VERIFICATIONS = [
 export type OnlineVerification = (typeof ONLINE_VERIFICATIONS)[number];
 
 export const OFFICIAL_UPLOAD_LABEL = "Ya te llegó? Súbela";
+export const IMSS_CONSTANCIA_WHILE_WAITING = "Pide tu constancia del IMSS y súbela.";
 export const OFFICIAL_DOCUMENT_FALLBACK_LEAD =
   "Pide tu constancia aquí (te llega en un minuto), súbela y te la reviso";
 export const OFFICIAL_FALLBACK_LABEL = OFFICIAL_DOCUMENT_FALLBACK_LEAD;

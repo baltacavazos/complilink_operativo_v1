@@ -1403,8 +1403,10 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       identity: { nss: true, curp: true, rfc: true },
       nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
     });
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
-    expect(display.detail).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
+    );
+    expect(display.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
     expect(display.silence?.meaning).toContain("Consultamos otra vía oficial.");
     expect(display.silence?.meaning).not.toContain("no hubo datos útiles");
     expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);

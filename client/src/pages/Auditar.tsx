@@ -85,6 +85,7 @@ import {
   resolveBriefingWorkerRfc,
   readOfficialSourceOutcomes,
   resolveOfficialCheckDisplay,
+  IMSS_SLOW_WAIT_LINE,
   shouldPollOfficialCheck,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
@@ -9377,6 +9378,7 @@ export default function Auditar() {
           />
           <OfficialDocumentGuide
             offerUpload
+            imssWhileWaiting={officialCheckDisplay.headline.includes(IMSS_SLOW_WAIT_LINE)}
             expectedNss={officialCaseBriefing.facts.nss}
             expectedCurp={officialCaseBriefing.facts.curp}
             expectedRfc={officialCaseBriefing.facts.workerRfc}
@@ -11361,6 +11363,7 @@ export default function Auditar() {
                   silence: Boolean(officialCheckDisplay.silence),
                   status: officialCheckDisplay.status,
                 })}
+                imssWhileWaiting={officialCheckDisplay.headline.includes(IMSS_SLOW_WAIT_LINE)}
                 expectedNss={officialCaseBriefing.facts.nss}
                 expectedCurp={officialCaseBriefing.facts.curp}
                 expectedRfc={officialCaseBriefing.facts.workerRfc}

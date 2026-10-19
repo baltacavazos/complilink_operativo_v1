@@ -156,6 +156,8 @@ import {
   OFFICIAL_CHECK_STATUS_LABEL,
   buildOfficialCheckHeadline,
   hasLiveOfficialResult,
+  imssAnswerStillPending,
+  SLOW_IMSS_WAIT_MS,
   identityFlagsFromReceiptValues,
   mergeCardFailedOfficialCheck,
   reconcileOfficialCheckWithIdentity,
@@ -4974,13 +4976,16 @@ export const appRouter = router({
           traceId: payload.traceId,
         });
         const officialCheck = stored?.officialCheck ?? null;
+        const ageMs = Date.now() - (stored?.createdAtMs ?? 0);
         const awaiting =
           Boolean(stored) &&
-          !hasUsableOfficialFact(officialCheck) &&
-          Date.now() - (stored?.createdAtMs ?? 0) < GUEST_OFFICIAL_FACT_WAIT_MS &&
-          (officialCheck == null ||
-            officialCheck.overallStatus === "pendiente" ||
-            officialCheck.overallStatus === "no_se_pudo");
+          (imssAnswerStillPending(officialCheck)
+            ? ageMs < SLOW_IMSS_WAIT_MS
+            : !hasUsableOfficialFact(officialCheck) &&
+              ageMs < GUEST_OFFICIAL_FACT_WAIT_MS &&
+              (officialCheck == null ||
+                officialCheck.overallStatus === "pendiente" ||
+                officialCheck.overallStatus === "no_se_pudo"));
         return {
           officialCheck,
           arrivedAt: stored?.arrivedAt ?? null,

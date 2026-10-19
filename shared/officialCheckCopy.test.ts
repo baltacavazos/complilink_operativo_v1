@@ -44,6 +44,7 @@ import {
   isUnusableSatLegalNameLine,
   FALTA_NSS_Y_RFC_EXACT,
   OFFICIAL_PENDING_STALE_MS,
+  SLOW_IMSS_WAIT_MS,
   officialDispatchGapDetail,
   officialSourceGapDetail,
   stripContradictoryMissingIdentityCopy,
@@ -557,40 +558,45 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(fromCard?.overallDetail ?? "").not.toMatch(/Falta tu NSS/);
   });
 
-  it("un SAT vivo no congela el IMSS que sigue Pendiente más de 60s", () => {
+  it("un SAT vivo deja al IMSS pendiente más de 10 minutos y lo cierra después", () => {
     const started = new Date("2026-09-21T15:30:00.000Z").getTime();
-    const stale = reconcileOfficialCheckWithIdentity(
-      summary("pendiente", {
-        checkedAt: "2026-09-21T15:30:00.000Z",
-        identity: { nss: true, curp: false, rfc: true },
-        checks: [
-          {
-            source: "imss",
-            sourceLabel: "IMSS",
-            status: "pendiente",
-            label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
-            detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
-            checkedAt: "2026-09-21T15:30:00.000Z",
-            used: { nss: true, curp: false, rfc: false },
-            honesty: "pending",
-            hechos: [],
-          },
-          {
-            source: "sat",
-            sourceLabel: "SAT",
-            status: "vivo",
-            label: OFFICIAL_CHECK_STATUS_LABEL.vivo,
-            detail: OFFICIAL_CHECK_STATUS_DETAIL.vivo,
-            checkedAt: "2026-09-21T15:30:00.000Z",
-            used: { nss: false, curp: false, rfc: true },
-            honesty: "live",
-            hechos: ["El SAT confirmó el RFC consultado."],
-          },
-        ],
-      }),
-      { nss: true, curp: false, rfc: true },
-      { nowMs: started + 70_000 },
-    );
+    const pending = summary("pendiente", {
+      checkedAt: "2026-09-21T15:30:00.000Z",
+      identity: { nss: true, curp: false, rfc: true },
+      checks: [
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "pendiente",
+          label: OFFICIAL_CHECK_STATUS_LABEL.pendiente,
+          detail: OFFICIAL_CHECK_STATUS_DETAIL.pendiente,
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: true, curp: false, rfc: false },
+          honesty: "pending",
+          hechos: [],
+        },
+        {
+          source: "sat",
+          sourceLabel: "SAT",
+          status: "vivo",
+          label: OFFICIAL_CHECK_STATUS_LABEL.vivo,
+          detail: OFFICIAL_CHECK_STATUS_DETAIL.vivo,
+          checkedAt: "2026-09-21T15:30:00.000Z",
+          used: { nss: false, curp: false, rfc: true },
+          honesty: "live",
+          hechos: ["El SAT confirmó el RFC consultado."],
+        },
+      ],
+    });
+    const stillWaiting = reconcileOfficialCheckWithIdentity(pending, { nss: true, curp: false, rfc: true }, {
+      nowMs: started + 10 * 60 * 1000,
+    });
+    expect(stillWaiting?.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
+    expect(stillWaiting?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
+
+    const stale = reconcileOfficialCheckWithIdentity(pending, { nss: true, curp: false, rfc: true }, {
+      nowMs: started + SLOW_IMSS_WAIT_MS + 1,
+    });
     expect(stale?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
     expect(stale?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
   });
@@ -829,12 +835,17 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       }),
     });
 
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
+    );
+    expect(display.headline).not.toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.status).toBe("vivo");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
-    expect(display.silence?.whatHappened).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
+    expect(display.silence?.whatHappened).toBe(
+      "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.",
+    );
     expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Infonavit: seguimos preguntando/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
@@ -857,11 +868,48 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     });
 
     expect(display.silence?.kind).toBe("mixed");
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
+    );
     expect(display.headline).not.toMatch(/Todavía no hay una respuesta oficial/);
-    expect(display.silence?.whatHappened).toBe("Todavía faltan dos respuestas para saber si tu patrón te tiene bien registrado.");
+    expect(display.silence?.whatHappened).toBe(
+      "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.",
+    );
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
+  });
+
+  it("mantiene el título del SAT mientras el IMSS sigue pendiente más de 10 minutos", () => {
+    const started = Date.parse("2026-09-21T12:00:00.000Z");
+    const pendingImss = summary("vivo", {
+      checkedAt: "2026-09-21T12:00:00.000Z",
+      identity: { nss: true, curp: true, rfc: true },
+      checks: [
+        instituteCheck("sat", "vivo", ["El SAT confirmó el RFC consultado.", "Nombre en el SAT: HECTOR JOVANE ORTIZ HERNANDEZ."]),
+        instituteCheck("imss", "pendiente"),
+        instituteCheck("infonavit", "no_se_pudo"),
+      ],
+    });
+    const during = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: started + 10 * 60 * 1000,
+      pendingSinceMs: started,
+      summary: pendingImss,
+    });
+    expect(during.headline).toBe(
+      "El SAT contestó. El nombre que tiene es HECTOR JOVANE ORTIZ HERNANDEZ. El IMSS está tardando; te avisamos en cuanto conteste.",
+    );
+    expect(during.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
+    expect(during.silence?.stillWaiting).toBe(true);
+    expect(`${during.headline} ${during.detail}`).not.toMatch(/\bcumple\b/i);
+
+    const tooLate = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      nowMs: started + SLOW_IMSS_WAIT_MS + 1,
+      pendingSinceMs: started,
+      summary: pendingImss,
+    });
+    expect(tooLate.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
   });
 
   it("sigue en espera si nadie ha contestado", () => {

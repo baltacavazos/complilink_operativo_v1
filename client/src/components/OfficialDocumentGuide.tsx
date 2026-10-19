@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  IMSS_CONSTANCIA_WHILE_WAITING,
   OFFICIAL_DOCUMENT_FALLBACK_LEAD,
   OFFICIAL_GUIDE_INTRO,
   OFFICIAL_NO_PASSWORD,
@@ -22,6 +23,8 @@ export type OfficialWorkerUploadResult = OfficialWorkerReading & {
 
 type OfficialDocumentGuideProps = {
   offerUpload?: boolean;
+  /** El SAT ya contestó y el IMSS sigue pendiente. El botón abre la constancia del IMSS. */
+  imssWhileWaiting?: boolean;
   expectedNss?: string | null;
   expectedCurp?: string | null;
   expectedRfc?: string | null;
@@ -35,6 +38,7 @@ function isPdfFile(file: File): boolean {
 
 export function OfficialDocumentGuide({
   offerUpload = false,
+  imssWhileWaiting = false,
   expectedNss,
   expectedCurp,
   expectedRfc,
@@ -53,6 +57,7 @@ export function OfficialDocumentGuide({
   const [localNotice, setLocalNotice] = useState<string | null>(null);
   const [localReading, setLocalReading] = useState<OfficialWorkerUploadResult | null>(null);
   const page = OFFICIAL_WORKER_PAGES[kind];
+  const constanciaPage = imssWhileWaiting ? OFFICIAL_WORKER_PAGES.imss : page;
   const sourceHealth = health.data?.sources.find((item) => item.kind === kind);
   const pageDown = sourceHealth ? !sourceHealth.up : false;
   const activeReading = reading ?? localReading;
@@ -98,16 +103,22 @@ export function OfficialDocumentGuide({
     >
       {offerUpload ? (
         <>
-          <h2 className="text-xl font-semibold leading-7">{OFFICIAL_DOCUMENT_FALLBACK_LEAD}</h2>
-          <p className="text-base leading-6">{OFFICIAL_GUIDE_INTRO}</p>
+          <h2 className="text-xl font-semibold leading-7">
+            {imssWhileWaiting ? IMSS_CONSTANCIA_WHILE_WAITING : OFFICIAL_DOCUMENT_FALLBACK_LEAD}
+          </h2>
+          <p className="text-base leading-6">
+            {imssWhileWaiting
+              ? "El IMSS está tardando. Entra a su página, pide tu constancia y súbela. Aquí no escribas tu clave."
+              : OFFICIAL_GUIDE_INTRO}
+          </p>
           <a
-            href={page.url}
+            href={constanciaPage.url}
             target="_blank"
             rel="noopener noreferrer"
             data-testid="official-guide-open"
             className="inline-flex min-h-14 items-center justify-center rounded-full bg-[#111111] px-4 py-3 text-center text-lg font-semibold text-white"
           >
-            Pide tu constancia aquí
+            {imssWhileWaiting ? "Pide tu constancia del IMSS y súbela" : "Pide tu constancia aquí"}
           </a>
           <div className="flex flex-wrap gap-2">
             {OFFICIAL_WORKER_KINDS.map((item) => (
