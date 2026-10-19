@@ -654,8 +654,12 @@ function mixedOfficialPresentation(
         ),
     meaning: knownLead
       ? follow
-        ? satLead
-          ? "Esto es lo que el SAT contestó hoy."
+        ? satLead && infonavit
+          ? infonavit.status === "pendiente"
+            ? "Infonavit sigue sin contestar. Eso no dice si tu crédito está bien o mal."
+            : infonavit.status === "sin_datos"
+              ? "Para Infonavit falta un dato. Eso no dice si tu crédito está bien o mal."
+              : "Infonavit no contestó hoy. Eso no dice si tu crédito está bien o mal."
           : "Esto es lo que el IMSS contestó hoy."
         : satLead
           ? "Esto es lo que el SAT contestó hoy."
@@ -1169,7 +1173,7 @@ export const RECEIPT_OFFICIAL_COMPARISON_SEEN_LABEL: Record<ReciboVsOficialResul
 /** Misma fuente de verdad: tarjeta + chat. Nunca inventar «cumple». */
 export const RECEIPT_OFFICIAL_COMPARISON_COPY = {
   bien: {
-    seenLine: "Esto vimos: bien",
+    seenLine: "Tu recibo se leyó completo",
     nextStep: "Guarda este resultado con la fecha.",
   },
   hay_diferencia: {
@@ -2127,6 +2131,7 @@ export function hasLiveOfficialResult(summary?: OfficialCheckSummary | null): bo
 }
 
 export function formatReceiptOfficialSeenLine(seen: ReciboVsOficialResultado) {
+  if (seen === "bien") return RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine;
   return `Esto vimos: ${RECEIPT_OFFICIAL_COMPARISON_SEEN_LABEL[seen]}`;
 }
 

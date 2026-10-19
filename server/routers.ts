@@ -201,7 +201,15 @@ import {
   readGuestOfficialFact,
   rememberGuestOfficialSession,
   resetGuestOfficialFactStoreForTests,
+  saveGuestImssNotifyEmail,
 } from "./guestOfficialFactStore";
+import {
+  answerGuestAdvisor,
+  assertGuestAdvisorRateLimit,
+  guestAdvisorAnswerKeepsFacts,
+  resetGuestAdvisorRateLimitForTests,
+} from "./guestAdvisorAnswer";
+import { recordPlanInterest, recordReferralReceipt, recordReferralVisit } from "./referrals";
 import { GUEST_OFFICIAL_FACT_WAIT_MS } from "@shared/guestOfficialFact";
 import { hasUsableOfficialFact } from "@shared/officialResultNotification";
 import { buildHeliosCalculatorSnapshot } from "./heliosCalculatorService";
@@ -977,6 +985,7 @@ export function resetAuditarRuntimeGuardsForTests() {
   auditarRateWindowByKey.clear();
   auditarTransientDedupByKey.clear();
   resetGuestOfficialFactStoreForTests();
+  resetGuestAdvisorRateLimitForTests();
 }
 
 async function getUserCommerceStatus(user: { id: number; email?: string | null; name?: string | null; role?: string | null }) {
@@ -4842,6 +4851,7 @@ export const appRouter = router({
           expectedDocumentType: auditarTargetTypeSchema.optional(),
           captureMode: auditarCaptureModeSchema.optional(),
           sourceChannel: z.enum(["manual", "email", "api", "bulk_import"]).default("manual"),
+          referralCode: z.string().trim().max(12).optional(),
         }),
       )
       .mutation(async ({ input }) => {
@@ -4864,6 +4874,7 @@ export const appRouter = router({
             expectedDocumentType: input.expectedDocumentType,
             textHint: input.textHint,
           });
+        await recordReferralReceipt(input.referralCode);
         const previewOpinion = await buildGuestPreviewOpinion({
           guestPreviewId,
           traceId,
@@ -4993,6 +5004,112 @@ export const appRouter = router({
           awaiting,
         };
       }),
+    guestAdvisorChat: publicProcedure
+      .input(
+        z.object({
+          guestPreviewToken: z.string().min(40),
+          prompt: z.string().trim().min(3).max(2000),
+          history: z
+            .array(
+              z.object({
+                role: z.enum(["user", "assistant"]),
+                content: z.string().trim().min(1).max(2000),
+              }),
+            )
+            .max(6)
+            .optional(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const payload = readGuestPreviewToken(input.guestPreviewToken);
+        assertGuestAdvisorRateLimit({
+          tokenId: payload.guestPreviewId,
+          ip: getClientIp(ctx.req),
+        });
+        const stored = readGuestOfficialFact({
+          guestPreviewId: payload.guestPreviewId,
+          traceId: payload.traceId,
+        });
+        const facts = guestReceiptFacts(payload);
+        const draft = answerGuestAdvisor({
+          prompt: input.prompt,
+          facts,
+          officialCheck: stored?.officialCheck ?? null,
+          preliminaryAnalysis: payload.preliminaryAnalysis,
+          previewOpinion: payload.previewOpinion,
+        });
+        let answer = draft;
+        if (ENV.geminiApiKey.trim()) {
+          try {
+            const response = await invokeLLM(
+              {
+                messages: [
+                  {
+                    role: "system",
+                    content:
+                      "Eres el asesor de AuditaPatrón. Español sencillo, un párrafo, amable. Usa solo los montos del borrador. Nunca digas que el patrón cumple. No pidas otro archivo ni digas primera lectura útil.",
+                  },
+                  ...(input.history ?? []).map((item) => ({
+                    role: item.role,
+                    content: item.content,
+                  })),
+                  {
+                    role: "user",
+                    content: `${input.prompt}\n\nBorrador con los montos correctos:\n${draft}`,
+                  },
+                ],
+                maxTokens: 400,
+              },
+              { env: { ...process.env, OPENAI_API_KEY: "" } },
+            );
+            const content = response.choices[0]?.message?.content;
+            const text = typeof content === "string"
+              ? content
+              : Array.isArray(content)
+                ? content.map((part) => ("text" in part ? part.text : "")).join(" ")
+                : "";
+            if (guestAdvisorAnswerKeepsFacts(text, draft)) answer = text.trim();
+          } catch (error) {
+            console.error("[guestAdvisorChat] Gemini no contestó:", error);
+          }
+        }
+        return { answer };
+      }),
+    guestImssEmailNotify: publicProcedure
+      .input(
+        z.object({
+          guestPreviewToken: z.string().min(40),
+          email: z.string().trim().email().max(320),
+        }),
+      )
+      .mutation(({ input }) => {
+        const payload = readGuestPreviewToken(input.guestPreviewToken);
+        const saved = saveGuestImssNotifyEmail({
+          guestPreviewId: payload.guestPreviewId,
+          traceId: payload.traceId,
+          email: input.email,
+        });
+        return {
+          saved,
+          message: saved
+            ? "Listo. Te avisamos por correo cuando el IMSS conteste. Hoy no se cobra."
+            : "Ese correo no se pudo guardar.",
+        };
+      }),
+    referralVisit: publicProcedure
+      .input(z.object({ code: z.string().trim().min(4).max(12) }))
+      .mutation(async ({ input }) => {
+        const row = await recordReferralVisit(input.code);
+        return { counted: Boolean(row), visits: row?.visits ?? 0 };
+      }),
+    planInterest: publicProcedure
+      .input(
+        z.object({
+          contact: z.string().trim().min(5).max(320),
+          planKey: z.string().trim().min(2).max(64),
+        }),
+      )
+      .mutation(async ({ input }) => recordPlanInterest(input)),
     officialSourceHealth: publicProcedure.query(async () => {
       return checkOfficialSourceHealth();
     }),

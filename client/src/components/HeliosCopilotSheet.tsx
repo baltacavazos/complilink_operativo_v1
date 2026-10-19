@@ -413,7 +413,7 @@ export function HeliosCopilotSheet({
               </div>
             ) : null}
 
-            {nextSuggestedDocument ? (
+            {false && nextSuggestedDocument ? (
               <div className="mb-4 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/80 p-4 transition-colors duration-300">
                 <div className="flex items-center gap-2">
                   <FileText
@@ -580,12 +580,28 @@ export function HeliosCopilotSheet({
               <Button
                 type="button"
                 variant="outline"
-                className="h-10 rounded-full border-slate-200/80 bg-white px-5 text-[0.88rem] text-slate-600 hover:bg-slate-50"
+                className="h-10 rounded-full border-slate-200/80 bg-white px-5 text-[0.88rem] text-slate-950 hover:bg-slate-50"
                 onClick={() => onOpenChange(false)}
               >
                 {copy.closeLabel}
               </Button>
             </div>
+            {nextSuggestedDocument ? (
+              <div className="mt-3 rounded-[1.2rem] border border-emerald-100 bg-emerald-50/80 p-4">
+                <p className="text-sm font-semibold text-slate-950">{nextSuggestedDocument.title}</p>
+                <p className="mt-1 text-sm leading-6 text-slate-700">{nextSuggestedDocument.reason}</p>
+                {onFocusSuggestedDocument ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-3 w-full rounded-full border-emerald-200 bg-white text-slate-950 hover:bg-emerald-100"
+                    onClick={onFocusSuggestedDocument}
+                  >
+                    {nextSuggestedDocument.ctaLabel ?? "Continuar con este archivo"}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
       </SheetContent>

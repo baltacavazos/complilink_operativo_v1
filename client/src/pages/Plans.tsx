@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+
+import { PlanInterestSheet } from "@/components/PlanInterestSheet";
 import { Button } from "@/components/ui/button";
 import { getAuditapatronPricingExperience } from "@/lib/pricingExperience";
 import { COMMERCE_PRICE_FOOTER } from "@shared/commerce";
@@ -17,6 +20,16 @@ const visiblePaidPlans = getVisibleCatalogPlans();
 const visibleOneShots = getAuditapatronPricingExperience(0).platform.oneShots;
 
 export default function Plans() {
+  const [planKey, setPlanKey] = useState<string | null>(null);
+  const selected = visiblePaidPlans.find((plan) => plan.key === planKey) ?? null;
+
+  useEffect(() => {
+    const key = new URLSearchParams(window.location.search).get("plan");
+    if (key && visiblePaidPlans.some((plan) => plan.key === key && plan.key !== "free")) {
+      setPlanKey(key);
+    }
+  }, []);
+
   return (
     <main className="audita-planes min-h-screen bg-[linear-gradient(180deg,#f8fbfc_0%,#eef4f5_100%)] px-4 py-8 text-slate-950 sm:px-6 sm:py-10">
       <div className="container mx-auto max-w-3xl space-y-5">
@@ -82,10 +95,11 @@ export default function Plans() {
                     : "border-teal-700 bg-transparent text-teal-800 hover:bg-teal-50"
                 }`}
                 onClick={() => {
-                  window.location.href =
-                    plan.key === "free"
-                      ? "/auditar"
-                      : `/auditar?plan=${encodeURIComponent(plan.key)}`;
+                  if (plan.key === "free") {
+                    window.location.href = "/auditar";
+                    return;
+                  }
+                  setPlanKey(plan.key);
                 }}
               >
                 {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
@@ -101,6 +115,13 @@ export default function Plans() {
             </article>
           ))}
         </section>
+        <PlanInterestSheet
+          plan={selected}
+          open={Boolean(selected)}
+          onOpenChange={(open) => {
+            if (!open) setPlanKey(null);
+          }}
+        />
 
         <section data-testid="planes-one-shots" className="space-y-3">
           <div className="px-1">

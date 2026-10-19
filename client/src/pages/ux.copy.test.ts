@@ -365,10 +365,10 @@ describe("copy visible de la experiencia", () => {
     expect(source).not.toContain("AuditaPatron y Helios");
   });
 
-  it("mantiene el modo oscuro por defecto con router global y guardas de navegación", () => {
+  it("abre en tema claro por defecto con router global y guardas de navegación", () => {
     const appSource = fs.readFileSync(path.resolve(import.meta.dirname, "../App.tsx"), "utf8");
 
-    expect(appSource).toContain('<ThemeProvider defaultTheme="dark" switchable>');
+    expect(appSource).toContain('<ThemeProvider defaultTheme="light" switchable>');
     expect(appSource).toContain('function DemoViewGuard()');
     expect(appSource).toContain('<AppUrlListener />');
     expect(appSource).toContain('function RouteLoadingFallback()');

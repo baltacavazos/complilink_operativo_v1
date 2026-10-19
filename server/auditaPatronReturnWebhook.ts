@@ -34,10 +34,12 @@ import {
   OFFICIAL_RESULT_NOTIFICATION_COPY,
   OFFICIAL_RESULT_NOTIFICATION_KIND,
   hasUsableOfficialFact,
+  officialImssArrivalSentence,
 } from "@shared/officialResultNotification";
 import { isOfficialFactArrivedKind } from "@shared/guestOfficialFact";
 import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
-import { persistGuestOfficialFact } from "./guestOfficialFactStore";
+import { claimGuestImssNotifyEmail, persistGuestOfficialFact } from "./guestOfficialFactStore";
+import { sendEmailWithResend } from "./authService";
 
 const RESPONSE_CONTRACT = "auditapatron.bridge.ack.v1" as const;
 
@@ -1038,19 +1040,32 @@ export async function ingestCompliLinkReturnPayload(params: {
         };
       }
 
+      const guestLookupIds = [
+        correlationId,
+        traceId,
+        toStringFromUnknown(payload.sourceCaseId),
+        toStringFromUnknown(payload.idempotencyKey),
+        toStringFromUnknown(toRecord(payload.metadata)?.caseId),
+        toStringFromUnknown(toRecord(payload.metadata)?.guestPreviewId),
+        toStringFromUnknown(toRecord(payload.metadata)?.traceId),
+      ];
       const guestFact = persistGuestOfficialFact({
-        lookupIds: [
-          correlationId,
-          traceId,
-          toStringFromUnknown(payload.sourceCaseId),
-          toStringFromUnknown(payload.idempotencyKey),
-          toStringFromUnknown(toRecord(payload.metadata)?.caseId),
-          toStringFromUnknown(toRecord(payload.metadata)?.guestPreviewId),
-          toStringFromUnknown(toRecord(payload.metadata)?.traceId),
-        ],
+        lookupIds: guestLookupIds,
         officialCheck: liveCheck,
         arrivedAt: receivedAt.toISOString(),
       });
+      const imssSentence = officialImssArrivalSentence(guestFact?.officialCheck ?? liveCheck);
+      const guestEmail = imssSentence ? claimGuestImssNotifyEmail(guestLookupIds) : null;
+      if (guestEmail && imssSentence && ENV.resendApiKey.trim() && ENV.resendFromEmail.trim()) {
+        await sendEmailWithResend({
+          to: [guestEmail],
+          subject: "El IMSS ya contestó",
+          html: `<p>${imssSentence}</p><p>${OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}</p><p><a href="https://auditapatron.com/auditar">Ver mi resultado</a></p>`,
+          text: `${imssSentence}\n\n${OFFICIAL_RESULT_NOTIFICATION_COPY.disclaimer}\n\nVer mi resultado: https://auditapatron.com/auditar`,
+        }).catch((error) => {
+          console.error("[Official result notification] Correo de invitado no salió:", error);
+        });
+      }
       console.info("[AuditaPatron inbound] retorno official_check aceptado sin expediente local", {
         correlationId,
         traceId,

@@ -328,7 +328,7 @@ describe("copia de consulta IMSS/SAT según permiso", () => {
     expect(readReciboVsOficial({ resultado: "hay_diferencia", motivo: "SBC" })?.resultado).toBe("hay_diferencia");
     expect(readReciboVsOficial(null)).toBeNull();
 
-    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine).toBe("Esto vimos: bien");
+    expect(RECEIPT_OFFICIAL_COMPARISON_COPY.bien.seenLine).toBe("Tu recibo se leyó completo");
     expect(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.seenLine).toBe("Esto vimos: hay diferencia");
     expect(RECEIPT_OFFICIAL_COMPARISON_COPY.no_se_pudo.seenLine).toBe("Esto vimos: no se pudo");
     expect(RECEIPT_OFFICIAL_COMPARISON_COPY.hay_diferencia.nextStep).toMatch(/patrón o RH/);

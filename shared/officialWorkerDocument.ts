@@ -24,7 +24,10 @@ export const ONLINE_VERIFICATIONS = [
 ] as const;
 export type OnlineVerification = (typeof ONLINE_VERIFICATIONS)[number];
 
-export const OFFICIAL_UPLOAD_LABEL = "Ya te llegó? Súbela";
+export const OFFICIAL_UPLOAD_LABEL = "¿Ya te llegó? Súbela";
+export const IMSS_CONSTANCIA_BUTTON = "Pedir mi constancia del IMSS";
+export const IMSS_EMAIL_WHEN_SLOW = "Avísame por correo cuando conteste";
+export const RECEIPT_PERMISSION_MISSING = "Falta tu permiso para preguntar al IMSS y al SAT";
 export const IMSS_CONSTANCIA_WHILE_WAITING = "Pide tu constancia del IMSS y súbela.";
 export const OFFICIAL_DOCUMENT_FALLBACK_LEAD =
   "Pide tu constancia aquí (te llega en un minuto), súbela y te la reviso";

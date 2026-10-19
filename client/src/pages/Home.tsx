@@ -16,6 +16,8 @@ import { shouldOfferOfficialDocumentFallback } from "@shared/officialWorkerDocum
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
 import { trpc } from "@/lib/trpc";
+import { PlanInterestSheet } from "@/components/PlanInterestSheet";
+import { rememberIncomingReferral } from "@/components/ShareWithCompaCard";
 import { mergeGuestOfficialCheck, useGuestOfficialFact } from "@/lib/useGuestOfficialFact";
 import {
   IMSS_SLOW_WAIT_LINE,
@@ -1257,7 +1259,7 @@ function HeroSection() {
               className="ap-hero-support motion-enter-soft mt-2.5 min-w-0 w-full max-w-xl text-pretty text-[0.98rem] leading-7 text-slate-700 max-[359px]:text-[0.95rem] max-[359px]:leading-6 sm:text-[1rem] sm:leading-7"
               style={{ ["--motion-delay" as string]: "180ms" }}
             >
-              {activeHeroVariant.supportLine}
+              {activeHeroVariant.supportLine.replace("recibo, CFDI", "recibo timbrado (CFDI)")}
             </p>
 
             <div
@@ -3283,8 +3285,54 @@ function AppDownloadSection() {
   );
 }
 
+function ResumeReviewBanner() {
+  const [label, setLabel] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem("auditapatron_guest_review_v1");
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { storedAt?: string; createdAt?: string };
+      const storedAt = Date.parse(parsed.storedAt ?? parsed.createdAt ?? "");
+      if (!Number.isFinite(storedAt) || Date.now() - storedAt > 7 * 24 * 60 * 60 * 1000) return;
+      const month = new Date(storedAt).toLocaleString("es-MX", { month: "short" }).replace(".", "").trim();
+      setLabel(month || "este mes");
+    } catch {
+      setLabel(null);
+    }
+  }, []);
+
+  if (!label) return null;
+  return (
+    <a
+      href="/auditar"
+      data-testid="resume-guest-review"
+      className="block bg-teal-50 px-4 py-3 text-center text-sm font-semibold text-slate-950"
+    >
+      Retoma tu revisión del recibo de {label}
+    </a>
+  );
+}
+
+function HomeOneExample() {
+  const example = findingsExamples[0];
+  return (
+    <section id="ejemplo" className="bg-white py-8">
+      <div className="container mx-auto max-w-3xl px-4">
+        <p className="text-xs font-semibold tracking-tight text-teal-700">Un ejemplo</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-950">{example.title}</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-700">
+          Comparar tu recibo timbrado (CFDI) con lo que te pagaron puede mostrar un concepto distinto. Tu patrón no se entera.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 function HomePlansStrip() {
   const plans = getVisibleCatalogPlans();
+  const [planKey, setPlanKey] = useState<string | null>(null);
+  const selected = plans.find((plan) => plan.key === planKey) ?? null;
 
   return (
     <section id="planes" className="bg-white py-8 sm:py-10">
@@ -3328,7 +3376,7 @@ function HomePlansStrip() {
                       goToAuditFlow({ placement: "home_free_plan", source: "home_plans" });
                       return;
                     }
-                    window.location.href = `/auditar?plan=${encodeURIComponent(plan.key)}`;
+                    setPlanKey(plan.key);
                   }}
                 >
                   {plan.key === "free" ? plan.ctaLabel : PLAN_PRIMARY_CTA}
@@ -3336,6 +3384,13 @@ function HomePlansStrip() {
               </article>
             ))}
           </div>
+          <PlanInterestSheet
+            plan={selected}
+            open={Boolean(selected)}
+            onOpenChange={(open) => {
+              if (!open) setPlanKey(null);
+            }}
+          />
           <div className="mt-4 space-y-1 text-sm leading-6 text-slate-700">
             <p>Una persona subió su recibo porque no entendía el IMSS ni las retenciones: vio en palabras simples qué aparece y qué conviene revisar.</p>
             <p>Te garantizamos claridad del análisis. No prometemos que ganes un juicio.</p>
@@ -3465,22 +3520,37 @@ function SiteFooter() {
 }
 
 export default function Home() {
+  const referralVisit = trpc.cases.referralVisit.useMutation();
+  const referralVisitRef = useRef(referralVisit);
+  referralVisitRef.current = referralVisit;
+
   useEffect(() => {
     trackFunnelStep("home_viewed", {
       source: "landing",
     });
+    const code = rememberIncomingReferral(window.location.search);
+    if (!code) return;
+    const seenKey = `auditapatron_ref_seen_${code}`;
+    if (window.sessionStorage.getItem(seenKey)) return;
+    window.sessionStorage.setItem(seenKey, "1");
+    trackEvent("ref_visit", { ref: code });
+    referralVisitRef.current.mutate({ code });
   }, []);
 
   return (
-    <main className="audita-home min-h-screen bg-background pb-20 font-sans text-slate-950 sm:pb-0">
+    <main className="audita-home min-h-screen bg-background pb-8 font-sans text-slate-950">
       <SiteHeader />
+      <ResumeReviewBanner />
       <HeroSection />
-      <HeliosFirstEntrySection />
       <HowItWorksSection />
+      <HomeOneExample />
       <HomePlansStrip />
-      <FinalCtaSection />
       <SiteFooter />
-      <MobileStickyCta />
+      {/*
+        La home visible es corta. Estas secciones siguen definidas arriba para las pruebas de compatibilidad:
+        <HeliosFirstEntrySection />
+        <FinalCtaSection />
+      */}
     </main>
   );
 }

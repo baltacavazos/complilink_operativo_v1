@@ -9,13 +9,20 @@ import {
   type ThemeStorage,
 } from "./ThemeContext";
 
-function createStorage(initialValue: string | null = null): ThemeStorage {
-  let value = initialValue;
+function createStorage(initial: Record<string, string> | string | null = null): ThemeStorage {
+  const values =
+    typeof initial === "string" || initial === null
+      ? { theme: initial ?? "" }
+      : { ...initial };
+  if (typeof initial === "string") values.theme = initial;
 
   return {
-    getItem: vi.fn(() => value),
-    setItem: vi.fn((_, nextValue: string) => {
-      value = nextValue;
+    getItem: vi.fn((key: string) => {
+      const value = values[key];
+      return value ? value : null;
+    }),
+    setItem: vi.fn((key: string, nextValue: string) => {
+      values[key] = nextValue;
     }),
   };
 }
@@ -60,8 +67,8 @@ describe("ThemeContext helpers", () => {
     expect(getStoredTheme()).toBeNull();
   });
 
-  it("uses the stored theme only when switching is enabled", () => {
-    const storage = createStorage("dark");
+  it("uses the stored theme only when the person chose it", () => {
+    const storage = createStorage({ theme: "dark", themeChosen: "user" });
 
     expect(
       resolveInitialTheme({
@@ -70,6 +77,14 @@ describe("ThemeContext helpers", () => {
         storage,
       }),
     ).toBe("dark");
+
+    expect(
+      resolveInitialTheme({
+        switchable: true,
+        defaultTheme: "light",
+        storage: createStorage("dark"),
+      }),
+    ).toBe("light");
 
     expect(
       resolveInitialTheme({

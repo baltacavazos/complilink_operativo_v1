@@ -13,7 +13,7 @@ describe("guía de papel oficial", () => {
     expect(guide).toContain("IMSS_CONSTANCIA_WHILE_WAITING");
     expect(guide).toContain("OFFICIAL_WORKER_PAGES.imss");
     expect(copy).toContain("Verificado con documento oficial");
-    expect(copy).toContain("Ya te llegó? Súbela");
+    expect(copy).toContain("¿Ya te llegó? Súbela");
     expect(guide).toContain("OFFICIAL_DOCUMENT_FALLBACK_LEAD");
     expect(guide).toContain("OFFICIAL_UPLOAD_LABEL");
     expect(guide).toContain("OFFICIAL_VERIFIED_LABEL");

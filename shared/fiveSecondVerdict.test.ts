@@ -17,7 +17,7 @@ describe("veredicto de 5 segundos", () => {
     });
 
     expect(verdict.seen).toBe("bien");
-    expect(verdict.seenLine).toBe("Esto vimos: bien");
+    expect(verdict.seenLine).toBe("Tu recibo se leyó completo");
     expect(verdict.nextStepLine).toBe(
       "Qué hacer ahora: Sube el CFDI del mismo periodo para comparar lo timbrado con lo que te pagaron.",
     );
@@ -91,7 +91,7 @@ describe("veredicto de 5 segundos", () => {
 
     expect(missingPayment.seen).toBe("falta_dato");
     expect(missingPayment.seenLine).toBe("Esto vimos: falta un dato");
-    expect(missingPayment.seenLine).not.toBe("Esto vimos: bien");
+    expect(missingPayment.seenLine).not.toBe("Tu recibo se leyó completo");
     expect(missingPayment.seen).not.toBe("bien");
     expect(missingPayment.nextStep).toBe(
       "No alcanzamos a leer cuánto te pagaron. Toma otra foto donde se vea el total, o sube el PDF.",

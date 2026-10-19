@@ -4,6 +4,7 @@ import {
   RECEIPT_RECEIVED_ACK,
   RECEIPT_VALIDATION_CORRECTION,
 } from "@shared/officialCheckCopy";
+import { RECEIPT_PERMISSION_MISSING } from "@shared/officialWorkerDocument";
 
 export type ReceiptAck = "received" | "failed" | null;
 
@@ -69,6 +70,8 @@ export function ReceiptFactSkeleton({
             <dd className="min-w-0 text-sm font-medium leading-6 text-[#161616]">
               {value ? (
                 <span>{value}</span>
+              ) : key === "estatus" && revealMissing ? (
+                <span data-testid="receipt-estatus-permission">{RECEIPT_PERMISSION_MISSING}</span>
               ) : (
                 <span
                   data-placeholder="true"

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import {
+  IMSS_CONSTANCIA_BUTTON,
   IMSS_CONSTANCIA_WHILE_WAITING,
   OFFICIAL_DOCUMENT_FALLBACK_LEAD,
   OFFICIAL_GUIDE_INTRO,
@@ -118,9 +119,9 @@ export function OfficialDocumentGuide({
             data-testid="official-guide-open"
             className="inline-flex min-h-14 items-center justify-center rounded-full bg-[#111111] px-4 py-3 text-center text-lg font-semibold text-white"
           >
-            {imssWhileWaiting ? "Pide tu constancia del IMSS y súbela" : "Pide tu constancia aquí"}
+            {imssWhileWaiting ? IMSS_CONSTANCIA_BUTTON : "Pide tu constancia aquí"}
           </a>
-          <div className="flex flex-wrap gap-2">
+          {imssWhileWaiting ? null : <div className="flex flex-wrap gap-2">
             {OFFICIAL_WORKER_KINDS.map((item) => (
               <button
                 key={item}
@@ -134,7 +135,7 @@ export function OfficialDocumentGuide({
                 {OFFICIAL_WORKER_PAGES[item].title}
               </button>
             ))}
-          </div>
+          </div>}
           <p className="text-base leading-6">{page.help}</p>
           <p className="text-base leading-6">{OFFICIAL_NO_PASSWORD}</p>
           {pageDown ? (
