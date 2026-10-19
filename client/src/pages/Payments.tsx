@@ -80,7 +80,7 @@ export default function Payments() {
     activeSubscription?.planName ?? commerceStatusQuery.data?.activePlan?.name ?? "Audita Gratis";
 
   const goToFirstWin = (planKey: string) => {
-    window.location.href = `/auditar?plan=${encodeURIComponent(planKey)}`;
+    window.location.href = `/planes?plan=${encodeURIComponent(planKey)}`;
   };
 
   if (auth.loading) {

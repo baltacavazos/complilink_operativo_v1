@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 
+import { reconcilePayrollDeductions } from "@shared/payrollAmounts";
+
 export const CASE_STATUSES = [
   "intake",
   "analysis",
@@ -975,6 +977,27 @@ function resolvePayrollHarvest(sourceText: string) {
   };
 }
 
+function withReconciledDeductions<T extends {
+  perceptions: string | null;
+  deductions: string | null;
+  netAmount: string | null;
+  isrWithheld: string | null;
+  imssWithheld: string | null;
+  infonavitWithheld: string | null;
+}>(harvest: T): T & { deductionsCalculated: boolean } {
+  const reconciled = reconcilePayrollDeductions({
+    perceptions: harvest.perceptions,
+    netAmount: harvest.netAmount,
+    deductions: harvest.deductions,
+    listed: [harvest.isrWithheld, harvest.imssWithheld, harvest.infonavitWithheld],
+  });
+  return {
+    ...harvest,
+    deductions: reconciled.deductions,
+    deductionsCalculated: reconciled.calculated,
+  };
+}
+
 export function buildPreliminaryLaborAnalysis(params: {
   fileName: string;
   mimeType: string;
@@ -994,7 +1017,7 @@ export function buildPreliminaryLaborAnalysis(params: {
     normalizedText.includes("infonavit");
 
   const isPayrollDocument = classification.documentType === "cfdi" || classification.documentType === "payroll_receipt";
-  const payroll = isPayrollDocument ? resolvePayrollHarvest(sourceText) : null;
+  const payroll = isPayrollDocument ? withReconciledDeductions(resolvePayrollHarvest(sourceText)) : null;
   const payrollEmployerName = payroll?.employerName ?? null;
   const payrollPeriod = payroll?.period ?? null;
   const payrollPerceptions = payroll?.perceptions ?? null;
@@ -1043,6 +1066,7 @@ export function buildPreliminaryLaborAnalysis(params: {
     payrollNetAmount,
     payrollPerceptions,
     payrollDeductions,
+    payrollDeductionsSource: payroll?.deductionsCalculated ? "calculado" : null,
     payrollNss,
     payrollCurp: payrollCurpConfirmed,
     payrollEmployerRegistration,

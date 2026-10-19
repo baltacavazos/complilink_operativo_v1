@@ -422,7 +422,7 @@ describe("briefing del caso para el asesor", () => {
       facts: {},
       reciboVsOficial: "bien",
     });
-    expect(bien.seenLine).toBe("Esto vimos: bien");
+    expect(bien.seenLine).toBe("Tu recibo se leyó completo");
     expect(bien.nextStep).toBe("Guarda este resultado con la fecha.");
     expect(bien.nextStepLine).toBe("Qué hacer ahora: Guarda este resultado con la fecha.");
 
@@ -1292,7 +1292,7 @@ describe("briefing del caso para el asesor", () => {
     });
 
     expect(same.comparison.seen).toBe("bien");
-    expect(same.comparison.seenLine).toBe("Esto vimos: bien");
+    expect(same.comparison.seenLine).toBe("Tu recibo se leyó completo");
     expect(same.comparison.nextStep).toMatch(/Guarda este resultado/);
     expect(same.officialCheck?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
     expect(same.officialCheck?.overallStatus).not.toBe("vivo");

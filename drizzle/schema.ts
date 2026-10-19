@@ -507,6 +507,21 @@ export const caseAdvisorMemories = mysqlTable(
   ],
 );
 
+export const referrals = mysqlTable("referrals", {
+  code: varchar("code", { length: 12 }).primaryKey(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  visits: int("visits").default(0).notNull(),
+  receiptsAnalyzed: int("receiptsAnalyzed").default(0).notNull(),
+  rewardedAt: timestamp("rewardedAt"),
+});
+
+export const planInterestLeads = mysqlTable("plan_interest_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  contact: varchar("contact", { length: 320 }).notNull(),
+  planKey: varchar("planKey", { length: 64 }).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
 export const whatsappNotificationDeliveries = mysqlTable(
   "whatsapp_notification_deliveries",
   {

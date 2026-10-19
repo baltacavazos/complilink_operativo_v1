@@ -158,7 +158,7 @@ describe("consulta instantánea primero", () => {
     expect(OFFICIAL_WORKER_PAGES.imss.title).toBe("Pide tu constancia del IMSS");
     expect(OFFICIAL_WORKER_PAGES.infonavit.title).toBe("Descarga tu estado de cuenta de Mi Cuenta Infonavit");
     expect(OFFICIAL_WORKER_PAGES.sat.title).toBe("Tu constancia del SAT (CSF)");
-    expect(OFFICIAL_UPLOAD_LABEL).toBe("Ya te llegó? Súbela");
+    expect(OFFICIAL_UPLOAD_LABEL).toBe("¿Ya te llegó? Súbela");
     expect(OFFICIAL_FALLBACK_LABEL).toBe("Pide tu constancia aquí (te llega en un minuto), súbela y te la reviso");
     expect(decideOfficialVerdict({
       readable: true,

@@ -15,6 +15,10 @@ import {
   OfficialDocumentGuide,
   type OfficialWorkerUploadResult,
 } from "@/components/OfficialDocumentGuide";
+import { ShareWithCompaCard, readIncomingReferralCode, readOrCreateReferralCode, rememberIncomingReferral } from "@/components/ShareWithCompaCard";
+import { reconcilePayrollDeductions } from "@shared/payrollAmounts";
+import { ImssEmailWhenSlow } from "@/components/ImssEmailWhenSlow";
+import { shareWhatsappHref } from "@shared/shareCopy";
 import { shouldOfferOfficialDocumentFallback } from "@shared/officialWorkerDocument";
 import { WhatsappNotifyPreference } from "@/components/WhatsappNotifyPreference";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
@@ -2333,12 +2337,21 @@ async function fileToBase64(file: File) {
   return readWebFileAsDataUrl(file);
 }
 
+const GUEST_REVIEW_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
 function readStoredGuestReview(): StoredGuestReview | null {
   if (typeof window === "undefined") return null;
 
   try {
-    const raw = window.sessionStorage.getItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as StoredGuestReview) : null;
+    const raw = window.localStorage.getItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredGuestReview & { storedAt?: string };
+    const storedAt = Date.parse(parsed.storedAt ?? parsed.createdAt);
+    if (!Number.isFinite(storedAt) || Date.now() - storedAt > GUEST_REVIEW_TTL_MS) {
+      window.localStorage.removeItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -2346,13 +2359,36 @@ function readStoredGuestReview(): StoredGuestReview | null {
 
 function writeStoredGuestReview(review: StoredGuestReview | null) {
   if (typeof window === "undefined") return;
+  window.sessionStorage.removeItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
 
   if (!review) {
-    window.sessionStorage.removeItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
+    window.localStorage.removeItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY);
     return;
   }
 
-  window.sessionStorage.setItem(AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY, JSON.stringify(review));
+  window.localStorage.setItem(
+    AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY,
+    JSON.stringify({ ...review, storedAt: review.createdAt || new Date().toISOString() }),
+  );
+}
+
+function reviewCopyWithoutIdentity(text: string) {
+  return text
+    .split(/(?<=\.)\s+/)
+    .filter((sentence) => !/\b(CURP|NSS|RFC)\b/.test(sentence))
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function clearStoredGuestReview() {
+  writeStoredGuestReview(null);
+}
+
+function imssWaitedLongEnough(checkedAt?: string | null) {
+  const at = checkedAt ? Date.parse(checkedAt) : Number.NaN;
+  if (!Number.isFinite(at)) return true;
+  return Date.now() - at >= 60_000;
 }
 
 function plainWorkerCopy(value?: string | null) {
@@ -2533,7 +2569,17 @@ export function buildPayrollFactSignal(params: {
   const isrWithheld = readValue(["isrwithheld", "isr", "retencionisr"]);
   const imssWithheld = readValue(["imsswithheld", "cuotaimss", "retencionimss"]);
   const infonavitWithheld = readValue(["infonavitwithheld", "pagoinfonavit", "retencioninfonavit"]);
-  const deductionsAreZero = Boolean(deductions && /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(deductions));
+  const reconciledDeductions = reconcilePayrollDeductions({
+    perceptions: perception,
+    netAmount: payment,
+    deductions,
+    listed: [isrWithheld, imssWithheld, infonavitWithheld],
+  });
+  const resolvedDeductions = reconciledDeductions.deductions ?? deductions;
+  const deductionLabel = reconciledDeductions.calculated && resolvedDeductions
+    ? `${resolvedDeductions} (calculado)`
+    : resolvedDeductions;
+  const deductionsAreZero = Boolean(resolvedDeductions && /^\$?0(?:\.0+)?(?:\s*(?:mxn|pesos))?$/i.test(resolvedDeductions));
   const imss = nss || employerRegistration
     ? `IMSS: ${nss ? `se ve el NSS ${nss}` : "no se alcanzó a leer el NSS"}${nss && employerRegistration ? " y " : ""}${employerRegistration ? `se ve el registro patronal ${employerRegistration}` : ""}. Por lo que aparece en estos papeles, parece que hay referencia a aseguramiento ante IMSS. Esto sale de tus papeles; no es una respuesta del IMSS.`
     : "IMSS: en este archivo no se alcanzaron a leer NSS ni registro patronal. Si los necesitas revisar, busca una constancia de semanas cotizadas o un recibo donde esos datos sean visibles.";
@@ -2559,10 +2605,10 @@ export function buildPayrollFactSignal(params: {
     curp ? `CURP: ${curp}.` : null,
     employerRfc ? `RFC del patrón: ${employerRfc}.` : null,
     payment ? `Pago que se alcanza a leer: ${payment}.` : "El monto pagado no se alcanzó a leer completo.",
-    deductions
+    deductionLabel
       ? deductionsAreZero
         ? "Deducciones que se alcanzan a leer: no aparecen descuentos."
-        : `Deducciones que se alcanzan a leer: ${deductions}.`
+        : `Deducciones que se alcanzan a leer: ${deductionLabel}.`
       : "No se alcanzó a leer con claridad el total de deducciones.",
     perception ? `Percepciones visibles: ${perception}.` : null,
     imss,
@@ -2572,10 +2618,10 @@ export function buildPayrollFactSignal(params: {
   const headline = employer || employerRfc || period
     ? `Revisa el pago${period ? ` del periodo ${period}` : " de este recibo"}${employer ? ` emitido por ${employer}` : employerRfc ? ` identificado con RFC ${employerRfc}` : ""}.`
     : fallback.headline;
-  const attention = deductions
+  const attention = deductionLabel
     ? deductionsAreZero
       ? "No aparecen deducciones legibles. Revisa que el pago neto coincida con lo que realmente recibiste y conserva este recibo para compararlo."
-      : `Aparecen deducciones por ${deductions}. Revisa que cada descuento esté explicado en tu recibo y que el pago neto coincida con lo que recibiste.`
+      : `Aparecen deducciones por ${deductionLabel}. Revisa que cada descuento esté explicado en tu recibo y que el pago neto coincida con lo que recibiste.`
     : payment
       ? `Se alcanza a leer un pago de ${payment}, pero faltan datos para confirmar cómo se compone. Revisa el desglose de percepciones y deducciones.`
       : "El archivo se leyó de forma parcial. Conviene revisar una versión donde se vean completos el periodo, el pago y las deducciones.";
@@ -4406,6 +4452,7 @@ export default function Auditar() {
   const persistAuditarViewStateMutation =
     trpc.cases.persistAuditarViewState.useMutation();
   const heliosCopilotMutation = trpc.cases.heliosCopilotChat.useMutation();
+  const guestAdvisorMutation = trpc.cases.guestAdvisorChat.useMutation();
   const revalidateSocialSecurityMutation =
     trpc.cases.revalidateSocialSecurity.useMutation();
   const acceptLegalPackageMutation =
@@ -4463,6 +4510,9 @@ export default function Auditar() {
   const officialPendingSinceRef = useRef<number | null>(null);
   const [officialNowMs, setOfficialNowMs] = useState(() => Date.now());
   const [guestReview, setGuestReview] = useState<StoredGuestReview | null>(() => readStoredGuestReview());
+  useEffect(() => {
+    rememberIncomingReferral(window.location.search);
+  }, []);
   const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
   const [guestReviewClaimStarted, setGuestReviewClaimStarted] = useState(false);
   const [openingDocumentId, setOpeningDocumentId] = useState<string | null>(
@@ -6582,9 +6632,7 @@ export default function Auditar() {
     ) ??
     plainWorkerCopy(uploadInsight?.nextSuggestion) ??
     lastUploadResultFallback.nextStep;
-  const postReadingWhatsappHref = `https://wa.me/?text=${encodeURIComponent(
-    `Hola. Ya revisé mi documento en AuditaPatrón y me salió esto: ${lastUploadResultHeadline}. ${lastUploadNextStepSummary} ¿Me ayudas a entender qué me conviene hacer ahora?`
-  )}`;
+  const postReadingWhatsappHref = shareWhatsappHref(readOrCreateReferralCode());
   const heliosCalculatorSnapshot = caseDetailQuery.data?.heliosCalculator ?? null;
   const heliosCalculatorLatestComparison =
     heliosCalculatorSnapshot?.latestComparison ?? null;
@@ -7926,33 +7974,46 @@ export default function Auditar() {
 
   const handleHeliosCopilotSend = (content: string) => {
     if (!auth.isAuthenticated) {
-      const normalized = content.trim().toLowerCase();
-      const aboutPrivacy = /empresa|privac|compart/.test(normalized);
-      const receiptRead = [
-        plainWorkerCopy(
-          guestReview?.heliosOpinion.resultCard?.headline ??
-            guestReview?.heliosOpinion.summary,
-        ),
-        plainWorkerCopy(guestReview?.heliosOpinion.recommendedNextStep),
-      ]
-        .filter(Boolean)
-        .join(" ");
-      const aboutReceipt =
-        Boolean(guestReview) && /recibo|pago|imss|revis|descuento|retenc/.test(normalized);
-      const reply = aboutPrivacy
-        ? "No. Lo que subes no se comparte con tu empresa. El aviso de privacidad se lee sin cuenta, desde el inicio."
-        : officialWorkerDocument
-          ? officialWorkerDocument.advisorAnswer
-        : aboutReceipt && receiptRead
-          ? `${receiptRead} Esto es una lectura inicial, no una prueba de que tu patrón cumpla.`
-          : guestReview
-            ? "Puedo hablar de la lectura de tu recibo. Pregunta qué se ve, qué falta o cuál es el siguiente paso."
-            : "Sube tu recibo en esta pantalla y te explico lo que se ve. Si ya lo guardaste, entra con tu correo para seguir el caso.";
+      const history = alignedCopilotMessages
+        .filter((item): item is { role: "user" | "assistant"; content: string } => item.role === "user" || item.role === "assistant")
+        .slice(-6)
+        .map((item) => ({
+          role: item.role,
+          content: item.content,
+        }));
       setHeliosCopilotMessages((current) =>
-        appendHeliosCopilotMessage(
-          appendHeliosCopilotMessage(current, { role: "user", content }),
-          { role: "assistant", content: reply },
-        ),
+        appendHeliosCopilotMessage(current, { role: "user", content }),
+      );
+      const token = guestReview?.guestPreviewToken;
+      if (!token) {
+        setHeliosCopilotMessages((current) =>
+          appendHeliosCopilotMessage(current, {
+            role: "assistant",
+            content: "Sube tu recibo en esta pantalla y te explico los montos de ese documento.",
+          }),
+        );
+        return;
+      }
+      guestAdvisorMutation.mutate(
+        { guestPreviewToken: token, prompt: content, history },
+        {
+          onSuccess: (response) => {
+            setHeliosCopilotMessages((current) =>
+              appendHeliosCopilotMessage(current, {
+                role: "assistant",
+                content: response.answer,
+              }),
+            );
+          },
+          onError: () => {
+            setHeliosCopilotMessages((current) =>
+              appendHeliosCopilotMessage(current, {
+                role: "assistant",
+                content: "No pude contestar ahora. Pregunta otra vez en un momento.",
+              }),
+            );
+          },
+        },
       );
       return;
     }
@@ -8643,6 +8704,7 @@ export default function Auditar() {
         mimeType: file.type || "application/octet-stream",
         base64Content,
         sourceChannel: "manual",
+        referralCode: readIncomingReferralCode() ?? undefined,
       });
 
       if (guestReadEpochRef.current !== readAttempt) return;
@@ -9194,7 +9256,7 @@ export default function Auditar() {
         },
         ...alignedCopilotMessages,
       ]}
-      isLoading={false}
+      isLoading={guestAdvisorMutation.isPending}
       suggestedPrompts={guestAdvisorPrompts}
       suggestedPromptsContext={guestReview ? "Preguntas sobre la lectura de tu recibo." : "Preguntas para empezar."}
       disclaimer={WORKER_CHAT_DISCLAIMER}
@@ -9385,6 +9447,30 @@ export default function Auditar() {
             reading={officialWorkerDocument}
             onReading={setOfficialWorkerDocument}
           />
+          <ShareWithCompaCard />
+          {officialCheckDisplay.headline.includes(IMSS_SLOW_WAIT_LINE) &&
+          imssWaitedLongEnough(officialCaseBriefing.officialCheck?.checkedAt) ? (
+            <ImssEmailWhenSlow guestPreviewToken={guestReview.guestPreviewToken} />
+          ) : null}
+          <button
+            type="button"
+            data-testid="clear-guest-review"
+            className="mt-4 text-sm font-semibold text-slate-950 underline"
+            onClick={() => {
+              clearStoredGuestReview();
+              setGuestReview(null);
+            }}
+          >
+            Borrar de este celular
+          </button>
+          <button
+            type="button"
+            data-testid="ask-advisor-sticky"
+            className="fixed inset-x-3 bottom-3 z-30 min-h-12 rounded-full bg-[#0f766e] px-4 text-base font-semibold text-white shadow-lg"
+            onClick={() => openHeliosCopilot()}
+          >
+            {WORKER_CHAT_ASK_CTA}
+          </button>
           {guestReviewError ? (
             <Alert className="mt-4 border-rose-200 bg-rose-50">
               <AlertTitle>No pudimos completar esto</AlertTitle>
@@ -9399,7 +9485,7 @@ export default function Auditar() {
 
   if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview) {
     return (
-      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
+      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 pb-24 text-slate-950 sm:px-4 sm:py-10">
         <div className="container mx-auto max-w-3xl">
           <MobileAppShell current="auditar" title="Tu revisión" subtitle="Una lectura inicial de tu recibo." />
           <input
@@ -9442,41 +9528,7 @@ export default function Auditar() {
                 <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
               </>
             )}
-            {guestFiveSecond.seen === "no_se_leyo" && guestReview.preview.previewAsset.mimeType.startsWith("image/") ? (
-              <div data-testid="guest-unreadable-tips" className="mt-5 rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
-                <p className="text-base font-semibold text-amber-900">No pudimos leer tu foto. Tómala otra vez así:</p>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-base leading-7 text-slate-900">
-                  <li>Pon el recibo en una mesa, con buena luz.</li>
-                  <li>Que se vea completo, sin dedos ni sombras.</li>
-                  <li>Toma la foto de frente y sin moverte.</li>
-                </ul>
-                <p className="mt-2 text-sm leading-6 text-slate-700">Si tienes el PDF del recibo, mejor súbelo: se lee completo.</p>
-              </div>
-            ) : (
-            <div className="mt-5 grid gap-4">
-              <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
-                <p className="text-sm font-semibold tracking-tight text-amber-900">Qué conviene revisar</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalHeadline}. {String(guestSignalWhy).split(/(?<=\.)\s+(?=(?:IMSS:|Retenciones))/)[0]}</p>
-              </div>
-              <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50/70 p-4">
-                <p className="text-sm font-semibold tracking-tight text-amber-900">Hoy conviene poner atención especial en esto</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
-              </div>
-              <div className="rounded-[1.35rem] border border-cyan-200 bg-cyan-50/70 p-4">
-                <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.imss}</p>
-              </div>
-              <div className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
-                <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.retentions}</p>
-              </div>
-              <div className="rounded-[1.35rem] border border-teal-200 bg-teal-50 p-4">
-                <p className="text-sm font-semibold tracking-tight text-teal-900">Siguiente paso útil</p>
-                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
-              </div>
-            </div>
-            )}
-            <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
+            <ShareWithCompaCard />
             <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left">
                 <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-[#161616]">
                   {officialCheckDisplay.headline}
@@ -9559,22 +9611,85 @@ export default function Auditar() {
                 {officialCheckDisplay.buttonLabel}
               </Button>
             </div>
+            {guestFiveSecond.seen === "no_se_leyo" && guestReview.preview.previewAsset.mimeType.startsWith("image/") ? (
+              <div data-testid="guest-unreadable-tips" className="mt-5 rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
+                <p className="text-base font-semibold text-amber-900">No pudimos leer tu foto. Tómala otra vez así:</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-base leading-7 text-slate-900">
+                  <li>Pon el recibo en una mesa, con buena luz.</li>
+                  <li>Que se vea completo, sin dedos ni sombras.</li>
+                  <li>Toma la foto de frente y sin moverte.</li>
+                </ul>
+                <p className="mt-2 text-sm leading-6 text-slate-700">Si tienes el PDF del recibo, mejor súbelo: se lee completo.</p>
+              </div>
+            ) : (
+            <div className="mt-5 grid gap-4">
+              <div className="rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
+                <p className="text-sm font-semibold tracking-tight text-amber-900">Qué conviene revisar</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalHeadline}. {reviewCopyWithoutIdentity(String(guestSignalWhy).split(/(?<=\.)\s+(?=(?:IMSS:|Retenciones))/)[0] ?? "")}</p>
+                <p className="mt-3 text-sm font-semibold tracking-tight text-amber-900">Hoy conviene poner atención especial en esto</p>
+                <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.attention}</p>
+                <details data-testid="ver-mis-datos" className="mt-3">
+                  <summary className="cursor-pointer text-sm font-semibold text-slate-950">Ver mis datos</summary>
+                  <ul className="mt-2 space-y-1 text-sm leading-6 text-slate-900">
+                    {guestFactSignal.curp ? <li>CURP: {guestFactSignal.curp}</li> : null}
+                    {guestFactSignal.workerRfc ? <li>RFC: {guestFactSignal.workerRfc}</li> : null}
+                    {guestFactSignal.employerRfc ? <li>RFC del patrón: {guestFactSignal.employerRfc}</li> : null}
+                    {guestFactSignal.nss ? <li>NSS: {guestFactSignal.nss}</li> : null}
+                  </ul>
+                </details>
+              </div>
+              <div data-testid="receipt-review-rows" className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
+                <div className="border-b border-slate-200 pb-3">
+                  <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-900">{reviewCopyWithoutIdentity(guestFactSignal.imss)}</p>
+                </div>
+                <div className="border-b border-slate-200 py-3">
+                  <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-900">{guestFactSignal.retentions}</p>
+                </div>
+                <div className="pt-3">
+                  <p className="text-sm font-semibold tracking-tight text-teal-900">Siguiente paso útil</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-900">{guestSignalNextStep}</p>
+                </div>
+              </div>
+            </div>
+            )}
+            <p className="mt-5 text-sm leading-6 text-slate-700">Archivo revisado: <span className="font-medium text-slate-800">{guestReview.preview.previewAsset.fileName}</span>. Si faltan datos o el texto no se lee bien, este resultado se mantiene como orientación inicial.</p>
             {guestReviewError ? <Alert className="mt-4 border-rose-200 bg-rose-50"><AlertTitle>No pudimos completar esto</AlertTitle><AlertDescription>{guestReviewError}</AlertDescription></Alert> : null}
             <p className="mt-5 text-sm leading-6 text-slate-700">Guardar esta revisión es opcional. Puedes consultar IMSS y SAT ahora y crear una cuenta después si quieres conservar el resultado.</p>
             <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => {
+              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white text-slate-950" onClick={() => {
                 window.location.href = `/acceso?mode=signup&returnTo=${encodeURIComponent("/auditar?resume=guest-review")}`;
               }}>
                 Guardar esta revisión <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
+              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white text-slate-950" onClick={() => guestFileInputRef.current?.click()} disabled={guestAnalyzeMutation.isPending}>
                 Cambiar recibo
               </Button>
-              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white" onClick={() => openHeliosCopilot()}>
+              <Button type="button" variant="outline" className="h-12 rounded-full border-slate-200 bg-white text-slate-950" onClick={() => openHeliosCopilot()}>
                 {WORKER_CHAT_ASK_CTA}
               </Button>
             </div>
+            <button
+              type="button"
+              data-testid="clear-guest-review"
+              className="mt-4 text-sm font-semibold text-slate-950 underline"
+              onClick={() => {
+                clearStoredGuestReview();
+                setGuestReview(null);
+              }}
+            >
+              Borrar de este celular
+            </button>
           </section>
+          <button
+            type="button"
+            data-testid="ask-advisor-sticky"
+            className="fixed inset-x-3 bottom-3 z-30 min-h-12 rounded-full bg-[#0f766e] px-4 text-base font-semibold text-white shadow-lg"
+            onClick={() => openHeliosCopilot()}
+          >
+            {WORKER_CHAT_ASK_CTA}
+          </button>
           {guestAdvisorSheet}
         </div>
       </main>

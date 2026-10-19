@@ -33,6 +33,8 @@ export function getStoredTheme(storage?: ThemeStorage): Theme | null {
   return isTheme(stored) ? stored : null;
 }
 
+export const THEME_CHOSEN_KEY = "themeChosen";
+
 export function resolveInitialTheme(options: {
   switchable: boolean;
   defaultTheme: Theme;
@@ -42,7 +44,12 @@ export function resolveInitialTheme(options: {
     return options.defaultTheme;
   }
 
-  return getStoredTheme(options.storage) ?? options.defaultTheme;
+  const chosen = options.storage?.getItem(THEME_CHOSEN_KEY);
+  if (chosen === "user") {
+    return getStoredTheme(options.storage) ?? options.defaultTheme;
+  }
+
+  return options.defaultTheme;
 }
 
 export function syncThemeWithDocument(options: {
@@ -90,6 +97,9 @@ export function ThemeProvider({
 
   const toggleTheme = switchable
     ? () => {
+        if (typeof window !== "undefined") {
+          window.localStorage.setItem(THEME_CHOSEN_KEY, "user");
+        }
         setTheme(prev => (prev === "light" ? "dark" : "light"));
       }
     : undefined;

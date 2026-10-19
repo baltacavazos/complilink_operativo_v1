@@ -20,6 +20,8 @@ type GuestOfficialSession = {
   createdAtMs: number;
   officialCheck: OfficialCheckSummary | null;
   arrivedAt: string | null;
+  notifyEmail: string | null;
+  notifyEmailSentAt: string | null;
 };
 
 const sessionsByAlias = new Map<string, GuestOfficialSession>();
@@ -162,6 +164,8 @@ export function rememberGuestOfficialSession(params: {
     arrivedAt: hasUsableOfficialFact(officialCheck)
       ? live?.arrivedAt ?? stashed?.arrivedAt ?? new Date(nowMs).toISOString()
       : live?.arrivedAt ?? null,
+    notifyEmail: live?.notifyEmail ?? null,
+    notifyEmailSentAt: live?.notifyEmailSentAt ?? null,
   };
   bind(session);
   return session;
@@ -213,4 +217,36 @@ export function readGuestOfficialFact(params: {
   }
   if (session.guestPreviewId !== params.guestPreviewId && session.traceId !== params.traceId) return null;
   return session;
+}
+
+export function saveGuestImssNotifyEmail(params: {
+  guestPreviewId: string;
+  traceId: string;
+  email: string;
+  nowMs?: number;
+}): boolean {
+  const email = params.email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return false;
+  const nowMs = params.nowMs ?? Date.now();
+  const existing = findSession([params.traceId, params.guestPreviewId, `guest-official:${params.guestPreviewId}`]);
+  const session: GuestOfficialSession = existing ?? {
+    guestPreviewId: params.guestPreviewId,
+    traceId: params.traceId,
+    createdAtMs: nowMs,
+    officialCheck: null,
+    arrivedAt: null,
+    notifyEmail: null,
+    notifyEmailSentAt: null,
+  };
+  session.notifyEmail = email;
+  bind(session);
+  return true;
+}
+
+export function claimGuestImssNotifyEmail(lookupIds: Array<string | null | undefined>): string | null {
+  const session = findSession(lookupIds);
+  if (!session?.notifyEmail || session.notifyEmailSentAt) return null;
+  session.notifyEmailSentAt = new Date().toISOString();
+  bind(session);
+  return session.notifyEmail;
 }

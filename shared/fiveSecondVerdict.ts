@@ -80,6 +80,7 @@ export function selectFiveSecondNextStep(input: FiveSecondVerdictInput, seen: Fi
 }
 
 export function formatFiveSecondSeenLine(seen: FiveSecondSeen) {
+  if (seen === "bien") return "Tu recibo se leyó completo";
   return `Esto vimos: ${SEEN_LABEL[seen]}`;
 }
 
@@ -111,7 +112,7 @@ export function selectFiveSecondVerdictFromReceipt(params: {
   riskLevel?: string | null;
   hasDifferenceSignal?: boolean;
 }): FiveSecondVerdict {
-  return selectFiveSecondVerdict({
+  const verdict = selectFiveSecondVerdict({
     hasEmployer: Boolean(params.employer || params.employerRfc),
     hasPeriod: Boolean(params.period),
     hasPayment: Boolean(params.payment),
@@ -122,4 +123,10 @@ export function selectFiveSecondVerdictFromReceipt(params: {
     riskLevel: params.riskLevel,
     hasDifferenceSignal: params.hasDifferenceSignal,
   });
+  if (verdict.seen !== "bien" || !params.payment) return verdict;
+  const period = params.period?.trim().replace(/^del\s+/i, "");
+  return {
+    ...verdict,
+    seenLine: `Ya leímos tu recibo: te pagaron ${params.payment}${period ? ` del ${period}` : ""}. Falta preguntarle al IMSS si te tiene registrado.`,
+  };
 }
