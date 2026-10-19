@@ -9514,10 +9514,8 @@ export default function Auditar() {
             ) : (
               <>
                 <p data-testid="five-second-verdict-next" className="mt-3 text-lg font-medium leading-7 text-[#161616]">{guestFiveSecond.nextStepLine}</p>
-                <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
               </>
             )}
-            <div className="mt-4">{renderReceiptArrival()}</div>
             <GuestOfficialFactNotice
               summary={officialCaseBriefing.officialCheck ?? officialCheckSummary}
               arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? guestReview.officialFactArrivedAt}
@@ -9613,6 +9611,8 @@ export default function Auditar() {
               ) : null}
             </div>
             <ShareWithCompaCard />
+            <p className="mt-3 text-sm leading-6 text-[#222222]">{guestFiveSecond.disclaimer}</p>
+            <div className="mt-4">{renderReceiptArrival()}</div>
             {guestFiveSecond.seen === "no_se_leyo" && guestReview.preview.previewAsset.mimeType.startsWith("image/") ? (
               <div data-testid="guest-unreadable-tips" className="mt-5 rounded-[1.35rem] border border-amber-200 bg-amber-50 p-4">
                 <p className="text-base font-semibold text-amber-900">No pudimos leer tu foto. Tómala otra vez así:</p>
