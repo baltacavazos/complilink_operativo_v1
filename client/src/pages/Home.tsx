@@ -1367,7 +1367,7 @@ function HeroSection() {
             <a
               href="/auditar?chat=1"
               data-testid="home-hero-assistant-pill"
-              className="flex w-fit max-w-full flex-col self-center rounded-full border border-slate-200/80 bg-white/55 px-3.5 py-1.5 text-center no-underline lg:self-start lg:text-left"
+              className="hidden w-fit max-w-full flex-col self-center rounded-full border border-slate-200/80 bg-white/55 px-3.5 py-1.5 text-center no-underline sm:flex lg:self-start lg:text-left"
             >
               <span className="text-pretty text-[0.8rem] font-medium leading-5 text-slate-600">
                 {HOME_HERO_ASSISTANT_PILL_TITLE}

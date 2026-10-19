@@ -105,6 +105,7 @@ import {
 import { buildAsesorContinuityIntro } from "@shared/advisorMemory";
 import { readExpedienteMonitoring } from "@/lib/expedienteMonitoring";
 import { resolveWorkerPrivacySignal } from "@/lib/privacySignal";
+import { plainReceiptImssLine, reviewCopyWithoutIdentity } from "@/lib/reviewCopy";
 import {
   platformStorageGetJSON,
   platformStorageRemove,
@@ -2370,17 +2371,6 @@ function writeStoredGuestReview(review: StoredGuestReview | null) {
     AUDITAPATRON_GUEST_REVIEW_STORAGE_KEY,
     JSON.stringify({ ...review, storedAt: review.createdAt || new Date().toISOString() }),
   );
-}
-
-function reviewCopyWithoutIdentity(text: string) {
-  return text
-    .replace(/\bNSS\s+[A-Z0-9-]{6,}/gi, "tu número del IMSS")
-    .replace(/\bCURP:\s*[^.]+\.?/gi, "")
-    .replace(/\bRFC de la persona trabajadora:\s*[^.]+\.?/gi, "")
-    .replace(/\bRFC del patrón:\s*[^.]+\.?/gi, "")
-    .replace(/\bRFC:\s*[A-ZÑ&0-9]{10,13}\.?/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 function clearStoredGuestReview() {
@@ -9249,11 +9239,12 @@ export default function Auditar() {
       open={heliosCopilotOpen}
       onOpenChange={setHeliosCopilotOpen}
       onSendMessage={handleHeliosCopilotSend}
+      caseTitle={guestReview ? "Tu recibo" : "Tu pregunta"}
       messages={[
         {
           role: "assistant",
           content: guestReview
-            ? `${guestSignalWhy} Pregúntame qué se ve, qué falta y el siguiente paso.`
+            ? `${guestFiveSecond.seenLine} Pregúntame si un descuento no te cuadra.`
             : "Puedes preguntar antes de crear cuenta. Si subes tu recibo, te explico lo que se ve.",
         },
         ...alignedCopilotMessages,
@@ -9262,7 +9253,7 @@ export default function Auditar() {
       suggestedPrompts={guestAdvisorPrompts}
       suggestedPromptsContext={guestReview ? "Preguntas sobre la lectura de tu recibo." : "Preguntas para empezar."}
       disclaimer={WORKER_CHAT_DISCLAIMER}
-      summary={guestReview ? guestSignalWhy : null}
+      summary={guestReview ? guestFiveSecond.seenLine : null}
       hideCaseChips
       nextSuggestedDocument={{
         title: guestReview ? "Si quieres otro archivo" : "Para empezar",
@@ -9433,7 +9424,7 @@ export default function Auditar() {
               void handleGuestOfficialCheck();
             }}
             onAsk={() => openHeliosCopilot()}
-            paperRead={`${guestSignalHeadline}. ${guestSignalWhy}`}
+            paperRead={`${guestFiveSecond.seenLine} ${plainReceiptImssLine(guestFactSignal.imss)}`}
             comparisonLines={officialCaseBriefing.comparisonLines}
             failureOffer={infonavitDocumentSlot}
             onDone={() => {
@@ -9645,7 +9636,7 @@ export default function Auditar() {
               <div data-testid="receipt-review-rows" className="rounded-[1.35rem] border border-slate-200 bg-white p-4">
                 <div className="border-b border-slate-200 pb-3">
                   <p className="text-sm font-semibold tracking-tight text-cyan-950">IMSS según este documento</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-900">{reviewCopyWithoutIdentity(guestFactSignal.imss)}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-900">{plainReceiptImssLine(guestFactSignal.imss)}</p>
                 </div>
                 <div className="border-b border-slate-200 py-3">
                   <p className="text-sm font-semibold tracking-tight text-slate-800">Impuestos y retenciones</p>
