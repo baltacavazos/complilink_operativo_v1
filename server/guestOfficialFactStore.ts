@@ -69,15 +69,53 @@ function findSession(ids: Array<string | null | undefined>): GuestOfficialSessio
   return null;
 }
 
+function sourceRank(check: OfficialCheckSummary["checks"][number]): number {
+  const live = check.status === "vivo" || check.honesty === "live";
+  const facts = (check.hechos ?? []).some((item) => item.trim().length > 0);
+  if (live && facts) return 3;
+  if (live) return 2;
+  if (check.status === "pendiente" || check.honesty === "pending") return 1;
+  return 0;
+}
+
+function mergeChecks(
+  current: OfficialCheckSummary["checks"],
+  incoming: OfficialCheckSummary["checks"],
+): OfficialCheckSummary["checks"] {
+  const merged = new Map(current.map((check) => [check.source, check]));
+  for (const check of incoming) {
+    const previous = merged.get(check.source);
+    if (!previous || sourceRank(check) >= sourceRank(previous)) merged.set(check.source, check);
+  }
+  return [...merged.values()];
+}
+
+/**
+ * Un reintento del IMSS no borra el SAT que ya contestó, ni un pendiente vacío
+ * pisa un hecho que ya llegó.
+ */
 function preferOfficialCheck(
   current: OfficialCheckSummary | null,
   incoming: OfficialCheckSummary | null,
 ): OfficialCheckSummary | null {
   if (!incoming) return current;
   if (!current) return incoming;
-  if (hasUsableOfficialFact(incoming)) return incoming;
-  if (hasUsableOfficialFact(current)) return current;
-  return incoming;
+  const checks = mergeChecks(current.checks ?? [], incoming.checks ?? []);
+  const anyLive = checks.some((check) => check.status === "vivo" || check.honesty === "live");
+  const anyPending = checks.some((check) => check.status === "pendiente" || check.honesty === "pending");
+  const overallStatus = anyLive ? "vivo" : anyPending ? "pendiente" : incoming.overallStatus;
+  return {
+    ...incoming,
+    checks,
+    overallStatus,
+    checkedAt: incoming.checkedAt ?? current.checkedAt,
+    chatAnchor: incoming.chatAnchor ?? current.chatAnchor,
+    identity: {
+      nss: Boolean(incoming.identity?.nss || current.identity?.nss),
+      curp: Boolean(incoming.identity?.curp || current.identity?.curp),
+      rfc: Boolean(incoming.identity?.rfc || current.identity?.rfc),
+    },
+  };
 }
 
 function takeStashed(ids: Array<string | null | undefined>, nowMs: number) {

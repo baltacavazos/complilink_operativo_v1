@@ -48,3 +48,19 @@ export function hasUsableOfficialFact(
 ): boolean {
   return listUsableOfficialFacts(summary).length > 0;
 }
+
+/** Frase del correo cuando el reintento ya trajo un hecho del IMSS. Nunca dice que el patrón cumple. */
+export function officialImssArrivalSentence(
+  summary: OfficialCheckSummary | null | undefined,
+): string | null {
+  const check = summary?.checks?.find((item) => item.source === "imss");
+  if (!check || (check.status !== "vivo" && check.honesty !== "live")) return null;
+  const facts = citeableOfficialHechos("imss", check.hechos ?? [])
+    .map((fact) => fact.trim())
+    .filter(Boolean)
+    .slice(0, 2);
+  if (facts.length === 0) return null;
+  const sentence = `El IMSS ya contestó. ${facts.join(" ")}`;
+  if (/\bcumple\b/i.test(sentence)) return "El IMSS ya contestó.";
+  return sentence;
+}

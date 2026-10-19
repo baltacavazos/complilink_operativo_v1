@@ -1,8 +1,10 @@
 import {
   citeableOfficialHechos,
   humanizeOfficialHecho,
+  imssAnswerStillPending,
   isPermissionBlockedStatus,
   shouldPollOfficialCheck,
+  SLOW_IMSS_WAIT_MS,
   type OfficialCheckSummary,
 } from "./officialCheckCopy";
 import { hasUsableOfficialFact, OFFICIAL_RESULT_NOTIFICATION_KIND } from "./officialResultNotification";
@@ -90,6 +92,10 @@ export function guestOfficialFactStillWaiting(
 ): boolean {
   if (!summary) return false;
   if (summary.bridgeBlock === "provider_cap") return false;
+  if (imssAnswerStillPending(summary)) {
+    const checkedAt = summary.checkedAt ? Date.parse(summary.checkedAt) : Number.NaN;
+    if (!Number.isFinite(checkedAt) || nowMs - checkedAt < SLOW_IMSS_WAIT_MS) return true;
+  }
   if (hasUsableOfficialFact(summary)) return false;
   if (
     summary.overallStatus === "sin_permiso" ||

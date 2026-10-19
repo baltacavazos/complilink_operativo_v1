@@ -125,4 +125,52 @@ describe("guestOfficialFactStore", () => {
     expect(read?.officialCheck?.checks[0]?.hechos).toEqual(["Hay un movimiento de alta en el IMSS."]);
     expect(read?.arrivedAt).toBeTruthy();
   });
+
+  it("el reintento del IMSS se suma al SAT que ya estaba, no lo borra", () => {
+    const satOnly: OfficialCheckSummary = {
+      ...summary("vivo", ["El SAT confirmó el RFC consultado."], "2026-09-24T18:00:00.000Z"),
+      checks: [
+        {
+          source: "sat",
+          sourceLabel: "SAT",
+          status: "vivo",
+          label: "SAT",
+          detail: "Dato del SAT.",
+          checkedAt: "2026-09-24T18:00:00.000Z",
+          used: { nss: false, curp: false, rfc: true },
+          honesty: "live",
+          hechos: ["El SAT confirmó el RFC consultado."],
+        },
+        {
+          source: "imss",
+          sourceLabel: "IMSS",
+          status: "pendiente",
+          label: "IMSS",
+          detail: "Sin dato todavía.",
+          checkedAt: "2026-09-24T18:00:00.000Z",
+          used: { nss: true, curp: false, rfc: false },
+          honesty: "pending",
+          hechos: [],
+        },
+      ],
+    };
+    rememberGuestOfficialSession({
+      guestPreviewId: "GST-merge",
+      traceId: "trace.merge",
+      officialCheck: satOnly,
+    });
+    persistGuestOfficialFact({
+      lookupIds: ["trace.merge"],
+      officialCheck: summary("vivo", ["Salario registrado: $331.45."], "2026-09-24T18:12:00.000Z"),
+      arrivedAt: "2026-09-24T18:12:00.000Z",
+    });
+    const read = readGuestOfficialFact({ guestPreviewId: "GST-merge", traceId: "trace.merge" });
+    expect(read?.officialCheck?.checks.find((item) => item.source === "sat")?.hechos).toEqual([
+      "El SAT confirmó el RFC consultado.",
+    ]);
+    expect(read?.officialCheck?.checks.find((item) => item.source === "imss")?.hechos).toEqual([
+      "Salario registrado: $331.45.",
+    ]);
+    expect(read?.officialCheck?.overallStatus).toBe("vivo");
+  });
 });

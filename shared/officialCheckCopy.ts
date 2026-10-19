@@ -582,6 +582,24 @@ function imssKnownHeadline(hechos: string[], receiptSalary?: string | null): str
   return sentences.join(" ");
 }
 
+function plainSatLead(hechos: string[]): string {
+  const text = hechos.join(" ");
+  const name = text.match(/nombre en el sat:\s*([^.]+)/i)?.[1]?.replace(/\s+/g, " ").trim();
+  if (name && !isPlaceholderSatLegalName(name)) {
+    return `El SAT contestó. El nombre que tiene es ${name.replace(/[.\s]+$/g, "")}.`;
+  }
+  if (/confirm[oó] el rfc/i.test(text) || /\brfc\s*:/i.test(text)) {
+    return "El SAT contestó y confirmó tu RFC.";
+  }
+  const situacion = text.match(/situaci[oó]n:\s*([^.]+)/i)?.[1]?.replace(/\s+/g, " ").trim();
+  if (situacion) return `El SAT contestó. Tu situación es ${situacion.replace(/[.\s]+$/g, "")}.`;
+  return "El SAT ya contestó.";
+}
+
+function satWhileImssWaitsHeadline(hechos: string[]): string {
+  return `${plainSatLead(hechos)} ${IMSS_SLOW_WAIT_LINE}`;
+}
+
 function infonavitSecondaryLine(item: OfficialSourceOutcome): string {
   if (item.status === "pendiente") {
     return "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.";
@@ -600,10 +618,14 @@ function mixedOfficialPresentation(
   const silentNames = joinSpanishLabels(silent.map((item) => OFFICIAL_SOURCE_LABEL[item.source]));
   const imss = live.find((item) => item.source === "imss");
   const lead = imss ? imssKnownHeadline(imss.hechos, options?.receiptSalary) : null;
+  const imssWaiting = silent.find((item) => item.source === "imss" && item.status === "pendiente");
+  const sat = live.find((item) => item.source === "sat");
+  const satLead = !lead && sat && imssWaiting ? satWhileImssWaitsHeadline(sat.hechos) : null;
+  const knownLead = lead ?? satLead;
   const infonavit = silent.find((item) => item.source === "infonavit");
-  const follow = lead && infonavit ? infonavitSecondaryLine(infonavit) : null;
+  const follow = knownLead && infonavit ? infonavitSecondaryLine(infonavit) : null;
   const partialSatNote =
-    !lead &&
+    !knownLead &&
     live.length === 1 &&
     live[0]?.source === "sat" &&
     silent.some((item) => item.source === "imss") &&
@@ -623,25 +645,29 @@ function mixedOfficialPresentation(
     : "Prueba mañana, o pregúntame qué implica para tu pago.";
   return {
     kind: "mixed",
-    verdict: lead ?? POCKET_PARTIAL_VERDICT,
-    whatHappened: lead
-      ? (follow ?? "Esto es lo que el IMSS contestó hoy.")
+    verdict: knownLead ?? POCKET_PARTIAL_VERDICT,
+    whatHappened: knownLead
+      ? (follow ?? (satLead ? "Puedes esperar aquí, o pide tu constancia del IMSS y súbela." : "Esto es lo que el IMSS contestó hoy."))
       : pocketOfficeStatusLine(
           live.map((item) => item.source),
           silent.map((item) => item.source),
         ),
-    meaning: lead
+    meaning: knownLead
       ? follow
-        ? "Esto es lo que el IMSS contestó hoy."
-        : `Todavía no tenemos la respuesta de ${silentNames}.`
+        ? satLead
+          ? "Esto es lo que el SAT contestó hoy."
+          : "Esto es lo que el IMSS contestó hoy."
+        : satLead
+          ? "Esto es lo que el SAT contestó hoy."
+          : `Todavía no tenemos la respuesta de ${silentNames}.`
       : `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
     nextStep: options?.stillWaiting ? OFFICIAL_WAIT_STILL_TRYING : "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: options?.stillWaiting ? OFFICIAL_CHECK_BUTTON : INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
     sourceLines,
-    chat: lead
-      ? [lead, follow, close].filter(Boolean).join(" ")
+    chat: knownLead
+      ? [knownLead, follow, close].filter(Boolean).join(" ")
       : mixedOfficialChat(live, silent, { stillWaiting: options?.stillWaiting }),
     opener: WORKER_RESULT_CHAT_OPENER,
     stillWaiting: Boolean(options?.stillWaiting),
@@ -1399,11 +1425,14 @@ export function mergeOfficialIdentityFlags(
 
 export const FALTA_NSS_Y_RFC_EXACT = "Falta tu NSS y RFC en el recibo para consultar.";
 export const OFFICIAL_PENDING_STALE_MS = 60_000;
+/** Consulta Única puede tardar más de 10 minutos. No la marques como fallo antes. */
+export const SLOW_IMSS_WAIT_MS = 15 * 60 * 1000;
+export const IMSS_SLOW_WAIT_LINE = "El IMSS está tardando; te avisamos en cuanto conteste.";
 
 export function isStaleOfficialPending(
   checkedAt?: string | null,
   nowMs: number = Date.now(),
-  extra?: { anchorFecha?: string | null; pendingSinceMs?: number | null },
+  extra?: { anchorFecha?: string | null; pendingSinceMs?: number | null; maxWaitMs?: number | null },
 ): boolean {
   const times: number[] = [];
   for (const value of [checkedAt, extra?.anchorFecha]) {
@@ -1415,7 +1444,8 @@ export function isStaleOfficialPending(
     times.push(extra.pendingSinceMs);
   }
   if (times.length === 0) return false;
-  return nowMs - Math.min(...times) > OFFICIAL_PENDING_STALE_MS;
+  const limit = extra?.maxWaitMs && extra.maxWaitMs > 0 ? extra.maxWaitMs : OFFICIAL_PENDING_STALE_MS;
+  return nowMs - Math.min(...times) > limit;
 }
 
 export function officialDispatchGapDetail(
@@ -1783,10 +1813,12 @@ export function reconcileOfficialCheckWithIdentity(
   checks = checks.map((item) => {
     if (providerCap) return item;
     if (item.status !== "pendiente" || item.honesty === "live") return item;
+    const waitLimit = item.source === "imss" && livePresent ? SLOW_IMSS_WAIT_MS : OFFICIAL_PENDING_STALE_MS;
     if (
       !isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs, {
         anchorFecha: anchorFechaFor(item.source),
         pendingSinceMs,
+        maxWaitMs: waitLimit,
       })
     ) {
       return item;
@@ -2274,6 +2306,14 @@ export function readAlternateOfficialRoute(value: unknown): boolean {
     return false;
   };
   return visit(value, 0);
+}
+
+/** El IMSS sigue en pendiente aunque el SAT ya haya contestado. */
+export function imssAnswerStillPending(summary?: OfficialCheckSummary | null): boolean {
+  if (!summary?.checks?.length) return false;
+  const imss = summary.checks.find((item) => item.source === "imss");
+  if (imss) return imss.status === "pendiente";
+  return summary.checks.some((item) => item.source === "sat" && item.status === "vivo");
 }
 
 export function shouldPollOfficialCheck(summary?: OfficialCheckSummary | null): boolean {

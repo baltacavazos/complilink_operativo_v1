@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-import type { OfficialCheckSummary } from "@shared/officialCheckCopy";
+import { SLOW_IMSS_WAIT_MS, type OfficialCheckSummary } from "@shared/officialCheckCopy";
+import { guestOfficialFactStillWaiting } from "@shared/guestOfficialFact";
 
 import { guestOfficialFactPollDelay } from "./useGuestOfficialFact";
 
@@ -84,5 +85,31 @@ describe("useGuestOfficialFact transport", () => {
         local: arrived,
       })
     ).toBe(4_000);
+
+    const satFirst = pendingCheck();
+    satFirst.overallStatus = "vivo";
+    satFirst.checks = [
+      {
+        ...satFirst.checks[0],
+        source: "sat",
+        sourceLabel: "SAT",
+        status: "vivo",
+        honesty: "live",
+        hechos: ["El SAT confirmó el RFC consultado."],
+      },
+      {
+        ...satFirst.checks[0],
+        source: "imss",
+        status: "pendiente",
+        honesty: "pending",
+        hechos: [],
+      },
+    ];
+    satFirst.checkedAt = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    expect(guestOfficialFactStillWaiting(satFirst)).toBe(true);
+    expect(
+      guestOfficialFactPollDelay({ awaiting: false, remote: satFirst, local: satFirst })
+    ).toBe(4_000);
+    expect(SLOW_IMSS_WAIT_MS).toBeGreaterThan(10 * 60 * 1000);
   });
 });
