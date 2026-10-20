@@ -163,9 +163,15 @@ describe("retorno Helios de IMSS", () => {
       { nss: null, curp: null, rfc: null },
       { curp: token },
     );
-    expect(nss.error).toMatch(/NSS/);
+    expect(nss.error).toBe("11 números. Viene en tu recibo.");
     expect(curp.error).toMatch(/CURP/);
     expect(`${nss.error} ${curp.error}`).not.toContain(token);
+    const ten = applyWorkerIdentityCorrection(
+      { nss: null, curp: null, rfc: null },
+      { nss: "0000000000" },
+    );
+    expect(ten.error).toBeNull();
+    expect(ten.identity.nss).toBe("0000000000");
     const ok = applyWorkerIdentityCorrection(
       { nss: null, curp: null, rfc: null },
       { nss: "00000000000", curp: "AAAA000101HDFXXX00" },
@@ -173,5 +179,92 @@ describe("retorno Helios de IMSS", () => {
     expect(ok.error).toBeNull();
     expect(ok.identity.nss).toBe("00000000000");
     expect(ok.identity.curp).toBe("AAAA000101HDFXXX00");
+  });
+
+  it("resultado estable manda y el texto queda de respaldo", () => {
+    const missing = bridge({
+      resultado: "registro_no_encontrado",
+      honesty: "failed",
+      workerReason: "sin dato",
+    });
+    expect(missing?.checks.find((item) => item.source === "imss")?.status).toBe("registro_no_encontrado");
+
+    const calm = bridge({
+      resultado: "pendiente",
+      honesty: "failed",
+      workerReason: "No se encontró registro asociado a la CURP ni al NSS",
+      hechos: ["No se encontró registro asociado a la CURP ni al NSS"],
+      aseguradoLocalizado: false,
+    });
+    const calmImss = calm?.checks.find((item) => item.source === "imss");
+    expect(calmImss?.status).toBe("pendiente");
+    expect(calmImss?.detail).toBe(OFFICIAL_WAIT_STILL_TRYING);
+    expect(calmImss?.hechos).toEqual([]);
+
+    const closed = bridge({
+      resultado: "sin_dato",
+      honesty: "failed",
+      workerReason: "No se encontró registro asociado a la CURP ni al NSS",
+      aseguradoLocalizado: false,
+    });
+    expect(closed?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    const closedDisplay = resolveOfficialCheckDisplay({
+      consentGranted: true,
+      summary: closed,
+      identity: IDENTITY,
+      nowMs: Date.parse(NOW),
+    });
+    expect(closedDisplay.correctImss).toBeFalsy();
+    expect(shouldPollOfficialCheck(closed)).toBe(false);
+
+    const done = bridge({
+      resultado: "hecho",
+      honesty: "failed",
+      hechos: ["Hay un movimiento de alta en el IMSS."],
+    });
+    expect(done?.checks.find((item) => item.source === "imss")?.status).toBe("vivo");
+    expect(officialImssArrivalSentence(done)).toMatch(/El IMSS ya contestó/);
+
+    const emptyHecho = bridge({ resultado: "hecho", honesty: "failed", workerReason: "sin dato" });
+    expect(emptyHecho?.checks.find((item) => item.source === "imss")?.status).not.toBe("vivo");
+
+    const fromFollowup = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        followup: { kind: "official_fact_arrived", resultado: "hecho" },
+        result: {
+          officialCheck: {
+            imss: { honesty: "failed", resultado: "no_se_pudo", hechos: ["Hay un movimiento de alta en el IMSS."] },
+            sat: { honesty: "failed", resultado: "no_se_pudo", workerReason: "SAT no contestó.", hechos: ["SAT no contestó."] },
+            infonavit: { honesty: "failed", resultado: "no_se_pudo", workerReason: "Infonavit no contestó.", hechos: ["Infonavit no contestó."] },
+          },
+        },
+      },
+      identity: IDENTITY,
+      nowIso: NOW,
+    });
+    expect(fromFollowup?.checks.find((item) => item.source === "imss")?.status).toBe("vivo");
+
+    const nodeWins = officialCheckFromBridgeReturn({
+      payload: {
+        action: "official_check",
+        followup: { kind: "official_fact_arrived", resultado: "hecho" },
+        result: {
+          officialCheck: {
+            imss: {
+              resultado: "pendiente",
+              honesty: "failed",
+              workerReason: "No se encontró registro asociado a la CURP ni al NSS",
+              hechos: ["Hay un movimiento de alta en el IMSS."],
+            },
+            sat: { honesty: "failed", resultado: "no_se_pudo", workerReason: "SAT no contestó.", hechos: ["SAT no contestó."] },
+            infonavit: { honesty: "failed", resultado: "no_se_pudo", workerReason: "Infonavit no contestó.", hechos: ["Infonavit no contestó."] },
+          },
+        },
+      },
+      identity: IDENTITY,
+      nowIso: NOW,
+    });
+    expect(nodeWins?.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
   });
 });

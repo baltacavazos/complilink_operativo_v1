@@ -1,13 +1,14 @@
 import { useRef, type ReactNode } from "react";
-import { INSTITUTE_SILENCE_RETRY, INSTITUTE_SILENCE_SMALL, OFFICIAL_WAIT_STILL_TRYING, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
+import { INSTITUTE_SILENCE_RETRY, INSTITUTE_SILENCE_SMALL, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
 import { ImssIdentityCorrection } from "@/components/ImssIdentityCorrection";
-import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 
 type WorkerOfficialResultProps = {
   presentation: InstituteSilencePresentation;
   onRetry: () => void;
   onCorrectIdentity?: (value: { nss: string; curp: string }) => void;
+  initialNss?: string;
+  initialCurp?: string;
   onAsk: () => void;
   onDone?: () => void;
   retryPending?: boolean;
@@ -25,6 +26,7 @@ const WORKER_IDENTIFIER_RE = /\b(RFC|CURP|NSS|registro patronal)\b/i;
 export function isWorkerIdentifierLine(line: string) {
   if (/nombre en el sat/i.test(line)) return false;
   if (/coincide con el SAT/i.test(line)) return false;
+  if (/^El SAT contestó/i.test(line)) return false;
   if (/no encontramos registro/i.test(line)) return false;
   return WORKER_IDENTIFIER_RE.test(line);
 }
@@ -52,6 +54,8 @@ export function WorkerOfficialResult({
   presentation,
   onRetry,
   onCorrectIdentity,
+  initialNss = "",
+  initialCurp = "",
   onAsk,
   onDone,
   retryPending = false,
@@ -66,26 +70,31 @@ export function WorkerOfficialResult({
   const lines = [
     { label: "Qué pasó", text: presentation.whatHappened },
     { label: "Qué significa", text: presentation.meaning },
-    { label: "Qué hacer", text: showWaitLayer ? OFFICIAL_WAIT_STILL_TRYING : presentation.nextStep },
+    { label: "Qué hacer", text: presentation.nextStep },
   ];
   const visibleSources = presentation.sourceLines.filter((line) => !isWorkerIdentifierLine(line));
   const hiddenSources = presentation.sourceLines.filter((line) => isWorkerIdentifierLine(line));
+  const chip = presentation.correctImss
+    ? { state: "revisa", label: "Revisa tus datos" }
+    : showWaitLayer
+      ? { state: "en-consulta", label: "En consulta" }
+      : { state: "listo", label: "Listo" };
+  const companions = presentation.companionCards ?? [];
 
   return (
+    <>
     <section
       data-testid="official-check-card"
       data-worker-result="true"
       className="ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.35rem] border px-3.5 py-3 text-left sm:px-4 sm:py-3.5"
     >
-      {showWaitLayer ? null : (
-        <span
-          data-testid="result-status-chip"
-          data-state={presentation.correctImss ? "revisa" : "listo"}
-          className="ap-state-pill"
-        >
-          {presentation.correctImss ? "Revisa tus datos" : "Listo"}
-        </span>
-      )}
+      <span
+        data-testid={showWaitLayer && !presentation.correctImss ? "official-wait-state" : "result-status-chip"}
+        data-state={chip.state}
+        className="ap-state-pill"
+      >
+        {chip.label}
+      </span>
       <h2
         data-testid="five-second-verdict-seen"
         className="mt-2 text-[1.22rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.38rem]"
@@ -112,7 +121,7 @@ export function WorkerOfficialResult({
       {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
         <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
       ) : null}
-      {failureOffer}
+      {companions.length ? null : failureOffer}
       <details className="ap-result-detail mt-2 rounded-[1rem] border border-[#e4e4e4] px-3 py-2" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {visibleSources.length ? (
@@ -134,11 +143,13 @@ export function WorkerOfficialResult({
           </ul>
         ) : null}
       </details>
-      {showWaitLayer ? (
-        <OfficialWaitLayer status={retryPending ? "consultando" : "pendiente"} />
-      ) : null}
       {presentation.correctImss && onCorrectIdentity ? (
-        <ImssIdentityCorrection pending={retryPending} onSubmit={onCorrectIdentity} />
+        <ImssIdentityCorrection
+          pending={retryPending}
+          initialNss={initialNss}
+          initialCurp={initialCurp}
+          onSubmit={onCorrectIdentity}
+        />
       ) : showWaitLayer ? null : (
         <Button
           type="button"
@@ -164,14 +175,42 @@ export function WorkerOfficialResult({
           {presentation.retryLabel}
         </Button>
       )}
-      <button
+      <Button
         type="button"
+        variant="outline"
         data-testid="official-check-chat-cta"
-        className="mt-2 block w-full bg-transparent text-center text-sm font-semibold text-[#161616] underline decoration-[#161616]/40 underline-offset-4"
+        className="mt-2 h-11 w-full rounded-full border-[#111111] bg-white text-sm font-semibold text-[#161616] shadow-none hover:bg-[#f6f6f6]"
         onClick={onAsk}
       >
         {presentation.askLabel}
-      </button>
+      </Button>
     </section>
+    {companions.map((card) => (
+      <section
+        key={card.office}
+        data-testid="infonavit-result-card"
+        className="ap-light-surface ap-surface-mint mt-3 w-full rounded-[1.35rem] border px-3.5 py-3 text-left sm:px-4 sm:py-3.5"
+      >
+        <h2 className="text-[1.22rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.38rem]">
+          {card.title}
+        </h2>
+        <div className="mt-2 space-y-1">
+          <p className="text-sm leading-5 text-[#161616]">
+            <span className="font-semibold text-[#111111]">Qué pasó. </span>
+            {card.whatHappened}
+          </p>
+          <p className="text-sm leading-5 text-[#161616]">
+            <span className="font-semibold text-[#111111]">Qué significa. </span>
+            {card.meaning}
+          </p>
+          <p className="text-sm leading-5 text-[#161616]">
+            <span className="font-semibold text-[#111111]">Qué hacer. </span>
+            {card.nextStep}
+          </p>
+        </div>
+        {card.office === "infonavit" ? failureOffer : null}
+      </section>
+    ))}
+    </>
   );
 }

@@ -25,6 +25,7 @@ import {
   OFFICIAL_CHECK_CONSENT,
   pickPromptOfficialCheck,
   resolveOfficialCheckDisplay,
+  validWorkerIdentityPrefill,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -1561,6 +1562,8 @@ function HomeGuestOfficialCheck({
     () => readHomeGuestOfficial(guestPreviewId)?.arrivedAt ?? null,
   );
   const [officialCheckError, setOfficialCheckError] = useState<string | null>(null);
+  const [typedNss, setTypedNss] = useState("");
+  const [typedCurp, setTypedCurp] = useState("");
   const [officialDocument, setOfficialDocument] = useState<OfficialWorkerUploadResult | null>(null);
   const guestOfficialFactQuery = useGuestOfficialFact({
     guestPreviewToken,
@@ -1632,6 +1635,7 @@ function HomeGuestOfficialCheck({
       data-guest-preview-id={guestPreviewId}
       className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left lg:col-span-2"
     >
+      {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
       <GuestOfficialFactNotice
         summary={officialCheckSummary}
         arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? officialFactArrivedAt}
@@ -1643,11 +1647,15 @@ function HomeGuestOfficialCheck({
       <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
         {officialCheckDisplay.detail}
       </p>
-      {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
       {officialCheckDisplay.correctImss ? (
         <ImssIdentityCorrection
           pending={guestOfficialCheckMutation.isPending}
+          initialNss={typedNss}
+          initialCurp={typedCurp}
           onSubmit={(value) => {
+            const next = validWorkerIdentityPrefill(value);
+            if (next.nss) setTypedNss(next.nss);
+            if (next.curp) setTypedCurp(next.curp);
             void handleGuestOfficialCheck(value);
           }}
         />

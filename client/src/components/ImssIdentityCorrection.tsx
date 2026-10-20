@@ -1,17 +1,31 @@
-import { useState } from "react";
-import { IMSS_RECORD_NOT_FOUND_ACTION, IMSS_RECORD_NOT_FOUND_NEXT } from "@shared/officialCheckCopy";
+import { useEffect, useState } from "react";
+import { IMSS_RECORD_NOT_FOUND_ACTION } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
 
 export function ImssIdentityCorrection({
   pending = false,
+  initialNss = "",
+  initialCurp = "",
   onSubmit,
 }: {
   pending?: boolean;
+  initialNss?: string;
+  initialCurp?: string;
   onSubmit: (value: { nss: string; curp: string }) => void;
 }) {
-  const [nss, setNss] = useState("");
-  const [curp, setCurp] = useState("");
+  const [nss, setNss] = useState(initialNss);
+  const [curp, setCurp] = useState(initialCurp);
+  const [nssTouched, setNssTouched] = useState(false);
+  const [curpTouched, setCurpTouched] = useState(false);
   const ready = Boolean(nss.trim() || curp.trim());
+
+  useEffect(() => {
+    if (!nssTouched) setNss(initialNss);
+  }, [initialNss, nssTouched]);
+
+  useEffect(() => {
+    if (!curpTouched) setCurp(initialCurp);
+  }, [initialCurp, curpTouched]);
 
   return (
     <form
@@ -23,30 +37,35 @@ export function ImssIdentityCorrection({
         onSubmit({ nss: nss.trim(), curp: curp.trim() });
       }}
     >
-      <p className="text-sm leading-5 text-[#161616]">{IMSS_RECORD_NOT_FOUND_NEXT}</p>
       <label className="block text-sm font-semibold text-[#111111]">
         NSS
         <input
           data-testid="imss-correct-nss"
-          className="mt-1 h-11 w-full rounded-xl border border-[#d7d7d7] px-3 text-base font-normal"
+          className="mt-1 h-11 w-full rounded-xl border border-[#d7d7d7] bg-white px-3 text-base font-normal"
           inputMode="numeric"
           autoComplete="off"
           maxLength={11}
-          placeholder="10 u 11 números"
+          placeholder="11 números"
           value={nss}
-          onChange={(event) => setNss(event.target.value)}
+          onChange={(event) => {
+            setNssTouched(true);
+            setNss(event.target.value);
+          }}
         />
       </label>
       <label className="block text-sm font-semibold text-[#111111]">
         CURP
         <input
           data-testid="imss-correct-curp"
-          className="mt-1 h-11 w-full rounded-xl border border-[#d7d7d7] px-3 text-base font-normal uppercase"
+          className="mt-1 h-11 w-full rounded-xl border border-[#d7d7d7] bg-white px-3 text-base font-normal uppercase"
           autoComplete="off"
           maxLength={18}
           placeholder="18 letras y números"
           value={curp}
-          onChange={(event) => setCurp(event.target.value)}
+          onChange={(event) => {
+            setCurpTouched(true);
+            setCurp(event.target.value);
+          }}
         />
       </label>
       <Button

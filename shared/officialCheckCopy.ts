@@ -79,7 +79,10 @@ export const INSTITUTE_WAITING_HEADLINE =
 export const INSTITUTE_WAITING_DETAIL =
   "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.";
 export const OFFICIAL_WAIT_STILL_TRYING =
-  "Seguimos consultando. Te avisamos en cuanto llegue tu resultado.";
+  "Seguimos consultando al IMSS. Te avisamos en cuanto llegue tu resultado.";
+export const IMSS_WAIT_WHAT_HAPPENED = "El IMSS todavía no contesta. Seguimos preguntando.";
+export const IMSS_WAIT_MEANING = "Aún no podemos decir si tu patrón te tiene bien registrado en el IMSS.";
+export const IMSS_WAIT_NEXT = "Puedes esperar aquí. Si quieres adelantar, pide tu constancia del IMSS y súbela.";
 /** El IMSS no halló a la persona con la CURP o el NSS. No es una espera ni un fallo del instituto. */
 export const IMSS_RECORD_NOT_FOUND_MESSAGE =
   "No encontramos registro con ese dato. Revisa que tu CURP y NSS estén bien escritos.";
@@ -147,6 +150,16 @@ export type InstituteSilencePresentation = {
   stillWaiting?: boolean;
   /** La consulta IMSS cerró sin registro. La persona puede corregir CURP o NSS. */
   correctImss?: boolean;
+  /** Otra oficina, en su propia tarjeta. No se mezcla con el IMSS. */
+  companionCards?: OfficialCompanionCard[];
+};
+
+export type OfficialCompanionCard = {
+  office: "infonavit";
+  title: string;
+  whatHappened: string;
+  meaning: string;
+  nextStep: string;
 };
 
 export function instituteSilenceVerdict(_sources?: OfficialCheckSource[] | null): string {
@@ -484,7 +497,7 @@ function mixedOfficialChat(
   const still = silent.length === 1 ? "aún no contesta" : "aún no contestan";
   const maint = silent.length > 0 && silent.every((item) => item.maintenance) ? " (en mantenimiento)" : "";
   const close = options?.stillWaiting
-    ? OFFICIAL_WAIT_STILL_TRYING
+    ? "Seguimos esperando lo que falta. Te avisamos en cuanto llegue."
     : "Prueba mañana, o pregúntame qué implica para tu pago.";
   return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. ${close}`;
 }
@@ -617,8 +630,25 @@ function plainSatLead(hechos: string[]): string {
   return "El SAT ya contestó.";
 }
 
-function satWhileImssWaitsHeadline(hechos: string[]): string {
-  return `${plainSatLead(hechos)} ${IMSS_SLOW_WAIT_LINE}`;
+function infonavitCompanionCard(item: OfficialSourceOutcome): OfficialCompanionCard {
+  if (item.status === "pendiente" || item.status === "sin_datos") {
+    return {
+      office: "infonavit",
+      title: "Infonavit lo seguimos revisando.",
+      whatHappened: item.status === "sin_datos" ? "Para Infonavit falta un dato." : "Infonavit todavía no contesta.",
+      meaning: "Eso no dice si tu patrón está bien registrado en Infonavit.",
+      nextStep: "Si ya tienes tu estado de cuenta, súbelo.",
+    };
+  }
+  return {
+    office: "infonavit",
+    title: "Infonavit no contestó hoy.",
+    whatHappened: item.maintenance
+      ? "Infonavit está en mantenimiento."
+      : "Pedimos la información a Infonavit y hoy no contestó.",
+    meaning: "Eso no dice si tu patrón está bien registrado en Infonavit.",
+    nextStep: "Si ya tienes tu estado de cuenta, súbelo.",
+  };
 }
 
 function infonavitSecondaryLine(item: OfficialSourceOutcome): string {
@@ -641,9 +671,29 @@ function mixedOfficialPresentation(
   const lead = imss ? imssKnownHeadline(imss.hechos, options?.receiptSalary) : null;
   const imssWaiting = silent.find((item) => item.source === "imss" && item.status === "pendiente");
   const sat = live.find((item) => item.source === "sat");
-  const satLead = !lead && sat && imssWaiting ? satWhileImssWaitsHeadline(sat.hechos) : null;
-  const knownLead = lead ?? satLead;
   const infonavit = silent.find((item) => item.source === "infonavit");
+  if (imssWaiting) {
+    const satLines = sat
+      ? [plainSatLead(sat.hechos), ...sat.hechos.map((hecho) => `SAT: ${hecho}`)]
+      : [];
+    const infonavitCard = infonavit ? infonavitCompanionCard(infonavit) : null;
+    return {
+      kind: "mixed",
+      verdict: OFFICIAL_WAIT_STILL_TRYING,
+      whatHappened: IMSS_WAIT_WHAT_HAPPENED,
+      meaning: IMSS_WAIT_MEANING,
+      nextStep: IMSS_WAIT_NEXT,
+      smallPrint: "",
+      retryLabel: OFFICIAL_CHECK_BUTTON,
+      askLabel: INSTITUTE_SILENCE_ASK,
+      sourceLines: satLines,
+      chat: [OFFICIAL_WAIT_STILL_TRYING, sat ? plainSatLead(sat.hechos) : ""].filter(Boolean).join(" "),
+      opener: WORKER_RESULT_CHAT_OPENER,
+      stillWaiting: true,
+      companionCards: infonavitCard ? [infonavitCard] : [],
+    };
+  }
+  const knownLead = lead;
   const follow = knownLead && infonavit ? infonavitSecondaryLine(infonavit) : null;
   const partialSatNote =
     !knownLead &&
@@ -662,31 +712,25 @@ function mixedOfficialPresentation(
     ...silent.map((item) => unansweredOfficialSourceLine(item)),
   ];
   const close = options?.stillWaiting
-    ? OFFICIAL_WAIT_STILL_TRYING
+    ? "Seguimos esperando lo que falta. Te avisamos en cuanto llegue."
     : "Prueba mañana, o pregúntame qué implica para tu pago.";
   return {
     kind: "mixed",
     verdict: knownLead ?? POCKET_PARTIAL_VERDICT,
     whatHappened: knownLead
-      ? (follow ?? (satLead ? "Puedes esperar aquí, o pide tu constancia del IMSS y súbela." : "Esto es lo que el IMSS contestó hoy."))
+      ? (follow ?? "Esto es lo que el IMSS contestó hoy.")
       : pocketOfficeStatusLine(
           live.map((item) => item.source),
           silent.map((item) => item.source),
         ),
     meaning: knownLead
       ? follow
-        ? satLead && infonavit
-          ? infonavit.status === "pendiente"
-            ? "Infonavit sigue sin contestar. Eso no dice si tu crédito está bien o mal."
-            : infonavit.status === "sin_datos"
-              ? "Para Infonavit falta un dato. Eso no dice si tu crédito está bien o mal."
-              : "Infonavit no contestó hoy. Eso no dice si tu crédito está bien o mal."
-          : "Esto es lo que el IMSS contestó hoy."
-        : satLead
-          ? "Esto es lo que el SAT contestó hoy."
-          : `Todavía no tenemos la respuesta de ${silentNames}.`
+        ? "Esto es lo que el IMSS contestó hoy."
+        : `Todavía no tenemos la respuesta de ${silentNames}.`
       : `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
-    nextStep: options?.stillWaiting ? OFFICIAL_WAIT_STILL_TRYING : "Prueba de nuevo mañana.",
+    nextStep: options?.stillWaiting
+      ? "Puedes esperar aquí. Si ya tienes tu estado de cuenta, súbelo."
+      : "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: options?.stillWaiting ? OFFICIAL_CHECK_BUTTON : INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
@@ -946,6 +990,22 @@ const IMSS_RECORD_NOT_FOUND_STATUSES = new Set([
   "sin_registro",
 ]);
 
+export const STABLE_IMSS_RESULTADOS = ["hecho", "registro_no_encontrado", "sin_dato", "pendiente"] as const;
+export type StableImssResultado = (typeof STABLE_IMSS_RESULTADOS)[number];
+
+/**
+ * Campo estable que CompliLink va a poner en el nodo IMSS y en los followups.
+ * `vivo` y `no_se_pudo` siguen siendo el contrato de hoy: aquí no cuentan.
+ * Solo lee el objeto inmediato, para no tomar el resultado de otra oficina.
+ */
+export function readStableImssResultado(value: unknown): StableImssResultado | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const raw = String((value as Record<string, unknown>).resultado ?? "")
+    .trim()
+    .toLowerCase();
+  return (STABLE_IMSS_RESULTADOS as readonly string[]).includes(raw) ? (raw as StableImssResultado) : null;
+}
+
 /** Cierre sin dato del IMSS: la CURP o el NSS no hallaron registro. No es mantenimiento. */
 export function looksLikeImssRecordNotFound(value: unknown): boolean {
   if (typeof value === "string" || typeof value === "number") {
@@ -1066,6 +1126,19 @@ export function looksLikeOfficialNss(value?: unknown): boolean {
 
 export function looksLikeOfficialCurp(value?: unknown): boolean {
   return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/i.test(String(value ?? "").trim());
+}
+
+/** Solo rellena lo que la persona escribió si el formato ya era válido. */
+export function validWorkerIdentityPrefill(value: { nss?: unknown; curp?: unknown } | null | undefined): {
+  nss: string;
+  curp: string;
+} {
+  const nssDigits = String(value?.nss ?? "").replace(/\D/g, "");
+  const curp = String(value?.curp ?? "").trim().toUpperCase();
+  return {
+    nss: looksLikeOfficialNss(nssDigits) ? nssDigits : "",
+    curp: looksLikeOfficialCurp(curp) ? curp : "",
+  };
 }
 
 const PERSON_WORKER_RFC_RE = /^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/;
