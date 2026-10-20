@@ -66,7 +66,7 @@ describe("guest official fact", () => {
     expect(isOfficialFactArrivedKind(OFFICIAL_RESULT_NOTIFICATION_KIND)).toBe(true);
     expect(isOfficialFactArrivedKind("document.processed.v1")).toBe(false);
     expect(OFFICIAL_FACT_ARRIVED_NOTICE).toBe("Ya hay un resultado de tu consulta.");
-    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos consultando. Te avisamos en cuanto llegue tu resultado.");
   });
 
   it("el límite de cerrar la pestaña no trae datos personales ni un cumple", () => {

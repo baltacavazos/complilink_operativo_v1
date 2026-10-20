@@ -21,7 +21,7 @@ describe("Home guest · consulta IMSS y SAT", () => {
 
     expect(OFFICIAL_CHECK_BUTTON).toBe("Consultar IMSS y SAT");
     expect(OFFICIAL_CHECK_CONSENT).toMatch(/Autorizo que pregunten a IMSS y SAT/);
-    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos consultando. Te avisamos en cuanto llegue tu resultado.");
 
     expect(card).toContain('data-testid="official-check-card"');
     expect(card).toContain('data-testid="official-check-headline"');

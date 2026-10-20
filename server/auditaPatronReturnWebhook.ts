@@ -323,6 +323,7 @@ function liveCheckFromReturnPayload(payload: Record<string, unknown>, nowIso: st
       analysisResults: payload.analysisResults ?? null,
       extractedFields: payload.extractedFields ?? null,
       metadata: payload.metadata ?? null,
+      followup: payload.followup ?? null,
     },
     nowIso,
   });

@@ -7905,7 +7905,7 @@ export default function Auditar() {
       legalGateError?.type === "transient") &&
     legalGateError.retryCount < MAX_LEGAL_GATE_RETRIES;
 
-  const handleRevalidateSocialSecurity = async () => {
+  const handleRevalidateSocialSecurity = async (correction?: { nss: string; curp: string }) => {
     if (!caseDetailInput) {
       setSubmitError(
         "Primero elige un expediente para revisar lo que se ve de IMSS e Infonavit."
@@ -7928,7 +7928,9 @@ export default function Auditar() {
       setLegalGateError(null);
       const result = await revalidateSocialSecurityMutation.mutateAsync({
         ...caseDetailInput,
-        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence) || Boolean(officialCheckDisplay.correctImss),
+        ...(correction?.nss ? { nss: correction.nss } : {}),
+        ...(correction?.curp ? { curp: correction.curp } : {}),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -8721,12 +8723,12 @@ export default function Auditar() {
     }
   };
 
-  const handleGuestOfficialCheck = async () => {
+  const handleGuestOfficialCheck = async (correction?: { nss: string; curp: string }) => {
     if (!guestReview) {
       setGuestReviewError("Primero sube un recibo para consultar IMSS y SAT.");
       return;
     }
-    if (!officialCheckConsent && !officialCheckDisplay.silence) {
+    if (!officialCheckConsent && !officialCheckDisplay.silence && !officialCheckDisplay.correctImss) {
       setGuestReviewError("Marca el permiso para consultar IMSS y SAT.");
       return;
     }
@@ -8735,7 +8737,9 @@ export default function Auditar() {
       setGuestReviewError(null);
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken: guestReview.guestPreviewToken,
-        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence) || Boolean(officialCheckDisplay.correctImss),
+        ...(correction?.nss ? { nss: correction.nss } : {}),
+        ...(correction?.curp ? { curp: correction.curp } : {}),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -9416,6 +9420,9 @@ export default function Auditar() {
             retryPending={guestOfficialCheckMutation.isPending}
             onRetry={() => {
               void handleGuestOfficialCheck();
+            }}
+            onCorrectIdentity={(value) => {
+              void handleGuestOfficialCheck(value);
             }}
             onAsk={() => openHeliosCopilot()}
             paperRead={`${guestFiveSecond.seenLine} ${plainReceiptImssLine(guestFactSignal.imss)}`}
@@ -10372,6 +10379,9 @@ export default function Auditar() {
                   onRetry={() => {
                     void handleRevalidateSocialSecurity();
                   }}
+                  onCorrectIdentity={(value) => {
+                    void handleRevalidateSocialSecurity(value);
+                  }}
                   onAsk={() => openHeliosCopilot()}
                   comparisonLines={officialCaseBriefing.comparisonLines}
                   failureOffer={infonavitDocumentSlot}
@@ -10470,6 +10480,9 @@ export default function Auditar() {
                   retryPending={revalidateSocialSecurityMutation.isPending}
                   onRetry={() => {
                     void handleRevalidateSocialSecurity();
+                  }}
+                  onCorrectIdentity={(value) => {
+                    void handleRevalidateSocialSecurity(value);
                   }}
                   onAsk={() => openHeliosCopilot()}
                   paperRead={lastUploadResultHeadline}

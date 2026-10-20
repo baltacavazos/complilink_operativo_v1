@@ -13,6 +13,7 @@ import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { OfficialDocumentGuide, type OfficialWorkerUploadResult } from "@/components/OfficialDocumentGuide";
 import { shouldOfferOfficialDocumentFallback } from "@shared/officialWorkerDocument";
+import { ImssIdentityCorrection } from "@/components/ImssIdentityCorrection";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
 import { trpc } from "@/lib/trpc";
@@ -1592,8 +1593,8 @@ function HomeGuestOfficialCheck({
     !officialCheckDisplay.silence &&
     (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
 
-  async function handleGuestOfficialCheck() {
-    if (!officialCheckConsent && !officialCheckDisplay.silence) {
+  async function handleGuestOfficialCheck(correction?: { nss: string; curp: string }) {
+    if (!officialCheckConsent && !officialCheckDisplay.silence && !officialCheckDisplay.correctImss) {
       setOfficialCheckError("Marca el permiso para consultar IMSS y SAT.");
       return;
     }
@@ -1602,7 +1603,9 @@ function HomeGuestOfficialCheck({
       setOfficialCheckError(null);
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken,
-        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence) || Boolean(officialCheckDisplay.correctImss),
+        ...(correction?.nss ? { nss: correction.nss } : {}),
+        ...(correction?.curp ? { curp: correction.curp } : {}),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -1641,7 +1644,15 @@ function HomeGuestOfficialCheck({
         {officialCheckDisplay.detail}
       </p>
       {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
-      {officialCheckDisplay.silence ? null : (
+      {officialCheckDisplay.correctImss ? (
+        <ImssIdentityCorrection
+          pending={guestOfficialCheckMutation.isPending}
+          onSubmit={(value) => {
+            void handleGuestOfficialCheck(value);
+          }}
+        />
+      ) : null}
+      {officialCheckDisplay.silence || officialCheckDisplay.correctImss ? null : (
         <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-[#161616]">
           <input
             type="checkbox"
@@ -1653,6 +1664,7 @@ function HomeGuestOfficialCheck({
           <span>{OFFICIAL_CHECK_CONSENT}</span>
         </label>
       )}
+      {officialCheckDisplay.correctImss ? null : (
       <Button
         type="button"
         data-testid="official-check-cta"
@@ -1667,6 +1679,7 @@ function HomeGuestOfficialCheck({
       >
         {officialCheckDisplay.buttonLabel}
       </Button>
+      )}
       {officialCheckError ? (
         <p className="mt-3 text-sm leading-6 text-amber-950">{officialCheckError}</p>
       ) : null}

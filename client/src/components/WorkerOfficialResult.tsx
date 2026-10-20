@@ -1,11 +1,13 @@
 import { useRef, type ReactNode } from "react";
 import { INSTITUTE_SILENCE_RETRY, INSTITUTE_SILENCE_SMALL, OFFICIAL_WAIT_STILL_TRYING, POCKET_CTA_MISMATCH, POCKET_CTA_SAVE, type InstituteSilencePresentation } from "@shared/officialCheckCopy";
 import { Button } from "@/components/ui/button";
+import { ImssIdentityCorrection } from "@/components/ImssIdentityCorrection";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 
 type WorkerOfficialResultProps = {
   presentation: InstituteSilencePresentation;
   onRetry: () => void;
+  onCorrectIdentity?: (value: { nss: string; curp: string }) => void;
   onAsk: () => void;
   onDone?: () => void;
   retryPending?: boolean;
@@ -23,6 +25,7 @@ const WORKER_IDENTIFIER_RE = /\b(RFC|CURP|NSS|registro patronal)\b/i;
 export function isWorkerIdentifierLine(line: string) {
   if (/nombre en el sat/i.test(line)) return false;
   if (/coincide con el SAT/i.test(line)) return false;
+  if (/no encontramos registro/i.test(line)) return false;
   return WORKER_IDENTIFIER_RE.test(line);
 }
 
@@ -48,6 +51,7 @@ export function WorkerRegistrationFold({ lines }: { lines: string[] }) {
 export function WorkerOfficialResult({
   presentation,
   onRetry,
+  onCorrectIdentity,
   onAsk,
   onDone,
   retryPending = false,
@@ -74,8 +78,12 @@ export function WorkerOfficialResult({
       className="ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.35rem] border px-3.5 py-3 text-left sm:px-4 sm:py-3.5"
     >
       {showWaitLayer ? null : (
-        <span data-testid="result-status-chip" data-state="listo" className="ap-state-pill">
-          Listo
+        <span
+          data-testid="result-status-chip"
+          data-state={presentation.correctImss ? "revisa" : "listo"}
+          className="ap-state-pill"
+        >
+          {presentation.correctImss ? "Revisa tus datos" : "Listo"}
         </span>
       )}
       <h2
@@ -128,7 +136,10 @@ export function WorkerOfficialResult({
       </details>
       {showWaitLayer ? (
         <OfficialWaitLayer status={retryPending ? "consultando" : "pendiente"} />
-      ) : (
+      ) : null}
+      {presentation.correctImss && onCorrectIdentity ? (
+        <ImssIdentityCorrection pending={retryPending} onSubmit={onCorrectIdentity} />
+      ) : showWaitLayer ? null : (
         <Button
           type="button"
           data-testid="official-check-cta"

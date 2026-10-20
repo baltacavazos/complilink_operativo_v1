@@ -13,6 +13,10 @@ import {
   listFailedOfficialSources,
   listOfficialMissingFieldKeys,
   missingOfficialFieldsForSource,
+  IMSS_RECORD_NOT_FOUND_MESSAGE,
+  OFFICIAL_WAIT_STILL_TRYING,
+  imssMaintenanceStillOpen,
+  looksLikeImssRecordNotFound,
   looksLikeInstituteMaintenance,
   looksLikeNoOfficialResponse,
   readInstitutePayFacts,
@@ -245,6 +249,29 @@ export function collectWorkerOfficialIdentity(facts: {
   };
 }
 
+export function applyWorkerIdentityCorrection(
+  base: WorkerOfficialIdentity,
+  correction?: { nss?: string | null; curp?: string | null } | null,
+): { identity: WorkerOfficialIdentity; error: string | null } {
+  const nssRaw = typeof correction?.nss === "string" ? correction.nss.trim() : "";
+  const curpRaw = typeof correction?.curp === "string" ? correction.curp.trim() : "";
+  if (!nssRaw && !curpRaw) return { identity: base, error: null };
+  if (nssRaw && !normalizeNss(nssRaw)) {
+    return { identity: base, error: "Ese NSS no se puede usar. Revísalo: son 10 u 11 números." };
+  }
+  if (curpRaw && !normalizeCurp(curpRaw)) {
+    return { identity: base, error: "Esa CURP no se puede usar. Revísala: son 18 letras y números." };
+  }
+  return {
+    identity: {
+      nss: nssRaw ? normalizeNss(nssRaw) : base.nss,
+      curp: curpRaw ? normalizeCurp(curpRaw) : base.curp,
+      rfc: base.rfc,
+    },
+    error: null,
+  };
+}
+
 export function mergeWorkerOfficialIdentities(
   ...identities: Array<WorkerOfficialIdentity | null | undefined>
 ): WorkerOfficialIdentity {
@@ -313,6 +340,7 @@ function rollupStatus(statuses: OfficialCheckStatus[]): OfficialCheckStatus {
   if (statuses.every((status) => status === "sin_datos")) return "sin_datos";
   if (statuses.every((status) => status === "sin_permiso")) return "sin_permiso";
   if (statuses.includes("pendiente")) return "pendiente";
+  if (statuses.includes("registro_no_encontrado")) return "registro_no_encontrado";
   if (statuses.includes("no_se_pudo")) return "no_se_pudo";
   return statuses[0] ?? "no_se_pudo";
 }
@@ -540,6 +568,9 @@ export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): Off
   if (result.httpStatus === 404) {
     return "no_se_pudo";
   }
+  if (looksLikeImssRecordNotFound(result.responseJson) || looksLikeImssRecordNotFound(haystack)) {
+    return "registro_no_encontrado";
+  }
   if (result.reason === "hmac_failed" || result.reason === "authentication_failed") {
     return "no_se_pudo";
   }
@@ -571,6 +602,7 @@ function workerDetailForBridgeResult(
   sources: OfficialCheckSource[] = CONSULTED_BRIDGE_SOURCES,
 ): string {
   const haystack = `${collectHaystack(posted.responseJson)} ${posted.reason ?? ""}`;
+  if (status === "registro_no_encontrado") return IMSS_RECORD_NOT_FOUND_MESSAGE;
   if (status === "pendiente" && looksLikeInstituteMaintenance(haystack)) {
     return buildOfficialMaintenanceDetail(sources);
   }
@@ -729,6 +761,16 @@ function readNestedOfficialRecord(
   return null;
 }
 
+function readFollowupKind(roots: Array<Record<string, unknown> | null>): string | null {
+  for (const root of roots) {
+    if (!root) continue;
+    const followup = asRecord(root.followup) ?? asRecord(asRecord(root.result)?.followup);
+    const kind = typeof followup?.kind === "string" ? followup.kind.trim() : "";
+    if (kind) return kind;
+  }
+  return null;
+}
+
 function readNestedOfficialSource(
   roots: Array<Record<string, unknown> | null>,
   source: OfficialSourceCheck["source"],
@@ -743,7 +785,11 @@ function readNestedOfficialSource(
     if (!root) continue;
     const sources = asRecord(root.sources);
     for (const key of keys) {
-      const direct = normalizeReturnedOfficialStatus(root[key] ?? sources?.[key]);
+      const raw = root[key] ?? sources?.[key];
+      if (source === "imss" && looksLikeImssRecordNotFound(raw) && consultHonesty(asRecord(raw)) !== "live") {
+        return "registro_no_encontrado";
+      }
+      const direct = normalizeReturnedOfficialStatus(raw);
       if (direct) return direct;
     }
   }
@@ -756,6 +802,7 @@ function readOfficialObligationCheck(
   fallback: OfficialCheckStatus | null,
   nowIso: string | null,
   used: OfficialIdentityFlags,
+  followupKind: string | null,
 ): OfficialSourceCheck {
   const record = asRecord(value);
   const hechos = record
@@ -807,6 +854,51 @@ function readOfficialObligationCheck(
   })();
   const demoteEmptySat = source === "sat" && status === "vivo" && !hasUsableSatResponse(resolvedHechos);
   const resolvedStatus = demoteEmptySat ? "no_se_pudo" : status;
+  const checkedAt =
+    (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
+    anchor?.fecha ??
+    nowIso;
+  const positiveFacts = citeableOfficialHechos(source, resolvedHechos).filter(
+    (item) =>
+      !looksLikeImssRecordNotFound(item) &&
+      !looksLikeNoOfficialResponse(item) &&
+      !looksLikeInstituteMaintenance(item) &&
+      item.trim() !== (motivoText ?? "").trim(),
+  );
+  const nestedFollowup =
+    typeof asRecord(record?.followup)?.kind === "string" ? String(asRecord(record?.followup)?.kind) : followupKind;
+  const recordSaysMissing =
+    fallback === "registro_no_encontrado" ||
+    looksLikeImssRecordNotFound(record) ||
+    looksLikeImssRecordNotFound(motivoText) ||
+    looksLikeImssRecordNotFound(hechos.join(" "));
+  const notFound = source === "imss" && recordSaysMissing && positiveFacts.length === 0;
+  if (notFound) {
+    return sourceCheck(source, "registro_no_encontrado", {
+      checkedAt,
+      used: usedOfficialIdentityForSource(source, used),
+      honesty: "failed",
+      hechos: [],
+      motivoFallo: IMSS_RECORD_NOT_FOUND_MESSAGE,
+      detail: IMSS_RECORD_NOT_FOUND_MESSAGE,
+      missingFields: [],
+    });
+  }
+  if (
+    source === "imss" &&
+    resolvedStatus === "no_se_pudo" &&
+    imssMaintenanceStillOpen(`${motivoText ?? ""} ${hechos.join(" ")}`, nestedFollowup)
+  ) {
+    return sourceCheck(source, "pendiente", {
+      checkedAt,
+      used: usedOfficialIdentityForSource(source, used),
+      honesty: "pending",
+      hechos: [],
+      motivoFallo: null,
+      detail: OFFICIAL_WAIT_STILL_TRYING,
+      missingFields: [],
+    });
+  }
   return sourceCheck(source, resolvedStatus, {
     checkedAt:
       (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
@@ -909,6 +1001,7 @@ export function officialCheckFromBridgeReturn(params: {
     readReciboVsOficial(currentResult?.reciboVsOficial) ??
     readReciboVsOficial(currentResult?.receiptVsOfficial);
   const nowIso = params.nowIso ?? null;
+  const followupKind = readFollowupKind(roots);
   const alternateRoute = readAlternateOfficialRoute(root) || undefined;
   const imssStatus = readNestedOfficialSource(roots, "imss");
   const satStatus = readNestedOfficialSource(roots, "sat");
@@ -957,6 +1050,7 @@ export function officialCheckFromBridgeReturn(params: {
       imssStatus,
       nowIso,
       used,
+      followupKind,
     ),
     readOfficialObligationCheck(
       withFlatHonesty(officialCheck?.sat ?? chatAnchor?.sat ?? readNestedOfficialRecord(roots, "sat"), "sat", roots),
@@ -964,6 +1058,7 @@ export function officialCheckFromBridgeReturn(params: {
       satStatus,
       nowIso,
       used,
+      followupKind,
     ),
     readOfficialObligationCheck(
       withFlatHonesty(
@@ -975,18 +1070,30 @@ export function officialCheckFromBridgeReturn(params: {
       infonavitStatus,
       nowIso,
       used,
+      followupKind,
     ),
   ];
   const overallStatus = rollupStatus(checks.map((item) => item.status));
   const mergeMissing = (source: NonNullable<OfficialChatAnchor>[string], check: OfficialSourceCheck) => {
+    const calmOrMissing =
+      check.source === "imss" &&
+      (check.status === "registro_no_encontrado" ||
+        (check.status === "pendiente" && check.detail === OFFICIAL_WAIT_STILL_TRYING));
     const merged = readChatAnchorSource(
       {
         ...source,
         honesty: check.honesty ?? source.estado,
-        estado: check.status === "no_se_pudo" ? "failed" : check.status === "vivo" ? "live" : source.estado,
-        workerReason: source.motivoFallo ?? check.motivoFallo,
-        motivoFallo: source.motivoFallo ?? check.motivoFallo,
-        hechos: source.hechos.length > 0 ? source.hechos : check.hechos,
+        estado:
+          check.status === "no_se_pudo" || check.status === "registro_no_encontrado"
+            ? "failed"
+            : check.status === "vivo"
+              ? "live"
+              : check.status === "pendiente"
+                ? "pending"
+                : source.estado,
+        workerReason: calmOrMissing ? check.motivoFallo : source.motivoFallo ?? check.motivoFallo,
+        motivoFallo: calmOrMissing ? check.motivoFallo : source.motivoFallo ?? check.motivoFallo,
+        hechos: calmOrMissing ? check.hechos : source.hechos.length > 0 ? source.hechos : check.hechos,
         missingFields: filterOfficialMissingFieldsForSource(
           source.fuente,
           [
@@ -1223,9 +1330,12 @@ export async function runOfficialGovernmentCheck(params: {
   }
 
   const overallStatus = classifyBridgeOfficialCheck(posted);
-  const imssStatus = readSourceStatusFromResult(posted.responseJson, "imss") ?? overallStatus;
-  const satStatus = readSourceStatusFromResult(posted.responseJson, "sat") ?? overallStatus;
-  const infonavitStatus = readSourceStatusFromResult(posted.responseJson, "infonavit") ?? overallStatus;
+  const sharedFallback = overallStatus === "registro_no_encontrado" ? "no_se_pudo" : overallStatus;
+  const imssStatus =
+    readSourceStatusFromResult(posted.responseJson, "imss") ??
+    (overallStatus === "registro_no_encontrado" ? "registro_no_encontrado" : sharedFallback);
+  const satStatus = readSourceStatusFromResult(posted.responseJson, "sat") ?? sharedFallback;
+  const infonavitStatus = readSourceStatusFromResult(posted.responseJson, "infonavit") ?? sharedFallback;
   const responseRoot = asRecord(posted.responseJson);
   const satRecord = responseRoot ? readNestedOfficialRecord(pickBridgeResultRoots(responseRoot), "sat") : null;
   const satHechos = satStatus === "vivo" ? factsFromOfficialRecord(satRecord) : [];

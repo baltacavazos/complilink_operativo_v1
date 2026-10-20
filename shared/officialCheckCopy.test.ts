@@ -836,7 +836,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     });
 
     expect(display.headline).toBe(
-      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
+      "El SAT contestó y confirmó tu RFC. Seguimos consultando. Te avisamos en cuanto llegue tu resultado.",
     );
     expect(display.headline).not.toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.status).toBe("vivo");
@@ -846,7 +846,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     expect(display.silence?.whatHappened).toBe(
       "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.",
     );
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Seguimos consultando. Te avisamos en cuanto llegue tu resultado./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Infonavit: seguimos preguntando/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
     expect(display.headline).not.toBe(INSTITUTE_WAITING_HEADLINE);
@@ -869,7 +869,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
 
     expect(display.silence?.kind).toBe("mixed");
     expect(display.headline).toBe(
-      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
+      "El SAT contestó y confirmó tu RFC. Seguimos consultando. Te avisamos en cuanto llegue tu resultado.",
     );
     expect(display.headline).not.toMatch(/Todavía no hay una respuesta oficial/);
     expect(display.silence?.whatHappened).toBe(
@@ -897,7 +897,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       summary: pendingImss,
     });
     expect(during.headline).toBe(
-      "El SAT contestó. El nombre que tiene es HECTOR JOVANE ORTIZ HERNANDEZ. El IMSS está tardando; te avisamos en cuanto conteste.",
+      "El SAT contestó. El nombre que tiene es HECTOR JOVANE ORTIZ HERNANDEZ. Seguimos consultando. Te avisamos en cuanto llegue tu resultado.",
     );
     expect(during.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
     expect(during.silence?.stillWaiting).toBe(true);
@@ -951,14 +951,14 @@ describe("resultado parcial sin esperar al instituto lento", () => {
 
     expect(presentation?.stillWaiting).toBe(true);
     expect(presentation?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
-    expect(presentation?.nextStep).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(presentation?.nextStep).toBe("Seguimos consultando. Te avisamos en cuanto llegue tu resultado.");
     expect(presentation?.chat).toContain(OFFICIAL_WAIT_STILL_TRYING);
     expect(`${presentation?.nextStep} ${presentation?.chat} ${presentation?.retryLabel}`).not.toMatch(/mañana/i);
     expect(display.silence?.stillWaiting).toBe(true);
     expect(display.silence?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
     expect(display.buttonLabel).not.toBe("Probar de nuevo mañana");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
+    expect(display.silence?.sourceLines.join("\n")).toMatch(/Seguimos consultando. Te avisamos en cuanto llegue tu resultado./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar Infonavit/);
   });
 
