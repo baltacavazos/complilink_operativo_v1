@@ -80,7 +80,7 @@ export const INSTITUTE_WAITING_DETAIL =
   "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.";
 export const OFFICIAL_WAIT_STILL_TRYING =
   "Seguimos consultando al IMSS. Te avisamos en cuanto llegue tu resultado.";
-export const IMSS_WAIT_WHAT_HAPPENED = "El IMSS todavía no contesta. Seguimos preguntando.";
+export const IMSS_WAIT_WHAT_HAPPENED = "El IMSS todavía no contesta.";
 export const IMSS_WAIT_MEANING = "Aún no podemos decir si tu patrón te tiene bien registrado en el IMSS.";
 export const IMSS_WAIT_NEXT = "Puedes esperar aquí. Si quieres adelantar, pide tu constancia del IMSS y súbela.";
 /** El IMSS no halló a la persona con la CURP o el NSS. No es una espera ni un fallo del instituto. */
@@ -993,17 +993,113 @@ const IMSS_RECORD_NOT_FOUND_STATUSES = new Set([
 export const STABLE_IMSS_RESULTADOS = ["hecho", "registro_no_encontrado", "sin_dato", "pendiente"] as const;
 export type StableImssResultado = (typeof STABLE_IMSS_RESULTADOS)[number];
 
-/**
- * Campo estable que CompliLink va a poner en el nodo IMSS y en los followups.
- * `vivo` y `no_se_pudo` siguen siendo el contrato de hoy: aquí no cuentan.
- * Solo lee el objeto inmediato, para no tomar el resultado de otra oficina.
- */
-export function readStableImssResultado(value: unknown): StableImssResultado | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-  const raw = String((value as Record<string, unknown>).resultado ?? "")
+const BARE_IMSS_RESPONSE_RE =
+  /no trajo alta|hay una respuesta oficial|respondi[oó] en esta consulta|no trajo un dato usable/i;
+
+const IMSS_POSITIVE_FACT_KEYS = new Set([
+  "sbc",
+  "salariobase",
+  "salariobasecotizacion",
+  "salarioregistrado",
+  "rfcpatron",
+  "razonsocial",
+  "nombrepatron",
+  "registropatronal",
+  "semanascotizadas",
+  "semanascotizadasimss",
+  "fechaalta",
+  "fechamovimiento",
+  "fechaingreso",
+  "altavigente",
+  "altaimssvigente",
+  "vigencia",
+  "pdfurl",
+  "hasconstancia",
+]);
+
+function readStableToken(raw: unknown): StableImssResultado | null {
+  const token = String(raw ?? "")
     .trim()
     .toLowerCase();
-  return (STABLE_IMSS_RESULTADOS as readonly string[]).includes(raw) ? (raw as StableImssResultado) : null;
+  return (STABLE_IMSS_RESULTADOS as readonly string[]).includes(token) ? (token as StableImssResultado) : null;
+}
+
+/**
+ * Lectura nueva del nodo IMSS: `officialCheck.imss.lectura` y `chatAnchor.imss.lectura`.
+ * No lee `resultado`. Ese campo sigue siendo vivo | no_se_pudo | pendiente.
+ */
+export function readStableImssLectura(value: unknown): StableImssResultado | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return readStableToken((value as Record<string, unknown>).lectura);
+}
+
+/**
+ * En `official_fact_arrived` y `official_retry_closed` el mismo valor llega en
+ * `followup.resultado`. No usar esto sobre el nodo IMSS.
+ */
+export function readStableImssFollowupResultado(value: unknown): StableImssResultado | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return readStableToken((value as Record<string, unknown>).resultado);
+}
+
+/** @deprecated El nodo IMSS ya no publica la lectura en `resultado`. */
+export function readStableImssResultado(value: unknown): StableImssResultado | null {
+  return readStableImssLectura(value);
+}
+
+/** «IMSS respondió, pero no trajo alta…» no es un hecho que se pueda citar. */
+export function isBareImssResponseLine(text?: string | null): boolean {
+  return BARE_IMSS_RESPONSE_RE.test(String(text ?? ""));
+}
+
+function walkImssPayload(value: unknown, visit: (record: Record<string, unknown>) => boolean, depth = 0, seen?: WeakSet<object>): boolean {
+  if (depth > 6 || value == null) return false;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.length > 20_000 || (!trimmed.startsWith("{") && !trimmed.startsWith("["))) return false;
+    try {
+      return walkImssPayload(JSON.parse(trimmed) as unknown, visit, depth + 1, seen);
+    } catch {
+      return false;
+    }
+  }
+  if (typeof value !== "object") return false;
+  const bag = seen ?? new WeakSet<object>();
+  if (bag.has(value)) return false;
+  bag.add(value);
+  if (Array.isArray(value)) {
+    if (value.length > 12) return false;
+    return value.some((item) => walkImssPayload(item, visit, depth + 1, bag));
+  }
+  const record = value as Record<string, unknown>;
+  if (visit(record)) return true;
+  return Object.values(record).some((item) => walkImssPayload(item, visit, depth + 1, bag));
+}
+
+/** `aseguradoLocalizado: false` o `registroNoEncontrado: true`, también dentro de rawPayload. */
+export function imssPayloadSaysRegistroAusente(value: unknown): boolean {
+  return walkImssPayload(
+    value,
+    (record) => record.aseguradoLocalizado === false || record.registroNoEncontrado === true,
+  );
+}
+
+/** Salario, patrón, vigencia o constancia en esta lectura. El NSS consultado no cuenta. */
+export function imssPayloadHasPositiveFact(value: unknown): boolean {
+  return walkImssPayload(value, (record) => {
+    if (Array.isArray(record.informacionLaboral) && record.informacionLaboral.length > 0) return true;
+    for (const [key, entry] of Object.entries(record)) {
+      const compact = key.toLowerCase().replace(/[^a-z]/g, "");
+      if (!IMSS_POSITIVE_FACT_KEYS.has(compact) || entry == null || entry === "") continue;
+      if (typeof entry === "boolean") {
+        if (entry) return true;
+        continue;
+      }
+      if (typeof entry === "number" && Number.isFinite(entry)) return true;
+      if (typeof entry === "string" && entry.trim()) return true;
+    }
+    return false;
+  });
 }
 
 /** Cierre sin dato del IMSS: la CURP o el NSS no hallaron registro. No es mantenimiento. */

@@ -48,8 +48,8 @@ describe("contraste y claridad del resultado", () => {
     const chatAt = result.indexOf('data-testid="official-check-chat-cta"');
     expect(chatAt).toBeGreaterThan(ctaAt);
     expect(result).toContain("{presentation.askLabel}");
-    expect(result).toContain('variant="outline"');
-    expect(result).toContain("border-[#111111]");
+    expect(result).toContain("ap-ask-link");
+    expect(result).not.toContain('variant="outline"');
     expect(result.slice(chatAt, chatAt + 400)).not.toContain("ap-btn-on-dark");
     expect(result).not.toContain("Subir otro recibo");
     expect(result.match(/text-white/g)?.length).toBe(1);

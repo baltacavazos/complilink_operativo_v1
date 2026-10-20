@@ -17,7 +17,11 @@ import {
   OFFICIAL_WAIT_STILL_TRYING,
   imssMaintenanceStillOpen,
   looksLikeImssRecordNotFound,
-  readStableImssResultado,
+  readStableImssLectura,
+  readStableImssFollowupResultado,
+  isBareImssResponseLine,
+  imssPayloadHasPositiveFact,
+  imssPayloadSaysRegistroAusente,
   looksLikeInstituteMaintenance,
   looksLikeNoOfficialResponse,
   readInstitutePayFacts,
@@ -555,25 +559,49 @@ function imssCiteableHechos(value: unknown): string[] {
     (item) =>
       !looksLikeImssRecordNotFound(item) &&
       !looksLikeNoOfficialResponse(item) &&
-      !looksLikeInstituteMaintenance(item),
+      !looksLikeInstituteMaintenance(item) &&
+      !isBareImssResponseLine(item),
   );
 }
 
-function stableImssFromBridgePayload(value: unknown): ReturnType<typeof readStableImssResultado> {
+function imssNodesInPayload(value: unknown): Record<string, unknown>[] {
+  const root = asRecord(value);
+  if (!root) return [];
+  const result = asRecord(root.result) ?? root;
+  const analysis = asRecord(root.analysisResults);
+  const nodes = [
+    asRecord(asRecord(result.officialCheck)?.imss),
+    asRecord(asRecord(root.officialCheck)?.imss),
+    asRecord(asRecord(analysis?.officialCheck)?.imss),
+    asRecord(asRecord(result.chatAnchor)?.imss),
+    asRecord(asRecord(root.chatAnchor)?.imss),
+    asRecord(asRecord(analysis?.chatAnchor)?.imss),
+    asRecord(result.imss),
+    asRecord(root.imss),
+  ];
+  return nodes.filter((item): item is Record<string, unknown> => Boolean(item));
+}
+
+function stableImssFromBridgePayload(value: unknown): ReturnType<typeof readStableImssLectura> {
   const root = asRecord(value);
   if (!root) return null;
   const result = asRecord(root.result) ?? root;
-  const official = asRecord(result.officialCheck) ?? asRecord(root.officialCheck);
-  const followup = asRecord(root.followup) ?? asRecord(result.followup);
+  const analysis = asRecord(root.analysisResults);
+  const official =
+    asRecord(result.officialCheck) ?? asRecord(root.officialCheck) ?? asRecord(analysis?.officialCheck);
+  const anchor = asRecord(result.chatAnchor) ?? asRecord(root.chatAnchor) ?? asRecord(analysis?.chatAnchor);
+  const followup = asRecord(root.followup) ?? asRecord(result.followup) ?? asRecord(analysis?.followup);
   const followupKind = typeof followup?.kind === "string" ? followup.kind.trim() : "";
   const fromFollowup =
     followupKind === "official_fact_arrived" || followupKind === "official_retry_closed"
-      ? readStableImssResultado(followup)
+      ? readStableImssFollowupResultado(followup)
       : null;
   return (
-    readStableImssResultado(official?.imss) ??
-    readStableImssResultado(result.imss) ??
-    readStableImssResultado(root.imss) ??
+    readStableImssLectura(official?.imss) ??
+    readStableImssLectura(asRecord(analysis?.officialCheck)?.imss) ??
+    readStableImssLectura(anchor?.imss) ??
+    readStableImssLectura(result.imss) ??
+    readStableImssLectura(root.imss) ??
     fromFollowup
   );
 }
@@ -581,12 +609,17 @@ function stableImssFromBridgePayload(value: unknown): ReturnType<typeof readStab
 export function classifyBridgeOfficialCheck(result: SignedEnginePostResult): OfficialCheckStatus {
   const haystack = `${collectHaystack(result.responseJson)} ${result.reason ?? ""}`;
   const stable = stableImssFromBridgePayload(result.responseJson);
-  if (stable === "registro_no_encontrado") return "registro_no_encontrado";
+  const imssNodes = imssNodesInPayload(result.responseJson);
+  const textFacts = imssCiteableHechos(result.responseJson);
+  const positive = textFacts.length > 0 || imssNodes.some((node) => imssPayloadHasPositiveFact(node));
+  const ausente = imssNodes.some((node) => imssPayloadSaysRegistroAusente(node));
   if (stable === "pendiente") return "pendiente";
   if (stable === "sin_dato") return "no_se_pudo";
-  if (stable === "hecho" && imssCiteableHechos(result.responseJson).length > 0) {
+  if (positive && (stable === "hecho" || stable === "registro_no_encontrado" || (stable == null && ausente))) {
     return "vivo";
   }
+  if (stable === "registro_no_encontrado" || (stable == null && ausente)) return "registro_no_encontrado";
+  if (stable === "hecho") return "no_se_pudo";
   if (result.ok) {
     if (looksLikeLiveInstituteResult(result.responseJson)) return "vivo";
     return "pendiente";
@@ -806,10 +839,34 @@ function readNestedOfficialRecord(
 function readFollowupRecord(roots: Array<Record<string, unknown> | null>): Record<string, unknown> | null {
   for (const root of roots) {
     if (!root) continue;
-    const followup = asRecord(root.followup) ?? asRecord(asRecord(root.result)?.followup);
+    const followup =
+      asRecord(root.followup) ??
+      asRecord(asRecord(root.result)?.followup) ??
+      asRecord(asRecord(root.analysisResults)?.followup);
     if (followup) return followup;
   }
   return null;
+}
+
+function enrichImssReading(
+  record: unknown,
+  roots: Array<Record<string, unknown> | null>,
+): unknown {
+  const base = asRecord(record) ?? {};
+  let next: Record<string, unknown> = { ...base };
+  const nodes = roots.flatMap((root) => (root ? imssNodesInPayload(root) : []));
+  if (!readStableImssLectura(next)) {
+    const lectura = nodes.map((node) => readStableImssLectura(node)).find((item) => item != null);
+    if (lectura) next = { ...next, lectura };
+  }
+  if (!imssPayloadSaysRegistroAusente(next) && nodes.some((node) => imssPayloadSaysRegistroAusente(node))) {
+    next = { ...next, aseguradoLocalizado: false };
+  }
+  if (!imssPayloadHasPositiveFact(next)) {
+    const donor = nodes.find((node) => imssPayloadHasPositiveFact(node));
+    if (donor) next = { ...next, rawPayload: donor.rawPayload ?? donor };
+  }
+  return next;
 }
 
 function readFollowupKind(roots: Array<Record<string, unknown> | null>): string | null {
@@ -911,27 +968,29 @@ function readOfficialObligationCheck(
       !looksLikeImssRecordNotFound(item) &&
       !looksLikeNoOfficialResponse(item) &&
       !looksLikeInstituteMaintenance(item) &&
+      !isBareImssResponseLine(item) &&
       item.trim() !== (motivoText ?? "").trim(),
   );
+  const structuralPositive = source === "imss" && imssPayloadHasPositiveFact(record);
+  const positive = positiveFacts.length > 0 || structuralPositive;
   const nestedFollowupRecord = asRecord(record?.followup);
   const nestedFollowup =
     typeof nestedFollowupRecord?.kind === "string" ? String(nestedFollowupRecord.kind) : followupKind;
   const followupStable =
     nestedFollowup === "official_fact_arrived" || nestedFollowup === "official_retry_closed"
-      ? readStableImssResultado(nestedFollowupRecord) ?? readStableImssResultado(followupRecord)
+      ? readStableImssFollowupResultado(nestedFollowupRecord) ?? readStableImssFollowupResultado(followupRecord)
       : null;
-  const stable = source === "imss" ? readStableImssResultado(record) ?? followupStable : null;
-  if (stable === "registro_no_encontrado" && positiveFacts.length === 0) {
-    return sourceCheck(source, "registro_no_encontrado", {
-      checkedAt,
-      used: usedOfficialIdentityForSource(source, used),
-      honesty: "failed",
-      hechos: [],
-      motivoFallo: IMSS_RECORD_NOT_FOUND_MESSAGE,
-      detail: IMSS_RECORD_NOT_FOUND_MESSAGE,
-      missingFields: [],
-    });
-  }
+  const stable = source === "imss" ? readStableImssLectura(record) ?? followupStable : null;
+  const ausente = source === "imss" && imssPayloadSaysRegistroAusente(record);
+  const vivoFromReading = sourceCheck(source, "vivo", {
+    checkedAt,
+    used: usedOfficialIdentityForSource(source, used),
+    honesty: "live",
+    hechos: positiveFacts,
+    motivoFallo: null,
+    detail: positiveFacts[0],
+    missingFields: [],
+  });
   if (stable === "pendiente") {
     return sourceCheck(source, "pendiente", {
       checkedAt,
@@ -954,23 +1013,26 @@ function readOfficialObligationCheck(
       missingFields: [],
     });
   }
-  if (stable === "hecho" && positiveFacts.length > 0) {
-    return sourceCheck(source, "vivo", {
+  if (positive && (stable === "hecho" || stable === "registro_no_encontrado" || (stable == null && ausente))) {
+    return vivoFromReading;
+  }
+  if (stable === "registro_no_encontrado" || (stable == null && ausente)) {
+    return sourceCheck(source, "registro_no_encontrado", {
       checkedAt,
       used: usedOfficialIdentityForSource(source, used),
-      honesty: "live",
-      hechos: positiveFacts,
-      motivoFallo: null,
-      detail: positiveFacts[0],
+      honesty: "failed",
+      hechos: [],
+      motivoFallo: IMSS_RECORD_NOT_FOUND_MESSAGE,
+      detail: IMSS_RECORD_NOT_FOUND_MESSAGE,
       missingFields: [],
     });
   }
   const recordSaysMissing =
     fallback === "registro_no_encontrado" ||
-    looksLikeImssRecordNotFound(record) ||
     looksLikeImssRecordNotFound(motivoText) ||
     looksLikeImssRecordNotFound(hechos.join(" "));
-  const notFound = stable == null && source === "imss" && recordSaysMissing && positiveFacts.length === 0;
+  const notFound =
+    stable == null && !ausente && source === "imss" && recordSaysMissing && !positive;
   if (notFound) {
     return sourceCheck(source, "registro_no_encontrado", {
       checkedAt,
@@ -998,19 +1060,21 @@ function readOfficialObligationCheck(
       missingFields: [],
     });
   }
-  return sourceCheck(source, resolvedStatus, {
+  const demoteBareHecho = stable === "hecho" && !positive && resolvedStatus === "vivo";
+  const settledStatus = demoteBareHecho ? "no_se_pudo" : resolvedStatus;
+  return sourceCheck(source, settledStatus, {
     checkedAt:
       (typeof record?.checkedAt === "string" ? record.checkedAt : null) ??
       anchor?.fecha ??
       nowIso,
     used: usedOfficialIdentityForSource(source, used),
-    honesty: demoteEmptySat ? "failed" : (anchor?.estado ?? officialStatusToHonesty(status)),
-    hechos: resolvedHechos,
+    honesty: demoteEmptySat || demoteBareHecho ? "failed" : (anchor?.estado ?? officialStatusToHonesty(status)),
+    hechos: demoteBareHecho ? [] : resolvedHechos,
     motivoFallo: demoteEmptySat
       ? rewriteOfficialFailedMotivo(source, rawMotivo ?? anchor?.motivoFallo)
       : motivoFallo,
     detail:
-      resolvedStatus === "no_se_pudo"
+      settledStatus === "no_se_pudo"
         ? buildOfficialFailedDetail([source])
         : rawMotivo ?? undefined,
     missingFields: missing.length > 0 ? missing : filterOfficialMissingFieldsForSource(source, anchor?.missingFields, used),
@@ -1148,7 +1212,10 @@ export function officialCheckFromBridgeReturn(params: {
 
   const checks = [
     readOfficialObligationCheck(
-      withFlatHonesty(officialCheck?.imss ?? chatAnchor?.imss ?? readNestedOfficialRecord(roots, "imss"), "imss", roots),
+      enrichImssReading(
+        withFlatHonesty(officialCheck?.imss ?? chatAnchor?.imss ?? readNestedOfficialRecord(roots, "imss"), "imss", roots),
+        [...roots, asRecord(root.analysisResults)],
+      ),
       "imss",
       imssStatus,
       nowIso,

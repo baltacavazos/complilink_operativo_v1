@@ -86,7 +86,7 @@ export function WorkerOfficialResult({
     <section
       data-testid="official-check-card"
       data-worker-result="true"
-      className="ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.35rem] border px-3.5 py-3 text-left sm:px-4 sm:py-3.5"
+      className="ap-official-card ap-light-surface ap-surface-mint ap-result-enter w-full rounded-[1.35rem] border text-left"
     >
       <span
         data-testid={showWaitLayer && !presentation.correctImss ? "official-wait-state" : "result-status-chip"}
@@ -97,7 +97,7 @@ export function WorkerOfficialResult({
       </span>
       <h2
         data-testid="five-second-verdict-seen"
-        className="mt-2 text-[1.22rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.38rem]"
+        className="ap-official-title"
       >
         <span data-testid="official-check-headline">{presentation.verdict}</span>
       </h2>
@@ -108,8 +108,8 @@ export function WorkerOfficialResult({
           ))}
         </ul>
       ) : null}
-      <div data-testid="official-check-silence" className="mt-2 space-y-1">
-        <div data-testid="official-check-detail">
+      <div data-testid="official-check-silence">
+        <div data-testid="official-check-detail" className="ap-official-lines">
           {lines.map((line) => (
             <p key={line.label} className="text-sm leading-5 text-[#161616]">
               <span className="font-semibold text-[#111111]">{line.label}. </span>
@@ -177,9 +177,9 @@ export function WorkerOfficialResult({
       )}
       <Button
         type="button"
-        variant="outline"
+        variant="link"
         data-testid="official-check-chat-cta"
-        className="mt-2 h-11 w-full rounded-full border-[#111111] bg-white text-sm font-semibold text-[#161616] shadow-none hover:bg-[#f6f6f6]"
+        className="ap-ask-link"
         onClick={onAsk}
       >
         {presentation.askLabel}
@@ -189,12 +189,12 @@ export function WorkerOfficialResult({
       <section
         key={card.office}
         data-testid="infonavit-result-card"
-        className="ap-light-surface ap-surface-mint mt-3 w-full rounded-[1.35rem] border px-3.5 py-3 text-left sm:px-4 sm:py-3.5"
+        className="ap-companion-card ap-light-surface w-full text-left"
       >
-        <h2 className="text-[1.22rem] font-semibold leading-[1.15] tracking-[-0.04em] text-[#111111] sm:text-[1.38rem]">
+        <h2 className="ap-official-title">
           {card.title}
         </h2>
-        <div className="mt-2 space-y-1">
+        <div className="ap-official-lines">
           <p className="text-sm leading-5 text-[#161616]">
             <span className="font-semibold text-[#111111]">Qué pasó. </span>
             {card.whatHappened}

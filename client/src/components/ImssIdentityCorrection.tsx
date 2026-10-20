@@ -30,34 +30,32 @@ export function ImssIdentityCorrection({
   return (
     <form
       data-testid="imss-identity-correction"
-      className="mt-3 space-y-2"
+      className="ap-identity-form"
       onSubmit={(event) => {
         event.preventDefault();
         if (!ready || pending) return;
         onSubmit({ nss: nss.trim(), curp: curp.trim() });
       }}
     >
-      <label className="block text-sm font-semibold text-[#111111]">
-        NSS
+      <label className="ap-identity-field">
+        <span>NSS</span>
         <input
           data-testid="imss-correct-nss"
-          className="mt-1 h-11 w-full rounded-xl border border-[#d7d7d7] bg-white px-3 text-base font-normal"
           inputMode="numeric"
           autoComplete="off"
           maxLength={11}
-          placeholder="11 números"
           value={nss}
           onChange={(event) => {
             setNssTouched(true);
             setNss(event.target.value);
           }}
         />
+        <p className="ap-identity-hint">11 números. Viene en tu recibo.</p>
       </label>
-      <label className="block text-sm font-semibold text-[#111111]">
-        CURP
+      <label className="ap-identity-field">
+        <span>CURP</span>
         <input
           data-testid="imss-correct-curp"
-          className="mt-1 h-11 w-full rounded-xl border border-[#d7d7d7] bg-white px-3 text-base font-normal uppercase"
           autoComplete="off"
           maxLength={18}
           placeholder="18 letras y números"
