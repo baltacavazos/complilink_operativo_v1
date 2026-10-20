@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerCompliLinkReturnWebhook } from "../auditaPatronReturnWebhook";
+import { registerWhatsappInboundWebhook } from "../whatsappInboundWebhook";
 import { registerE2EAuthRoutes } from "../e2eAuthRoutes";
 import { bootstrapLocalPasswordAuthOnBoot, registerLocalPasswordRoutes } from "../localPasswordRoutes";
 import { ensureMysqlTables } from "../mysqlBootstrap";
@@ -51,6 +52,7 @@ async function startServer() {
   registerOAuthRoutes(app);
   registerLocalPasswordRoutes(app);
   registerCompliLinkReturnWebhook(app);
+  registerWhatsappInboundWebhook(app);
   registerE2EAuthRoutes(app);
   // tRPC API
   app.use(

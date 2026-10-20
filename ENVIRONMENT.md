@@ -104,6 +104,13 @@ Tercer aviso del mismo momento que la bandeja y el correo (#79). **No envía** s
 
 El día de la línea: poner las tres credenciales, la plantilla, y `WHATSAPP_NOTIFY_ENABLED=true`. Reiniciar el servicio. No hace falta otro cambio de producto.
 
+El webhook de entrada (`GET`/`POST /api/whatsapp/webhook`) solo recibe el handshake y los avisos de Meta. No manda mensajes y no prende `WHATSAPP_NOTIFY_ENABLED`.
+
+| Variable | Notas |
+| --- | --- |
+| `WHATSAPP_WEBHOOK_VERIFY_TOKEN` | El mismo texto que se pega en el panel de Meta. Si no está, el handshake responde 403. |
+| `WHATSAPP_APP_SECRET` | App Secret. Si está, cada POST exige `X-Hub-Signature-256`. |
+
 ## Respaldo
 
 | Variable | Notas |
