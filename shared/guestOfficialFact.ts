@@ -92,6 +92,15 @@ export function guestOfficialFactStillWaiting(
 ): boolean {
   if (!summary) return false;
   if (summary.bridgeBlock === "provider_cap") return false;
+  const imssClosedWithoutRecord = (summary.checks ?? []).find(
+    (item) => item.source === "imss" && item.status === "registro_no_encontrado",
+  );
+  if (imssClosedWithoutRecord) {
+    const otherPending = (summary.checks ?? []).some(
+      (item) => item.source !== "imss" && (item.status === "pendiente" || item.honesty === "pending"),
+    );
+    if (!otherPending) return false;
+  }
   if (imssAnswerStillPending(summary)) {
     const checkedAt = summary.checkedAt ? Date.parse(summary.checkedAt) : Number.NaN;
     if (!Number.isFinite(checkedAt) || nowMs - checkedAt < SLOW_IMSS_WAIT_MS) return true;

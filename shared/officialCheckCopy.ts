@@ -10,6 +10,7 @@ export const OFFICIAL_CHECK_STATUSES = [
   "vivo",
   "pendiente",
   "no_se_pudo",
+  "registro_no_encontrado",
   "no_configurado",
   "sin_datos",
   "sin_permiso",
@@ -24,6 +25,7 @@ export const OFFICIAL_CHECK_STATUS_LABEL: Record<OfficialCheckStatus, string> = 
   vivo: "Contestó",
   pendiente: "Pendiente",
   no_se_pudo: "Sin respuesta",
+  registro_no_encontrado: "Revisa tus datos",
   no_configurado: "Aún no configurado",
   sin_datos: "Faltan datos",
   sin_permiso: "Falta tu permiso",
@@ -77,7 +79,17 @@ export const INSTITUTE_WAITING_HEADLINE =
 export const INSTITUTE_WAITING_DETAIL =
   "Si tarda, no es por tu recibo. Aún no podemos decir si tu patrón te tiene bien registrado.";
 export const OFFICIAL_WAIT_STILL_TRYING =
-  "Seguimos intentando. Te avisamos cuando haya resultado.";
+  "Seguimos consultando al IMSS. Te avisamos en cuanto llegue tu resultado.";
+export const IMSS_WAIT_WHAT_HAPPENED = "El IMSS todavía no contesta.";
+export const IMSS_WAIT_MEANING = "Aún no podemos decir si tu patrón te tiene bien registrado en el IMSS.";
+export const IMSS_WAIT_NEXT = "Puedes esperar aquí. Si quieres adelantar, pide tu constancia del IMSS y súbela.";
+/** El IMSS no halló a la persona con la CURP o el NSS. No es una espera ni un fallo del instituto. */
+export const IMSS_RECORD_NOT_FOUND_MESSAGE =
+  "No encontramos registro con ese dato. Revisa que tu CURP y NSS estén bien escritos.";
+export const IMSS_RECORD_NOT_FOUND_NEXT = "Corrige tu CURP o tu NSS y vuelve a consultar.";
+export const IMSS_RECORD_NOT_FOUND_ACTION = "Corregir y volver a consultar";
+export const IMSS_RECORD_NOT_FOUND_MEANING =
+  "Con ese dato no hay un registro. Eso no dice si tu patrón te tiene bien registrado.";
 export const OFFICIAL_FAILURE_SHIELD_TAIL = "No prueba que tu patrón cumpla.";
 
 /** Frase terminal cuando una oficina no contestó. No es prueba de que el patrón cumpla. */
@@ -136,6 +148,18 @@ export type InstituteSilencePresentation = {
   opener: string;
   /** Hay al menos una fuente pendiente o consultando. El silencio de las otras no cierra la espera. */
   stillWaiting?: boolean;
+  /** La consulta IMSS cerró sin registro. La persona puede corregir CURP o NSS. */
+  correctImss?: boolean;
+  /** Otra oficina, en su propia tarjeta. No se mezcla con el IMSS. */
+  companionCards?: OfficialCompanionCard[];
+};
+
+export type OfficialCompanionCard = {
+  office: "infonavit";
+  title: string;
+  whatHappened: string;
+  meaning: string;
+  nextStep: string;
 };
 
 export function instituteSilenceVerdict(_sources?: OfficialCheckSource[] | null): string {
@@ -322,6 +346,7 @@ function usefulOfficialHechos(hechos: string[]): string[] {
     .filter((item) => !/^Todavía no hay una respuesta oficial nueva de (IMSS|SAT|Infonavit)\.$/.test(item))
     .filter((item) => !looksLikeNoOfficialResponse(item))
     .filter((item) => !looksLikeInstituteMaintenance(item))
+    .filter((item) => !looksLikeImssRecordNotFound(item))
     .filter((item) => !/faltan datos|falta tu |falta el |falta un /i.test(item))
     .filter((item) => !isUnusableSatLegalNameLine(item))
     .slice(0, 3);
@@ -367,15 +392,24 @@ export function readOfficialSourceOutcomes(
       const anchorLive = source.estado === "live" && factsUsable;
       const keepCurrentLive = current?.status === "vivo" && factsUsable;
       const anchorFailed = source.estado === "failed" && listOfficialMissingFieldKeys(source.missingFields).length === 0;
+      const keepNotFound =
+        current?.status === "registro_no_encontrado" ||
+        (source.fuente === "imss" &&
+          looksLikeImssRecordNotFound(`${source.motivoFallo ?? ""} ${source.hechos.join(" ")}`));
+      const keepCalmImss = source.fuente === "imss" && current?.status === "pendiente";
       const emptySatHook =
         !factsUsable && (source.estado === "live" || current?.status === "vivo");
       const status: OfficialCheckStatus = anchorLive
         ? "vivo"
         : keepCurrentLive
           ? "vivo"
-          : emptySatHook || anchorFailed
-            ? "no_se_pudo"
-            : (current?.status ?? "pendiente");
+          : keepNotFound
+            ? "registro_no_encontrado"
+            : keepCalmImss
+              ? "pendiente"
+              : emptySatHook || anchorFailed
+                ? "no_se_pudo"
+                : (current?.status ?? "pendiente");
       const maintenance =
         sourceReportedMaintenance([source.motivoFallo, ...source.hechos]) || Boolean(current?.maintenance && status === "no_se_pudo");
       const hechos = anchorLive || keepCurrentLive
@@ -463,7 +497,7 @@ function mixedOfficialChat(
   const still = silent.length === 1 ? "aún no contesta" : "aún no contestan";
   const maint = silent.length > 0 && silent.every((item) => item.maintenance) ? " (en mantenimiento)" : "";
   const close = options?.stillWaiting
-    ? OFFICIAL_WAIT_STILL_TRYING
+    ? "Seguimos esperando lo que falta. Te avisamos en cuanto llegue."
     : "Prueba mañana, o pregúntame qué implica para tu pago.";
   return `${liveNames.charAt(0).toUpperCase()}${liveNames.slice(1)} sí ${verb} hoy.${factBit} ${silentNames} ${still}${maint}. Tu recibo ya está leído; eso no dice si tu patrón está bien dado de alta en ${silentNames}. ${close}`;
 }
@@ -596,8 +630,25 @@ function plainSatLead(hechos: string[]): string {
   return "El SAT ya contestó.";
 }
 
-function satWhileImssWaitsHeadline(hechos: string[]): string {
-  return `${plainSatLead(hechos)} ${IMSS_SLOW_WAIT_LINE}`;
+function infonavitCompanionCard(item: OfficialSourceOutcome): OfficialCompanionCard {
+  if (item.status === "pendiente" || item.status === "sin_datos") {
+    return {
+      office: "infonavit",
+      title: "Infonavit lo seguimos revisando.",
+      whatHappened: item.status === "sin_datos" ? "Para Infonavit falta un dato." : "Infonavit todavía no contesta.",
+      meaning: "Eso no dice si tu patrón está bien registrado en Infonavit.",
+      nextStep: "Si ya tienes tu estado de cuenta, súbelo.",
+    };
+  }
+  return {
+    office: "infonavit",
+    title: "Infonavit no contestó hoy.",
+    whatHappened: item.maintenance
+      ? "Infonavit está en mantenimiento."
+      : "Pedimos la información a Infonavit y hoy no contestó.",
+    meaning: "Eso no dice si tu patrón está bien registrado en Infonavit.",
+    nextStep: "Si ya tienes tu estado de cuenta, súbelo.",
+  };
 }
 
 function infonavitSecondaryLine(item: OfficialSourceOutcome): string {
@@ -620,9 +671,29 @@ function mixedOfficialPresentation(
   const lead = imss ? imssKnownHeadline(imss.hechos, options?.receiptSalary) : null;
   const imssWaiting = silent.find((item) => item.source === "imss" && item.status === "pendiente");
   const sat = live.find((item) => item.source === "sat");
-  const satLead = !lead && sat && imssWaiting ? satWhileImssWaitsHeadline(sat.hechos) : null;
-  const knownLead = lead ?? satLead;
   const infonavit = silent.find((item) => item.source === "infonavit");
+  if (imssWaiting) {
+    const satLines = sat
+      ? [plainSatLead(sat.hechos), ...sat.hechos.map((hecho) => `SAT: ${hecho}`)]
+      : [];
+    const infonavitCard = infonavit ? infonavitCompanionCard(infonavit) : null;
+    return {
+      kind: "mixed",
+      verdict: OFFICIAL_WAIT_STILL_TRYING,
+      whatHappened: IMSS_WAIT_WHAT_HAPPENED,
+      meaning: IMSS_WAIT_MEANING,
+      nextStep: IMSS_WAIT_NEXT,
+      smallPrint: "",
+      retryLabel: OFFICIAL_CHECK_BUTTON,
+      askLabel: INSTITUTE_SILENCE_ASK,
+      sourceLines: satLines,
+      chat: [OFFICIAL_WAIT_STILL_TRYING, sat ? plainSatLead(sat.hechos) : ""].filter(Boolean).join(" "),
+      opener: WORKER_RESULT_CHAT_OPENER,
+      stillWaiting: true,
+      companionCards: infonavitCard ? [infonavitCard] : [],
+    };
+  }
+  const knownLead = lead;
   const follow = knownLead && infonavit ? infonavitSecondaryLine(infonavit) : null;
   const partialSatNote =
     !knownLead &&
@@ -641,31 +712,25 @@ function mixedOfficialPresentation(
     ...silent.map((item) => unansweredOfficialSourceLine(item)),
   ];
   const close = options?.stillWaiting
-    ? OFFICIAL_WAIT_STILL_TRYING
+    ? "Seguimos esperando lo que falta. Te avisamos en cuanto llegue."
     : "Prueba mañana, o pregúntame qué implica para tu pago.";
   return {
     kind: "mixed",
     verdict: knownLead ?? POCKET_PARTIAL_VERDICT,
     whatHappened: knownLead
-      ? (follow ?? (satLead ? "Puedes esperar aquí, o pide tu constancia del IMSS y súbela." : "Esto es lo que el IMSS contestó hoy."))
+      ? (follow ?? "Esto es lo que el IMSS contestó hoy.")
       : pocketOfficeStatusLine(
           live.map((item) => item.source),
           silent.map((item) => item.source),
         ),
     meaning: knownLead
       ? follow
-        ? satLead && infonavit
-          ? infonavit.status === "pendiente"
-            ? "Infonavit sigue sin contestar. Eso no dice si tu crédito está bien o mal."
-            : infonavit.status === "sin_datos"
-              ? "Para Infonavit falta un dato. Eso no dice si tu crédito está bien o mal."
-              : "Infonavit no contestó hoy. Eso no dice si tu crédito está bien o mal."
-          : "Esto es lo que el IMSS contestó hoy."
-        : satLead
-          ? "Esto es lo que el SAT contestó hoy."
-          : `Todavía no tenemos la respuesta de ${silentNames}.`
+        ? "Esto es lo que el IMSS contestó hoy."
+        : `Todavía no tenemos la respuesta de ${silentNames}.`
       : `Tu recibo sí se leyó. Todavía no sabemos si tu patrón está bien registrado en ${silentNames}.`,
-    nextStep: options?.stillWaiting ? OFFICIAL_WAIT_STILL_TRYING : "Prueba de nuevo mañana.",
+    nextStep: options?.stillWaiting
+      ? "Puedes esperar aquí. Si ya tienes tu estado de cuenta, súbelo."
+      : "Prueba de nuevo mañana.",
     smallPrint: INSTITUTE_SILENCE_SMALL,
     retryLabel: options?.stillWaiting ? OFFICIAL_CHECK_BUTTON : INSTITUTE_SILENCE_RETRY,
     askLabel: INSTITUTE_SILENCE_ASK,
@@ -684,7 +749,10 @@ function mixedOfficialPresentation(
  */
 function unansweredOfficialSourceLine(item: OfficialSourceOutcome): string {
   const label = OFFICIAL_SOURCE_LABEL[item.source];
-  if (item.status === "pendiente") return `${label}: seguimos preguntando.`;
+  if (item.status === "registro_no_encontrado") return IMSS_RECORD_NOT_FOUND_MESSAGE;
+  if (item.status === "pendiente") {
+    return item.source === "imss" ? OFFICIAL_WAIT_STILL_TRYING : `${label}: seguimos preguntando.`;
+  }
   if (item.status === "sin_datos") return `Falta un dato del recibo para preguntar a ${label}.`;
   return silentOfficialSourceLine(label, item.maintenance);
 }
@@ -816,23 +884,55 @@ export function buildHonestOfficialPresentation(
   const outcomes = fillUnansweredWhileLive(readOfficialSourceOutcomes(summary));
   const live = outcomes.filter((item) => item.status === "vivo");
   const silent = outcomes.filter((item) => item.status === "no_se_pudo");
+  const notFound = outcomes.filter((item) => item.status === "registro_no_encontrado");
   const waiting = outcomes.filter((item) => item.status === "pendiente" || item.status === "sin_datos");
+  const imssNotFound = notFound.some((item) => item.source === "imss");
+  if (imssNotFound && live.length === 0) {
+    const stillWaiting = waiting.length > 0;
+    return {
+      kind: "silent",
+      verdict: "No encontramos registro con ese dato.",
+      whatHappened: "Revisa que tu CURP y NSS estén bien escritos.",
+      meaning: IMSS_RECORD_NOT_FOUND_MEANING,
+      nextStep: stillWaiting
+        ? `${IMSS_RECORD_NOT_FOUND_NEXT} ${OFFICIAL_WAIT_STILL_TRYING}`
+        : IMSS_RECORD_NOT_FOUND_NEXT,
+      smallPrint: "",
+      retryLabel: IMSS_RECORD_NOT_FOUND_ACTION,
+      askLabel: INSTITUTE_SILENCE_ASK,
+      sourceLines: [...notFound, ...silent, ...waiting].map((item) => unansweredOfficialSourceLine(item)),
+      chat: `${IMSS_RECORD_NOT_FOUND_MESSAGE} ${IMSS_RECORD_NOT_FOUND_NEXT}`,
+      opener: WORKER_RESULT_CHAT_OPENER,
+      stillWaiting,
+      correctImss: true,
+    };
+  }
   if (allThreeAnswered(outcomes)) {
     return withAlternateRouteCopy(
       settledOfficialPresentation(summary.reciboVsOficial?.resultado ?? null, outcomes),
       alternateRouteContributedFacts(summary, outcomes.filter((item) => item.status === "vivo")),
     );
   }
-  if (live.length > 0 && (silent.length > 0 || waiting.length > 0)) {
+  if (live.length > 0 && (silent.length > 0 || waiting.length > 0 || notFound.length > 0)) {
     const unanswered = OFFICIAL_CHECK_SOURCES.flatMap((source) => {
-      const match = [...silent, ...waiting].find((item) => item.source === source);
+      const match = [...notFound, ...silent, ...waiting].find((item) => item.source === source);
       return match ? [match] : [];
     });
     const presentation = mixedOfficialPresentation(live, unanswered, {
       stillWaiting: outcomes.some((item) => outcomeStillWaiting(item.status)),
       receiptSalary: options?.receiptSalary,
     });
-    return withAlternateRouteCopy(presentation, alternateRouteContributedFacts(summary, live));
+    const withCorrection = imssNotFound
+      ? {
+          ...presentation,
+          correctImss: true,
+          retryLabel: IMSS_RECORD_NOT_FOUND_ACTION,
+          nextStep: presentation.stillWaiting
+            ? `${IMSS_RECORD_NOT_FOUND_NEXT} ${OFFICIAL_WAIT_STILL_TRYING}`
+            : IMSS_RECORD_NOT_FOUND_NEXT,
+        }
+      : presentation;
+    return withAlternateRouteCopy(withCorrection, alternateRouteContributedFacts(summary, live));
   }
   if (live.length > 0 || outcomes.some((item) => item.status === "pendiente" || item.status === "sin_datos")) {
     return null;
@@ -878,6 +978,160 @@ export function buildOfficialFailedMotivo(
 
 export function looksLikeInstituteMaintenance(text?: string | null): boolean {
   return /mantenimiento/i.test(String(text ?? ""));
+}
+
+const IMSS_RECORD_NOT_FOUND_RE =
+  /no se encontr[oó] registro|registro asociado|no localiz[oó] al asegurado|asegurado no localizado|curp ni al nss/i;
+
+const IMSS_RECORD_NOT_FOUND_STATUSES = new Set([
+  "registro_no_encontrado",
+  "no_encontrado",
+  "not_found",
+  "sin_registro",
+]);
+
+export const STABLE_IMSS_RESULTADOS = ["hecho", "registro_no_encontrado", "sin_dato", "pendiente"] as const;
+export type StableImssResultado = (typeof STABLE_IMSS_RESULTADOS)[number];
+
+const BARE_IMSS_RESPONSE_RE =
+  /no trajo alta|hay una respuesta oficial|respondi[oó] en esta consulta|no trajo un dato usable/i;
+
+const IMSS_POSITIVE_FACT_KEYS = new Set([
+  "sbc",
+  "salariobase",
+  "salariobasecotizacion",
+  "salarioregistrado",
+  "rfcpatron",
+  "razonsocial",
+  "nombrepatron",
+  "registropatronal",
+  "semanascotizadas",
+  "semanascotizadasimss",
+  "fechaalta",
+  "fechamovimiento",
+  "fechaingreso",
+  "altavigente",
+  "altaimssvigente",
+  "vigencia",
+  "pdfurl",
+  "hasconstancia",
+]);
+
+function readStableToken(raw: unknown): StableImssResultado | null {
+  const token = String(raw ?? "")
+    .trim()
+    .toLowerCase();
+  return (STABLE_IMSS_RESULTADOS as readonly string[]).includes(token) ? (token as StableImssResultado) : null;
+}
+
+/**
+ * Lectura nueva del nodo IMSS: `officialCheck.imss.lectura` y `chatAnchor.imss.lectura`.
+ * No lee `resultado`. Ese campo sigue siendo vivo | no_se_pudo | pendiente.
+ */
+export function readStableImssLectura(value: unknown): StableImssResultado | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return readStableToken((value as Record<string, unknown>).lectura);
+}
+
+/**
+ * En `official_fact_arrived` y `official_retry_closed` el mismo valor llega en
+ * `followup.resultado`. No usar esto sobre el nodo IMSS.
+ */
+export function readStableImssFollowupResultado(value: unknown): StableImssResultado | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  return readStableToken((value as Record<string, unknown>).resultado);
+}
+
+/** @deprecated El nodo IMSS ya no publica la lectura en `resultado`. */
+export function readStableImssResultado(value: unknown): StableImssResultado | null {
+  return readStableImssLectura(value);
+}
+
+/** «IMSS respondió, pero no trajo alta…» no es un hecho que se pueda citar. */
+export function isBareImssResponseLine(text?: string | null): boolean {
+  return BARE_IMSS_RESPONSE_RE.test(String(text ?? ""));
+}
+
+function walkImssPayload(value: unknown, visit: (record: Record<string, unknown>) => boolean, depth = 0, seen?: WeakSet<object>): boolean {
+  if (depth > 6 || value == null) return false;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed.length > 20_000 || (!trimmed.startsWith("{") && !trimmed.startsWith("["))) return false;
+    try {
+      return walkImssPayload(JSON.parse(trimmed) as unknown, visit, depth + 1, seen);
+    } catch {
+      return false;
+    }
+  }
+  if (typeof value !== "object") return false;
+  const bag = seen ?? new WeakSet<object>();
+  if (bag.has(value)) return false;
+  bag.add(value);
+  if (Array.isArray(value)) {
+    if (value.length > 12) return false;
+    return value.some((item) => walkImssPayload(item, visit, depth + 1, bag));
+  }
+  const record = value as Record<string, unknown>;
+  if (visit(record)) return true;
+  return Object.values(record).some((item) => walkImssPayload(item, visit, depth + 1, bag));
+}
+
+/** `aseguradoLocalizado: false` o `registroNoEncontrado: true`, también dentro de rawPayload. */
+export function imssPayloadSaysRegistroAusente(value: unknown): boolean {
+  return walkImssPayload(
+    value,
+    (record) => record.aseguradoLocalizado === false || record.registroNoEncontrado === true,
+  );
+}
+
+/** Salario, patrón, vigencia o constancia en esta lectura. El NSS consultado no cuenta. */
+export function imssPayloadHasPositiveFact(value: unknown): boolean {
+  return walkImssPayload(value, (record) => {
+    if (Array.isArray(record.informacionLaboral) && record.informacionLaboral.length > 0) return true;
+    for (const [key, entry] of Object.entries(record)) {
+      const compact = key.toLowerCase().replace(/[^a-z]/g, "");
+      if (!IMSS_POSITIVE_FACT_KEYS.has(compact) || entry == null || entry === "") continue;
+      if (typeof entry === "boolean") {
+        if (entry) return true;
+        continue;
+      }
+      if (typeof entry === "number" && Number.isFinite(entry)) return true;
+      if (typeof entry === "string" && entry.trim()) return true;
+    }
+    return false;
+  });
+}
+
+/** Cierre sin dato del IMSS: la CURP o el NSS no hallaron registro. No es mantenimiento. */
+export function looksLikeImssRecordNotFound(value: unknown): boolean {
+  if (typeof value === "string" || typeof value === "number") {
+    return IMSS_RECORD_NOT_FOUND_RE.test(String(value));
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  if (record.aseguradoLocalizado === false) return true;
+  const status = String(record.status ?? record.resultado ?? record.honesty ?? "")
+    .trim()
+    .toLowerCase();
+  if (IMSS_RECORD_NOT_FOUND_STATUSES.has(status)) return true;
+  const parts = [
+    record.workerReason,
+    record.motivoFallo,
+    record.narrative,
+    record.message,
+    record.error,
+    record.badgeLabel,
+    record.detail,
+    ...(Array.isArray(record.hechos) ? record.hechos : []),
+  ];
+  return parts.some((part) => typeof part === "string" && IMSS_RECORD_NOT_FOUND_RE.test(part));
+}
+
+/** Mantenimiento del IMSS que Helios sigue reintentando. Un cierre o un registro ausente ya no espera. */
+export function imssMaintenanceStillOpen(text: string, followupKind?: string | null): boolean {
+  if (followupKind === "official_retry_closed" || followupKind === "official_fact_arrived") return false;
+  if (looksLikeImssRecordNotFound(text)) return false;
+  return looksLikeInstituteMaintenance(text);
 }
 
 export function rewriteOfficialFailedMotivo(
@@ -938,6 +1192,7 @@ export const OFFICIAL_CHECK_STATUS_DETAIL: Record<OfficialCheckStatus, string> =
   vivo: "Esto respondió el instituto hoy. No significa que tu patrón cumple.",
   pendiente: "Todavía no hay una respuesta oficial nueva. Inténtalo más tarde.",
   no_se_pudo: buildOfficialFailedDetail(),
+  registro_no_encontrado: IMSS_RECORD_NOT_FOUND_MESSAGE,
   no_configurado: "Aún no configurado. Por ahora solo leemos tus papeles.",
   sin_datos: "Falta tu NSS, CURP o RFC en el recibo para consultar.",
   sin_permiso: "Falta tu permiso para consultar IMSS y SAT.",
@@ -967,6 +1222,19 @@ export function looksLikeOfficialNss(value?: unknown): boolean {
 
 export function looksLikeOfficialCurp(value?: unknown): boolean {
   return /^[A-Z]{4}\d{6}[A-Z]{6}[0-9A-Z]{2}$/i.test(String(value ?? "").trim());
+}
+
+/** Solo rellena lo que la persona escribió si el formato ya era válido. */
+export function validWorkerIdentityPrefill(value: { nss?: unknown; curp?: unknown } | null | undefined): {
+  nss: string;
+  curp: string;
+} {
+  const nssDigits = String(value?.nss ?? "").replace(/\D/g, "");
+  const curp = String(value?.curp ?? "").trim().toUpperCase();
+  return {
+    nss: looksLikeOfficialNss(nssDigits) ? nssDigits : "",
+    curp: looksLikeOfficialCurp(curp) ? curp : "",
+  };
 }
 
 const PERSON_WORKER_RFC_RE = /^[A-ZÑ&]{4}\d{6}[A-Z0-9]{3}$/;
@@ -1431,7 +1699,7 @@ export const FALTA_NSS_Y_RFC_EXACT = "Falta tu NSS y RFC en el recibo para consu
 export const OFFICIAL_PENDING_STALE_MS = 60_000;
 /** Consulta Única puede tardar más de 10 minutos. No la marques como fallo antes. */
 export const SLOW_IMSS_WAIT_MS = 15 * 60 * 1000;
-export const IMSS_SLOW_WAIT_LINE = "El IMSS está tardando; te avisamos en cuanto conteste.";
+export const IMSS_SLOW_WAIT_LINE = OFFICIAL_WAIT_STILL_TRYING;
 
 export function isStaleOfficialPending(
   checkedAt?: string | null,
@@ -1501,6 +1769,7 @@ export function rollupOfficialCheckStatus(statuses: OfficialCheckStatus[]): Offi
   if (statuses.length > 0 && statuses.every((status) => status === "sin_datos")) return "sin_datos";
   if (statuses.length > 0 && statuses.every((status) => status === "sin_permiso")) return "sin_permiso";
   if (statuses.includes("pendiente")) return "pendiente";
+  if (statuses.includes("registro_no_encontrado")) return "registro_no_encontrado";
   if (statuses.includes("no_se_pudo")) return "no_se_pudo";
   return statuses[0] ?? "no_se_pudo";
 }
@@ -1683,6 +1952,26 @@ export function reconcileOfficialCheckWithIdentity(
   const chatAnchor = summary.chatAnchor ? readChatAnchor(summary.chatAnchor, mergedIdentity) : null;
 
   const reconcileCheck = (item: OfficialSourceCheck): OfficialSourceCheck => {
+    const rawText = `${item.motivoFallo ?? ""} ${item.detail ?? ""} ${(item.hechos ?? []).join(" ")}`;
+    const imssFacts = citeableOfficialHechos(item.source, item.hechos ?? []).filter(
+      (hecho) => !looksLikeImssRecordNotFound(hecho),
+    );
+    if (
+      item.source === "imss" &&
+      imssFacts.length === 0 &&
+      (item.status === "registro_no_encontrado" || looksLikeImssRecordNotFound(rawText))
+    ) {
+      return {
+        ...item,
+        status: "registro_no_encontrado",
+        label: OFFICIAL_CHECK_STATUS_LABEL.registro_no_encontrado,
+        detail: IMSS_RECORD_NOT_FOUND_MESSAGE,
+        honesty: "failed",
+        motivoFallo: IMSS_RECORD_NOT_FOUND_MESSAGE,
+        hechos: [],
+        missingFields: [],
+      };
+    }
     const missing = filterOfficialMissingFieldsForSource(item.source, item.missingFields, mergedIdentity);
     const honesty = item.honesty ?? officialStatusToHonesty(item.status);
     let status =
@@ -1817,7 +2106,8 @@ export function reconcileOfficialCheckWithIdentity(
   checks = checks.map((item) => {
     if (providerCap) return item;
     if (item.status !== "pendiente" || item.honesty === "live") return item;
-    const waitLimit = item.source === "imss" && livePresent ? SLOW_IMSS_WAIT_MS : OFFICIAL_PENDING_STALE_MS;
+    const calmImssRetry = item.source === "imss" && item.detail === OFFICIAL_WAIT_STILL_TRYING;
+    const waitLimit = item.source === "imss" && (livePresent || calmImssRetry) ? SLOW_IMSS_WAIT_MS : OFFICIAL_PENDING_STALE_MS;
     if (
       !isStaleOfficialPending(item.checkedAt ?? summary.checkedAt, nowMs, {
         anchorFecha: anchorFechaFor(item.source),
@@ -1836,10 +2126,19 @@ export function reconcileOfficialCheckWithIdentity(
       motivoFallo: rewriteOfficialFailedMotivo(item.source, item.motivoFallo),
     };
   });
-  if (!providerCap && !livePresent && overallStatus === "pendiente" && isStaleOfficialPending(summary.checkedAt, nowMs, {
-    anchorFecha: anchorFechaFor("imss") ?? anchorFechaFor("sat") ?? anchorFechaFor("infonavit"),
-    pendingSinceMs,
-  })) {
+  const calmImssOpen = checks.some(
+    (item) => item.source === "imss" && item.status === "pendiente" && item.detail === OFFICIAL_WAIT_STILL_TRYING,
+  );
+  if (
+    !providerCap &&
+    !livePresent &&
+    overallStatus === "pendiente" &&
+    !calmImssOpen &&
+    isStaleOfficialPending(summary.checkedAt, nowMs, {
+      anchorFecha: anchorFechaFor("imss") ?? anchorFechaFor("sat") ?? anchorFechaFor("infonavit"),
+      pendingSinceMs,
+    })
+  ) {
     overallStatus = "no_se_pudo";
   } else if (checks.length > 0 && !isPermissionBlockedStatus(overallStatus) && overallStatus !== "no_configurado") {
     overallStatus = rollupOfficialCheckStatus(checks.map((item) => item.status));
@@ -1933,6 +2232,12 @@ export function honestyToOfficialStatus(
   if (value === "live" || value === "vivo") return "vivo";
   if (missing.length > 0) return "sin_datos";
   if (!value) return null;
+  if (
+    source === "imss" &&
+    (value === "registro_no_encontrado" || value === "no_encontrado" || value === "not_found" || value === "sin_registro")
+  ) {
+    return "registro_no_encontrado";
+  }
   if (value === "pending" || value === "pendiente") return "pendiente";
   if (
     value === "failed" ||
@@ -1947,7 +2252,7 @@ export function honestyToOfficialStatus(
 
 export function officialStatusToHonesty(status: OfficialCheckStatus): OfficialChatAnchorEstado {
   if (status === "vivo") return "live";
-  if (status === "no_se_pudo" || status === "sin_datos") return "failed";
+  if (status === "no_se_pudo" || status === "sin_datos" || status === "registro_no_encontrado") return "failed";
   return "pending";
 }
 
@@ -2213,6 +2518,8 @@ export type OfficialCheckDisplay = {
   status: OfficialCheckDisplayStatus;
   showPermissionCopy: boolean;
   silence?: InstituteSilencePresentation | null;
+  /** El IMSS cerró sin registro. Muestra la corrección de CURP y NSS. */
+  correctImss?: boolean;
 };
 
 export function isPermissionBlockedStatus(status: OfficialCheckStatus | null | undefined) {
@@ -2324,6 +2631,14 @@ export function imssAnswerStillPending(summary?: OfficialCheckSummary | null): b
 export function shouldPollOfficialCheck(summary?: OfficialCheckSummary | null): boolean {
   if (!summary || summary.bridgeBlock === "provider_cap") return false;
   if (isPermissionBlockedStatus(summary.overallStatus) && !summary.checkedAt && !summary.chatAnchor) return false;
+  const imssMissing = (summary.checks ?? []).some(
+    (item) => item.source === "imss" && item.status === "registro_no_encontrado",
+  );
+  const otherInFlight = (summary.checks ?? []).some(
+    (item) => item.source !== "imss" && (item.status === "pendiente" || item.honesty === "pending"),
+  );
+  if (imssMissing && !otherInFlight) return false;
+  if (summary.overallStatus === "registro_no_encontrado" && !otherInFlight) return false;
   if (summary.overallStatus === "pendiente") return true;
   return (summary.checks ?? []).some((item) => item.status === "pendiente" || item.honesty === "pending");
 }
@@ -2473,6 +2788,7 @@ export function resolveOfficialCheckDisplay(params: {
           status: "vivo",
           showPermissionCopy: false,
           silence: presentation,
+          correctImss: Boolean(presentation.correctImss),
         };
       }
       if (presentation?.kind === "silent" || honest.overallStatus === "no_se_pudo") {
@@ -2490,9 +2806,10 @@ export function resolveOfficialCheckDisplay(params: {
           headline: silence.verdict,
           detail: `${silence.whatHappened} ${silence.meaning} ${silence.nextStep}`,
           buttonLabel: silence.retryLabel,
-          status: "no_se_pudo",
+          status: silence.correctImss ? "registro_no_encontrado" : "no_se_pudo",
           showPermissionCopy: false,
           silence,
+          correctImss: Boolean(silence.correctImss),
         };
       }
       if (honest.overallStatus === "pendiente") {

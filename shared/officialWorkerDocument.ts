@@ -51,7 +51,7 @@ export const OFFICIAL_WORKER_PAGES: Record<
   infonavit: {
     title: "Descarga tu estado de cuenta de Mi Cuenta Infonavit",
     url: "https://micuenta.infonavit.org.mx/",
-    help: "Entra a Mi Cuenta Infonavit. Baja el PDF de tu estado de cuenta o de tu crédito.",
+    help: "Entra a Mi Cuenta Infonavit. Baja el PDF de tu estado de cuenta.",
   },
   sat: {
     title: "Tu constancia del SAT (CSF)",

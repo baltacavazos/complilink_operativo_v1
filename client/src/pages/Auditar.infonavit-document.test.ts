@@ -32,10 +32,12 @@ describe("Auditar interim PDF Infonavit", () => {
   });
 
   it("deja el PDF junto al fallo de Infonavit y fuera del detalle cerrado", () => {
-    const offerAt = result.indexOf("{failureOffer}");
     const detailAt = result.indexOf(">Ver detalle<");
-    expect(offerAt).toBeGreaterThan(0);
-    expect(detailAt).toBeGreaterThan(offerAt);
+    const companionAt = result.indexOf('data-testid="infonavit-result-card"');
+    expect(result).toContain("companions.length ? null : failureOffer");
+    expect(detailAt).toBeGreaterThan(result.indexOf("companions.length ? null : failureOffer"));
+    expect(companionAt).toBeGreaterThan(detailAt);
+    expect(result.slice(companionAt)).toContain("failureOffer");
     expect(auditar).toContain("failureOffer={infonavitDocumentSlot}");
     const compactAt = auditar.indexOf('data-compact-official-detail="true"');
     const beforeCompact = auditar.slice(Math.max(0, compactAt - 80), compactAt);
@@ -52,14 +54,19 @@ describe("Auditar interim PDF Infonavit", () => {
     expect(auditar).toContain('id: "official-fact-arrived"');
   });
 
-  it("si queda una fuente pendiente, la tarjeta usa la capa de espera y no el CTA de mañana", () => {
+  it("si queda una fuente pendiente, la pastilla va arriba del título y no repite la frase", () => {
     expect(auditar).toContain("<WorkerOfficialResult");
     expect(result).toContain("presentation.stillWaiting");
-    expect(result).toContain("<OfficialWaitLayer");
-    expect(result).toContain("OFFICIAL_WAIT_STILL_TRYING");
+    expect(result).not.toContain("<OfficialWaitLayer");
+    expect(result).not.toContain("OFFICIAL_WAIT_STILL_TRYING");
+    expect(result).toContain("En consulta");
     expect(result).toContain("INSTITUTE_SILENCE_RETRY");
+    const chipAt = result.indexOf("En consulta");
+    const titleAt = result.indexOf('data-testid="official-check-headline"');
     const waitAt = result.indexOf("showWaitLayer");
     const ctaAt = result.indexOf('data-testid="official-check-cta"');
+    expect(chipAt).toBeGreaterThan(0);
+    expect(chipAt).toBeLessThan(titleAt);
     expect(waitAt).toBeGreaterThan(0);
     expect(ctaAt).toBeGreaterThan(waitAt);
   });

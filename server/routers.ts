@@ -142,6 +142,7 @@ import {
   summarizeLaborFiscalSignals,
 } from "./laborFiscalSignals";
 import {
+  applyWorkerIdentityCorrection,
   collectWorkerOfficialIdentity,
   fiscalIdentitiesMatch,
   officialReceiptFromLaborFacts,
@@ -694,7 +695,7 @@ const cardOfficialCheckInput = z.object({
     .array(
       z.object({
         source: z.enum(["imss", "sat", "infonavit"]),
-        status: z.enum(["vivo", "pendiente", "no_se_pudo", "no_configurado", "sin_datos", "sin_permiso"]),
+        status: z.enum(["vivo", "pendiente", "no_se_pudo", "registro_no_encontrado", "no_configurado", "sin_datos", "sin_permiso"]),
         checkedAt: z.string().max(40).nullable().optional(),
         detail: z.string().max(400).optional(),
       }),
@@ -4487,6 +4488,8 @@ export const appRouter = router({
           tenantId: z.string().min(3),
           caseId: z.string().min(3),
           consentGranted: z.boolean().optional(),
+          nss: z.string().max(32).optional(),
+          curp: z.string().max(32).optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -4513,11 +4516,18 @@ export const appRouter = router({
           events: detail.events,
         });
         const recordedAt = new Date();
-        const officialCheck = await runInstantWorkerLookup({
-          identity: mergeWorkerOfficialIdentities(
+        const correctedIdentity = applyWorkerIdentityCorrection(
+          mergeWorkerOfficialIdentities(
             collectWorkerOfficialIdentity(socialSecurityValidation.facts),
             ...documents.map((document) => officialIdentityForEngineDispatch(document)),
           ),
+          { nss: input.nss, curp: input.curp },
+        );
+        if (correctedIdentity.error) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: correctedIdentity.error });
+        }
+        const officialCheck = await runInstantWorkerLookup({
+          identity: correctedIdentity.identity,
           receipt: officialReceiptFromLaborFacts(socialSecurityValidation.facts),
           consentGranted: Boolean(input.consentGranted),
           now: recordedAt,
@@ -4934,6 +4944,8 @@ export const appRouter = router({
         z.object({
           guestPreviewToken: z.string().min(40),
           consentGranted: z.boolean(),
+          nss: z.string().max(32).optional(),
+          curp: z.string().max(32).optional(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -4948,11 +4960,21 @@ export const appRouter = router({
           officialCheck: null,
         });
         const guestFacts = guestReceiptFacts(payload);
+        const correctedIdentity = applyWorkerIdentityCorrection(collectWorkerOfficialIdentity(guestFacts), {
+          nss: input.nss,
+          curp: input.curp,
+        });
+        if (correctedIdentity.error) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: correctedIdentity.error });
+        }
+        const identityWasCorrected = Boolean(input.nss?.trim() || input.curp?.trim());
         const officialCheck = await runInstantWorkerLookup({
-          identity: collectWorkerOfficialIdentity(guestFacts),
+          identity: correctedIdentity.identity,
           receipt: officialReceiptFromLaborFacts(guestFacts),
           consentGranted: input.consentGranted,
-          idempotencyKey: `guest-official:${payload.guestPreviewId}`,
+          idempotencyKey: identityWasCorrected
+            ? `guest-official:${payload.guestPreviewId}:corr:${Date.now()}`
+            : `guest-official:${payload.guestPreviewId}`,
           correlationId: payload.traceId,
           traceId: payload.traceId,
           caseId: payload.guestPreviewId,

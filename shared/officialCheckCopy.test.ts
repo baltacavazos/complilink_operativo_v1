@@ -31,6 +31,8 @@ import {
   buildReceiptEstatusLine,
   laborInstitutesSettled,
   liveSatFactLines,
+  IMSS_WAIT_NEXT,
+  IMSS_WAIT_WHAT_HAPPENED,
   OFFICIAL_WAIT_STILL_TRYING,
   pickHonestOfficialCheck,
   pickPromptOfficialCheck,
@@ -835,19 +837,17 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       }),
     });
 
-    expect(display.headline).toBe(
-      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
-    );
+    expect(display.headline).toBe(OFFICIAL_WAIT_STILL_TRYING);
     expect(display.headline).not.toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
     expect(display.status).toBe("vivo");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
-    expect(display.silence?.whatHappened).toBe(
-      "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.",
-    );
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/Infonavit: seguimos preguntando/);
+    expect(display.silence?.whatHappened).toBe(IMSS_WAIT_WHAT_HAPPENED);
+    expect(display.silence?.meaning).toMatch(/IMSS/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/Seguimos consultando/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/Infonavit/);
+    expect(display.silence?.companionCards?.[0]?.title).toMatch(/Infonavit/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
     expect(display.headline).not.toBe(INSTITUTE_WAITING_HEADLINE);
     expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b|Syntage/i);
@@ -868,13 +868,10 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     });
 
     expect(display.silence?.kind).toBe("mixed");
-    expect(display.headline).toBe(
-      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
-    );
+    expect(display.headline).toBe(OFFICIAL_WAIT_STILL_TRYING);
     expect(display.headline).not.toMatch(/Todavía no hay una respuesta oficial/);
-    expect(display.silence?.whatHappened).toBe(
-      "Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.",
-    );
+    expect(display.silence?.whatHappened).toBe(IMSS_WAIT_WHAT_HAPPENED);
+    expect(display.silence?.companionCards?.[0]?.whatHappened).toMatch(/Infonavit/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/RFC: UIPD9211257I0/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/no contestó/);
   });
@@ -885,7 +882,7 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       checkedAt: "2026-09-21T12:00:00.000Z",
       identity: { nss: true, curp: true, rfc: true },
       checks: [
-        instituteCheck("sat", "vivo", ["El SAT confirmó el RFC consultado.", "Nombre en el SAT: HECTOR JOVANE ORTIZ HERNANDEZ."]),
+        instituteCheck("sat", "vivo", ["El SAT confirmó el RFC consultado.", "Nombre en el SAT: PERSONA FICTICIA PRUEBA."]),
         instituteCheck("imss", "pendiente"),
         instituteCheck("infonavit", "no_se_pudo"),
       ],
@@ -896,10 +893,11 @@ describe("resultado parcial sin esperar al instituto lento", () => {
       pendingSinceMs: started,
       summary: pendingImss,
     });
-    expect(during.headline).toBe(
-      "El SAT contestó. El nombre que tiene es HECTOR JOVANE ORTIZ HERNANDEZ. El IMSS está tardando; te avisamos en cuanto conteste.",
-    );
-    expect(during.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
+    expect(during.headline).toBe(OFFICIAL_WAIT_STILL_TRYING);
+    expect(during.detail).toBe(IMSS_WAIT_WHAT_HAPPENED);
+    expect(during.silence?.companionCards?.[0]?.whatHappened).toMatch(/Infonavit/);
+    expect(JSON.stringify(during)).toContain("PERSONA FICTICIA PRUEBA");
+    expect(JSON.stringify(during)).not.toMatch(/HECTOR|JOVANE/);
     expect(during.silence?.stillWaiting).toBe(true);
     expect(`${during.headline} ${during.detail}`).not.toMatch(/\bcumple\b/i);
 
@@ -950,16 +948,16 @@ describe("resultado parcial sin esperar al instituto lento", () => {
     });
 
     expect(presentation?.stillWaiting).toBe(true);
-    expect(presentation?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
-    expect(presentation?.nextStep).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(presentation?.nextStep).toBe(IMSS_WAIT_NEXT);
+    expect(presentation?.verdict).toBe(OFFICIAL_WAIT_STILL_TRYING);
     expect(presentation?.chat).toContain(OFFICIAL_WAIT_STILL_TRYING);
     expect(`${presentation?.nextStep} ${presentation?.chat} ${presentation?.retryLabel}`).not.toMatch(/mañana/i);
     expect(display.silence?.stillWaiting).toBe(true);
-    expect(display.silence?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
+    expect(display.silence?.nextStep).toBe(IMSS_WAIT_NEXT);
     expect(display.buttonLabel).not.toBe("Probar de nuevo mañana");
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/IMSS: seguimos preguntando/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar Infonavit/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/Seguimos consultando/);
+    expect(display.silence?.companionCards?.[0]?.whatHappened).toMatch(/Infonavit/);
   });
 
   it("dice mañana solo cuando ninguna fuente sigue pendiente", () => {
@@ -1225,7 +1223,7 @@ describe("título con lo que el IMSS ya contestó", () => {
         instituteCheck("imss", "vivo", hechos),
         instituteCheck("sat", "vivo", [
           "El SAT confirmó el RFC consultado.",
-          "Nombre en el SAT: HECTOR JOVANE ORTIZ HERNANDEZ.",
+          "Nombre en el SAT: PERSONA FICTICIA PRUEBA.",
         ]),
         instituteCheck("infonavit", infonavitStatus, [
           infonavitStatus === "pendiente"
@@ -1289,7 +1287,7 @@ describe("título con lo que el IMSS ya contestó", () => {
     expect(display.headline).toBe("El IMSS te tiene registrado. El salario que tiene es $450.25.");
     expect(display.detail).toBe("Infonavit lo seguimos revisando. Si ya tienes tu estado de cuenta, súbelo.");
     expect(display.silence?.stillWaiting).toBe(true);
-    expect(display.silence?.nextStep).toBe(OFFICIAL_WAIT_STILL_TRYING);
+    expect(display.silence?.nextStep).toBe("Puedes esperar aquí. Si ya tienes tu estado de cuenta, súbelo.");
   });
 
   it("si el IMSS dice que no hay registro, no inventa que sí", () => {

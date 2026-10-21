@@ -13,6 +13,7 @@ import { toPlainWorkerLandingCopy } from "@shared/plainWorkerCopy";
 import { readWebFileAsDataUrl } from "@/lib/platformDocumentInput";
 import { OfficialDocumentGuide, type OfficialWorkerUploadResult } from "@/components/OfficialDocumentGuide";
 import { shouldOfferOfficialDocumentFallback } from "@shared/officialWorkerDocument";
+import { ImssIdentityCorrection } from "@/components/ImssIdentityCorrection";
 import { OfficialWaitLayer } from "@/components/OfficialWaitLayer";
 import { GuestOfficialFactNotice } from "@/components/GuestOfficialFactNotice";
 import { trpc } from "@/lib/trpc";
@@ -24,6 +25,7 @@ import {
   OFFICIAL_CHECK_CONSENT,
   pickPromptOfficialCheck,
   resolveOfficialCheckDisplay,
+  validWorkerIdentityPrefill,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import {
@@ -1560,6 +1562,8 @@ function HomeGuestOfficialCheck({
     () => readHomeGuestOfficial(guestPreviewId)?.arrivedAt ?? null,
   );
   const [officialCheckError, setOfficialCheckError] = useState<string | null>(null);
+  const [typedNss, setTypedNss] = useState("");
+  const [typedCurp, setTypedCurp] = useState("");
   const [officialDocument, setOfficialDocument] = useState<OfficialWorkerUploadResult | null>(null);
   const guestOfficialFactQuery = useGuestOfficialFact({
     guestPreviewToken,
@@ -1592,8 +1596,8 @@ function HomeGuestOfficialCheck({
     !officialCheckDisplay.silence &&
     (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
 
-  async function handleGuestOfficialCheck() {
-    if (!officialCheckConsent && !officialCheckDisplay.silence) {
+  async function handleGuestOfficialCheck(correction?: { nss: string; curp: string }) {
+    if (!officialCheckConsent && !officialCheckDisplay.silence && !officialCheckDisplay.correctImss) {
       setOfficialCheckError("Marca el permiso para consultar IMSS y SAT.");
       return;
     }
@@ -1602,7 +1606,9 @@ function HomeGuestOfficialCheck({
       setOfficialCheckError(null);
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken,
-        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence) || Boolean(officialCheckDisplay.correctImss),
+        ...(correction?.nss ? { nss: correction.nss } : {}),
+        ...(correction?.curp ? { curp: correction.curp } : {}),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -1629,6 +1635,7 @@ function HomeGuestOfficialCheck({
       data-guest-preview-id={guestPreviewId}
       className="ap-light-surface ap-surface-mint mt-5 rounded-[1.35rem] border p-4 text-left lg:col-span-2"
     >
+      {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
       <GuestOfficialFactNotice
         summary={officialCheckSummary}
         arrivedAt={guestOfficialFactQuery.data?.arrivedAt ?? officialFactArrivedAt}
@@ -1640,8 +1647,20 @@ function HomeGuestOfficialCheck({
       <p data-testid="official-check-detail" className="mt-1 text-sm leading-6 text-[#161616]">
         {officialCheckDisplay.detail}
       </p>
-      {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
-      {officialCheckDisplay.silence ? null : (
+      {officialCheckDisplay.correctImss ? (
+        <ImssIdentityCorrection
+          pending={guestOfficialCheckMutation.isPending}
+          initialNss={typedNss}
+          initialCurp={typedCurp}
+          onSubmit={(value) => {
+            const next = validWorkerIdentityPrefill(value);
+            if (next.nss) setTypedNss(next.nss);
+            if (next.curp) setTypedCurp(next.curp);
+            void handleGuestOfficialCheck(value);
+          }}
+        />
+      ) : null}
+      {officialCheckDisplay.silence || officialCheckDisplay.correctImss ? null : (
         <label className="mt-3 flex items-start gap-2 text-sm leading-5 text-[#161616]">
           <input
             type="checkbox"
@@ -1653,6 +1672,7 @@ function HomeGuestOfficialCheck({
           <span>{OFFICIAL_CHECK_CONSENT}</span>
         </label>
       )}
+      {officialCheckDisplay.correctImss ? null : (
       <Button
         type="button"
         data-testid="official-check-cta"
@@ -1667,6 +1687,7 @@ function HomeGuestOfficialCheck({
       >
         {officialCheckDisplay.buttonLabel}
       </Button>
+      )}
       {officialCheckError ? (
         <p className="mt-3 text-sm leading-6 text-amber-950">{officialCheckError}</p>
       ) : null}

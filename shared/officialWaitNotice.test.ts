@@ -3,7 +3,7 @@ import { OFFICIAL_FACT_ARRIVED_NOTICE, OFFICIAL_WAIT_STILL_TRYING } from "./offi
 
 describe("espera de consulta", () => {
   it("usa el copy exacto y no inventa un cumple", () => {
-    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos consultando al IMSS. Te avisamos en cuanto llegue tu resultado.");
     const copy = `${OFFICIAL_WAIT_STILL_TRYING} ${OFFICIAL_FACT_ARRIVED_NOTICE}`;
     expect(copy).not.toMatch(/consulta en vivo/i);
     expect(copy).not.toMatch(/al corriente/i);

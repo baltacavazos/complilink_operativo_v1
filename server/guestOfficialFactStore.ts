@@ -74,7 +74,8 @@ function findSession(ids: Array<string | null | undefined>): GuestOfficialSessio
 function sourceRank(check: OfficialCheckSummary["checks"][number]): number {
   const live = check.status === "vivo" || check.honesty === "live";
   const facts = (check.hechos ?? []).some((item) => item.trim().length > 0);
-  if (live && facts) return 3;
+  if (live && facts) return 4;
+  if (check.status === "registro_no_encontrado") return 3;
   if (live) return 2;
   if (check.status === "pendiente" || check.honesty === "pending") return 1;
   return 0;

@@ -91,6 +91,7 @@ import {
   resolveOfficialCheckDisplay,
   IMSS_SLOW_WAIT_LINE,
   shouldPollOfficialCheck,
+  validWorkerIdentityPrefill,
   type OfficialCheckSummary,
 } from "@shared/officialCheckCopy";
 import { shouldOfferInfonavitDocumentUpload } from "@shared/infonavitMiCuentaDocument";
@@ -6585,6 +6586,7 @@ export default function Auditar() {
     officialCaseBriefing.facts,
     officialCaseBriefing.hechoLines,
   );
+  const identityPrefill = validWorkerIdentityPrefill(officialCaseBriefing.facts);
   const officialWaitLeads =
     !officialCheckDisplay.silence &&
     (officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando");
@@ -7905,7 +7907,7 @@ export default function Auditar() {
       legalGateError?.type === "transient") &&
     legalGateError.retryCount < MAX_LEGAL_GATE_RETRIES;
 
-  const handleRevalidateSocialSecurity = async () => {
+  const handleRevalidateSocialSecurity = async (correction?: { nss: string; curp: string }) => {
     if (!caseDetailInput) {
       setSubmitError(
         "Primero elige un expediente para revisar lo que se ve de IMSS e Infonavit."
@@ -7928,7 +7930,9 @@ export default function Auditar() {
       setLegalGateError(null);
       const result = await revalidateSocialSecurityMutation.mutateAsync({
         ...caseDetailInput,
-        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence) || Boolean(officialCheckDisplay.correctImss),
+        ...(correction?.nss ? { nss: correction.nss } : {}),
+        ...(correction?.curp ? { curp: correction.curp } : {}),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -8721,12 +8725,12 @@ export default function Auditar() {
     }
   };
 
-  const handleGuestOfficialCheck = async () => {
+  const handleGuestOfficialCheck = async (correction?: { nss: string; curp: string }) => {
     if (!guestReview) {
       setGuestReviewError("Primero sube un recibo para consultar IMSS y SAT.");
       return;
     }
-    if (!officialCheckConsent && !officialCheckDisplay.silence) {
+    if (!officialCheckConsent && !officialCheckDisplay.silence && !officialCheckDisplay.correctImss) {
       setGuestReviewError("Marca el permiso para consultar IMSS y SAT.");
       return;
     }
@@ -8735,7 +8739,9 @@ export default function Auditar() {
       setGuestReviewError(null);
       const result = await guestOfficialCheckMutation.mutateAsync({
         guestPreviewToken: guestReview.guestPreviewToken,
-        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence),
+        consentGranted: officialCheckConsent || Boolean(officialCheckDisplay.silence) || Boolean(officialCheckDisplay.correctImss),
+        ...(correction?.nss ? { nss: correction.nss } : {}),
+        ...(correction?.curp ? { curp: correction.curp } : {}),
       });
       if (result.officialCheck) {
         setOfficialCheckResult(result.officialCheck);
@@ -9414,8 +9420,13 @@ export default function Auditar() {
             receiptData={workerPocketDetail.receiptData}
             presentation={officialCheckDisplay.silence}
             retryPending={guestOfficialCheckMutation.isPending}
+            initialNss={identityPrefill.nss}
+            initialCurp={identityPrefill.curp}
             onRetry={() => {
               void handleGuestOfficialCheck();
+            }}
+            onCorrectIdentity={(value) => {
+              void handleGuestOfficialCheck(value);
             }}
             onAsk={() => openHeliosCopilot()}
             paperRead={`${guestFiveSecond.seenLine} ${plainReceiptImssLine(guestFactSignal.imss)}`}
@@ -9496,11 +9507,13 @@ export default function Auditar() {
                 <p className="mt-1 text-sm text-[#222222]">El resultado es la primera lectura de tu documento: qué ya se entiende y qué conviene revisar.</p>
               </div>
             </div>
+            {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
+              <OfficialWaitLayer status={officialCheckDisplay.status} />
+            ) : null}
             <p data-testid="five-second-verdict-seen" className="text-3xl font-semibold tracking-[-0.05em] text-[#111111] sm:text-4xl">{officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? officialCheckDisplay.headline : guestFiveSecond.seenLine}</p>
             {officialCheckDisplay.status === "pendiente" || officialCheckDisplay.status === "consultando" ? (
               <>
                 <p className="mt-3 text-base leading-7 text-[#161616]">{officialCheckDisplay.detail}</p>
-                <OfficialWaitLayer status={officialCheckDisplay.status} />
               </>
             ) : (
               <>
@@ -10369,8 +10382,13 @@ export default function Auditar() {
                   pocketLead={workerPocketDetail.lead}
                   receiptData={workerPocketDetail.receiptData}
                   retryPending={revalidateSocialSecurityMutation.isPending}
+                  initialNss={identityPrefill.nss}
+                  initialCurp={identityPrefill.curp}
                   onRetry={() => {
                     void handleRevalidateSocialSecurity();
+                  }}
+                  onCorrectIdentity={(value) => {
+                    void handleRevalidateSocialSecurity(value);
                   }}
                   onAsk={() => openHeliosCopilot()}
                   comparisonLines={officialCaseBriefing.comparisonLines}
@@ -10383,6 +10401,7 @@ export default function Auditar() {
             ) : null}
             {documents.length > 0 && !exampleCaseVisible && !pendingDraft && !lastUpload && !officialCheckDisplay.silence ? (
               <div data-testid="official-check-card" className="ap-light-surface ap-surface-mint w-full rounded-[1.35rem] border border-teal-200 bg-teal-50/80 p-4 text-left">
+                {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
                 <p data-testid="official-check-headline" className="text-sm font-semibold tracking-tight text-teal-950">
                   {officialCheckDisplay.headline}
                 </p>
@@ -10390,7 +10409,6 @@ export default function Auditar() {
                   {officialCheckDisplay.detail}
                 </p>
                 {infonavitDocumentSlot}
-                {officialWaitLeads ? <OfficialWaitLayer status={officialCheckDisplay.status} /> : null}
                 {renderReceiptArrival(false)}
                 {workerPocketDetail.lead.length ? (
                   <ul data-testid="official-check-pocket" className="mt-3 space-y-1 text-sm leading-6 text-[#161616]">
@@ -10468,8 +10486,13 @@ export default function Auditar() {
                   pocketLead={workerPocketDetail.lead}
                   receiptData={workerPocketDetail.receiptData}
                   retryPending={revalidateSocialSecurityMutation.isPending}
+                  initialNss={identityPrefill.nss}
+                  initialCurp={identityPrefill.curp}
                   onRetry={() => {
                     void handleRevalidateSocialSecurity();
+                  }}
+                  onCorrectIdentity={(value) => {
+                    void handleRevalidateSocialSecurity(value);
                   }}
                   onAsk={() => openHeliosCopilot()}
                   paperRead={lastUploadResultHeadline}
@@ -10499,6 +10522,9 @@ export default function Auditar() {
                         <CheckCircle2 className="h-8 w-8 shrink-0 text-emerald-700" strokeWidth={2.1} />
                       )}
                       <div className="min-w-0">
+                        {shouldCompactPostUploadExperience && officialWaitLeads ? (
+                          <OfficialWaitLayer status={officialCheckDisplay.status} />
+                        ) : null}
                         <h2
                           data-testid="five-second-verdict-seen"
                           className={`font-semibold tracking-[-0.05em] text-[#111111] ${shouldCompactPostUploadExperience ? "text-[1.85rem] leading-[1.02] sm:text-[2.3rem]" : "text-[1.55rem] sm:text-[2.1rem]"}`}
@@ -10510,12 +10536,9 @@ export default function Auditar() {
                             : lastUploadVerdict.label}
                         </h2>
                         {shouldCompactPostUploadExperience && officialWaitLeads ? (
-                          <>
-                            <p data-testid="official-check-waiting" className="mt-3 text-base leading-6 text-[#161616]">
-                              {officialCheckDisplay.detail}
-                            </p>
-                            <OfficialWaitLayer status={officialCheckDisplay.status} />
-                          </>
+                          <p data-testid="official-check-waiting" className="mt-3 text-base leading-6 text-[#161616]">
+                            {officialCheckDisplay.detail}
+                          </p>
                         ) : null}
                         {shouldCompactPostUploadExperience && !officialCheckDisplay.silence && !officialWaitLeads ? (
                           <p data-testid="five-second-verdict-next" className="mt-2 text-base font-medium leading-6 text-[#161616] sm:text-lg">

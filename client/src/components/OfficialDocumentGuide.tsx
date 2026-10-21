@@ -109,7 +109,7 @@ export function OfficialDocumentGuide({
           </h2>
           <p className="text-base leading-6">
             {imssWhileWaiting
-              ? "El IMSS está tardando. Entra a su página, pide tu constancia y súbela. Aquí no escribas tu clave."
+              ? "Seguimos consultando. Si quieres adelantar, entra a la página del IMSS, pide tu constancia y súbela. Aquí no escribas tu clave."
               : OFFICIAL_GUIDE_INTRO}
           </p>
           <a

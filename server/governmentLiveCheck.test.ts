@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 import { buildOfficialCaseBriefing, buildPayWellFallback } from "@shared/officialCaseBriefing";
 import {
+  IMSS_WAIT_WHAT_HAPPENED,
   OFFICIAL_CHECK_BUTTON,
+  OFFICIAL_WAIT_STILL_TRYING,
   OFFICIAL_CHECK_CONSENT,
   OFFICIAL_PENDING_STALE_MS,
   OFFICIAL_CHECK_STATUS_LABEL,
@@ -960,6 +962,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       identity: { nss: true, curp: true, rfc: true },
       nowIso: "2026-09-21T12:00:00.000Z",
     });
+    const at = Date.parse("2026-09-21T12:00:00.000Z");
     const reconciled = reconcileOfficialCheckWithIdentity(parsed, { nss: true, curp: true, rfc: true }, {
       facts: {
         nss: "84129214965",
@@ -967,6 +970,7 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
         workerRfc: "UIPD9211257I0",
         employerRfc: "ECC190605VA1",
       },
+      nowMs: at,
     });
     const display = resolveOfficialCheckDisplay({
       consentGranted: true,
@@ -977,17 +981,23 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
         curp: "UIPD921125HYNCLD03",
         workerRfc: "UIPD9211257I0",
       },
+      nowMs: at,
     });
 
     expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
-    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
+    expect(parsed?.checks.find((item) => item.source === "imss")?.detail).toBe(OFFICIAL_WAIT_STILL_TRYING);
     expect(parsed?.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      OFFICIAL_WAIT_STILL_TRYING,
+    );
     expect(display.headline).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla. Está en mantenimiento./);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/Seguimos consultando/);
+    expect(display.silence?.whatHappened).toBe(IMSS_WAIT_WHAT_HAPPENED);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/Hoy no pudimos consultar IMSS/);
     expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
   });
 
@@ -1100,19 +1110,22 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
     });
 
     expect(result.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
-    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
     expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      OFFICIAL_WAIT_STILL_TRYING,
+    );
     expect(display.headline).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/SAT contestó/);
     expect(display.silence?.sourceLines.join("\n")).not.toMatch(/\bVivo\b|\bvivo\b/);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/Hoy no pudimos consultar IMSS. No prueba que tu patrón cumpla./);
-    expect(display.silence?.sourceLines.join("\n")).toMatch(/en mantenimiento/);
+    expect(display.silence?.sourceLines.join("\n")).not.toMatch(/Seguimos consultando/);
+    expect(display.silence?.whatHappened).toBe(IMSS_WAIT_WHAT_HAPPENED);
+    expect(display.silence?.companionCards?.map((card) => card.whatHappened).join(" ")).toMatch(/mantenimiento/);
     expect(briefing.instituteSilence).toBe(false);
     expect(briefing.hasLiveOfficialResult).toBe(true);
     expect(briefing.verdict?.kind).toBe("mixed");
-    expect(briefing.verdict?.chat).toMatch(/SAT sí contestó/);
+    expect(briefing.verdict?.chat).toMatch(/El SAT contestó/);
     expect(briefing.verdict?.chat).not.toMatch(/IMSS, SAT e Infonavit y no contestaron/);
     expect(buildPayWellFallback(briefing).clearAnswer).not.toMatch(/IMSS, SAT e Infonavit y no contestaron/);
     expect(JSON.stringify(display)).not.toMatch(/\bFalló\b|no de AuditaPatrón|\bcumple\b/i);
@@ -1152,7 +1165,9 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(parsed?.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
     expect(parsed?.checks.find((item) => item.source === "sat")?.hechos.join(" ")).toMatch(/UIPD9211257I0/);
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      OFFICIAL_WAIT_STILL_TRYING,
+    );
     expect(display.silence?.sourceLines.join("\n")).toMatch(/Certificados|RFC: UIPD9211257I0/);
     expect(display.headline).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
   });
@@ -1293,9 +1308,11 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(result.checks.find((item) => item.source === "sat")?.status).toBe("vivo");
-    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("no_se_pudo");
+    expect(result.checks.find((item) => item.source === "imss")?.status).toBe("pendiente");
     expect(result.checks.find((item) => item.source === "infonavit")?.status).toBe("no_se_pudo");
-    expect(display.headline).toBe("Aún no te podemos decir si tu patrón te tiene bien registrado.");
+    expect(display.headline).toBe(
+      OFFICIAL_WAIT_STILL_TRYING,
+    );
     expect(display.headline).not.toMatch(/Hoy no se pudo comprobar. No prueba que te engañen./);
     expect(display.silence?.sourceLines.join("\n")).toMatch(/UIPD9211257I0/);
     expect(JSON.stringify(display)).not.toMatch(/acceso gratuito|proveedor|elige un plan/i);
@@ -1404,9 +1421,10 @@ describe("consulta IMSS/SAT vía puente Helios", () => {
       nowMs: Date.parse("2026-09-21T12:00:05.000Z"),
     });
     expect(display.headline).toBe(
-      "El SAT contestó y confirmó tu RFC. El IMSS está tardando; te avisamos en cuanto conteste.",
+      OFFICIAL_WAIT_STILL_TRYING,
     );
-    expect(display.detail).toBe("Infonavit no contestó hoy. Si ya tienes tu estado de cuenta, súbelo.");
+    expect(display.detail).toBe(IMSS_WAIT_WHAT_HAPPENED);
+    expect(display.silence?.companionCards?.[0]?.whatHappened).toMatch(/Infonavit/);
     expect(display.silence?.meaning).toContain("Consultamos otra vía oficial.");
     expect(display.silence?.meaning).not.toContain("no hubo datos útiles");
     expect(display.detail).not.toMatch(/\bbackup\b|failover|Helios|CompliLink|\bcumple\b/i);

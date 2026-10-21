@@ -1455,14 +1455,137 @@ html.dark .audita-auditar .ap-result-detail a.ap-btn-on-dark {
   line-height: 1.3;
 }
 
-.ap-state-pill[data-state="pendiente"] {
+.ap-state-pill[data-state="pendiente"],
+.ap-state-pill[data-state="en-consulta"] {
   background: #fef3c7 !important;
   color: #92400e !important;
+}
+
+.ap-state-pill[data-state="revisa"] {
+  background: #ffedd5 !important;
+  color: #9a3412 !important;
 }
 
 .ap-state-pill[data-state="listo"] {
   background: #d1fae5 !important;
   color: #065f46 !important;
+}
+
+/* Tarjeta de consulta: el título manda, las tres líneas respiran y el CTA es negro. */
+.ap-official-card {
+  padding: 1.15rem 1.15rem 1.2rem !important;
+}
+
+.ap-official-card .ap-official-title,
+.ap-companion-card .ap-official-title {
+  margin: 0.75rem 0 0;
+  font-size: 1.58rem;
+  line-height: 1.16;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  color: #111111;
+}
+
+.ap-official-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.ap-official-lines p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.ap-identity-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+}
+
+.ap-identity-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+.ap-identity-field > span {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.3;
+  color: #111111;
+}
+
+.ap-identity-field input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 2.75rem;
+  margin: 0;
+  border: 1px solid #d7d7d7;
+  border-radius: 0.85rem;
+  background: #ffffff;
+  padding: 0.55rem 0.8rem;
+  font-size: 1rem;
+  font-weight: 450;
+  color: #111111;
+}
+
+.ap-identity-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 450;
+  line-height: 1.35;
+  color: #3a3a3a;
+}
+
+.ap-light-surface button.ap-btn-on-dark[data-testid="imss-correct-submit"],
+.ap-light-surface button.ap-btn-on-dark[data-testid="official-check-cta"] {
+  display: flex;
+  width: 100%;
+  min-height: 2.85rem;
+  align-items: center;
+  justify-content: center;
+  border: 0 !important;
+  border-radius: 999px;
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  font-size: 1rem;
+  font-weight: 650;
+  line-height: 1.2;
+  box-shadow: none !important;
+}
+
+.ap-light-surface button.ap-ask-link {
+  display: flex;
+  width: 100%;
+  min-height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.35rem;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #161616 !important;
+  font-size: 0.95rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: rgba(22, 22, 22, 0.45);
+}
+
+.ap-companion-card {
+  margin-top: 1.25rem !important;
+  padding: 1.15rem 1.15rem 1.2rem !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid #d5d5d5 !important;
+  border-radius: 1.35rem;
 }
 
 .ap-state-pill[data-state="sin-dato"] {

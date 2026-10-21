@@ -7,8 +7,10 @@
 import {
   ADVISOR_CHAT_NEVER_INVENT,
   OFFICIAL_CHECK_BUTTON,
+  IMSS_RECORD_NOT_FOUND_MESSAGE,
   OFFICIAL_CHECK_STATUS_DETAIL,
   OFFICIAL_CHECK_STATUS_LABEL,
+  OFFICIAL_WAIT_STILL_TRYING,
   OFFICIAL_FAILED_MISSING,
   answeredOfficialSourceLine,
   buildHonestOfficialPresentation,
@@ -221,6 +223,7 @@ export function formatOfficialStatusLine(params: {
   checkedAt?: string | null;
   maintenance?: boolean;
 }): string {
+  if (params.status === "registro_no_encontrado") return IMSS_RECORD_NOT_FOUND_MESSAGE;
   if (params.status === "no_se_pudo") {
     return silentOfficialSourceLine(params.sourceLabel, Boolean(params.maintenance));
   }
@@ -278,14 +281,18 @@ export function formatOfficialCheckStatusLines(summary: OfficialCheckSummary | n
           `${check?.motivoFallo ?? ""} ${source.motivoFallo ?? ""} ${(check?.hechos ?? []).join(" ")} ${source.hechos.join(" ")}`,
         );
         const line =
-          check && check.status === "no_se_pudo" && source.estado !== "failed" && source.estado !== "live"
-            ? formatOfficialStatusLine({
-                sourceLabel: check.sourceLabel,
-                status: check.status,
-                checkedAt: check.checkedAt ?? source.fecha ?? summary.checkedAt,
-                maintenance,
-              })
-            : formatChatAnchorStatusLine(source, summary.checkedAt, summary.identity);
+          check?.status === "registro_no_encontrado"
+            ? IMSS_RECORD_NOT_FOUND_MESSAGE
+            : check?.source === "imss" && check.status === "pendiente" && check.detail === OFFICIAL_WAIT_STILL_TRYING
+              ? OFFICIAL_WAIT_STILL_TRYING
+              : check && check.status === "no_se_pudo" && source.estado !== "failed" && source.estado !== "live"
+                ? formatOfficialStatusLine({
+                    sourceLabel: check.sourceLabel,
+                    status: check.status,
+                    checkedAt: check.checkedAt ?? source.fecha ?? summary.checkedAt,
+                    maintenance,
+                  })
+                : formatChatAnchorStatusLine(source, summary.checkedAt, summary.identity);
         return lineWithInstituteFailure(line, source.fuente, check?.detail ?? source.motivoFallo);
       },
     );

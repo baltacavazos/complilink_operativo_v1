@@ -21,7 +21,9 @@ describe("Home guest · consulta IMSS y SAT", () => {
 
     expect(OFFICIAL_CHECK_BUTTON).toBe("Consultar IMSS y SAT");
     expect(OFFICIAL_CHECK_CONSENT).toMatch(/Autorizo que pregunten a IMSS y SAT/);
-    expect(OFFICIAL_WAIT_STILL_TRYING).toBe("Seguimos intentando. Te avisamos cuando haya resultado.");
+    expect(OFFICIAL_WAIT_STILL_TRYING).toBe(
+      "Seguimos consultando al IMSS. Te avisamos en cuanto llegue tu resultado.",
+    );
 
     expect(card).toContain('data-testid="official-check-card"');
     expect(card).toContain('data-testid="official-check-headline"');
@@ -53,8 +55,12 @@ describe("Home guest · consulta IMSS y SAT", () => {
     );
     expect(home.slice(examplesStart)).not.toContain('data-testid="official-check-card"');
 
-    expect(waitLayer).toContain("OFFICIAL_WAIT_STILL_TRYING");
-    expect(waitLayer).toContain("{OFFICIAL_WAIT_STILL_TRYING}");
+    expect(waitLayer).toContain("En consulta");
+    expect(waitLayer).not.toContain("OFFICIAL_WAIT_STILL_TRYING");
+    const layerAt = card.indexOf("<OfficialWaitLayer");
+    const headlineAt = card.indexOf('data-testid="official-check-headline"');
+    expect(layerAt).toBeGreaterThan(0);
+    expect(layerAt).toBeLessThan(headlineAt);
 
     const upload = home.slice(home.indexOf("async function handleFileSelection"), home.indexOf("function handleGuestUploadClick"));
     expect(upload).toContain("const input = event.currentTarget");
