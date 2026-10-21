@@ -44,6 +44,8 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | `DROPBOX_API_KEY` | Respaldo | Sí para backup | Respaldo obligatorio en Dropbox | Validación y backup |
 | `RESEND_API_KEY` | Correo | Sí si hay notificaciones | Envío de correo | Backend |
 | `RESEND_FROM_EMAIL` | Correo | Sí si hay notificaciones | Remitente operativo | Backend |
+| `SMOKE_AUTH` | Acceso de humo | No | Interruptor del atajo de correos de prueba. Producción: `0`. Encender solo durante la prueba y apagar al terminar | Backend |
+| `SMOKE_CODE` | Acceso de humo | Solo si `SMOKE_AUTH=1` | Secreto del atajo. Mínimo 12 caracteres. Si falta o está vacío, el atajo no abre sesión | Backend |
 | `VITE_ANALYTICS_ENDPOINT` | Analítica | Opcional | URL http(s) de Umami. El cliente carga `{endpoint}/script.js`. Si falta o no es URL real, no se carga el script | Frontend |
 | `VITE_ANALYTICS_WEBSITE_ID` | Analítica | Opcional | Id del sitio, sin `%`. Si falta, no se inserta Umami | Frontend |
 | `VITE_GA_MEASUREMENT_ID` | Analítica | Opcional | Measurement ID de GA4 (`G-` + letras o números). Si falta o no coincide, no se carga gtag | Frontend |
@@ -92,6 +94,7 @@ El backend arranca desde `server/_core/index.ts`. Intenta usar el puerto definid
 | `DATABASE_URL` | Exposición de base de datos | Documentar solo propósito, nunca la cadena |
 | `JWT_SECRET` | Suplantación de sesión | No imprimir ni copiar |
 | `AUDITAPATRON_ENGINE_HMAC_SECRET` | Falsificación de tráfico firmado | Mantener solo en entorno seguro |
+| `SMOKE_CODE` | Acceso de prueba con un código escrito en el repo | Solo en el gestor de secretos. Nunca en logs ni en Git |
 | `DROPBOX_API_KEY` | Acceso indebido o bloqueo de backup | Validar antes de automatizar |
 | `OPENAI_API_KEY` / `GEMINI_API_KEY` | Uso no autorizado y costos | Mantener fuera de repo y logs |
 | `BUILT_IN_FORGE_API_KEY` | Acceso indebido a APIs internas | Restringir a backend |

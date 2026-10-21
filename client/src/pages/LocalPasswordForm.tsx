@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { isSmokeAuthCode, isSmokeAuthEmail } from "@shared/smokeAuth";
 import { AlertCircle, ArrowRight, Loader2, LockKeyhole } from "lucide-react";
 import { type FormEvent, useEffect, useState } from "react";
 
@@ -41,9 +40,7 @@ export default function LocalPasswordForm({
       setError("Escribe un correo válido.");
       return;
     }
-    const smokeTestSecret =
-      isSmokeAuthEmail(credentials.email) && isSmokeAuthCode(credentials.password);
-    if (!smokeTestSecret && credentials.password.length < 8) {
+    if (credentials.password.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
       return;
     }
@@ -116,7 +113,7 @@ export default function LocalPasswordForm({
           name="password"
           autoComplete={mode === "signup" ? "new-password" : "current-password"}
           required
-          minLength={isSmokeAuthEmail(email) ? 6 : 8}
+          minLength={8}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
           onInput={(event) => setPassword((event.target as HTMLInputElement).value)}

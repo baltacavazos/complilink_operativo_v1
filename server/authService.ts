@@ -7,7 +7,7 @@ import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { ENV } from "./_core/env";
 import { sdk } from "./_core/sdk";
-import { canUseSmokeAuth, isSmokeAuthCode, SMOKE_AUTH_CODE } from "./smokeAuth";
+import { canUseSmokeAuth, isSmokeAuthCode } from "./smokeAuth";
 
 const EMAIL_LOGIN_COOKIE = "complilink_email_login";
 const EMAIL_CODE_TTL_MS = 1000 * 60 * 10;
@@ -462,7 +462,7 @@ export async function startEmailLogin(params: { req: Request; res: Response; ema
   assertEmailCodeRequestAllowed(email);
 
   const smokeBypass = canUseSmokeAuth(email);
-  const code = smokeBypass ? SMOKE_AUTH_CODE : `${randomInt(100000, 999999)}`;
+  const code = `${randomInt(100000, 999999)}`;
   const challenge = createPendingEmailChallenge({
     email,
     codeHash: hashEmailCode(email, code),
