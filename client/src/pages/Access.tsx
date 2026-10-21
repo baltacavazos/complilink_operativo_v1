@@ -656,7 +656,7 @@ Entrarás directo al paso donde te quedaste para subir o revisar tu documento.
                     required
                     value={code}
                     onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="000000"
+                    placeholder="······"
                     className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-base tracking-[0.35em] text-slate-950 outline-none transition-colors placeholder:tracking-normal placeholder:text-slate-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20"
                   />
                 </div>

@@ -66,9 +66,12 @@ function extractCodeFromEmailPayload(fetchMock: ReturnType<typeof vi.fn>) {
 }
 
 describe("authService email code flow", () => {
+  const smokeCode = "fixture-smoke-code-not-real";
+
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.SMOKE_AUTH;
+    delete process.env.SMOKE_CODE;
     sdkMocks.createSessionToken.mockResolvedValue("session_token_value");
   });
 
@@ -138,15 +141,16 @@ describe("authService email code flow", () => {
         req: makeReq(),
         res: makeRes(),
         email: "otra.persona@empresa.com",
-        code: "000000",
+        code: "111111",
       }),
     ).rejects.toMatchObject<AuthFlowError>({
       code: "INVALID_EMAIL_CODE",
     });
   });
 
-  it("con SMOKE_AUTH=1 el correo smoke entra con 000000 y no manda OTP", async () => {
+  it("con SMOKE_AUTH=1 el correo smoke entra con SMOKE_CODE y no manda OTP", async () => {
     process.env.SMOKE_AUTH = "1";
+    process.env.SMOKE_CODE = smokeCode;
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
@@ -177,7 +181,7 @@ describe("authService email code flow", () => {
       req: makeReq(),
       res: verifyRes,
       email: "tester@auditapatron-smoke.test",
-      code: "000000",
+      code: smokeCode,
     });
 
     expect(user.email).toBe("tester@auditapatron-smoke.test");
@@ -187,6 +191,7 @@ describe("authService email code flow", () => {
 
   it("con SMOKE_AUTH=1 un correo +smoke@ entra sin inbox", async () => {
     process.env.SMOKE_AUTH = "1";
+    process.env.SMOKE_CODE = smokeCode;
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
@@ -208,12 +213,46 @@ describe("authService email code flow", () => {
       req: makeReq(),
       res: makeRes(),
       email: "qa+smoke@empresa.com",
-      code: "000000",
+      code: smokeCode,
     });
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(user.email).toBe("qa+smoke@empresa.com");
     expect(sdkMocks.createSessionToken).toHaveBeenCalledOnce();
+  });
+
+  it("con SMOKE_AUTH=1 y sin SMOKE_CODE un correo smoke sigue el OTP real", async () => {
+    process.env.SMOKE_AUTH = "1";
+    delete process.env.SMOKE_CODE;
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ id: "email_smoke_unconfigured" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await startEmailLogin({
+      req: makeReq(),
+      res: makeRes(),
+      email: "unconfigured@auditapatron-smoke.test",
+      name: "Tester",
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    const { code } = extractCodeFromEmailPayload(fetchMock);
+    expect(code).not.toBe(smokeCode);
+
+    await expect(
+      completeEmailLogin({
+        req: makeReq(),
+        res: makeRes(),
+        email: "unconfigured@auditapatron-smoke.test",
+        code: smokeCode,
+      }),
+    ).rejects.toMatchObject<AuthFlowError>({
+      code: "INVALID_EMAIL_CODE",
+    });
+    expect(sdkMocks.createSessionToken).not.toHaveBeenCalled();
   });
 
   it("con SMOKE_AUTH=1 un correo normal sigue exigiendo el OTP real", async () => {
@@ -238,7 +277,7 @@ describe("authService email code flow", () => {
         req: makeReq(),
         res: makeRes(),
         email: "cliente.real@empresa.com",
-        code: "000000",
+        code: "111111",
       }),
     ).rejects.toMatchObject<AuthFlowError>({
       code: "INVALID_EMAIL_CODE",
@@ -267,7 +306,7 @@ describe("authService email code flow", () => {
         req: makeReq(),
         res: makeRes(),
         email: "flag-off@auditapatron-smoke.test",
-        code: "000000",
+        code: "111111",
       }),
     ).rejects.toMatchObject<AuthFlowError>({
       code: "INVALID_EMAIL_CODE",

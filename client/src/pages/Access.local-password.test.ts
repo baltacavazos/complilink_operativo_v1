@@ -12,11 +12,12 @@ describe("Access local password wiring", () => {
     expect(source).toContain("/api/auth/local/status");
   });
 
-  it("deja pasar el secreto de 6 dígitos solo en correos smoke", () => {
+  it("no conoce el código de humo y exige 8 caracteres a todos", () => {
     const source = readFileSync(join(here, "LocalPasswordForm.tsx"), "utf8");
-    expect(source).toContain("isSmokeAuthEmail");
-    expect(source).toContain("isSmokeAuthCode");
-    expect(source).toContain("smokeTestSecret");
+    expect(source).not.toContain("isSmokeAuthCode");
+    expect(source).not.toContain("isSmokeAuthEmail");
+    expect(source).not.toContain("SMOKE_CODE");
+    expect(source).toContain("password.length < 8");
     expect(source).not.toMatch(/SMOKE_AUTH|Manus|OTP|Helios|CompliLink/);
   });
 });

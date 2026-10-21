@@ -15,6 +15,8 @@ Solo **nombres**. Nunca valores reales. Cruza con [CONFIGURACION.md](./CONFIGURA
 | Variable | Notas |
 | --- | --- |
 | `ENABLE_LOCAL_PASSWORD_AUTH` | `1` fuerza correo+contraseña; `0` lo apaga; si ausente, se activa cuando **no** hay `RESEND_API_KEY` (PR #3). **Ya en** panel web = `1`. |
+| `SMOKE_AUTH` | Default de producción: `0`. Solo `1` o `true` durante una prueba de humo. Apagar al terminar. |
+| `SMOKE_CODE` | Secreto del atajo de humo. Mínimo 12 caracteres. Si falta, está vacío o es más corto, el atajo no funciona aunque `SMOKE_AUTH=1`. Nunca en Git ni en logs. |
 
 ## Acceso y sesión (grupos README / CONFIGURACION)
 
