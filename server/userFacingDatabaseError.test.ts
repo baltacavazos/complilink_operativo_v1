@@ -33,4 +33,21 @@ describe("errores de base nunca llegan crudos", () => {
       true,
     );
   });
+
+  it("reconoce ER_DUP_ENTRY aunque Drizzle lo esconda en cause", () => {
+    const cause = Object.assign(new Error("constraint violation"), {
+      code: "ER_DUP_ENTRY",
+      errno: 1062,
+    });
+    const wrapped = new Error("Failed query: insert into `complilink_webhook_events` (`eventKey`) values (?)");
+    wrapped.name = "DrizzleQueryError";
+    wrapped.cause = cause;
+
+    expect(wrapped.message.toLowerCase()).not.toContain("duplicate entry");
+    expect(isDuplicateKeyError(wrapped)).toBe(true);
+    const otherCause = Object.assign(new Error("connection lost"), { code: "PROTOCOL_CONNECTION_LOST" });
+    const other = new Error("Failed query: insert into `complilink_webhook_events`");
+    other.cause = otherCause;
+    expect(isDuplicateKeyError(other)).toBe(false);
+  });
 });
