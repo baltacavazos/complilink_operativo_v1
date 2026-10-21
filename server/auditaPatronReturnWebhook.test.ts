@@ -490,6 +490,8 @@ describe("auditaPatronReturnWebhook", () => {
       responseContract: "auditapatron.bridge.ack.v1",
     });
     await expect(secondResponse.json()).resolves.toMatchObject({
+      ok: true,
+      alreadyReceived: true,
       received: true,
       intakeId: "901",
       documentId: "DOC-BRIDGE-001",
