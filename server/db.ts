@@ -59,8 +59,18 @@ import {
 let _db: ReturnType<typeof drizzle> | null = null;
 let _lockPool: Pool | null = null;
 let missingDatabaseUrlLogged = false;
+let testDatabase: ReturnType<typeof drizzle> | null | undefined;
+
+export function bindDatabaseForTests(database: object | null) {
+  testDatabase = database as ReturnType<typeof drizzle> | null;
+}
+
+export function resetDatabaseForTests() {
+  testDatabase = undefined;
+}
 
 export async function getDb() {
+  if (testDatabase !== undefined) return testDatabase;
   if (!_db && process.env.DATABASE_URL) {
     try {
       _db = drizzle(process.env.DATABASE_URL);
@@ -2671,8 +2681,7 @@ export async function registerCompliLinkWebhookEvent(entry: InsertCompliLinkWebh
   try {
     await db.insert(compliLinkWebhookEvents).values(entry);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    if (errorMessage.toLowerCase().includes("duplicate entry")) {
+    if (isDuplicateKeyError(error)) {
       const existing = await db
         .select()
         .from(compliLinkWebhookEvents)

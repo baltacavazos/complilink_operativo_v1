@@ -21,8 +21,27 @@ export function readErrorCode(error: unknown): string {
   return "";
 }
 
+function readErrorCause(error: unknown): unknown {
+  if (typeof error === "object" && error && "cause" in error) {
+    return (error as { cause?: unknown }).cause;
+  }
+  return undefined;
+}
+
 export function isDuplicateKeyError(error: unknown): boolean {
-  return readErrorCode(error) === "ER_DUP_ENTRY" || /Duplicate entry/i.test(readErrorMessage(error));
+  const seen = new Set<unknown>();
+  let current: unknown = error;
+  while (current != null && !seen.has(current)) {
+    if (typeof current !== "object") {
+      return /Duplicate entry/i.test(readErrorMessage(current));
+    }
+    seen.add(current);
+    if (readErrorCode(current) === "ER_DUP_ENTRY" || /Duplicate entry/i.test(readErrorMessage(current))) {
+      return true;
+    }
+    current = readErrorCause(current);
+  }
+  return false;
 }
 
 export function logActionableDatabaseFailure(

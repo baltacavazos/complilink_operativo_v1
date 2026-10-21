@@ -440,6 +440,7 @@ function buildWebhookAck(params: {
   duplicate?: boolean;
 }) {
   return {
+    ...(params.duplicate ? { ok: true as const, alreadyReceived: true as const } : {}),
     received: true,
     intakeId: params.intakeId,
     documentId: params.document.documentId,
