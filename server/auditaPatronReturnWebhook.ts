@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createHash } from "node:crypto";
+import { engineHmacSecretsForValidation, matchesAnySecret, readPreviousEngineHmacSecret } from "./bridgeHmacSecrets";
 import { ENV } from "./_core/env";
 import {
   addCaseEvent,
@@ -342,18 +343,32 @@ function extractDocumentNumericId(payload: Partial<CompliLinkReturnEnvelope>) {
   );
 }
 
-function hasSharedSecretAuth(req: Request) {
-  const expectedSecret = ENV.auditapatronEngineHmacSecret.trim();
-  if (!expectedSecret) return false;
-
+function presentedBridgeTokens(req: Request) {
+  const tokens: string[] = [];
   const bearerHeader = req.header("authorization");
-  if (bearerHeader?.startsWith("Bearer ") && bearerHeader.slice(7).trim() === expectedSecret) {
-    return true;
+  if (bearerHeader?.startsWith("Bearer ")) {
+    const bearer = bearerHeader.slice(7).trim();
+    if (bearer) tokens.push(bearer);
   }
+  for (const headerName of ["x-auditapatron-token", "x-helios-token"] as const) {
+    const headerValue = req.header(headerName)?.trim();
+    if (headerValue) tokens.push(headerValue);
+  }
+  return tokens;
+}
 
-  return [req.header("x-auditapatron-token"), req.header("x-helios-token")].some(
-    (headerValue) => headerValue?.trim() === expectedSecret,
-  );
+function hasSharedSecretAuth(req: Request) {
+  const secrets = engineHmacSecretsForValidation();
+  if (secrets.length === 0) return false;
+  const tokens = presentedBridgeTokens(req);
+  if (tokens.length === 0) return false;
+
+  let matched = false;
+  for (const token of tokens) {
+    const equal = matchesAnySecret(token, secrets);
+    matched = equal || matched;
+  }
+  return matched;
 }
 
 function buildBridgeContractResponse() {
@@ -406,6 +421,7 @@ function verifyReturnWebhookAuthentication(req: RawBodyRequest, rawBody: string)
     timestampHeader: req.header("X-AuditaPatron-Timestamp"),
     payloadBody: rawBody,
     hmacSecret: ENV.auditapatronEngineHmacSecret,
+    previousHmacSecrets: [readPreviousEngineHmacSecret()],
   });
 
   return {
@@ -753,6 +769,7 @@ async function handleAuditaPatronIncomingWebhook(req: RawBodyRequest, res: Respo
       timestampHeader: req.header("X-AuditaPatron-Timestamp"),
       payloadBody: rawBody,
       hmacSecret: ENV.auditapatronEngineHmacSecret,
+      previousHmacSecrets: [readPreviousEngineHmacSecret()],
     });
 
     if (!verification.ok) {

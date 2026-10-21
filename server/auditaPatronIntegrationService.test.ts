@@ -5,6 +5,7 @@ import {
   AUDITAPATRON_EVENT_CATALOG,
   AUDITAPATRON_OUTBOUND_EVENT,
   AUDITAPATRON_RETURN_EVENTS,
+  buildAuditaPatronBodySignature,
   buildAuditaPatronEnginePayload,
   buildAuditaPatronEngineSignature,
   buildSignedEngineHeaders,
@@ -644,6 +645,56 @@ describe("auditaPatronIntegrationService", () => {
     });
 
     expect(verification.ok).toBe(true);
+  });
+
+  it("accepts a timestamped signature from the previous secret and rejects a foreign one", () => {
+    const timestamp = Math.floor(Date.now() / 1000).toString();
+    const body = JSON.stringify({ event: "document.processed.v1", documentId: "DOC-001" });
+    const current = "current-bridge-hmac-placeholder";
+    const previous = "previous-bridge-hmac-placeholder";
+    const foreign = "foreign-bridge-hmac-placeholder";
+
+    expect(
+      verifySignedWebhook({
+        signatureHeader: buildAuditaPatronEngineSignature(timestamp, body, current),
+        timestampHeader: timestamp,
+        payloadBody: body,
+        hmacSecret: current,
+        previousHmacSecrets: [previous],
+      }).ok,
+    ).toBe(true);
+    expect(
+      verifySignedWebhook({
+        signatureHeader: buildAuditaPatronEngineSignature(timestamp, body, previous),
+        timestampHeader: timestamp,
+        payloadBody: body,
+        hmacSecret: current,
+        previousHmacSecrets: [previous],
+      }).ok,
+    ).toBe(true);
+    expect(
+      verifySignedWebhook({
+        signatureHeader: buildAuditaPatronEngineSignature(timestamp, body, foreign),
+        timestampHeader: timestamp,
+        payloadBody: body,
+        hmacSecret: current,
+        previousHmacSecrets: [previous],
+      }),
+    ).toMatchObject({ ok: false, reason: "invalid_signature" });
+  });
+
+  it("keeps rejecting a legacy body-only signature when the timestamp is absent", () => {
+    const body = JSON.stringify({ event: "document.processed.v1", documentId: "DOC-001" });
+    const secret = "current-bridge-hmac-placeholder";
+    expect(
+      verifySignedWebhook({
+        signatureHeader: buildAuditaPatronBodySignature(body, secret),
+        timestampHeader: null,
+        payloadBody: body,
+        hmacSecret: secret,
+        previousHmacSecrets: ["previous-bridge-hmac-placeholder"],
+      }),
+    ).toMatchObject({ ok: false, reason: "missing_signature" });
   });
 
   it("skips delivery cleanly when configuration is missing", async () => {

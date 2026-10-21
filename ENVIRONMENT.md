@@ -62,16 +62,33 @@ En el servicio **web** de AuditaPatrón (`5ff3f64a-542d-4a23-b500-a430c3054daa`)
 | Variable | Notas |
 | --- | --- |
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Canónica: `https://complilink.mx/api/integrations/auditapatron/bridge`. No hardcodear otro host. Evitar `www`. |
-| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)` y Bearer. Nunca en Git. |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma `HMAC-SHA256(timestamp + '.' + rawBody)` y Bearer. Nunca en Git. Lo saliente usa solo este valor. |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS` | Opcional. Si existe, también se acepta al validar Bearer, `x-auditapatron-token`, `x-helios-token`, la firma HMAC y las vistas previas de invitado. No se usa para firmar ni para enviar. |
 
 Sin URL o HMAC y sin llaves de proveedor → «Aún no configurado» (solo lee el recibo). 200 con datos → «Vivo». Acuse vacío / 5xx / timeout → «Pendiente». 403 / 404 / red → «Falló». Nunca «cumple». `APIMARKET_*` y `NUFI_*` son opcionales y no se muestran al trabajador.
+
+### Rotación del secreto del puente
+
+AuditaPatrón lee un solo secreto de puente: `AUDITAPATRON_ENGINE_HMAC_SECRET`. Ese valor valida lo que entra (Bearer, `x-auditapatron-token`, `x-helios-token` y la firma) y firma lo que sale. No lee `AUDITAPATRON_BRIDGE_TOKEN` ni `HELIOS_BRIDGE_TOKEN`. `API_KEY_HELIOS` se consulta solo como bandera de inventario y no autentica.
+
+La firma aceptada es la de hoy: `HMAC-SHA256(timestamp + '.' + body)`, ventana de 300 segundos, con prefijo `hmac-sha256:` y hex en cualquier caja. Una firma solo del cuerpo, sin `X-AuditaPatron-Timestamp`, sigue rechazándose.
+
+Procedimiento, sin pegar valores:
+
+1. Poner el secreto nuevo en `AUDITAPATRON_ENGINE_HMAC_SECRET` y el viejo en `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS`.
+2. Desplegar AuditaPatrón.
+3. Desplegar CompliLink con el secreto nuevo.
+4. Borrar `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS`.
+
+Sin `_PREVIOUS`, el comportamiento es el de siempre. Lo saliente se firma siempre con el secreto actual.
 
 ## Bridge AuditaPatrón
 
 | Variable | Notas |
 | --- | --- |
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Bridge / motor remoto (documentos + consulta oficial) |
-| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma; nunca en Git |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma; nunca en Git. Secreto actual para firmar y enviar. |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS` | Ventana de rotación. Solo validación de lo que entra. Borrarla al cerrar la ventana. |
 
 ## IA
 
