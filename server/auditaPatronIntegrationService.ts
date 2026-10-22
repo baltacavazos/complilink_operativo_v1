@@ -1,4 +1,5 @@
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
+import { timingSafeEqualSecret } from "./bridgeHmacSecrets";
 import { ENV } from "./_core/env";
 import {
   buildCanonicalCaseContract,
@@ -906,26 +907,29 @@ export function verifySignedWebhook(params: {
   timestampHeader?: string | null;
   payloadBody: string;
   hmacSecret: string;
+  /** Prior secrets. Checked only when validating. Signing stays on hmacSecret. */
+  previousHmacSecrets?: readonly string[];
 }) {
-  if (!params.signatureHeader || !params.timestampHeader || !params.hmacSecret) {
+  const secrets = [params.hmacSecret, ...(params.previousHmacSecrets ?? [])].filter(
+    (secret, index, all) => secret.length > 0 && all.indexOf(secret) === index,
+  );
+  if (!params.signatureHeader || !params.timestampHeader || secrets.length === 0) {
     return { ok: false as const, reason: "missing_signature" };
   }
 
   const normalizedReceivedSignature = normalizeSignatureHeader(params.signatureHeader);
-  const expectedSignature = buildAuditaPatronEngineSignature(
-    params.timestampHeader,
-    params.payloadBody,
-    params.hmacSecret,
-  ).toLowerCase();
+  const expectedSignatures = secrets.map((secret) =>
+    buildAuditaPatronEngineSignature(params.timestampHeader ?? "", params.payloadBody, secret).toLowerCase(),
+  );
+  const expectedSignature = expectedSignatures[0] ?? "";
 
-  const receivedBuffer = Buffer.from(normalizedReceivedSignature, "utf8");
-  const expectedBuffer = Buffer.from(expectedSignature, "utf8");
-
-  if (receivedBuffer.length !== expectedBuffer.length) {
-    return { ok: false as const, reason: "invalid_signature", expectedSignature };
+  let signatureMatches = false;
+  for (const candidate of expectedSignatures) {
+    const equal = timingSafeEqualSecret(normalizedReceivedSignature, candidate);
+    signatureMatches = equal || signatureMatches;
   }
 
-  if (!timingSafeEqual(receivedBuffer, expectedBuffer)) {
+  if (!signatureMatches) {
     return { ok: false as const, reason: "invalid_signature", expectedSignature };
   }
 

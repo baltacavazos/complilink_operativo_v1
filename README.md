@@ -77,7 +77,8 @@ El proyecto recibe varias variables desde la plataforma. Para una instalación e
 | `GEMINI_CHAT_MODEL` | Opcional. Default `gemini-3.1-pro-preview`; flash/lite ignorados |
 | `RESEND_API_KEY` | Envío de correos |
 | `RESEND_FROM_EMAIL` | Remitente configurado para correo |
-| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma para integración con motor externo |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Firma para integración con motor externo. Lo saliente usa solo este valor |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS` | Opcional. Acepta el secreto anterior al validar. No firma ni envía |
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Webhook del motor/bridge |
 | `DROPBOX_API_KEY` | Respaldo obligatorio de checkpoints en Dropbox |
 

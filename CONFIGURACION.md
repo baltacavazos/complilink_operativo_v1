@@ -36,7 +36,8 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | `VITE_FRONTEND_FORGE_API_URL` | APIs integradas | Sí | URL frontend para APIs integradas | Frontend |
 | `VITE_FRONTEND_FORGE_API_KEY` | APIs integradas | Sí | Token frontend para APIs integradas | Frontend |
 | `AUDITAPATRON_ENGINE_WEBHOOK_URL` | Integración externa | Sí | Destino del bridge/motor externo | Backend |
-| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Integración externa | Sí | Firma HMAC para tráfico del bridge | Backend |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Integración externa | Sí | Firma HMAC y Bearer del puente. Secreto actual para firmar y enviar | Backend |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS` | Integración externa | No | Secreto anterior. Solo valida lo que entra durante la rotación | Backend |
 | `OPENAI_API_KEY` | IA | Sí para consenso multi-IA | Contraste y validación con OpenAI; cerebro del asesor | Herramientas/servicios auxiliares |
 | `OPENAI_CHAT_MODEL` | IA | No | Astra siempre. Mini ignorado. Fallback `gpt-5.6-sol` → `gpt-5.6-terra` solo si Astra no está habilitado | Backend |
 | `GEMINI_CHAT_MODEL` | IA | No | Default `gemini-3.1-pro-preview`. Flash/lite ignorados. Fallback `gemini-2.5-pro` | Backend |
@@ -62,7 +63,7 @@ Las siguientes variables se identificaron a partir del entorno del proyecto, `se
 | Núcleo transaccional | `DATABASE_URL`, `JWT_SECRET`, `NODE_ENV` | El sistema no debe operar normalmente |
 | Acceso y sesión | `VITE_APP_ID`, `OAUTH_SERVER_URL`, `VITE_OAUTH_PORTAL_URL`, `OWNER_OPEN_ID` | Fallos de login o callback |
 | Plataforma integrada | `BUILT_IN_FORGE_API_URL`, `BUILT_IN_FORGE_API_KEY`, `VITE_FRONTEND_FORGE_API_URL`, `VITE_FRONTEND_FORGE_API_KEY` | Se degradan APIs internas y conectores |
-| Bridge AuditaPatron | `AUDITAPATRON_ENGINE_WEBHOOK_URL`, `AUDITAPATRON_ENGINE_HMAC_SECRET` | Se rompe el flujo documental externo |
+| Bridge AuditaPatron | `AUDITAPATRON_ENGINE_WEBHOOK_URL`, `AUDITAPATRON_ENGINE_HMAC_SECRET`, `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS` (opcional, solo validación) | Se rompe el flujo documental externo |
 | Consenso multi-IA | `OPENAI_API_KEY`, `GEMINI_API_KEY` | Se pierde el contraste multimodelo solicitado |
 | Respaldo | `DROPBOX_API_KEY` | No pueden ejecutarse respaldos automáticos |
 | Comunicación | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Fallan correos y avisos operativos |
@@ -91,7 +92,7 @@ El backend arranca desde `server/_core/index.ts`. Intenta usar el puerto definid
 | --- | --- | --- |
 | `DATABASE_URL` | Exposición de base de datos | Documentar solo propósito, nunca la cadena |
 | `JWT_SECRET` | Suplantación de sesión | No imprimir ni copiar |
-| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Falsificación de tráfico firmado | Mantener solo en entorno seguro |
+| `AUDITAPATRON_ENGINE_HMAC_SECRET` | Falsificación de tráfico firmado | Mantener solo en entorno seguro. Durante la rotación, el valor viejo va en `AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS` y se borra al final |
 | `DROPBOX_API_KEY` | Acceso indebido o bloqueo de backup | Validar antes de automatizar |
 | `OPENAI_API_KEY` / `GEMINI_API_KEY` | Uso no autorizado y costos | Mantener fuera de repo y logs |
 | `BUILT_IN_FORGE_API_KEY` | Acceso indebido a APIs internas | Restringir a backend |

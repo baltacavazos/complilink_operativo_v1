@@ -60,6 +60,8 @@ export const ENV = {
     "",
   auditapatronEngineWebhookUrl: process.env.AUDITAPATRON_ENGINE_WEBHOOK_URL ?? "",
   auditapatronEngineHmacSecret: process.env.AUDITAPATRON_ENGINE_HMAC_SECRET ?? "",
+  /** Prior bridge secret. Validation only. Outbound signatures use the current secret. */
+  auditapatronEngineHmacSecretPrevious: process.env.AUDITAPATRON_ENGINE_HMAC_SECRET_PREVIOUS ?? "",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
   /** Kill switch. Empty / false / off until the new WhatsApp Business line exists. */

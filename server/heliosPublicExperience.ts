@@ -1,5 +1,6 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac } from "node:crypto";
 
+import { readPreviousEngineHmacSecret, timingSafeEqualSecret } from "./bridgeHmacSecrets";
 import { ENV } from "./_core/env";
 import {
   buildPreliminaryLaborAnalysis,
@@ -65,8 +66,24 @@ function base64UrlDecode(value: string) {
   return Buffer.from(value, "base64url").toString("utf8");
 }
 
-function signEncodedPayload(encodedPayload: string) {
-  return createHmac("sha256", getSigningSecret()).update(encodedPayload).digest("base64url");
+function signEncodedPayload(encodedPayload: string, secret = getSigningSecret()) {
+  return createHmac("sha256", secret).update(encodedPayload).digest("base64url");
+}
+
+function previewValidationSecrets() {
+  const current = getSigningSecret();
+  const previous = readPreviousEngineHmacSecret();
+  if (!previous || previous === current) return [current];
+  return [current, previous];
+}
+
+function previewSignatureMatches(encodedPayload: string, signature: string) {
+  let matched = false;
+  for (const secret of previewValidationSecrets()) {
+    const equal = timingSafeEqualSecret(signature, signEncodedPayload(encodedPayload, secret));
+    matched = equal || matched;
+  }
+  return matched;
 }
 
 export function createGuestPreviewToken(payload: Omit<GuestPreviewTokenPayload, "version" | "expiresAt"> & { expiresAt?: string }) {
@@ -86,10 +103,7 @@ export function readGuestPreviewToken(token: string) {
     throw new Error("La vista previa temporal ya no es válida. Súbela otra vez para continuar.");
   }
 
-  const expectedSignature = signEncodedPayload(encodedPayload);
-  const receivedBuffer = Buffer.from(signature);
-  const expectedBuffer = Buffer.from(expectedSignature);
-  if (receivedBuffer.length !== expectedBuffer.length || !timingSafeEqual(receivedBuffer, expectedBuffer)) {
+  if (!previewSignatureMatches(encodedPayload, signature)) {
     throw new Error("La vista previa temporal no pasó la validación de seguridad. Súbela otra vez.");
   }
 
