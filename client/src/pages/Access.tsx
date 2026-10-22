@@ -18,6 +18,7 @@ import {
 import { AlertCircle, ArrowLeft, ArrowRight, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useLocation } from "wouter";
+import { getFriendlyAuthMessage, parseStructuredAuthMessage } from "./accessAuthMessage";
 
 const LAST_EMAIL_KEY = "auditapatron_last_login_email";
 
@@ -28,12 +29,6 @@ Te reconocimos en este equipo
 Espera un momento antes de pedir otro código.
 Código incorrecto. Revisa tu correo e inténtalo otra vez.
 */
-
-type ParsedAuthMessage = {
-  message: string;
-  retryAfterSeconds: number | null;
-  code: string | null;
-};
 
 type PortalAuthIntent = "signup" | "signin";
 type AccessMode = "signup" | "signin";
@@ -122,29 +117,6 @@ function getAccessModeFromSearch(): AccessMode {
   return new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin";
 }
 
-function parseStructuredAuthMessage(rawMessage: string): ParsedAuthMessage {
-  const [baseMessage, ...tokens] = rawMessage.split("||");
-  let retryAfterSeconds: number | null = null;
-  let code: string | null = null;
-
-  for (const token of tokens) {
-    if (token.startsWith("retry_after=")) {
-      const parsedSeconds = Number(token.replace("retry_after=", ""));
-      retryAfterSeconds = Number.isFinite(parsedSeconds) ? parsedSeconds : null;
-    }
-
-    if (token.startsWith("code=")) {
-      code = token.replace("code=", "") || null;
-    }
-  }
-
-  return {
-    message: baseMessage.trim(),
-    retryAfterSeconds,
-    code,
-  };
-}
-
 function getStoredEmail() {
   if (typeof window === "undefined") return "";
 
@@ -171,23 +143,6 @@ function buildEmailCodeStatusMessage(params: { maskedEmail: string; usedOwnerBac
   }
 
   return `Código enviado a ${params.maskedEmail}.`;
-}
-
-function getFriendlyAuthMessage(parsed: ParsedAuthMessage) {
-  switch (parsed.code) {
-    case "EMAIL_CODE_COOLDOWN_ACTIVE":
-      return parsed.retryAfterSeconds
-        ? `Espera ${parsed.retryAfterSeconds}s para pedir otro código.`
-        : "Espera un momento antes de pedir otro código.";
-    case "EMAIL_CODE_RATE_LIMITED":
-      return "Ya enviamos varios códigos a este correo. Intenta de nuevo más tarde.";
-    case "EMAIL_CODE_EXPIRED":
-      return "Ese código ya venció. Pide uno nuevo.";
-    case "INVALID_EMAIL_CODE":
-      return "Código incorrecto. Revisa tu correo e inténtalo otra vez.";
-    default:
-      return parsed.message;
-  }
 }
 
 function redirectToReturnTo(returnTo: string, setLocation: (path: string) => void) {

@@ -73,6 +73,7 @@ import {
   sendEmailWithResend,
   startEmailLogin,
 } from "./authService";
+import { toAuthFlowTrpcError } from "./authFlowTrpcError";
 import { systemRouter } from "./_core/systemRouter";
 import { invokeLLM } from "./_core/llm";
 import {
@@ -2978,10 +2979,7 @@ export const appRouter = router({
           } as const;
         } catch (error) {
           if (error instanceof AuthFlowError) {
-            if (error.retryAfterSeconds) {
-              throw new Error(`${error.message}||retry_after=${error.retryAfterSeconds}||code=${error.code}`);
-            }
-            throw new Error(`${error.message}||code=${error.code}`);
+            throw toAuthFlowTrpcError(error);
           }
           throw error;
         }
@@ -3010,7 +3008,7 @@ export const appRouter = router({
           } as const;
         } catch (error) {
           if (error instanceof AuthFlowError) {
-            throw new Error(`${error.message}||code=${error.code}`);
+            throw toAuthFlowTrpcError(error);
           }
           throw error;
         }
