@@ -1218,6 +1218,15 @@
       box-shadow 160ms ease;
   }
 
+  /* Misma capa que el teal de arriba: si no, el !important de la capa gana al #111111 suelto. */
+  .ap-light-surface button.ap-btn-on-dark[data-testid="imss-correct-submit"],
+  .ap-light-surface button.ap-btn-on-dark[data-testid="official-check-cta"],
+  .dark .audita-auditar .ap-light-surface button.ap-btn-on-dark[data-testid="imss-correct-submit"],
+  .dark .audita-auditar .ap-light-surface button.ap-btn-on-dark[data-testid="official-check-cta"] {
+    background-color: #111111 !important;
+    color: #ffffff !important;
+  }
+
   .ap-worker-chat :is(button, a).ap-btn-on-dark,
   .dark .ap-worker-chat :is(button, a).ap-btn-on-dark {
     background-color: #111111 !important;
@@ -1443,6 +1452,16 @@ html.dark .audita-auditar .ap-result-detail a.ap-btn-on-dark {
 
 [data-testid="receipt-fact-skeleton"] .ap-read-skeleton {
   background-color: #d9d9d9;
+}
+
+/*
+ * La barra fija «Preguntar al asesor» mide min-h-12 y flota a bottom-3.
+ * En pantallas altas, py-* del breakpoint sm pisaba el padding y el último
+ * renglón de la tarjeta quedaba debajo de la barra sin poder desplazarse.
+ * El contenido reserva esa altura, la separación del borde y la zona segura.
+ */
+.ap-advisor-clearance {
+  padding-bottom: calc(3rem + 0.75rem + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 .ap-state-pill {

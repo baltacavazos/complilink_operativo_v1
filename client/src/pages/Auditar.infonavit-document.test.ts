@@ -34,10 +34,14 @@ describe("Auditar interim PDF Infonavit", () => {
   it("deja el PDF junto al fallo de Infonavit y fuera del detalle cerrado", () => {
     const detailAt = result.indexOf(">Ver detalle<");
     const companionAt = result.indexOf('data-testid="infonavit-result-card"');
-    expect(result).toContain("companions.length ? null : failureOffer");
-    expect(detailAt).toBeGreaterThan(result.indexOf("companions.length ? null : failureOffer"));
+    const insideOffer = "offerOutsideImssCard || companions.length ? null : failureOffer";
+    expect(result).toContain(insideOffer);
+    expect(result).toContain("const offerOutsideImssCard = Boolean(presentation.correctImss)");
+    expect(detailAt).toBeGreaterThan(result.indexOf(insideOffer));
     expect(companionAt).toBeGreaterThan(detailAt);
-    expect(result.slice(companionAt)).toContain("failureOffer");
+    expect(result.slice(companionAt)).toContain('card.office === "infonavit" ? failureOffer : null');
+    const imssCardEnd = result.indexOf("</section>");
+    expect(result.indexOf("{offerAfterCards ? failureOffer : null}")).toBeGreaterThan(imssCardEnd);
     expect(auditar).toContain("failureOffer={infonavitDocumentSlot}");
     const compactAt = auditar.indexOf('data-compact-official-detail="true"');
     const beforeCompact = auditar.slice(Math.max(0, compactAt - 80), compactAt);

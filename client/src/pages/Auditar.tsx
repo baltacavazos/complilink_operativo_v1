@@ -9405,7 +9405,7 @@ export default function Auditar() {
     return (
       <main
         data-testid="worker-result-only"
-        className="audita-auditar min-h-screen bg-white px-3 py-6 pb-24 text-[#111111] sm:px-4 sm:py-8"
+        className="audita-auditar ap-advisor-clearance min-h-screen bg-white px-3 py-6 text-[#111111] sm:px-4 sm:py-8"
       >
         <div className="container mx-auto max-w-xl">
           <input
@@ -9489,7 +9489,7 @@ export default function Auditar() {
 
   if (!auth.isAuthenticated && !auditarHarnessBypass && guestReview) {
     return (
-      <main className="audita-auditar min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 pb-24 text-slate-950 sm:px-4 sm:py-10">
+      <main className="audita-auditar ap-advisor-clearance min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(20,184,166,0.12),_transparent_35%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_100%)] px-3 py-8 text-slate-950 sm:px-4 sm:py-10">
         <div className="container mx-auto max-w-3xl">
           <MobileAppShell current="auditar" title="Tu revisión" subtitle="Una lectura inicial de tu recibo." />
           <input

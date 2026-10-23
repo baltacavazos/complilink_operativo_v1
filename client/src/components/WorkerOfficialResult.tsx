@@ -16,7 +16,7 @@ type WorkerOfficialResultProps = {
   comparisonLines?: string[];
   pocketLead?: string[];
   receiptData?: string[];
-  /** Oferta de PDF justo después del fallo, antes del detalle cerrado. */
+  /** Oferta de PDF de Infonavit. En «Registro no encontrado» queda fuera de la tarjeta IMSS. */
   failureOffer?: ReactNode;
 };
 
@@ -80,6 +80,9 @@ export function WorkerOfficialResult({
       ? { state: "en-consulta", label: "En consulta" }
       : { state: "listo", label: "Listo" };
   const companions = presentation.companionCards ?? [];
+  const offerOutsideImssCard = Boolean(presentation.correctImss);
+  const offerAfterCards =
+    offerOutsideImssCard && companions.every((card) => card.office !== "infonavit");
 
   return (
     <>
@@ -121,7 +124,7 @@ export function WorkerOfficialResult({
       {presentation.smallPrint && presentation.smallPrint !== INSTITUTE_SILENCE_SMALL ? (
         <p className="mt-3 text-sm leading-5 text-[#161616]">{presentation.smallPrint}</p>
       ) : null}
-      {companions.length ? null : failureOffer}
+      {offerOutsideImssCard || companions.length ? null : failureOffer}
       <details className="ap-result-detail mt-2 rounded-[1rem] border border-[#e4e4e4] px-3 py-2" ref={detailRef}>
         <summary className="cursor-pointer text-sm font-semibold text-[#111111]">Ver detalle</summary>
         {visibleSources.length ? (
@@ -211,6 +214,7 @@ export function WorkerOfficialResult({
         {card.office === "infonavit" ? failureOffer : null}
       </section>
     ))}
+    {offerAfterCards ? failureOffer : null}
     </>
   );
 }
