@@ -140,6 +140,15 @@ describe("contraste y claridad del resultado", () => {
     expect(display.headline).not.toMatch(/UIPD|Vivo|Falló/);
   });
 
+  it("reserva espacio bajo el resultado para la barra fija del asesor", () => {
+    expect(auditar).toContain("ap-advisor-clearance");
+    expect(auditar).toContain('data-testid="ask-advisor-sticky"');
+    expect(auditar).not.toContain("pb-24");
+    const rule = css.slice(css.indexOf(".ap-advisor-clearance {"), css.indexOf(".ap-state-pill {"));
+    expect(rule).toContain("padding-bottom: calc(3rem + 0.75rem + env(safe-area-inset-bottom, 0px))");
+    expect(rule).toContain("!important");
+  });
+
   it("deja «Ver detalle» en blanco con tinta oscura, por encima del remap de bg-white", () => {
     expect(result).toMatch(/<details className="ap-result-detail /);
     expect(result).not.toMatch(/<details[^>]*bg-white/);
